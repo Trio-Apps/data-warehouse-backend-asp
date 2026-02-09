@@ -73,7 +73,7 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
 
         if (!string.IsNullOrWhiteSpace(status))
         {
-            if (!Enum.TryParse<PurchaseItemStatus>(status, true, out var statusEnum))
+            if (!Enum.TryParse<GeneralItemStatus>(status, true, out var statusEnum))
                 return GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO>, string>
                     .FailResponse("Invalid status");
 
@@ -162,7 +162,7 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
 
             model = new PurchaseOrderItem()
             {
-                Status = PurchaseItemStatus.Planned,
+                Status = GeneralItemStatus.Planned,
                 PurchaseOrderId = PurchaseOrderid,
                 ItemId = item.Id,
                 // = DateTime.UtcNow,
@@ -177,7 +177,7 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
             var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == dto.ItemId);
            model = new PurchaseOrderItem
             {
-                Status = PurchaseItemStatus.Planned,
+                Status = GeneralItemStatus.Planned,
                 PurchaseOrderId = dto.PurchaseOrderId,
                 ItemId = dto.ItemId,
               
@@ -224,7 +224,7 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
             return GeneralResponse<PurchaseOrderItemDTO>.FailResponse("not found");
 
         }
-        //if (entity.Status != PurchaseItemStatus.Released)
+        //if (entity.Status != GeneralItemStatus.Released)
         //{
         //    return GeneralResponse<PurchaseOrderItemDTO>.FailResponse("Purchase must be released to be edited!..");
 
@@ -248,7 +248,7 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
 
 
         //if (isRecevied == true)
-        //    entity.Status = PurchaseItemStatus.Received;
+        //    entity.Status = GeneralItemStatus.Received;
         // Company.IsActive = dto.IsActive;
 
         // 3️⃣ Save changes
@@ -301,19 +301,19 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
     }
 
 
-    private string GetEnumString(PurchaseItemStatus status)
+    private string GetEnumString(GeneralItemStatus status)
     {
         switch (status)
         {
-            case PurchaseItemStatus.Draft:
+            case GeneralItemStatus.Draft:
                 return "Draft";
-            case PurchaseItemStatus.Planned:
+            case GeneralItemStatus.Planned:
                 return "Planned";
-            case PurchaseItemStatus.Released:
+            case GeneralItemStatus.Released:
                 return "Released";
-            case PurchaseItemStatus.Closed:
+            case GeneralItemStatus.Closed:
                 return "Closed";
-            case PurchaseItemStatus.Failed:
+            case GeneralItemStatus.Failed:
                 return "Failed";
             default:
                 return "Unknown";

@@ -17,7 +17,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public int UoMEntry { get; set; }
         public string? BarCode { get; set; }
         // Pending, Planned, Released, Received, Closed, Failed
-        public SalesItemStatus Status { get; set; }
+        public GeneralItemStatus Status { get; set; }
         public decimal? UnitPrice { get; set; }
         public string? ErrorMessage { get; set; }
 

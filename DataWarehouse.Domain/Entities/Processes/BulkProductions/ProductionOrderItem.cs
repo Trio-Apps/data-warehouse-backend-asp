@@ -20,7 +20,7 @@ namespace DataWarehouse.Domain.Entities.Processes.BulkProductions
         public int? AbsoluteEntry { get; set; }
 
         // Pending, Planned, Released, Received, Closed, Failed
-        public ProductionItemStatus Status { get; set; }
+        public GeneralItemStatus Status { get; set; }
 
         public string? ErrorMessage { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -12,7 +12,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
     public  class ReceiptPurchaseOrder
     {
         public int ReceiptPurchaseOrderId { get; set; }
-        public PurchaseStatus Status { get; set; } 
+        public GeneralStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime PostingDate { get; set; }
         public DateTime DueDate { get; set; }

@@ -15,7 +15,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public int SalesOrderId { get; set; }
 
         // Draft=1, Processing=2, Completed=3, PartiallyFailed=4
-        public SalesOrderStatus Status { get; set; }
+        public GeneralStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime PostingDate { get; set; }
         public DateTime DueDate { get; set; }

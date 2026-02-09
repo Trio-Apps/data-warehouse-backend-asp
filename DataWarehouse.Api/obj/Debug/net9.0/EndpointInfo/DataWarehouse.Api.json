@@ -19790,6 +19790,9 @@
             "type": "string",
             "nullable": true
           },
+          "status": {
+            "$ref": "#/components/schemas/GeneralItemStatus"
+          },
           "unitPrice": {
             "type": "number",
             "format": "double",
@@ -20496,18 +20499,6 @@
         },
         "additionalProperties": false
       },
-      "ProductionItemStatus": {
-        "enum": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "ProductionOrder": {
         "type": "object",
         "properties": {
@@ -20516,7 +20507,7 @@
             "format": "int32"
           },
           "status": {
-            "$ref": "#/components/schemas/ProductionStatus"
+            "$ref": "#/components/schemas/GeneralStatus"
           },
           "createdAt": {
             "type": "string",
@@ -20580,7 +20571,7 @@
             "nullable": true
           },
           "status": {
-            "$ref": "#/components/schemas/ProductionItemStatus"
+            "$ref": "#/components/schemas/GeneralItemStatus"
           },
           "errorMessage": {
             "type": "string",
@@ -20657,30 +20648,6 @@
         },
         "additionalProperties": false
       },
-      "ProductionStatus": {
-        "enum": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "PurchaseItemStatus": {
-        "enum": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "PurchaseOrder": {
         "type": "object",
         "properties": {
@@ -20689,7 +20656,7 @@
             "format": "int32"
           },
           "status": {
-            "$ref": "#/components/schemas/PurchaseStatus"
+            "$ref": "#/components/schemas/GeneralStatus"
           },
           "createdAt": {
             "type": "string",
@@ -20876,7 +20843,7 @@
             "nullable": true
           },
           "status": {
-            "$ref": "#/components/schemas/PurchaseItemStatus"
+            "$ref": "#/components/schemas/GeneralItemStatus"
           },
           "unitPrice": {
             "type": "number",
@@ -20972,18 +20939,6 @@
         },
         "additionalProperties": false
       },
-      "PurchaseStatus": {
-        "enum": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "ReceiptPurchaseOrder": {
         "type": "object",
         "properties": {
@@ -20992,7 +20947,7 @@
             "format": "int32"
           },
           "status": {
-            "$ref": "#/components/schemas/PurchaseStatus"
+            "$ref": "#/components/schemas/GeneralStatus"
           },
           "createdAt": {
             "type": "string",
@@ -21110,6 +21065,9 @@
           "barCode": {
             "type": "string",
             "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/GeneralItemStatus"
           },
           "unitPrice": {
             "type": "number",
@@ -21490,18 +21448,6 @@
         },
         "additionalProperties": false
       },
-      "SalesItemStatus": {
-        "enum": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "SalesOrder": {
         "type": "object",
         "properties": {
@@ -21510,7 +21456,7 @@
             "format": "int32"
           },
           "status": {
-            "$ref": "#/components/schemas/SalesOrderStatus"
+            "$ref": "#/components/schemas/GeneralStatus"
           },
           "createdAt": {
             "type": "string",
@@ -21730,7 +21676,7 @@
             "nullable": true
           },
           "status": {
-            "$ref": "#/components/schemas/SalesItemStatus"
+            "$ref": "#/components/schemas/GeneralItemStatus"
           },
           "unitPrice": {
             "type": "number",
@@ -21832,18 +21778,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "SalesOrderStatus": {
-        "enum": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ],
-        "type": "integer",
-        "format": "int32"
       },
       "SalesReturnOrder": {
         "type": "object",
@@ -21966,7 +21900,7 @@
             "nullable": true
           },
           "status": {
-            "$ref": "#/components/schemas/SalesItemStatus"
+            "$ref": "#/components/schemas/GeneralItemStatus"
           },
           "unitPrice": {
             "type": "number",

@@ -21,5 +21,6 @@ namespace DataWarehouse.Core.Interfaces.IsProgress
          string userId, int pageNumber, int pageSize);
         Task<bool> CanUserApproveAsync(int processItemId, string userId);
         Task<ApprovalAccessResult> CheckUserCanApproveAsync(string userId, ProcessType processType, int referenceId);
+        Task<ProcessItemIsProgress> GetProcessItem(int OrderId, ProcessType type, CancellationToken cancellationToken = default);
     }
 }

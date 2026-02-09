@@ -48,7 +48,7 @@ public class ProductionOrderItemRepository : BaseRepository<ProductionOrderItem>
 
         if (!string.IsNullOrWhiteSpace(status))
         {
-            var statusEnum = Enum.Parse<ProductionItemStatus>(status, ignoreCase: true);
+            var statusEnum = Enum.Parse<GeneralItemStatus>(status, ignoreCase: true);
             query = query.Where(iw => iw.Status == statusEnum);
         }
 
@@ -90,7 +90,7 @@ public class ProductionOrderItemRepository : BaseRepository<ProductionOrderItem>
 
         var mapping = new ProductionOrderItem
         {
-           Status = ProductionItemStatus.Planned,
+           Status = GeneralItemStatus.Planned,
            ProductionOrderId = dto.ProductionOrderId,
            ItemId = dto.ItemId,
            CreatedAt = DateTime.UtcNow,
@@ -128,7 +128,7 @@ public class ProductionOrderItemRepository : BaseRepository<ProductionOrderItem>
         {
             return GeneralResponse<ProductionOrderItemDTO>.FailResponse("not found");
         }
-        if(entity.Status != ProductionItemStatus.Released)
+        if(entity.Status != GeneralItemStatus.Released)
         {
             return GeneralResponse<ProductionOrderItemDTO>.FailResponse("Production must be released to be edited!..");
 
@@ -140,7 +140,7 @@ public class ProductionOrderItemRepository : BaseRepository<ProductionOrderItem>
         entity.ProducedQuantity = dto.ProducedQuantity;
 
         if (isRecevied == true)
-            entity.Status = ProductionItemStatus.Received;
+            entity.Status = GeneralItemStatus.Received;
         // Company.IsActive = dto.IsActive;
 
         // 3️⃣ Save changes
@@ -167,19 +167,19 @@ public class ProductionOrderItemRepository : BaseRepository<ProductionOrderItem>
 
 
     
-    private string GetEnumString(ProductionItemStatus status)
+    private string GetEnumString(GeneralItemStatus status)
     {
         switch (status)
         {
-            case ProductionItemStatus.Draft:
+            case GeneralItemStatus.Draft:
                 return "Draft";
-            case ProductionItemStatus.Planned:
+            case GeneralItemStatus.Planned:
                 return "Planned";
-            case ProductionItemStatus.Released:
+            case GeneralItemStatus.Released:
                 return "Released";
-            case ProductionItemStatus.Closed:
+            case GeneralItemStatus.Closed:
                 return "Closed";
-            case ProductionItemStatus.Failed:
+            case GeneralItemStatus.Failed:
                 return "Failed";
             default:
                 return "Unknown";

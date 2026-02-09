@@ -57,7 +57,7 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
                     .Include(x => x.ProductionOrder)
                         .ThenInclude(po => po.Warehouse)
                     .Include(x => x.Item)
-                    .Where(x => x.Status == ProductionItemStatus.Planned
+                    .Where(x => x.Status == GeneralItemStatus.Planned
                             && x.ProductionOrder.Warehouse.SapId == sapId)
                     .OrderBy(x => x.ProductionOrderItemId)
                     .Skip(skip)
@@ -80,14 +80,14 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
                 {
                     if (success)
                     {
-                        item.Status = ProductionItemStatus.Released;
+                        item.Status = GeneralItemStatus.Released;
                         item.AbsoluteEntry = absoluteEntry;
                         item.ProcessedAt = DateTime.UtcNow;
                         item.ErrorMessage = null;
                     }
                     else
                     {
-                      //  item.Status = ProductionItemStatus.Draft;
+                      //  item.Status = GeneralItemStatus.Draft;
                         item.ErrorMessage = error;
                     }
                 }
@@ -178,7 +178,7 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
             while (true)
             {
                 var batch = await _context.ProductionOrderItems
-                    .Where(x => x.Status == ProductionItemStatus.Released
+                    .Where(x => x.Status == GeneralItemStatus.Released
                             && x.AbsoluteEntry != null)
                     .OrderBy(x => x.ProductionOrderItemId)
                     .Skip(skip)
@@ -212,7 +212,7 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
 
                 await sap2.AddPatchSapAsync(sapId, url, dto);
 
-              //  item.Status = ProductionItemStatus.;
+              //  item.Status = GeneralItemStatus.;
                 item.ProcessedAt = DateTime.UtcNow;
                 item.ErrorMessage = null;
 
@@ -220,7 +220,7 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
             }
             catch (Exception ex)
             {
-              //  item.Status = ProductionItemStatus.Planned;
+              //  item.Status = GeneralItemStatus.Planned;
                 item.ErrorMessage = ex.Message;
 
                 logger.LogError(ex, "Failed to receive item {Id}", item.ProductionOrderItemId);

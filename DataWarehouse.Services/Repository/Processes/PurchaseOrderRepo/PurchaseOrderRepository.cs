@@ -107,7 +107,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
         if (!string.IsNullOrEmpty(status))
         {
-            if (Enum.TryParse<PurchaseStatus>(status, out var statusEnum))
+            if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
             {
                 query = query.Where(e => e.Status == statusEnum);
             }
@@ -182,7 +182,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
         if (!string.IsNullOrEmpty(status))
         {
-            if (Enum.TryParse<PurchaseStatus>(status, out var statusEnum))
+            if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
             {
                 query = query.Where(e => e.Status == statusEnum);
             }
@@ -256,8 +256,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
     public async Task<GeneralResponse<List<NameStatus>>> GetPurchaseOrderStatus()
     {
-        var statuses = Enum.GetValues(typeof(PurchaseStatus))
-            .Cast<PurchaseStatus>()
+        var statuses = Enum.GetValues(typeof(GeneralStatus))
+            .Cast<GeneralStatus>()
             .Select(s => new NameStatus
             {
                 Id = (int)s,
@@ -292,7 +292,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
         var mapping = new PurchaseOrder
         {
-            Status = dto.IsDraft?PurchaseStatus.Draft:PurchaseStatus.Processing,
+            Status = dto.IsDraft?GeneralStatus.Draft:GeneralStatus.Processing,
             PostingDate = dto.PostingDate,
             DueDate = dto.DueDate,
             CreatedAt = DateTime.UtcNow,
@@ -403,8 +403,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
 
         entity.Status = dto.IsDraft
-            ? PurchaseStatus.Draft
-            : PurchaseStatus.Processing;
+            ? GeneralStatus.Draft
+            : GeneralStatus.Processing;
 
         entity.UserId = userId;
 
@@ -444,7 +444,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
     {
        
 
-        if (Enum.TryParse<PurchaseStatus>(status, out var statusEnum))
+        if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
         {
             var query =  await Query().Where(po => po.Status == statusEnum)
                 .Select(p => new PurchaseOrderDTO
@@ -522,23 +522,23 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
     }
     public async Task<IEnumerable<PurchaseOrder>> GetPendingOrdersAsync()
     {
-        return await Query().Where(po => po.Status == PurchaseStatus.Processing).ToListAsync();
+        return await Query().Where(po => po.Status == GeneralStatus.Processing).ToListAsync();
     }
 
 
 
 
-    private string GetEnumString(PurchaseStatus status)
+    private string GetEnumString(GeneralStatus status)
     {
         switch (status)
         {
-            case PurchaseStatus.Draft:
+            case GeneralStatus.Draft:
                 return "Draft";
-            case PurchaseStatus.Processing:
+            case GeneralStatus.Processing:
                 return "Processing";
-            case PurchaseStatus.Completed:
+            case GeneralStatus.Completed:
                 return "Completed";
-            case PurchaseStatus.PartiallyFailed:
+            case GeneralStatus.PartiallyFailed:
                 return "Partially Failed";
             default:
                 return "Unknown";

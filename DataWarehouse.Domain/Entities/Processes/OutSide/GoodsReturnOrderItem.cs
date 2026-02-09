@@ -1,4 +1,5 @@
 ﻿using DataWarehouse.Domain.Entities.Actors;
+using DataWarehouse.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public int UoMEntry { get; set; }
         public string? BarCode { get; set; }
         // Pending, Planned, Released, Received, Closed, Failed
-        //  public PurchaseItemStatus Status { get; set; }
+        public GeneralItemStatus Status { get; set; }
         public decimal? UnitPrice { get; set; }
         public string? ErrorMessage { get; set; }
         public string? Comment { get; set; }

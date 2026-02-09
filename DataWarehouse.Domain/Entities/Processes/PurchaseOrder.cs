@@ -14,7 +14,7 @@ namespace DataWarehouse.Domain.Entities.Processes
     {
         public int PurchaseOrderId { get; set; }  // Primary Key
         // Draft=1, Processing=2, Completed=3, PartiallyFailed=4
-        public PurchaseStatus Status { get; set; }
+        public GeneralStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime PostingDate { get; set; }
         public DateTime DueDate { get; set; }

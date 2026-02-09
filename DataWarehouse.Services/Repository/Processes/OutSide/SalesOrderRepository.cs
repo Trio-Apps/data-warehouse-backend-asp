@@ -51,13 +51,11 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
          .Where(so => so.WarehouseId == warehouseId);
 
         // Approved references subquery (for Sales process only)
-        var approvedSalesOrderIdsQuery = _context.ProcessItemIsProgresses
-            .AsNoTracking()
-            .Where(p =>
-                p.ProcessType == ProcessType.Sales &&
-                p.Status == ProcessStatus.Approved)
-            .Select(p => p.ReferenceId)
-            .Distinct();
+        var processQuery = _context.ProcessItemIsProgresses
+      .AsNoTracking()
+      .Where(p => p.ProcessType == ProcessType.Sales);
+
+
 
         var totalRecords = await query.CountAsync(cancellationToken);
 
@@ -65,20 +63,41 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
              .OrderByDescending(so => so.SalesOrderId) // مهم لثبات الـ pagination
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(so => new SalesOrderDTO
-            {
-                DueDate = so.DueDate,
-                PostingDate = so.PostingDate,
-                SalesOrderId = so.SalesOrderId,
-                Status = so.Status.ToString(),
-                UserId = so.UserId,
-                WarehouseId = warehouseId,
-                CustomerId = so.CustomerId,
-                Comment = so.Comment,
-                // ✅ الحالة المطلوبة
-                Approval = approvedSalesOrderIdsQuery.Contains(so.SalesOrderId)
-            })
-            .ToListAsync(cancellationToken);
+             .Select(iw => new
+             {
+                 Order = iw,
+                 // هل فيه progress أصلاً؟
+                 HasProgress = processQuery.Any(p => p.ReferenceId == iw.SalesOrderId),
+                 // آخر Status (لو موجود)
+                 LatestStatus = processQuery
+                .Where(p => p.ReferenceId == iw.SalesOrderId)
+                .OrderByDescending(p => p.ProcessItemIsProgressId) // أو CreatedAt لو عندك
+                .Select(p => (ProcessStatus?)p.Status)
+                .FirstOrDefault()
+             })
+            .Select(x => new SalesOrderDTO
+           {
+             DueDate = x.Order.DueDate,
+             PostingDate = x.Order.PostingDate,
+             SalesOrderId = x.Order.SalesOrderId,
+          Status = x.Order.Status.ToString(),
+          Comment = x.Order.Comment,
+          UserId = x.Order.UserId,
+          WarehouseId = x.Order.WarehouseId,
+          CustomerName = x.Order.Customer.CustomerName,
+          ItemCount = x.Order.SalesOrderItems.Count(),
+          Customer = x.Order.Customer,
+          IsReturn = x.Order.SalesReturnOrder != null,
+          ReturnOrderId = x.Order.SalesReturnOrder != null ? x.Order.SalesReturnOrder.SalesReturnOrderId : null,
+
+          // ✅ وجود progress
+          Approval = x.HasProgress,
+
+          // ✅ اسم الحالة الحالية (آخر Status)
+          ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
+      })
+             .ToListAsync(cancellationToken);
+
 
         return GeneralResponse<PagedResult<SalesOrderDTO>>.SuccessResponse(
             new PagedResult<SalesOrderDTO>
@@ -105,7 +124,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         // 🔹 Filtering
         if (!string.IsNullOrEmpty(status))
         {
-            if (Enum.TryParse<SalesOrderStatus>(status, out var statusEnum))
+            if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
             {
                 query = query.Where(e => e.Status == statusEnum);
             }
@@ -265,7 +284,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
     //    if (!string.IsNullOrEmpty(status))
     //    {
-    //        if (Enum.TryParse<SalesOrderStatus>(status, out var statusEnum))
+    //        if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
     //        {
     //            query = query.Where(e => e.Status == statusEnum);
     //        }
@@ -331,8 +350,8 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
     public async Task<GeneralResponse<List<NameStatus>>> GetSalesOrderStatus()
     {
-        var statuses = Enum.GetValues(typeof(SalesOrderStatus))
-            .Cast<SalesOrderStatus>()
+        var statuses = Enum.GetValues(typeof(GeneralStatus))
+            .Cast<GeneralStatus>()
             .Select(s => new NameStatus
             {
                 Id = (int)s,
@@ -359,7 +378,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
         var mapping = new SalesOrder
         {
-            Status = dto.IsDraft ? SalesOrderStatus.Draft : SalesOrderStatus.Processing,
+            Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
             PostingDate = dto.PostingDate,
             DueDate = dto.DueDate,
             CreatedAt = DateTime.UtcNow,
@@ -375,7 +394,6 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         // ✅ شغل الـ Approval Workflow لو مش Draft
         if (!dto.IsDraft)
         {
-
             await approval.StartProcessAsync(
                 processType: ProcessType.Sales,
                 referenceId: res.SalesOrderId,
@@ -395,6 +413,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             CustomerId = res.CustomerId,
             Comment = res.Comment
         };
+
 
         return GeneralResponse<SalesOrderDTO>.SuccessResponse(model);
     }
@@ -441,11 +460,11 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
                     userId: userId
                 );
 
-            entity.Status = SalesOrderStatus.Processing;
+            entity.Status = GeneralStatus.Processing;
         }
         else
         {
-            entity.Status = entity.Status == SalesOrderStatus.Processing ? SalesOrderStatus.Processing : SalesOrderStatus.Draft;
+            entity.Status = entity.Status == GeneralStatus.Processing ? GeneralStatus.Processing : GeneralStatus.Draft;
         }
         await _context.SaveChangesAsync();
 
@@ -474,7 +493,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
     public async Task<GeneralResponse<IEnumerable<SalesOrderDTO>>> GetByStatusAsync(string status)
     {
-        if (Enum.TryParse<SalesOrderStatus>(status, out var statusEnum))
+        if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
         {
             var query = await Query().Where(so => so.Status == statusEnum)
                 .Select(so => new SalesOrderDTO
@@ -514,12 +533,12 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
     public async Task<IEnumerable<SalesOrder>> GetPendingOrdersAsync()
     {
-        return await Query().Where(so => so.Status == SalesOrderStatus.Processing).ToListAsync();
+        return await Query().Where(so => so.Status == GeneralStatus.Processing).ToListAsync();
     }
 
     public async Task<IEnumerable<SalesOrder>> GetDraftOrdersAsync()
     {
-        return await Query().Where(so => so.Status == SalesOrderStatus.Draft).ToListAsync();
+        return await Query().Where(so => so.Status == GeneralStatus.Draft).ToListAsync();
     }
 
     public async Task<IEnumerable<SalesOrder>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)

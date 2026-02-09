@@ -69,7 +69,7 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
         // 🔹 Filtering
         if (!string.IsNullOrWhiteSpace(status))
         {
-            var statusEnum = Enum.Parse<SalesItemStatus>(status, ignoreCase: true);
+            var statusEnum = Enum.Parse<GeneralItemStatus>(status, ignoreCase: true);
             query = query.Where(iw => iw.Status == statusEnum);
         }
 
@@ -137,7 +137,7 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
 
             model = new SalesOrderItem()
             {
-                Status = SalesItemStatus.Planned,
+                Status = GeneralItemStatus.Planned,
                 SalesOrderId = SalesOrderid,
                 ItemId = item.Id,
                 Quantity = item.Quantity,
@@ -151,7 +151,7 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
             var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == dto.ItemId);
             model = new SalesOrderItem
             {
-                Status = SalesItemStatus.Planned,
+                Status = GeneralItemStatus.Planned,
                 SalesOrderId = dto.SalesOrderId,
                 ItemId = dto.ItemId,
                 Quantity = dto.Quantity,
@@ -241,20 +241,20 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
         return false;
     }
 
-    private string GetEnumString(SalesItemStatus status)
+    private string GetEnumString(GeneralItemStatus status)
     {
         switch (status)
         {
             
-            case SalesItemStatus.Planned:
+            case GeneralItemStatus.Planned:
                 return "Planned";
-            case SalesItemStatus.Released:
+            case GeneralItemStatus.Released:
                 return "Released";
-            case SalesItemStatus.Received:
+            case GeneralItemStatus.Received:
                 return "Received";
-            case SalesItemStatus.Closed:
+            case GeneralItemStatus.Closed:
                 return "Closed";
-            case SalesItemStatus.Failed:
+            case GeneralItemStatus.Failed:
                 return "Failed";
             default:
                 return "Unknown";

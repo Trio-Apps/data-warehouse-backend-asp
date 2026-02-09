@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static DataWarehouse.Services.Repository.IsProgress.ApprovalRepository;
 
@@ -557,6 +558,17 @@ namespace DataWarehouse.Services.Repository.IsProgress
             return result;
         }
 
+
+        public async Task<ProcessItemIsProgress> GetProcessItem(int OrderId , ProcessType type, CancellationToken cancellationToken=default)
+        {
+            return await _context.ProcessItemIsProgresses
+     .AsNoTracking()
+     .Where(p =>
+         p.ProcessType == type &&
+         p.ReferenceId == OrderId)
+     .OrderByDescending(p => p.ProcessItemIsProgressId) // آخر حالة
+     .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }
 

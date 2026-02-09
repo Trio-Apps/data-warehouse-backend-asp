@@ -85,7 +85,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         var mapping = new ReceiptPurchaseOrder
         {
-            Status = dto.IsDraft ? PurchaseStatus.Draft : PurchaseStatus.Processing,
+            Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
             PostingDate = dto.PostingDate,
             DueDate = dto.DueDate,
             CreatedAt = DateTime.UtcNow,
@@ -132,7 +132,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         entity.PostingDate = dto.PostingDate;
         entity.UserId = userId;
         entity.Comment = dto.Comment;
-        entity.Status = dto.IsDraft ? PurchaseStatus.Draft : PurchaseStatus.Processing;
+        entity.Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing;
 
        // entity.SupplierId = dto.SupplierId;
 
@@ -178,7 +178,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
     public async Task<GeneralResponse<IEnumerable<ReceiptPurchaseOrderDTO>>> GetByStatusAsync(string status)
     {
-        if (Enum.TryParse<PurchaseStatus>(status, out var statusEnum))
+        if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
         {
             var query = await Query().Where(po => po.Status == statusEnum)
                 .Select(p => new ReceiptPurchaseOrderDTO
@@ -283,6 +283,6 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
     public async Task<IEnumerable<ReceiptPurchaseOrder>> GetPendingReceiptsAsync()
     {
-        return await Query().Where(rpo => rpo.Status == PurchaseStatus.Processing).ToListAsync();
+        return await Query().Where(rpo => rpo.Status == GeneralStatus.Processing).ToListAsync();
     }
 }

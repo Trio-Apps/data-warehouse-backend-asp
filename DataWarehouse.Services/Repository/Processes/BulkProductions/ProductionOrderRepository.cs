@@ -83,8 +83,8 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
 
     public async Task<GeneralResponse<List<NameStatus>>> GetProductionOrderStatus()
     {
-        var statuses = Enum.GetValues(typeof(PurchaseStatus))
-            .Cast<PurchaseStatus>()
+        var statuses = Enum.GetValues(typeof(GeneralStatus))
+            .Cast<GeneralStatus>()
             .Select(s => new NameStatus
             {
                 Id = (int)s,
@@ -115,7 +115,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
        
         var mapping = new ProductionOrder
         {
-           Status = ProductionStatus.Processing,
+           Status = GeneralStatus.Processing,
             PostingDate = dto.PostingDate,
             
              DueDate = dto.DueDate,
@@ -234,7 +234,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
 
     public async Task<IEnumerable<ProductionOrder>> GetByStatusAsync(string status)
     {
-        if (Enum.TryParse<ProductionStatus>(status, out var statusEnum))
+        if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
         {
             return await Query().Where(po => po.Status == statusEnum).ToListAsync();
         }
@@ -265,23 +265,23 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
 
     public async Task<IEnumerable<ProductionOrder>> GetPendingOrdersAsync()
     {
-        return await Query().Where(po => po.Status == ProductionStatus.Processing).ToListAsync();
+        return await Query().Where(po => po.Status == GeneralStatus.Processing).ToListAsync();
     }
 
 
 
 
-    private string GetEnumString(ProductionStatus status)
+    private string GetEnumString(GeneralStatus status)
     {
         switch (status)
         {
-            case ProductionStatus.Draft:
+            case GeneralStatus.Draft:
                 return "Draft";
-            case ProductionStatus.Processing:
+            case GeneralStatus.Processing:
                 return "Processing";
-            case ProductionStatus.Completed:
+            case GeneralStatus.Completed:
                 return "Completed";
-            case ProductionStatus.PartiallyFailed:
+            case GeneralStatus.PartiallyFailed:
                 return "Partially Failed";
             default:
                 return "Unknown";
