@@ -1,0 +1,15 @@
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\bin\Release\net9.0\win-x64\DataWarehouse.Domain.deps.json
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\bin\Release\net9.0\win-x64\DataWarehouse.Domain.runtimeconfig.json
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\bin\Release\net9.0\win-x64\DataWarehouse.Domain.dll
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\bin\Release\net9.0\win-x64\DataWarehouse.Domain.pdb
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\DataWarehouse.Domain.csproj.AssemblyReference.cache
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\DataWarehouse.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\DataWarehouse.Domain.AssemblyInfoInputs.cache
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\DataWarehouse.Domain.AssemblyInfo.cs
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\DataWarehouse.Domain.csproj.CoreCompileInputs.cache
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\DataWarehouse.Domain.sourcelink.json
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\DataWarehouse.Domain.dll
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\refint\DataWarehouse.Domain.dll
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\DataWarehouse.Domain.pdb
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\DataWarehouse.Domain.genruntimeconfig.cache
+D:\Projects\EnterPrice-DataWarehouse\DataWarehouse.Domain\obj\Release\net9.0\win-x64\ref\DataWarehouse.Domain.dll

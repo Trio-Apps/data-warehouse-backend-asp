@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\admin\Auth\Admin\**" />
+    <Compile Remove="Controllers\client\Auth\Admin\**" />
+    <Content Remove="Controllers\admin\Auth\Admin\**" />
+    <Content Remove="Controllers\client\Auth\Admin\**" />
+    <EmbeddedResource Remove="Controllers\admin\Auth\Admin\**" />
+    <EmbeddedResource Remove="Controllers\client\Auth\Admin\**" />
+    <None Remove="Controllers\admin\Auth\Admin\**" />
+    <None Remove="Controllers\client\Auth\Admin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire" Version="1.8.22" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.22" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.22" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataWarehouse.Core\DataWarehouse.Core.csproj" />
+    <ProjectReference Include="..\DataWarehouse.Domain\DataWarehouse.Domain.csproj" />
+    <ProjectReference Include="..\DataWarehouse.SAP\DataWarehouse.SAP.csproj" />
+    <ProjectReference Include="..\DataWarehouse.Services\DataWarehouse.Services.csproj" />
+  </ItemGroup>
+
+</Project>

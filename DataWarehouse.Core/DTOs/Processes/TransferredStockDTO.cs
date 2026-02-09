@@ -1,0 +1,198 @@
+using DataWarehouse.Core.DTOs.BarCode;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace DataWarehouse.Core.DTOs.Processes;
+
+public class TransferredStockDTO
+{
+    public int TransferredStockId { get; set; }
+
+    [Required(ErrorMessage = "Status is required")]
+    public string Status { get; set; } // GeneralStatus enum
+
+    [Required(ErrorMessage = "Due Date is required")]
+    public DateTime DueDate { get; set; }
+
+    [Required(ErrorMessage = "User ID is required")]
+    public string UserId { get; set; }
+
+    public string? Comment { get; set; }
+
+    [Required(ErrorMessage = "Warehouse ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
+    public int WarehouseId { get; set; }
+
+    [Required(ErrorMessage = "Destination Warehouse ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
+    public int DistinationWarehouseId { get; set; }
+
+    public List<TransferredItemDTO>? TransferredItems { get; set; }
+}
+
+public class AddTransferredStockDTO
+{
+    [Required(ErrorMessage = "Due Date is required")]
+    public DateTime DueDate { get; set; }
+
+    public string? Comment { get; set; }
+
+    [Required(ErrorMessage = "IsDraft is required")]
+    public bool IsDraft { get; set; }
+
+    [Required(ErrorMessage = "Warehouse ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
+    public int WarehouseId { get; set; }
+
+    [Required(ErrorMessage = "Destination Warehouse ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
+    public int DistinationWarehouseId { get; set; }
+}
+
+public class UpdateTransferredStockDTO
+{
+    public int TransferredStockId { get; set; }
+
+    [Required(ErrorMessage = "Due Date is required")]
+    public DateTime DueDate { get; set; }
+
+    public string? Comment { get; set; }
+
+    [Required(ErrorMessage = "Destination Warehouse ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
+    public int DistinationWarehouseId { get; set; }
+}
+
+public class TransferredItemDTO
+{
+    public int TransferredItemId { get; set; }
+
+    [Required(ErrorMessage = "Quantity is required")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
+    public decimal Quantity { get; set; }
+
+    [Required(ErrorMessage = "Status is required")]
+    public string Status { get; set; } // GeneralItemStatus enum
+
+    [StringLength(500, ErrorMessage = "Error Message cannot exceed 500 characters")]
+    public string? ErrorMessage { get; set; }
+
+    public int UoMEntry { get; set; }
+    public string? BarCode { get; set; }
+
+    public decimal? UnitPrice { get; set; }
+
+    public string? Comment { get; set; }
+
+    [Required(ErrorMessage = "Transferred Stock ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Transferred Stock ID must be greater than 0")]
+    public int TransferredStockId { get; set; }
+
+    [Required(ErrorMessage = "Item ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
+    public int ItemId { get; set; }
+}
+
+public class AddTransferredItemDTO
+{
+    [Required(ErrorMessage = "Unit is required")]
+    public int UoMEntry { get; set; }
+
+    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
+    public decimal Quantity { get; set; }
+
+    [Required(ErrorMessage = "Transferred Stock ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Transferred Stock ID must be greater than 0")]
+    public int TransferredStockId { get; set; }
+
+    [Required(ErrorMessage = "Item ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
+    public int ItemId { get; set; }
+}
+
+public class UpdateTransferredItemDTO
+{
+    [Required(ErrorMessage = "TransferredItemId is required")]
+    public int TransferredItemId { get; set; }
+
+    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
+    public decimal? Quantity { get; set; }
+
+    [Required(ErrorMessage = "Unit is required")]
+    public int UoMEntry { get; set; }
+}
+
+public class AddTransferredItemCreateRequest
+{
+    public DynamicBarcodesDto? Barcode { get; set; }
+
+    public AddTransferredItemDTO? Item { get; set; }
+}
+
+public class TransferredStockBatchDTO
+{
+    public int TransferredStockBatchId { get; set; }
+
+    [Required(ErrorMessage = "Transferred Item ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Transferred Item ID must be greater than 0")]
+    public int TransferredItemId { get; set; }
+
+    [Required(ErrorMessage = "Quantity is required")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
+    public decimal Quantity { get; set; }
+
+    [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
+    public string? Comment { get; set; }
+
+    [StringLength(100, ErrorMessage = "Batch Number cannot exceed 100 characters")]
+    public string? BatchNumber { get; set; }
+
+    public DateTime? ExpiryDate { get; set; }
+}
+
+public class AddTransferredStockBatchDTO
+{
+    [Required(ErrorMessage = "Transferred Item ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Transferred Item ID must be greater than 0")]
+    public int TransferredItemId { get; set; }
+
+    [Required(ErrorMessage = "Quantity is required")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
+    public decimal Quantity { get; set; }
+
+    [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
+    public string? Comment { get; set; }
+
+    public DateTime? ExpiryDate { get; set; }
+}
+
+public class UpdateTransferredStockBatchDTO
+{
+    [Required(ErrorMessage = "TransferredStockBatchId is required")]
+    public int TransferredStockBatchId { get; set; }
+
+    [Required(ErrorMessage = "Quantity is required")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
+    public decimal Quantity { get; set; }
+
+    [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
+    public string? Comment { get; set; }
+
+    public DateTime? ExpiryDate { get; set; }
+}
+
+public class TransferredStockResponseDTO
+{
+    public int TransferredStockId { get; set; }
+    public string Status { get; set; }
+    public DateTime DueDate { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string UserId { get; set; }
+    public string? UserFullName { get; set; }
+    public int WarehouseId { get; set; }
+    public string? WarehouseName { get; set; }
+    public int DistinationWarehouseId { get; set; }
+    public string? DistinationWarehouseName { get; set; }
+    public int ItemsCount { get; set; }
+}

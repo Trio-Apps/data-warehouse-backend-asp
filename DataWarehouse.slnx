@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="DataWarehouse.Api/DataWarehouse.Api.csproj" />
+  <Project Path="DataWarehouse.Core/DataWarehouse.Core.csproj" />
+  <Project Path="DataWarehouse.Domain/DataWarehouse.Domain.csproj" />
+  <Project Path="DataWarehouse.SAP/DataWarehouse.SAP.csproj" Id="9e7e28b0-57be-425b-92f7-ca0bec9f6b3b" />
+  <Project Path="DataWarehouse.Services/DataWarehouse.Services.csproj" />
+</Solution>

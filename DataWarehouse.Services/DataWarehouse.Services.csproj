@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Mappings\" />
+    <Folder Include="Repository\Actors\" />
+    <Folder Include="Repository\Dashboard\" />
+    <Folder Include="Repository\Processes\OutSide\" />
+    <Folder Include="Services\Actors\" />
+    <Folder Include="Services\BarCode\" />
+    <Folder Include="Services\Based\" />
+    <Folder Include="Services\Processes\OutSide\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Repository\BarCode\DynamicBarCodeRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
+    <PackageReference Include="Polly" Version="8.6.5" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataWarehouse.Core\DataWarehouse.Core.csproj" />
+    <ProjectReference Include="..\DataWarehouse.Domain\DataWarehouse.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

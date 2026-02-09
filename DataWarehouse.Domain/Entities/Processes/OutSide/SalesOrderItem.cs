@@ -1,0 +1,33 @@
+﻿using DataWarehouse.Domain.Entities.Actors;
+using DataWarehouse.Domain.Enums;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataWarehouse.Domain.Entities.Processes.OutSide
+{
+    public class SalesOrderItem
+    {
+       
+        public int SalesOrderItemId { get; set; }
+        public decimal Quantity { get; set; }
+        public int UoMEntry { get; set; }
+        public string? BarCode { get; set; }
+        // Pending, Planned, Released, Received, Closed, Failed
+        public SalesItemStatus Status { get; set; }
+        public decimal? UnitPrice { get; set; }
+        public string? ErrorMessage { get; set; }
+
+        // Navigation
+        public int SalesOrderId { get; set; } // FK to SalesOrder
+        public SalesOrder SalesOrder { get; set; }
+        public int ItemId { get; set; } // FK to Item
+        public Item Item { get; set; }
+
+        public SalesReturnOrderItem SalesReturnOrderItem { get; set; }
+        public ICollection<SalesOrderBatch> SalesOrderBatches { get; set; } = new List<SalesOrderBatch>();
+    }
+}
