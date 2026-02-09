@@ -69,18 +69,19 @@ public class SalesOrderController : ControllerBase
 
 
 
-    [HttpGet("warehouse/status/posting-date/due-date/{skip}/{pageSize}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
+    //[HttpGet("warehouse/status/posting-date/due-date/{skip}/{pageSize}")]
+    //[Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
 
-    public async Task<IActionResult> GetByWarehouseIdWithPagination(int? warehouseId, string? status, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationAsync(warehouseId, userId, postingDate, dueDate, status, skip, pageSize);
-        if (!res.Success)
-            return BadRequest(res);
+    //public async Task<IActionResult> GetByWarehouseIdWithPagination(int? warehouseId, string? status, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
+    //{
+    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    //    var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationAsync(warehouseId, userId, postingDate, dueDate, status, skip, pageSize);
+    //    if (!res.Success)
+    //        return BadRequest(res);
 
-        return Ok(res);
-    }
+    //    return Ok(res);
+    //}
+
     [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
 

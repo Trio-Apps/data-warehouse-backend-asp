@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DataWarehouse.Services.Repository.Processes.OutSide;
@@ -40,18 +41,28 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         return await Query().Where(so => so.WarehouseId == warehouseId).ToListAsync();
     }
 
-    public async Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize)
+    public async Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
 
-        var query = _context.Warehouses.Where(e => e.WarehouseId == warehouseId)
-            .AsNoTracking()
-            .SelectMany(e => e.SalesOrders);
+        var query = _context.SalesOrders
+         .AsNoTracking()
+         .Where(so => so.WarehouseId == warehouseId);
 
-        var totalRecords = await query.CountAsync();
+        // Approved references subquery (for Sales process only)
+        var approvedSalesOrderIdsQuery = _context.ProcessItemIsProgresses
+            .AsNoTracking()
+            .Where(p =>
+                p.ProcessType == ProcessType.Sales &&
+                p.Status == ProcessStatus.Approved)
+            .Select(p => p.ReferenceId)
+            .Distinct();
+
+        var totalRecords = await query.CountAsync(cancellationToken);
 
         var data = await query
+             .OrderByDescending(so => so.SalesOrderId) // مهم لثبات الـ pagination
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(so => new SalesOrderDTO
@@ -63,9 +74,11 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
                 UserId = so.UserId,
                 WarehouseId = warehouseId,
                 CustomerId = so.CustomerId,
-                Comment = so.Comment
+                Comment = so.Comment,
+                // ✅ الحالة المطلوبة
+                Approval = approvedSalesOrderIdsQuery.Contains(so.SalesOrderId)
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return GeneralResponse<PagedResult<SalesOrderDTO>>.SuccessResponse(
             new PagedResult<SalesOrderDTO>
@@ -76,90 +89,10 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
                 Data = data
             });
     }
-   
+  
     
-    public async Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationAsync
-     (int? warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize)
-
-    {
-        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-        pageSize = pageSize <= 0 ? 10 : pageSize;
-
-
-        var yourWarehouse = (await sap.GetYourWarehousesToEmployees(userId)).Data.FirstOrDefault();
-        if (yourWarehouse == null)
-            return GeneralResponse<PagedResult<SalesOrderDTO>>.FailResponse("user not valid");
-
-
-
-        var query = _context.Warehouses.Where(e => e.WarehouseId == (warehouseId == null ? yourWarehouse.WarehouseId : warehouseId))
-            .AsNoTracking()
-            .SelectMany(e => e.SalesOrders);
-
-        // 🔹 Filtering
-
-        if (!string.IsNullOrEmpty(status))
-        {
-            if (Enum.TryParse<SalesOrderStatus>(status, out var statusEnum))
-            {
-                query = query.Where(e => e.Status == statusEnum);
-            }
-        }
-
-        // 🔹 Posting Date Filter
-        if (postingDate.HasValue)
-        {
-            var postDate = postingDate.Value.Date;
-            query = query.Where(e => e.PostingDate.Date == postDate);
-        }
-
-        // 🔹 Due Date Filter
-        if (DueDate.HasValue)
-        {
-            var dueDate = DueDate.Value.Date;
-            query = query.Where(e => e.DueDate.Date == dueDate);
-        }
-
-
-
-        var totalRecords = await query.CountAsync();
-
-        var data = await query
-
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(iw => new SalesOrderDTO
-            {
-                DueDate = iw.DueDate,
-                PostingDate = iw.PostingDate,
-                SalesOrderId = iw.SalesOrderId,
-                Status = iw.Status.ToString(),
-                Comment = iw.Comment,
-                // string = enum
-                UserId = iw.UserId,
-                WarehouseId = iw.WarehouseId,
-               CustomerName  = iw.Customer.CustomerName,
-                Customer = iw.Customer,
-                IsReturn = iw.SalesReturnOrder == null ? false : (iw.SalesReturnOrder == null ? false : true),
-                ReturnOrderId = iw.SalesReturnOrder == null ? null : (iw.SalesReturnOrder == null ? null : iw.SalesReturnOrder.SalesReturnOrderId)
-
-
-            })
-            .ToListAsync();
-
-        return GeneralResponse<PagedResult<SalesOrderDTO>>.SuccessResponse(
-            new PagedResult<SalesOrderDTO>
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords,
-                Data = data
-            });
-    }
-
-
     public async Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
-       (int warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize)
+       (int warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
 
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
@@ -199,35 +132,53 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
         }
 
-        var totalRecords = await query.CountAsync();
+        // Approved references subquery (for Sales process only)
+        var processQuery = _context.ProcessItemIsProgresses
+       .AsNoTracking()
+       .Where(p => p.ProcessType == ProcessType.Sales);
+
+
+        var totalRecords = await query.CountAsync(cancellationToken);
 
         var data = await query
+      .Skip((pageNumber - 1) * pageSize)
+      .Take(pageSize)
+      .Select(iw => new
+      {
+          Order = iw,
 
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(iw => new SalesOrderDTO
-            {
-                DueDate = iw.DueDate,
-                PostingDate = iw.PostingDate,
-                SalesOrderId = iw.SalesOrderId,
-                Status = iw.Status.ToString(),
-                Comment = iw.Comment,
-                // string = enum
-                UserId = iw.UserId,
-                WarehouseId = iw.WarehouseId,
-                CustomerName = iw.Customer.CustomerName,
-                ItemCount = iw.SalesOrderItems.Count(),
-                Customer = iw.Customer,
-                IsReturn = iw.SalesReturnOrder == null ? false : (iw.SalesReturnOrder == null ? false : true),
-                ReturnOrderId = iw.SalesReturnOrder == null ? null : (iw.SalesReturnOrder == null ? null : iw.SalesReturnOrder.SalesReturnOrderId),
+          // هل فيه progress أصلاً؟
+          HasProgress = processQuery.Any(p => p.ReferenceId == iw.SalesOrderId),
 
-                // ✅ الحالة المطلوبة
-             Approval = _context.ProcessItemIsProgresses
-            .Any(p =>
-                p.ProcessType == ProcessType.Sales &&
-                p.ReferenceId == iw.SalesOrderId &&
-                p.Status == ProcessStatus.Approved)
-            }).ToListAsync();
+          // آخر Status (لو موجود)
+          LatestStatus = processQuery
+              .Where(p => p.ReferenceId == iw.SalesOrderId)
+              .OrderByDescending(p => p.ProcessItemIsProgressId) // أو CreatedAt لو عندك
+              .Select(p => (ProcessStatus?)p.Status)
+              .FirstOrDefault()
+      })
+      .Select(x => new SalesOrderDTO
+      {
+          DueDate = x.Order.DueDate,
+          PostingDate = x.Order.PostingDate,
+          SalesOrderId = x.Order.SalesOrderId,
+          Status = x.Order.Status.ToString(),
+          Comment = x.Order.Comment,
+          UserId = x.Order.UserId,
+          WarehouseId = x.Order.WarehouseId,
+          CustomerName = x.Order.Customer.CustomerName,
+          ItemCount = x.Order.SalesOrderItems.Count(),
+          Customer = x.Order.Customer,
+          IsReturn = x.Order.SalesReturnOrder != null,
+          ReturnOrderId = x.Order.SalesReturnOrder != null ? x.Order.SalesReturnOrder.SalesReturnOrderId : null,
+
+          // ✅ وجود progress
+          Approval = x.HasProgress,
+
+          // ✅ اسم الحالة الحالية (آخر Status)
+          ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
+      })
+      .ToListAsync(cancellationToken);
 
         return GeneralResponse<PagedResult<SalesOrderDTO>>.SuccessResponse(
             new PagedResult<SalesOrderDTO>
@@ -238,6 +189,144 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
                 Data = data
             });
     }
+
+    public async Task<GeneralResponse<SalesOrderDTO>> GetWithCustomerAsync(int salesOrderId, string userId, CancellationToken cancellationToken = default)
+    {
+        var res = await QueryIncluding(false, so => so.Customer)
+         .FirstOrDefaultAsync(so => so.SalesOrderId == salesOrderId);
+
+        if (res == null)
+            return GeneralResponse<SalesOrderDTO>.FailResponse("this SalesOrderId is not found");
+
+        var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.Sales, res.SalesOrderId);
+
+        var approvalRes = await _context.ProcessItemIsProgresses
+     .AsNoTracking()
+     .Where(p =>
+         p.ProcessType == ProcessType.Sales &&
+         p.ReferenceId == res.SalesOrderId)
+     .OrderByDescending(p => p.ProcessItemIsProgressId) // آخر حالة
+     .FirstOrDefaultAsync(cancellationToken);
+
+        bool hasProgress = approvalRes != null;
+        string? approvalStatus = approvalRes?.Status.ToString();
+
+        var mapping = new SalesOrderDTO
+        {
+            DueDate = res.DueDate,
+            PostingDate = res.PostingDate,
+            SalesOrderId = res.SalesOrderId,
+            Status = res.Status.ToString(),
+            Comment = res.Comment,
+            // string = enum
+            UserId = res.UserId,
+            WarehouseId = res.WarehouseId,
+            CustomerName = res.Customer.CustomerName,
+            CustomerId = res.CustomerId,
+            CanApprove = approvalModel.CanApprove,
+            ProcessApprovalId = approvalModel.ProcessApprovalId,
+            ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
+            Reason = approvalModel.Reason,
+
+            Approval = hasProgress,
+            ApprovalStatus = approvalRes != null ? approvalStatus : null
+
+            //   Supplier = res.Supplier,
+            // IsReceipt = res.ReceiptPurchaseOrder == null ? false : true,
+            // ReceiptOrderId = res.ReceiptPurchaseOrder == null ? null : res.ReceiptPurchaseOrder.ReceiptPurchaseOrderId,
+            // IsReturn = res.ReceiptPurchaseOrder == null ? false : (res.ReceiptPurchaseOrder.GoodsReturnOrder == null ? false : true),
+            //  ReturnOrderId = res.ReceiptPurchaseOrder == null ? null : (res.ReceiptPurchaseOrder.GoodsReturnOrder == null ? null : res.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId)
+        };
+
+
+        return GeneralResponse<SalesOrderDTO>.SuccessResponse(mapping);
+
+    }
+
+
+    //public async Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationAsync
+    // (int? warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize)
+
+    //{
+    //    pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+    //    pageSize = pageSize <= 0 ? 10 : pageSize;
+
+
+    //    var yourWarehouse = (await sap.GetYourWarehousesToEmployees(userId)).Data.FirstOrDefault();
+    //    if (yourWarehouse == null)
+    //        return GeneralResponse<PagedResult<SalesOrderDTO>>.FailResponse("user not valid");
+
+
+
+    //    var query = _context.SalesOrders
+    //       .AsNoTracking().Where(e => e.WarehouseId == (warehouseId == null ? yourWarehouse.WarehouseId : warehouseId));
+
+    //    // 🔹 Filtering
+
+    //    if (!string.IsNullOrEmpty(status))
+    //    {
+    //        if (Enum.TryParse<SalesOrderStatus>(status, out var statusEnum))
+    //        {
+    //            query = query.Where(e => e.Status == statusEnum);
+    //        }
+    //    }
+
+    //    // 🔹 Posting Date Filter
+    //    if (postingDate.HasValue)
+    //    {
+    //        var postDate = postingDate.Value.Date;
+    //        query = query.Where(e => e.PostingDate.Date == postDate);
+    //    }
+
+    //    // 🔹 Due Date Filter
+    //    if (DueDate.HasValue)
+    //    {
+    //        var dueDate = DueDate.Value.Date;
+    //        query = query.Where(e => e.DueDate.Date == dueDate);
+    //    }
+
+
+
+    //    var totalRecords = await query.CountAsync();
+
+    //    var data = await query
+
+    //        .Skip((pageNumber - 1) * pageSize)
+    //        .Take(pageSize)
+    //        .Select(iw => new SalesOrderDTO
+    //        {
+    //            DueDate = iw.DueDate,
+    //            PostingDate = iw.PostingDate,
+    //            SalesOrderId = iw.SalesOrderId,
+    //            Status = iw.Status.ToString(),
+    //            Comment = iw.Comment,
+    //            // string = enum
+    //            UserId = iw.UserId,
+    //            WarehouseId = iw.WarehouseId,
+    //           CustomerName  = iw.Customer.CustomerName,
+    //            Customer = iw.Customer,
+    //            IsReturn = iw.SalesReturnOrder == null ? false : (iw.SalesReturnOrder == null ? false : true),
+    //            ReturnOrderId = iw.SalesReturnOrder == null ? null : (iw.SalesReturnOrder == null ? null : iw.SalesReturnOrder.SalesReturnOrderId),
+    //             // ✅ الحالة المطلوبة
+    //         Approval = _context.ProcessItemIsProgresses
+    //        .Any(p =>
+    //            p.ProcessType == ProcessType.Sales &&
+    //            p.ReferenceId == iw.SalesOrderId &&
+    //            p.Status == ProcessStatus.Approved)
+
+    //        })
+    //        .ToListAsync();
+
+    //    return GeneralResponse<PagedResult<SalesOrderDTO>>.SuccessResponse(
+    //        new PagedResult<SalesOrderDTO>
+    //        {
+    //            PageNumber = pageNumber,
+    //            PageSize = pageSize,
+    //            TotalRecords = totalRecords,
+    //            Data = data
+    //        });
+    //}
+
 
 
     public async Task<GeneralResponse<List<NameStatus>>> GetSalesOrderStatus()
@@ -416,46 +505,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             .FirstOrDefaultAsync(so => so.SalesOrderId == salesOrderId);
     }
 
-    public async Task<GeneralResponse<SalesOrderDTO>> GetWithCustomerAsync(int salesOrderId,string userId)
-    {
-           var res = await QueryIncluding(false, so => so.Customer)
-            .FirstOrDefaultAsync(so => so.SalesOrderId == salesOrderId);
-
-        if (res == null)
-            return GeneralResponse<SalesOrderDTO>.FailResponse("this SalesOrderId is not found");
-
-        var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.Sales, res.SalesOrderId);     
-
-        var mapping = new SalesOrderDTO
-        {
-            DueDate = res.DueDate,
-            PostingDate = res.PostingDate,
-             SalesOrderId = res.SalesOrderId,
-            Status = res.Status.ToString(),
-            Comment = res.Comment,
-            // string = enum
-            UserId = res.UserId,
-            WarehouseId = res.WarehouseId,
-            CustomerName = res.Customer.CustomerName,
-            CustomerId = res.CustomerId,
-            CanApprove = approvalModel.CanApprove,
-            ProcessApprovalId = approvalModel.ProcessApprovalId,
-            ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
-            Reason = approvalModel.Reason,
-
-            //   Supplier = res.Supplier,
-            // IsReceipt = res.ReceiptPurchaseOrder == null ? false : true,
-            // ReceiptOrderId = res.ReceiptPurchaseOrder == null ? null : res.ReceiptPurchaseOrder.ReceiptPurchaseOrderId,
-            // IsReturn = res.ReceiptPurchaseOrder == null ? false : (res.ReceiptPurchaseOrder.GoodsReturnOrder == null ? false : true),
-            //  ReturnOrderId = res.ReceiptPurchaseOrder == null ? null : (res.ReceiptPurchaseOrder.GoodsReturnOrder == null ? null : res.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId)
-
-        };
-
-
-        return GeneralResponse<SalesOrderDTO>.SuccessResponse(mapping);
-
-    }
-
+   
     public async Task<SalesOrder?> GetWithWarehouseAsync(int salesOrderId)
     {
         return await QueryIncluding(false, so => so.Warehouse)

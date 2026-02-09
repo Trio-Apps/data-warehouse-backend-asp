@@ -123,3 +123,4 @@ D:\Projects\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\refin
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\DataWarehouse.Core.pdb
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\DataWarehouse.Core.genruntimeconfig.cache
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\ref\DataWarehouse.Core.dll
+D:\Projects\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\DataWarehouse.Core.sourcelink.json

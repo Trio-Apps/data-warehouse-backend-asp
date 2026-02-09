@@ -298,5 +298,6 @@ namespace DataWarehouse.Services.Repository.Permissions
 
             return perms;
         }
+   
     }
 }

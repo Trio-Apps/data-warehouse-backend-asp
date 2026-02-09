@@ -3,39 +3,28 @@
   "WorkspaceRootPath": "D:\\Projects\\data-warehouse-backend-asp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\permissions\\apppermissions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\permissions\\apppermissions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\processes\\outside\\salesorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\processes\\outside\\salesorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\isprogress\\approvalsteprepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\isprogress\\approvalsteprepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.api\\controllers\\admin\\isprogress\\approvalcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|solutionrelative:datawarehouse.api\\controllers\\admin\\isprogress\\approvalcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.api\\controllers\\admin\\actors\\suppliercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|solutionrelative:datawarehouse.api\\controllers\\admin\\actors\\suppliercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5D7EC6BC-49A7-51D7-A14F-2701681B5819}|DataWarehouse.Core\\DataWarehouse.Core.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.core\\interfaces\\processes\\outside\\isalesorderrepository.cs||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{5D7EC6BC-49A7-51D7-A14F-2701681B5819}|DataWarehouse.Core\\DataWarehouse.Core.csproj|solutionrelative:datawarehouse.core\\interfaces\\processes\\outside\\isalesorderrepository.cs||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\based\\baserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\based\\baserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|solutionrelative:datawarehouse.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/WMS/True/SqlTable/dbo.ApprovalSteps.sql||{0058A1F7-65F3-4DB9-B3D0-CA7E64DD73CD}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\saprepo\\sapsettingsrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\saprepo\\sapsettingsrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.api\\controllers\\admin\\auth\\permissionscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|solutionrelative:datawarehouse.api\\controllers\\admin\\auth\\permissionscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.api\\controllers\\admin\\sap\\sapcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|solutionrelative:datawarehouse.api\\controllers\\admin\\sap\\sapcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\actors\\warehouserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\actors\\warehouserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5D7EC6BC-49A7-51D7-A14F-2701681B5819}|DataWarehouse.Core\\DataWarehouse.Core.csproj|d:\\projects\\data-warehouse-backend-asp\\datawarehouse.core\\dtos\\processes\\generalorderdto.cs||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{5D7EC6BC-49A7-51D7-A14F-2701681B5819}|DataWarehouse.Core\\DataWarehouse.Core.csproj|solutionrelative:datawarehouse.core\\dtos\\processes\\generalorderdto.cs||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
   "DocumentGroupContainers": [
@@ -45,11 +34,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\appsettings.json",
               "RelativeDocumentMoniker": "DataWarehouse.Api\\appsettings.json",
@@ -66,97 +55,64 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "SupplierController.cs",
-              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\Actors\\SupplierController.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Api\\Controllers\\admin\\Actors\\SupplierController.cs",
-              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\Actors\\SupplierController.cs",
-              "RelativeToolTip": "DataWarehouse.Api\\Controllers\\admin\\Actors\\SupplierController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAANAAAAAAAAAA==",
+              "DocumentIndex": 5,
+              "Title": "GeneralOrderDto.cs",
+              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Core\\DTOs\\Processes\\GeneralOrderDto.cs",
+              "RelativeDocumentMoniker": "DataWarehouse.Core\\DTOs\\Processes\\GeneralOrderDto.cs",
+              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Core\\DTOs\\Processes\\GeneralOrderDto.cs",
+              "RelativeToolTip": "DataWarehouse.Core\\DTOs\\Processes\\GeneralOrderDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-08T13:57:25.446Z"
+              "WhenOpened": "2026-02-09T10:21:07.86Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "ApprovalStepRepository.cs",
-              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\IsProgress\\ApprovalStepRepository.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\IsProgress\\ApprovalStepRepository.cs",
-              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\IsProgress\\ApprovalStepRepository.cs",
-              "RelativeToolTip": "DataWarehouse.Services\\Repository\\IsProgress\\ApprovalStepRepository.cs",
-              "ViewState": "AgIAABkAAAAAAAAAAAA1wDEAAAA0AAAAAAAAAA==",
+              "Title": "ApprovalController.cs",
+              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\IsProgress\\ApprovalController.cs",
+              "RelativeDocumentMoniker": "DataWarehouse.Api\\Controllers\\admin\\IsProgress\\ApprovalController.cs",
+              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\IsProgress\\ApprovalController.cs",
+              "RelativeToolTip": "DataWarehouse.Api\\Controllers\\admin\\IsProgress\\ApprovalController.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAxwCcAAABAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-08T13:49:50.374Z"
+              "WhenOpened": "2026-02-09T08:14:39.504Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "dbo.ApprovalSteps.sql",
-              "DocumentMoniker": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/WMS/True/SqlTable/dbo.ApprovalSteps.sql",
-              "ToolTip": "ViewDataWindow_MSSQL__/_localdb__MSSQLLocalDB/WMS/True/SqlTable/dbo.ApprovalSteps.sql",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-02-08T13:15:44.842Z"
+              "DocumentIndex": 3,
+              "Title": "BaseRepository.cs",
+              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Based\\BaseRepository.cs",
+              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\Based\\BaseRepository.cs",
+              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Based\\BaseRepository.cs",
+              "RelativeToolTip": "DataWarehouse.Services\\Repository\\Based\\BaseRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-09T07:40:19.593Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ISalesOrderRepository.cs",
+              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Core\\Interfaces\\Processes\\OutSide\\ISalesOrderRepository.cs",
+              "RelativeDocumentMoniker": "DataWarehouse.Core\\Interfaces\\Processes\\OutSide\\ISalesOrderRepository.cs",
+              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Core\\Interfaces\\Processes\\OutSide\\ISalesOrderRepository.cs",
+              "RelativeToolTip": "DataWarehouse.Core\\Interfaces\\Processes\\OutSide\\ISalesOrderRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBUAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-09T07:38:52.935Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AppPermissions.cs",
-              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Permissions\\AppPermissions.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\Permissions\\AppPermissions.cs",
-              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Permissions\\AppPermissions.cs",
-              "RelativeToolTip": "DataWarehouse.Services\\Repository\\Permissions\\AppPermissions.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFMAAAAAAAAAAAAAAA==",
+              "Title": "SalesOrderRepository.cs",
+              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
+              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
+              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
+              "RelativeToolTip": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
+              "ViewState": "AgIAALwAAAAAAAAAAAAgwOUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-08T12:58:48.629Z",
+              "WhenOpened": "2026-02-09T07:28:52.38Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "PermissionsController.cs",
-              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\Auth\\PermissionsController.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Api\\Controllers\\admin\\Auth\\PermissionsController.cs",
-              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\Auth\\PermissionsController.cs",
-              "RelativeToolTip": "DataWarehouse.Api\\Controllers\\admin\\Auth\\PermissionsController.cs",
-              "ViewState": "AgIAABYAAAAAAAAAAAAgwDAAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-08T12:57:18.078Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "SapController.cs",
-              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\Sap\\SapController.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Api\\Controllers\\admin\\Sap\\SapController.cs",
-              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\Sap\\SapController.cs",
-              "RelativeToolTip": "DataWarehouse.Api\\Controllers\\admin\\Sap\\SapController.cs",
-              "ViewState": "AgIAAD8AAAAAAAAAAAAWwF0AAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-08T12:20:33.183Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "SapSettingsRepository.cs",
-              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\SapRepo\\SapSettingsRepository.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\SapRepo\\SapSettingsRepository.cs",
-              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\SapRepo\\SapSettingsRepository.cs",
-              "RelativeToolTip": "DataWarehouse.Services\\Repository\\SapRepo\\SapSettingsRepository.cs",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAkwCIAAAA0AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-08T12:17:14.958Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "WarehouseRepository.cs",
-              "DocumentMoniker": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Actors\\WarehouseRepository.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\Actors\\WarehouseRepository.cs",
-              "ToolTip": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Actors\\WarehouseRepository.cs",
-              "RelativeToolTip": "DataWarehouse.Services\\Repository\\Actors\\WarehouseRepository.cs",
-              "ViewState": "AgIAABcAAAAAAAAAAAAQwDIAAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-08T11:57:21.182Z"
             }
           ]
         }

@@ -37,7 +37,7 @@
         }
       }
     },
-    "/api/Approval/make-order-is-approval": {
+    "/api/Approval/make-order-is-approval/{approval}/order-process-approval-id/{processApproval}": {
       "patch": {
         "tags": [
           "Approval"
@@ -45,14 +45,16 @@
         "parameters": [
           {
             "name": "approval",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "boolean"
             }
           },
           {
             "name": "processApproval",
-            "in": "query",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -11461,69 +11463,6 @@
         }
       }
     },
-    "/api/SalesOrder/warehouse/status/posting-date/due-date/{skip}/{pageSize}": {
-      "get": {
-        "tags": [
-          "SalesOrder"
-        ],
-        "parameters": [
-          {
-            "name": "warehouseId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "postingDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "dueDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "skip",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "pageSize",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/SalesOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}": {
       "get": {
         "tags": [
@@ -20850,6 +20789,10 @@
             "type": "boolean",
             "nullable": true
           },
+          "approvalStatus": {
+            "type": "string",
+            "nullable": true
+          },
           "isReturn": {
             "type": "boolean"
           },
@@ -21725,6 +21668,10 @@
           },
           "approval": {
             "type": "boolean",
+            "nullable": true
+          },
+          "approvalStatus": {
+            "type": "string",
             "nullable": true
           },
           "isReturn": {

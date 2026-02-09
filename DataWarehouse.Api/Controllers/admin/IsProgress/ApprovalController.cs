@@ -33,7 +33,7 @@ namespace DataWarehouse.Api.Controllers.admin.IsProgress
             return Ok(res);
         }
 
-        [HttpPatch("make-order-is-approval")]
+        [HttpPatch("make-order-is-approval/{approval}/order-process-approval-id/{processApproval}")]
         [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Approvals_Action}")]
         public async Task<IActionResult> MakeTheOrderIsApproval(bool approval, int processApproval, string? comment)
         {

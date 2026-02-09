@@ -2,7 +2,7 @@
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.IsProgress.ApprovalController",
     "Method": "MakeTheOrderIsApproval",
-    "RelativePath": "api/Approval/make-order-is-approval",
+    "RelativePath": "api/Approval/make-order-is-approval/{approval}/order-process-approval-id/{processApproval}",
     "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
@@ -10,12 +10,12 @@
       {
         "Name": "approval",
         "Type": "System.Boolean",
-        "IsRequired": false
+        "IsRequired": true
       },
       {
         "Name": "processApproval",
         "Type": "System.Int32",
-        "IsRequired": false
+        "IsRequired": true
       },
       {
         "Name": "comment",
@@ -7158,47 +7158,6 @@
         "Name": "warehouseId",
         "Type": "System.Int32",
         "IsRequired": true
-      },
-      {
-        "Name": "skip",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesOrderController",
-    "Method": "GetByWarehouseIdWithPagination",
-    "RelativePath": "api/SalesOrder/warehouse/status/posting-date/due-date/{skip}/{pageSize}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "warehouseId",
-        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "status",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "postingDate",
-        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "dueDate",
-        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
       },
       {
         "Name": "skip",

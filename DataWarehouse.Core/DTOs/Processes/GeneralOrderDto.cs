@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Domain.Entities.Auth;
+using DataWarehouse.Domain.Enums.Approval;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -31,6 +32,7 @@ namespace DataWarehouse.Core.DTOs.Processes
         [Required(ErrorMessage = "Due Date is required")]
         public DateTime DueDate { get; set; }
         public bool? Approval { get; set; }
+        public string ApprovalStatus { get; set; }
         public bool? IsReturn { get; set; }
         public int? ReturnOrderId { get; set; }
     }

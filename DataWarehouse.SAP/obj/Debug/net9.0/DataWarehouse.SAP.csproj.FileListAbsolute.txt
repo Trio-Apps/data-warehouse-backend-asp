@@ -117,3 +117,4 @@ D:\Projects\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWa
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\refint\DataWarehouse.SAP.dll
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.pdb
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\ref\DataWarehouse.SAP.dll
+D:\Projects\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.sourcelink.json

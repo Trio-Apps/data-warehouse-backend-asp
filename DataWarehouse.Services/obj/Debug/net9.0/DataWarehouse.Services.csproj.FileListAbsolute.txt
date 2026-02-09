@@ -123,3 +123,4 @@ D:\Projects\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\D
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\refint\DataWarehouse.Services.dll
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.pdb
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\ref\DataWarehouse.Services.dll
+D:\Projects\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.sourcelink.json

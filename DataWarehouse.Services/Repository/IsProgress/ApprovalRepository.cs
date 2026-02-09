@@ -360,8 +360,6 @@ namespace DataWarehouse.Services.Repository.IsProgress
                 .ToListAsync();
 
 
-
-
             // 3) warehouse ids
             var warehouseIds = user.UserWarehouses.Select(uw => uw.WarehouseId).ToList();
 
@@ -377,12 +375,7 @@ namespace DataWarehouse.Services.Repository.IsProgress
                     roleIds.Contains(a.ApprovalStep.RoleId) &&
 
 
-                    warehouseIds.Contains(a.WarehouseId));
-
-
-
-
-
+            warehouseIds.Contains(a.WarehouseId));
 
 
             // 5) total count قبل pagination
@@ -507,19 +500,18 @@ namespace DataWarehouse.Services.Repository.IsProgress
 
             result.ProcessItemIsProgressId = process.ProcessItemIsProgressId;
 
-            if (process.Status != ProcessStatus.InProgress)
-            {
-                result.Reason = $"Process is not in progress. Current status: {process.Status}";
-                return result;
-            }
+            //if (process.Status != ProcessStatus.InProgress)
+            //{
+            //    result.Reason = $"Process is not in progress. Current status: {process.Status}";
+            //    return result;
+            //}
 
             // 2. Get current approval step (pending)
             var currentApproval = await _context.ProcessApprovals
                 .Include(a => a.ApprovalStep)
                 .Where(a =>
                     a.ProcessItemIsProgressId == process.ProcessItemIsProgressId &&
-                    a.ApprovalStep.StepOrder == process.CurrentStepOrder &&
-                    a.Status == ApprovalStatus.Pending)
+                    a.ApprovalStep.StepOrder == process.CurrentStepOrder)
                 .FirstOrDefaultAsync();
 
             if (currentApproval == null)
