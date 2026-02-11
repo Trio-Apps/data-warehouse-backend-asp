@@ -7076,26 +7076,6 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesOrderController",
-    "Method": "GetPendingOrders",
-    "RelativePath": "api/SalesOrder/processing",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrder, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesOrderController",
     "Method": "Status",
     "RelativePath": "api/SalesOrder/status",
     "HttpMethod": "GET",
@@ -7249,7 +7229,7 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.UpdateSalesOrderBatchDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralBatchDto",
         "IsRequired": true
       }
     ],
@@ -7312,21 +7292,11 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddSalesOrderBatchDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.GeneralBatchDto",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrderBatch",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesOrderBatchController",
@@ -7425,7 +7395,7 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.UpdateSalesOrderItemDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralItemDto",
         "IsRequired": true
       }
     ],
@@ -7726,6 +7696,22 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesReturnOrderController",
+    "Method": "GetWithCustomerBySalesOrderId",
+    "RelativePath": "api/SalesReturnOrder/by-sales-order/{salesOrderId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "salesOrderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesReturnOrderController",

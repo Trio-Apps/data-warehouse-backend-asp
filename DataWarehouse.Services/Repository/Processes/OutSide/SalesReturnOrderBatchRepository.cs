@@ -4,6 +4,7 @@ using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -81,8 +82,17 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
             .Include(sroi => sroi.SalesOrderItem)
             .FirstOrDefaultAsync(i => i.SalesReturnOrderItemId == salesReturnOrderItemId);
 
+         
+
+
         if (salesReturnOrderItem == null)
             return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("Sales Return Order Item not found");
+
+        var checkApprovalStatus = await GetProcessItem(salesReturnOrderItem.SalesReturnOrderId, ProcessType.SalesReturn);
+
+        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("You cannot add any batch to return item because its approval status is 'Approved' and all approval steps have been completed.");
+
 
         // Validate SalesOrderBatch exists
         var salesOrderBatch = await _context.SalesOrderBatches
@@ -138,6 +148,7 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
     public async Task<GeneralResponse<SalesReturnOrderBatchDTO>> UpdateSalesReturnOrderBatchAsync(int salesReturnOrderBatchId, UpdateSalesReturnOrderBatchDTO dto)
     {
         var entity = await _context.SalesReturnOrderBatches
+            .Include(x=>x.SalesReturnOrderItem)
             .Include(b => b.SalesOrderBatch)
             .FirstOrDefaultAsync(e => e.SalesReturnOrderBatchId == dto.SalesReturnOrderBatchId);
 
@@ -147,11 +158,18 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
         if (entity.SalesReturnOrderBatchId != salesReturnOrderBatchId)
             return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("ID mismatch");
 
+
+        var checkApprovalStatus = await GetProcessItem(entity.SalesReturnOrderItem.SalesReturnOrderId, ProcessType.SalesReturn);
+
+        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("You cannot edit on any batch to return item because its approval status is 'Approved' and all approval steps have been completed.");
+
+
         // Validate quantity doesn't exceed sales batch quantity
         if (dto.Quantity > entity.SalesOrderBatch.Quantity)
             return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("Return batch quantity cannot exceed sales batch quantity");
 
-        entity.Quantity = dto.Quantity;
+        entity.Quantity = dto.Quantity?? entity.Quantity;
         entity.Comment = dto.Comment;
 
         await _context.SaveChangesAsync();

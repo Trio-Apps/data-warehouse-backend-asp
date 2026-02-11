@@ -40,7 +40,7 @@ public class UpdateSalesReturnOrderDTO
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
 
-    public bool IsProcessing { get; set; }
+    public bool IsDraft { get; set; }
 }
 
 public class SalesReturnOrderItemDTO : GeneralItemDto
@@ -55,11 +55,18 @@ public class SalesReturnOrderItemDTO : GeneralItemDto
 
     public List<SalesReturnOrderBatchDTO>? Batches { get; set; }
 }
-public class AddSalesReturnOrderItemDTO : AddGeneralItemDto
+public class AddSalesReturnOrderItemDTO
 {
     [Required(ErrorMessage = "Sales Order Item ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order Item ID must be greater than 0")]
-    public int SalesOrderItemId { get; set; } 
+    public int SalesOrderItemId { get; set; }
+
+    [Required(ErrorMessage = "Quantity is required")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
+    public decimal Quantity { get; set; }
+
+    [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
+    public string? Comment { get; set; }
 }
 
 public class UpdateSalesReturnOrderItemDTO : UpdateGeneralItemDto

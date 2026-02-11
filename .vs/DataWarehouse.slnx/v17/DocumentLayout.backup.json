@@ -3,20 +3,24 @@
   "WorkspaceRootPath": "D:\\Files\\data-warehouse-backend-asp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\files\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\processes\\outside\\salesorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\processes\\outside\\salesorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\files\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\processes\\outside\\salesreturnorderbatchrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\processes\\outside\\salesreturnorderbatchrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\files\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\isprogress\\approvalrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\isprogress\\approvalrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\files\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\processes\\outside\\salesreturnorderitemrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\processes\\outside\\salesreturnorderitemrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|d:\\files\\data-warehouse-backend-asp\\datawarehouse.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|solutionrelative:datawarehouse.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5D7EC6BC-49A7-51D7-A14F-2701681B5819}|DataWarehouse.Core\\DataWarehouse.Core.csproj|d:\\files\\data-warehouse-backend-asp\\datawarehouse.core\\interfaces\\isprogress\\iapprovalrepository.cs||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{5D7EC6BC-49A7-51D7-A14F-2701681B5819}|DataWarehouse.Core\\DataWarehouse.Core.csproj|solutionrelative:datawarehouse.core\\interfaces\\isprogress\\iapprovalrepository.cs||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|d:\\files\\data-warehouse-backend-asp\\datawarehouse.api\\controllers\\admin\\processes\\outside\\salesreturnordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C6F1F43-74C1-5C1E-7790-532EBB6BC0AD}|DataWarehouse.Api\\DataWarehouse.Api.csproj|solutionrelative:datawarehouse.api\\controllers\\admin\\processes\\outside\\salesreturnordercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|d:\\files\\data-warehouse-backend-asp\\datawarehouse.services\\repository\\processes\\outside\\salesorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C07A18CE-C3FE-A172-CD96-C3EDB96E52ED}|DataWarehouse.Services\\DataWarehouse.Services.csproj|solutionrelative:datawarehouse.services\\repository\\processes\\outside\\salesorderrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,7 +30,7 @@
       "DocumentGroups": [
         {
           "DockedHeight": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
@@ -36,7 +40,7 @@
               "RelativeDocumentMoniker": "DataWarehouse.Api\\appsettings.json",
               "ToolTip": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Api\\appsettings.json",
               "RelativeToolTip": "DataWarehouse.Api\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-02-09T14:33:29.19Z",
               "IsPinned": true,
@@ -44,46 +48,57 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "IApprovalRepository.cs",
-              "DocumentMoniker": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\Interfaces\\IsProgress\\IApprovalRepository.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Core\\Interfaces\\IsProgress\\IApprovalRepository.cs",
-              "ToolTip": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\Interfaces\\IsProgress\\IApprovalRepository.cs",
-              "RelativeToolTip": "DataWarehouse.Core\\Interfaces\\IsProgress\\IApprovalRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "SalesReturnOrderBatchRepository.cs",
+              "DocumentMoniker": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesReturnOrderBatchRepository.cs",
+              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesReturnOrderBatchRepository.cs",
+              "ToolTip": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesReturnOrderBatchRepository.cs",
+              "RelativeToolTip": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesReturnOrderBatchRepository.cs",
+              "ViewState": "AgIAAI8AAABAmpmZmZkwwKUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T15:08:57.622Z",
+              "WhenOpened": "2026-02-11T18:06:09.97Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "ApprovalRepository.cs",
-              "DocumentMoniker": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\IsProgress\\ApprovalRepository.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\IsProgress\\ApprovalRepository.cs",
-              "ToolTip": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\IsProgress\\ApprovalRepository.cs",
-              "RelativeToolTip": "DataWarehouse.Services\\Repository\\IsProgress\\ApprovalRepository.cs",
-              "ViewState": "AgIAAFABAAAAAAAAAAAAADMCAAA5AAAAAAAAAA==",
+              "Title": "SalesReturnOrderItemRepository.cs",
+              "DocumentMoniker": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesReturnOrderItemRepository.cs",
+              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesReturnOrderItemRepository.cs",
+              "ToolTip": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesReturnOrderItemRepository.cs",
+              "RelativeToolTip": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesReturnOrderItemRepository.cs",
+              "ViewState": "AgIAAFUAAAAANjMzMzMDwOwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T15:05:31.884Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "SalesOrderRepository.cs",
-              "DocumentMoniker": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
-              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
-              "ToolTip": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
-              "RelativeToolTip": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
-              "ViewState": "AgIAACgAAACAy8zMzMwUwOwAAAAsAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-09T14:36:13.502Z",
+              "WhenOpened": "2026-02-11T18:03:19.157Z",
               "EditorCaption": ""
             },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "SalesReturnOrderController.cs",
+              "DocumentMoniker": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\Processes\\OutSide\\SalesReturnOrderController.cs",
+              "RelativeDocumentMoniker": "DataWarehouse.Api\\Controllers\\admin\\Processes\\OutSide\\SalesReturnOrderController.cs",
+              "ToolTip": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Api\\Controllers\\admin\\Processes\\OutSide\\SalesReturnOrderController.cs",
+              "RelativeToolTip": "DataWarehouse.Api\\Controllers\\admin\\Processes\\OutSide\\SalesReturnOrderController.cs",
+              "ViewState": "AgIAADkAAAAAmpmZmZkZwEsAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-11T17:00:15.323Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "SalesOrderRepository.cs",
+              "DocumentMoniker": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
+              "RelativeDocumentMoniker": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
+              "ToolTip": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
+              "RelativeToolTip": "DataWarehouse.Services\\Repository\\Processes\\OutSide\\SalesOrderRepository.cs",
+              "ViewState": "AgIAAD0BAAAAaGZmZmb2v0kBAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-11T16:40:44.595Z"
             }
           ]
         }

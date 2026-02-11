@@ -1,15 +1,22 @@
-﻿using System;
+﻿using DataWarehouse.Domain.Entities.Processes.IGenericDto;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DataWarehouse.Domain.Entities.Processes.OutSide
 {
-    public class SalesOrderBatch
+    public class SalesOrderBatch : IOrderBatch
     {
         public int SalesOrderBatchId {  get; set; }
-
+        [NotMapped]
+        public int OrderItemId
+        {
+            get => SalesOrderItemId;
+            set => SalesOrderItemId = value;
+        }
         public decimal Quantity { get; set; }
         public string? Comment { get; set; } = null;
         // SAP Goods Receipt Document (DocEntry)

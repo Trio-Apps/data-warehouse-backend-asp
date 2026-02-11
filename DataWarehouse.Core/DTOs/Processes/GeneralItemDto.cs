@@ -40,13 +40,21 @@ namespace DataWarehouse.Core.DTOs.Processes
 
     public class AddGeneralItemDto
     {
-        [Required(ErrorMessage = "Quantity is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
+
+        [Required(ErrorMessage = "Unit is required")]
+        public int UoMEntry { get; set; }
+
+        [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
         public decimal Quantity { get; set; }
+
+        [Required(ErrorMessage = "Item ID is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
+        public int ItemId { get; set; }
 
         [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
         public string? Comment { get; set; }
     }
+
 
     public class UpdateGeneralItemDto
     {
@@ -55,6 +63,10 @@ namespace DataWarehouse.Core.DTOs.Processes
 
         [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
         public string? Comment { get; set; }
+
+      
+        [Required(ErrorMessage = "Unit is required")]
+        public int UoMEntry { get; set; }
     }
 
 
@@ -87,10 +99,12 @@ namespace DataWarehouse.Core.DTOs.Processes
     {
         [Required(ErrorMessage = "Quantity is required")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
-        public decimal Quantity { get; set; }
+        public decimal? Quantity { get; set; }
 
         [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
         public string? Comment { get; set; }
+
+        public DateTime? ExpiryDate { get; set; }
     }
 
 }

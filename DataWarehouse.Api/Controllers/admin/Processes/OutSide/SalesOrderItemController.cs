@@ -1,3 +1,4 @@
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -94,7 +95,7 @@ public class SalesOrderItemController : ControllerBase
 
     public async Task<IActionResult> Update(
      int id,
-       UpdateSalesOrderItemDTO dto)
+       UpdateGeneralItemDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -112,14 +113,13 @@ public class SalesOrderItemController : ControllerBase
 
     public async Task<IActionResult> Delete(int id)
     {
-        var SalesOrderItem = await _repository.GetByIdAsync(id);
-        if (SalesOrderItem == null)
-            return NotFound($"SalesOrderItem with ID {id} not found.");
+      
+      var res =  await _repository.DeleteSalesItemAsync(id);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
+        if (!res.Success)
+            return BadRequest(res);
 
-        return Ok(new { Message =  "delete" });
+        return Ok(res);
     }
 }
 

@@ -1,20 +1,29 @@
 ﻿using DataWarehouse.Domain.Entities.Actors;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DataWarehouse.Domain.Entities.Processes.OutSide
 {
-    public class SalesOrderItem
+    public class SalesOrderItem : IOrderItem
     {
        
         public int SalesOrderItemId { get; set; }
         public decimal Quantity { get; set; }
         public int UoMEntry { get; set; }
+
+        [NotMapped]
+        public int OrderId
+        {
+            get => SalesOrderId;
+            set => SalesOrderId = value;
+        }
         public string? BarCode { get; set; }
         // Pending, Planned, Released, Received, Closed, Failed
         public GeneralItemStatus Status { get; set; }

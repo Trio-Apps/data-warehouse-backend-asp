@@ -79,9 +79,9 @@ public class AddSalesOrderItemDTO
     [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
     public decimal Quantity { get; set; }
 
-    [Required(ErrorMessage = "Sales Order ID is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "Sales Order ID must be greater than 0")]
-    public int SalesOrderId { get; set; }
+    //[Required(ErrorMessage = "Sales Order ID is required")]
+    //[Range(1, int.MaxValue, ErrorMessage = "Sales Order ID must be greater than 0")]
+    //public int SalesOrderId { get; set; }
 
     [Required(ErrorMessage = "Item ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
@@ -104,7 +104,7 @@ public class AddSalesOrderItemCreateRequest
 {
     public DynamicBarcodesDto? Barcode { get; set; }
 
-    public AddSalesOrderItemDTO? Item { get; set; }
+    public AddGeneralItemDto? Item { get; set; }
 }
 
 public class SalesOrderResponseDTO

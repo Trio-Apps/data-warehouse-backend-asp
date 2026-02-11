@@ -75,6 +75,19 @@ public class SalesReturnOrderController : ControllerBase
 
         return Ok(salesReturnOrder);
     }
+    [HttpGet("by-sales-order/{salesOrderId}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
+
+    public async Task<IActionResult> GetWithCustomerBySalesOrderId(int salesOrderId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var salesReturnOrder = await _repository.GetWithCustomerAsync(salesOrderId,userId);
+        if (!salesReturnOrder.Success)
+            return NotFound($"SalesReturnOrder for SalesOrder ID {salesOrderId} not found.");
+
+        return Ok(salesReturnOrder);
+    }
 
     [HttpGet("user/{userId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]

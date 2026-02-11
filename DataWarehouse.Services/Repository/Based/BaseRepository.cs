@@ -1,8 +1,16 @@
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
+using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Domain.Context;
+using DataWarehouse.Domain.Entities.IsProgress;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
+using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
+using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -15,11 +23,13 @@ namespace DataWarehouse.Services.Repository.Based;
 
 public class BaseRepository<T> : IBaseRepository<T> where T : class
 {
+  
     protected readonly DataWarehouseDbContext _context;
     protected readonly DbSet<T> _dbSet;
 
     public BaseRepository(DataWarehouseDbContext context)
     {
+       
         _context = context;
         _dbSet = _context.Set<T>();
     }
@@ -264,6 +274,21 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
 
     #region processes
 
+    public async Task<ProcessItemIsProgress> GetProcessItem(int OrderId, ProcessType type, CancellationToken cancellationToken = default)
+    {
+        return await _context.ProcessItemIsProgresses
+ .AsNoTracking()
+ .Where(p =>
+     p.ProcessType == type &&
+     p.ReferenceId == OrderId)
+ .OrderByDescending(p => p.ProcessItemIsProgressId) // آخر حالة
+ .FirstOrDefaultAsync(cancellationToken);
+    }
 
+
+  
+
+
+   
     #endregion
 }

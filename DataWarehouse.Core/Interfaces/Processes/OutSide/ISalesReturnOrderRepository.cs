@@ -12,6 +12,7 @@ public interface ISalesReturnOrderRepository : IBaseRepository<SalesReturnOrder>
 {
     Task<IEnumerable<SalesReturnOrder>> GetByWarehouseIdAsync(int warehouseId);
     Task<GeneralResponse<PagedResult<SalesReturnOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize);
+    Task<GeneralResponse<SalesReturnOrderDTO>> GetWithCustomerAsync(int salesOrderId, string userId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<SalesReturnOrderDTO>> AddSalesReturnOrderBySalesOrderIdAsync(string userId, AddSalesReturnOrderDTO dto);
     Task<GeneralResponse<SalesReturnOrderDTO>> UpdateSalesReturnOrderAsync(string userId, int salesReturnOrderId, UpdateSalesReturnOrderDTO dto);
     Task<GeneralResponse<SalesReturnOrderDTO>> GetBySalesOrderIdAsync(int salesOrderId);

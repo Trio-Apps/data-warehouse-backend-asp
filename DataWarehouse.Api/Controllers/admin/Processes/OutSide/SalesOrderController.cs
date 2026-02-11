@@ -172,24 +172,22 @@ public class SalesOrderController : ControllerBase
 
     public async Task<IActionResult> Delete(int id)
     {
-        var salesOrder = await _repository.GetByIdAsync(id);
-        if (salesOrder == null)
-            return NotFound($"SalesOrder with ID {id} not found.");
+        var salesOrder = await _repository.DeleteSalesOrderAsync(id);
+        if (!salesOrder.Success)
+            return NotFound(salesOrder);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
-
+   
         return NoContent();
     }
 
-    [HttpGet("processing")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
+    //[HttpGet("processing")]
+    //[Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
 
-    public async Task<ActionResult<IEnumerable<SalesOrder>>> GetPendingOrders()
-    {
-        var salesOrders = await _repository.GetPendingOrdersAsync();
-        return Ok(salesOrders);
-    }
+    //public async Task<ActionResult<IEnumerable<SalesOrder>>> GetPendingOrders()
+    //{
+    //    var salesOrders = await _repository.GetPendingOrdersAsync();
+    //    return Ok(salesOrders);
+    //}
 
 
 }

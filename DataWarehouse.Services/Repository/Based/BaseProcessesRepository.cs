@@ -1,0 +1,407 @@
+﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.BarCode;
+using DataWarehouse.Core.DTOs.Processes;
+using DataWarehouse.Core.Interfaces.BarCode;
+using DataWarehouse.Core.Interfaces.Based;
+using DataWarehouse.Core.Interfaces.ISap;
+using DataWarehouse.Domain.Context;
+using DataWarehouse.Domain.Entities.IsProgress;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
+using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
+using DataWarehouse.Services.Repository.SapRepo;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataWarehouse.Services.Repository.Based
+{
+    public class BaseProcessesRepository<T> : BaseRepository<T>, IBaseProcessesRepository<T> where T : class
+    {
+        private readonly IBarCodeOrdersRepository barcodeOrder;
+        private readonly ISapCache sapCache;
+
+        public BaseProcessesRepository(IBarCodeOrdersRepository barcodeOrder, ISapCache sapCache, DataWarehouseDbContext context) : base(context)
+        {
+            this.barcodeOrder = barcodeOrder;
+            this.sapCache = sapCache;
+        }
+
+        #region processes
+
+        public async Task<ProcessItemIsProgress> GetProcessItem(int OrderId, ProcessType type, CancellationToken cancellationToken = default)
+        {
+            return await _context.ProcessItemIsProgresses
+     .AsNoTracking()
+     .Where(p =>
+         p.ProcessType == type &&
+         p.ReferenceId == OrderId)
+     .OrderByDescending(p => p.ProcessItemIsProgressId) // آخر حالة
+     .FirstOrDefaultAsync(cancellationToken);
+        }
+
+
+        public async Task<GeneralResponse<TOrderItem>> AddOrderItemAsync<TOrder, TOrderItem>(
+        int orderId,
+        ProcessType processType,
+        bool isBarcode,
+        DynamicBarcodesDto? barcodeDto,
+        AddGeneralItemDto? dto,
+        Expression<Func<TOrder, bool>> orderIdSelector,
+        DbSet<TOrder>  orderSet,
+        DbSet<TOrderItem> itemSet)
+        where TOrder : class, IOrder
+        where TOrderItem : class, IOrderItem, new()
+        {
+
+            var order = await orderSet.FirstOrDefaultAsync(orderIdSelector);
+
+            if (order == null)
+                return GeneralResponse<TOrderItem>.FailResponse("Order not found");
+
+            var approval = await GetProcessItem(orderId, processType);
+
+            if (approval != null && approval.Status == ProcessStatus.Approved)
+                return GeneralResponse<TOrderItem>.FailResponse("You cannot add any item because its approval status is 'Approved' and all approval steps have been completed.");
+
+
+            TOrderItem model = new TOrderItem();
+
+            if (isBarcode)
+            {
+                if (barcodeDto == null)
+                    return GeneralResponse<TOrderItem>.FailResponse("Barcode required");
+
+                var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
+
+                var res = isDynamic
+                    ? await barcodeOrder.GetItemByDynamicBarCodeAsync(order.WarehouseId, barcodeDto)
+                    : await barcodeOrder.GetItemByStaticBarCodeAsync(order.WarehouseId, barcodeDto);
+
+                if (!res.Success || res.Data == null)
+                    return GeneralResponse<TOrderItem>.FailResponse(res.Message);
+
+                model.OrderId = orderId;
+                model.ItemId = res.Data.Id;
+                model.Quantity = res.Data.Quantity;
+                model.BarCode = res.Data.Barcode;
+                model.UnitPrice = res.Data.Price;
+                model.UoMEntry = res.Data.UoMEntry;
+                model.Status = GeneralItemStatus.Planned;
+            }
+            else
+            {
+                if (dto == null)
+                    return GeneralResponse<TOrderItem>.FailResponse("DTO required");
+
+                var item = await _context.Items.FirstOrDefaultAsync(x => x.ItemId == dto.ItemId);
+
+                if (item == null)
+                    return GeneralResponse<TOrderItem>.FailResponse("Item not found");
+
+                model.OrderId = orderId;
+                model.ItemId = dto.ItemId;
+                model.Quantity = dto.Quantity;
+                model.BarCode = "";
+                model.UnitPrice = item.SalesPrice;
+                model.UoMEntry = dto.UoMEntry;
+                model.Status = GeneralItemStatus.Planned;
+            }
+
+            await itemSet.AddAsync(model);
+            await _context.SaveChangesAsync();
+
+            return GeneralResponse<TOrderItem>.SuccessResponse(model);
+        }
+
+        public async Task<GeneralResponse<TOrderItem>> UpdateOrderItemAsync<TOrderItem>(
+    int itemIdFromRoute,
+    ProcessType processType,
+    UpdateGeneralItemDto dto,
+    Expression<Func<TOrderItem, bool>> itemSelector,
+    DbSet<TOrderItem> itemSet)
+    where TOrderItem : class, IOrderItem
+        {
+            var entity = await itemSet.FirstOrDefaultAsync(itemSelector);
+
+
+            if (entity == null)
+                return GeneralResponse<TOrderItem>.FailResponse("id is not found");
+
+          
+            // Approval check
+            var approval = await GetProcessItem(entity.OrderId, processType);
+
+            if (approval != null && approval.Status == ProcessStatus.Approved)
+                return GeneralResponse<TOrderItem>.FailResponse(
+                    "You cannot edit any item because its approval status is 'Approved' and all approval steps have been completed."
+                );
+
+            // Update rules (زي اللي عندك)
+            if (dto.Quantity.HasValue && dto.Quantity.Value > 0)
+                entity.Quantity = dto.Quantity.Value;
+
+            if (dto.UoMEntry > 0)
+            {
+                entity.UoMEntry = dto.UoMEntry;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return GeneralResponse<TOrderItem>.SuccessResponse(entity);
+        }
+
+        public async Task<GeneralResponse<TOrderItem>> DeleteOrderItemAsync<TOrderItem>(
+    int itemIdFromRoute,
+    ProcessType processType,
+    Expression<Func<TOrderItem, bool>> itemSelector,
+    DbSet<TOrderItem> itemSet)
+    where TOrderItem : class, IOrderItem
+        {
+            var entity = await itemSet.FirstOrDefaultAsync(itemSelector);
+
+            if (entity == null)
+                return GeneralResponse<TOrderItem>.FailResponse("id is not found");
+
+           
+            // Approval check
+            var approval = await GetProcessItem(entity.OrderId, processType);
+
+            if (approval != null && approval.Status == ProcessStatus.Approved)
+                return GeneralResponse<TOrderItem>.FailResponse(
+                    "You cannot delete any item because its approval status is 'Approved' and all approval steps have been completed."
+                );
+
+            // Snapshot قبل الحذف علشان نرجعه في response
+            var snapshot = entity;
+
+            itemSet.Remove(entity);
+            await _context.SaveChangesAsync();
+
+            return GeneralResponse<TOrderItem>.SuccessResponse(snapshot);
+        }
+
+
+        public async Task<GeneralResponse<TBatch>> AddOrderBatchAsync<TOrderItem, TBatch>(
+    int orderItemId,
+    ProcessType processType,
+    GeneralBatchDto dto,
+    Expression<Func<TOrderItem, bool>> orderItemSelector,
+    DbSet<TOrderItem> orderItemSet,
+    Expression<Func<TBatch, bool>> batchItemSelector,
+    DbSet<TBatch> batchSet)
+    where TOrderItem : class, IOrderItem
+    where TBatch : class, IOrderBatch, new()
+        {
+            // 1) Load OrderItem
+            var orderItem = await orderItemSet.FirstOrDefaultAsync(orderItemSelector);
+            if (orderItem == null)
+                return GeneralResponse<TBatch>.FailResponse("Order Item not found");
+
+            // 2) Approval check (هنا نستخدم OrderId من الـ entity بعد تحميله)
+            var approval = await GetProcessItem(orderItem.OrderId, processType);
+            if (approval != null && approval.Status == ProcessStatus.Approved)
+                return GeneralResponse<TBatch>.FailResponse(
+                    "You cannot add any batch because its approval status is 'Approved' and all approval steps have been completed."
+                );
+
+            // 3) Sum existing batches
+            var existingTotal = await batchSet
+                .Where(batchItemSelector)
+                .SumAsync(b => (decimal?)b.Quantity) ?? 0m;
+
+            // 4) Validate total qty <= item qty
+            var totalAfterAdd = existingTotal + dto.Quantity;
+            if (totalAfterAdd > orderItem.Quantity)
+                return GeneralResponse<TBatch>.FailResponse("Total batch quantities exceed order item quantity");
+
+            // 5) Add batch
+            var batch = new TBatch
+            {
+                OrderItemId = orderItemId,     // ✅ wrapper يكتب في FK الحقيقي
+                Quantity = dto.Quantity,
+                Comment = dto.Comment,
+                ExpiryDate = dto.ExpiryDate,
+                CreatedAt = DateTime.UtcNow,
+                // BatchNumber = dto.BatchNumber // لو موجودة عندك في dto
+            };
+
+            await batchSet.AddAsync(batch);
+            await _context.SaveChangesAsync();
+
+            return GeneralResponse<TBatch>.SuccessResponse(batch);
+        }
+
+        public async Task<GeneralResponse<TBatch>> UpdateOrderBatchAsync<TOrderItem, TBatch>(
+            int batchId,
+            ProcessType processType,
+            UpdateGeneralBatchDto dto,
+
+            DbSet<TBatch> batchSet,
+            DbSet<TOrderItem> orderItemSet,
+
+            Expression<Func<TBatch, int>> batchIdSelector,
+            Expression<Func<TBatch, int>> orderItemIdSelector,
+            Expression<Func<TOrderItem, int>> orderItemIdForItemSelector)
+            where TOrderItem : class, IOrderItem
+            where TBatch : class, IOrderBatch
+        {
+            // 1️⃣ Load batch
+            var batch = await batchSet
+                .FirstOrDefaultAsync(BuildEquals(batchIdSelector, batchId));
+
+            if (batch == null)
+                return GeneralResponse<TBatch>.FailResponse("Order Batch not found");
+
+            // 2️⃣ Load OrderItem
+            var orderItemId = batch.OrderItemId;
+
+            var orderItem = await orderItemSet
+                .FirstOrDefaultAsync(BuildEquals(orderItemIdForItemSelector, orderItemId));
+
+            if (orderItem == null)
+                return GeneralResponse<TBatch>.FailResponse("Order Item not found");
+
+            // 3️⃣ Approval
+            var approval = await GetProcessItem(orderItem.OrderId, processType);
+            if (approval != null && approval.Status == ProcessStatus.Approved)
+                return GeneralResponse<TBatch>.FailResponse(
+                    "You cannot edit any batch because its approval status is 'Approved'.");
+
+            // 4️⃣ Sum other batches
+            var otherTotal = await batchSet
+                .Where(BuildEquals(orderItemIdSelector, orderItemId))
+                .SumAsync(b => (decimal?)b.Quantity) ?? 0m;
+
+            var newQty = dto.Quantity ?? batch.Quantity;
+
+            if ((otherTotal - batch.Quantity ) + newQty > orderItem.Quantity)
+                return GeneralResponse<TBatch>.FailResponse(
+                    "Total batch quantities exceed order item quantity");
+
+            // 5️⃣ Update
+            if (dto.Quantity.HasValue)
+                batch.Quantity = dto.Quantity.Value;
+
+            if (dto.Comment != null)
+                batch.Comment = dto.Comment;
+
+            if (dto.ExpiryDate.HasValue)
+                batch.ExpiryDate = dto.ExpiryDate;
+
+            await _context.SaveChangesAsync();
+
+            return GeneralResponse<TBatch>.SuccessResponse(batch);
+        }
+
+        private static Expression<Func<T, bool>> BuildEquals<T>(
+    Expression<Func<T, int>> selector,
+    int value)
+        {
+            var param = selector.Parameters[0];
+            var body = Expression.Equal(selector.Body, Expression.Constant(value));
+            return Expression.Lambda<Func<T, bool>>(body, param);
+        }
+
+
+
+        public async Task<GeneralResponse<TBatch>> DeleteOrderBatchAsync<TOrderItem, TBatch>(
+            int batchIdFromRoute,
+            ProcessType processType,
+
+            DbSet<TBatch> batchSet,
+            DbSet<TOrderItem> orderItemSet,
+
+            // selectors (على الأعمدة الحقيقية)
+            Expression<Func<TBatch, int>> batchIdSelector,
+            Expression<Func<TBatch, int>> batchOrderItemIdSelector,
+            Expression<Func<TOrderItem, int>> orderItemPkSelector,
+            Expression<Func<TOrderItem, int>> orderIdSelector)
+            where TOrderItem : class
+            where TBatch : class
+        {
+            // 1) Load batch by PK
+            var batch = await batchSet.FirstOrDefaultAsync(BuildEquals(batchIdSelector, batchIdFromRoute));
+            if (batch == null)
+                return GeneralResponse<TBatch>.FailResponse("Batch not found");
+
+            // 2) Get OrderItemId from batch (ترجمة SQL مش لازمة هنا لأن entity اتحملت بالفعل)
+            var orderItemId = GetValue(batchOrderItemIdSelector, batch);
+
+            // 3) Load order item
+            var orderItem = await orderItemSet.FirstOrDefaultAsync(BuildEquals(orderItemPkSelector, orderItemId));
+            if (orderItem == null)
+                return GeneralResponse<TBatch>.FailResponse("Order Item not found");
+
+            // 4) Approval check using OrderId from orderItem
+            var orderId = GetValue(orderIdSelector, orderItem);
+
+            var approval = await GetProcessItem(orderId, processType);
+            if (approval != null && approval.Status == ProcessStatus.Approved)
+                return GeneralResponse<TBatch>.FailResponse(
+                    "You cannot delete any batch because its approval status is 'Approved' and all approval steps have been completed."
+                );
+
+            // 5) Delete
+            var snapshot = batch;
+
+            batchSet.Remove(batch);
+            await _context.SaveChangesAsync();
+
+            return GeneralResponse<TBatch>.SuccessResponse(snapshot);
+        }
+
+        // ===== helpers =====
+
+        private static int GetValue<TEntity>(
+            Expression<Func<TEntity, int>> selector,
+            TEntity entity)
+        {
+            // Compile هنا safe لأننا بنقرأ من entity in-memory (مش Query)
+            return selector.Compile()(entity);
+        }
+        private async Task<bool> CheckDynamicCodeValidationLocal(string barCode)
+        {
+            var sapId = await sapCache.Get();
+
+            var settings = await _context.BarCodeSettings
+                .Where(bs => bs.Company.Saps.Any(s => s.SapId == sapId))
+                .ToListAsync();
+
+            foreach (var setting in settings)
+            {
+                if (barCode.Length != setting.TotalLength)
+                    continue;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private string GetEnumString(GeneralItemStatus status)
+        {
+            switch (status)
+            {
+
+                case GeneralItemStatus.Planned:
+                    return "Planned";
+                case GeneralItemStatus.Released:
+                    return "Released";
+                case GeneralItemStatus.Received:
+                    return "Received";
+                case GeneralItemStatus.Closed:
+                    return "Closed";
+                case GeneralItemStatus.Failed:
+                    return "Failed";
+                default:
+                    return "Unknown";
+            }
+        }
+        #endregion
+    }
+}

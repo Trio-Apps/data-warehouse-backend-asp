@@ -4,6 +4,7 @@ using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -92,6 +93,13 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
             .FirstOrDefaultAsync(sro => sro.SalesOrderId == salesOrderId);
         if (salesReturnOrder == null)
             return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("Sales Order not found");
+
+
+        var checkApprovalStatus = await GetProcessItem(salesOrderId, ProcessType.Sales);
+
+        if (checkApprovalStatus == null ||  ( checkApprovalStatus != null && checkApprovalStatus.Status != ProcessStatus.Approved))
+            return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("You cannot add any item to return because its approval status is not 'Approved' and all approval steps haven't been completed.");
+
 
 
         if (salesReturnOrder.SalesReturnOrder == null)
@@ -220,6 +228,13 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
 
         if (entity == null)
             return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("Sales Return Order Item not found");
+
+
+        var checkApprovalStatus = await GetProcessItem(entity.SalesReturnOrderId, ProcessType.SalesReturn);
+
+        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+            return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("You cannot edit any return item because its approval status is 'Approved' and all approval steps have been completed.");
+
 
         if (entity.SalesReturnOrderItemId != salesReturnOrderItemId)
             return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("ID mismatch");

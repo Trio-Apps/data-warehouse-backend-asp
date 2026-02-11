@@ -34,10 +34,271 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
         #region Processes
 
+        // Purchase Order with items and warehouse
+        #region Purchase Order
+        builder.Entity<PurchaseOrder>()
+    .HasMany(ps => ps.PurchaseOrderItems)
+    .WithOne(pi => pi.PurchaseOrder)
+    .HasForeignKey(pi => pi.PurchaseOrderId)
+    .HasPrincipalKey(ps => ps.PurchaseOrderId)
+    .OnDelete(DeleteBehavior.Cascade);
+
+
+        builder.Entity<Item>()
+       .HasMany(i => i.PurchaseOrderItems)
+       .WithOne(pi => pi.Item)
+       .HasForeignKey(pi => pi.ItemId)
+       .HasPrincipalKey(i => i.ItemId)
+       .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Warehouse>()
+        .HasMany(w => w.PurchaseOrders)
+        .WithOne(ps => ps.Warehouse)
+        .HasForeignKey(ps => ps.WarehouseId)
+        .HasPrincipalKey(w => w.WarehouseId)
+        .OnDelete(DeleteBehavior.NoAction);
+
+        //
+        builder.Entity<Supplier>()
+        .HasMany(s => s.PurchaseOrders)
+        .WithOne(ps => ps.Supplier)
+        .HasForeignKey(ps => ps.SupplierId)
+        .HasPrincipalKey(s => s.SupplierId)
+        .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<ApplicationUser>()
+      .HasMany(w => w.PurchaseOrders)
+      .WithOne(po => po.User)
+      .HasForeignKey(po => po.UserId)
+      .HasPrincipalKey(w => w.Id)
+      .OnDelete(DeleteBehavior.NoAction);
+
+        #endregion
+
+        // Receipt Purchase Stock with items and warehouse
+        #region Receipt Purchase Order
+        builder.Entity<ReceiptPurchaseOrder>()
+    .HasMany(rpo => rpo.ReceiptPurchaseOrderItems)
+    .WithOne(ri => ri.ReceiptPurchaseOrder)
+    .HasForeignKey(ri => ri.ReceiptPurchaseOrderId)
+    .HasPrincipalKey(rpo => rpo.ReceiptPurchaseOrderId)
+    .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ReceiptPurchaseOrderItem>()
+     .HasMany(o => o.ReceiptPurchaseOrderBatches).WithOne(a => a.ReceiptPurchaseOrderItem)
+     .HasForeignKey(o => o.ReceiptPurchaseOrderItemId)
+     .HasPrincipalKey(e => e.ReceiptPurchaseOrderItemId)
+     .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Item>()
+         .HasMany(i => i.ReceiptPurchaseOrderItems)
+         .WithOne(ri => ri.Item)
+         .HasForeignKey(ri => ri.ItemId)
+         .HasPrincipalKey(i => i.ItemId)
+         .OnDelete(DeleteBehavior.NoAction);
+
+
+        builder.Entity<Supplier>()
+           .HasMany(s => s.ReceiptPurchaseOrders)
+           .WithOne(ps => ps.Supplier)
+           .HasForeignKey(ps => ps.SupplierId)
+           .HasPrincipalKey(s => s.SupplierId)
+           .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<PurchaseOrder>()
+    .HasOne(ps => ps.ReceiptPurchaseOrder)
+    .WithOne(rpo => rpo.PurchaseOrder)
+    .HasForeignKey<ReceiptPurchaseOrder>(rpo => rpo.PurchaseOrderId)
+    .HasPrincipalKey<PurchaseOrder>(ps => ps.PurchaseOrderId)
+    .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
+
+
+        builder.Entity<ApplicationUser>()
+        .HasMany(w => w.ReceiptPurchaseOrders)
+        .WithOne(po => po.User)
+        .HasForeignKey(po => po.UserId)
+        .HasPrincipalKey(w => w.Id)
+        .OnDelete(DeleteBehavior.NoAction);
+        #endregion
+
+        // Good return 
+        #region Good Return 
+        builder.Entity<ReceiptPurchaseOrder>()
+        .HasOne(ps => ps.GoodsReturnOrder)
+        .WithOne(rpo => rpo.ReceiptPurchaseOrder)
+        .HasForeignKey<GoodsReturnOrder>(rpo => rpo.ReceiptPurchaseOrderId)
+        .HasPrincipalKey<ReceiptPurchaseOrder>(ps => ps.ReceiptPurchaseOrderId)
+        .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
+
+        builder.Entity<ReceiptPurchaseOrderItem>()
+       .HasOne(ps => ps.GoodsReturnOrderItem)
+       .WithOne(rpo => rpo.ReceiptPurchaseOrderItem)
+       .HasForeignKey<GoodsReturnOrderItem>(rpo => rpo.ReceiptPurchaseOrderItemId)
+       .HasPrincipalKey<ReceiptPurchaseOrderItem>(ps => ps.ReceiptPurchaseOrderItemId)
+       .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
+
+        builder.Entity<ReceiptPurchaseOrderBatch>()
+     .HasOne(ps => ps.GoodsReturnOrderBatch)
+     .WithOne(rpo => rpo.ReceiptPurchaseOrderBatch)
+     .HasForeignKey<GoodsReturnOrderBatch>(rpo => rpo.ReceiptPurchaseOrderBatchId)
+     .HasPrincipalKey<ReceiptPurchaseOrderBatch>(ps => ps.ReceiptPurchaseOrderBatchId)
+     .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
+
+        builder.Entity<GoodsReturnOrder>()
+        .HasMany(s => s.GoodsReturnOrderItems)
+        .WithOne(i => i.GoodsReturnOrder)
+        .HasForeignKey(i => i.GoodsReturnOrderId)
+        .HasPrincipalKey(s => s.GoodsReturnOrderId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+
+        builder.Entity<GoodsReturnOrderItem>()
+        .HasMany(s => s.GoodsReturnOrderBatches)
+        .WithOne(i => i.GoodsReturnOrderItem)
+        .HasForeignKey(i => i.GoodsReturnOrderItemId)
+        .HasPrincipalKey(s => s.GoodsReturnOrderItemId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+
+      
+        builder.Entity<ApplicationUser>()
+    .HasMany(w => w.GoodsReturnOrders)
+    .WithOne(po => po.User)
+    .HasForeignKey(po => po.UserId)
+    .HasPrincipalKey(w => w.Id)
+    .OnDelete(DeleteBehavior.NoAction);
+        builder.Entity<Supplier>()
+          .HasMany(s => s.GoodsReturnOrders)
+          .WithOne(ps => ps.Supplier)
+          .HasForeignKey(ps => ps.SupplierId)
+          .HasPrincipalKey(s => s.SupplierId)
+          .OnDelete(DeleteBehavior.NoAction);
+        builder.Entity<Item>()
+     .HasMany(o => o.GoodsReturnOrderItems).WithOne(a => a.Item)
+     .HasForeignKey(o => o.ItemId)
+     .HasPrincipalKey(e => e.ItemId)
+     .OnDelete(DeleteBehavior.NoAction);
+        #endregion
+
+        // Sales Order with items and warehouse and customer
+        #region Sales Order
+        //  Warehouse  with Sales Order
+        builder.Entity<Warehouse>()
+       .HasMany(o => o.SalesOrders).WithOne(a => a.Warehouse)
+       .HasForeignKey(o => o.WarehouseId)
+       .HasPrincipalKey(e => e.WarehouseId)
+       .OnDelete(DeleteBehavior.NoAction);
+
+
+        //  Sales order with item
+
+        builder.Entity<SalesOrder>()
+     .HasMany(o => o.SalesOrderItems).WithOne(a => a.SalesOrder)
+     .HasForeignKey(o => o.SalesOrderId)
+     .HasPrincipalKey(e => e.SalesOrderId)
+     .OnDelete(DeleteBehavior.Cascade);
+
+
+        builder.Entity<SalesOrderItem>()
+       .HasMany(o => o.SalesOrderBatches).WithOne(a => a.SalesOrderItem)
+       .HasForeignKey(o => o.SalesOrderItemId)
+       .HasPrincipalKey(e => e.SalesOrderItemId)
+       .OnDelete(DeleteBehavior.Cascade);
+
+
+        builder.Entity<Item>()
+     .HasMany(o => o.SalesOrderItems).WithOne(a => a.Item)
+     .HasForeignKey(o => o.ItemId)
+     .HasPrincipalKey(e => e.ItemId)
+     .OnDelete(DeleteBehavior.NoAction);
+
+
+        // Customer with Sales order
+
+        builder.Entity<Customer>()
+     .HasMany(o => o.SalesOrders).WithOne(a => a.Customer)
+     .HasForeignKey(o => o.CustomerId)
+     .HasPrincipalKey(e => e.CustomerId)
+     .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<ApplicationUser>()
+      .HasMany(w => w.SalesOrders)
+      .WithOne(po => po.User)
+      .HasForeignKey(po => po.UserId)
+      .HasPrincipalKey(w => w.Id)
+      .OnDelete(DeleteBehavior.NoAction);
+
+        #endregion
+
+        // Sales return 
+        #region Sales Return 
+
+        builder.Entity<SalesOrder>()
+        .HasOne(ps => ps.SalesReturnOrder)
+        .WithOne(rpo => rpo.SalesOrder)
+        .HasForeignKey<SalesReturnOrder>(rpo => rpo.SalesOrderId)
+        .HasPrincipalKey<SalesOrder>(ps => ps.SalesOrderId)
+        .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
+
+        builder.Entity<SalesReturnOrder>()
+        .HasMany(s => s.SalesReturnOrderItems)
+        .WithOne(i => i.SalesReturnOrder)
+        .HasForeignKey(i => i.SalesReturnOrderId)
+        .HasPrincipalKey(s => s.SalesReturnOrderId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+
+        builder.Entity<SalesOrderItem>()
+       .HasOne(ps => ps.SalesReturnOrderItem)
+       .WithOne(rpo => rpo.SalesOrderItem)
+       .HasForeignKey<SalesReturnOrderItem>(rpo => rpo.SalesOrderItemId)
+       .HasPrincipalKey<SalesOrderItem>(ps => ps.SalesOrderItemId)
+       .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
+
+        builder.Entity<SalesReturnOrderItem>()
+        .HasMany(s => s.SalesReturnOrderBatches)
+        .WithOne(i => i.SalesReturnOrderItem)
+        .HasForeignKey(i => i.SalesReturnOrderItemId)
+        .HasPrincipalKey(s => s.SalesReturnOrderItemId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+
+        builder.Entity<SalesOrderBatch>()
+       .HasOne(ps => ps.SalesReturnOrderBatch)
+       .WithOne(rpo => rpo.SalesOrderBatch)
+       .HasForeignKey<SalesReturnOrderBatch>(rpo => rpo.SalesOrderBatchId)
+       .HasPrincipalKey<SalesOrderBatch>(ps => ps.SalesOrderBatchId)
+       .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
+
+
+        builder.Entity<ApplicationUser>()
+        .HasMany(w => w.SalesReturnOrders)
+        .WithOne(po => po.User)
+        .HasForeignKey(po => po.UserId)
+        .HasPrincipalKey(w => w.Id)
+        .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Customer>()
+          .HasMany(s => s.SalesReturnOrders)
+          .WithOne(ps => ps.Customer)
+          .HasForeignKey(ps => ps.CustomerId)
+          .HasPrincipalKey(s => s.CustomerId)
+          .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Item>()
+     .HasMany(o => o.SalesReturnOrderItems)
+     .WithOne(a => a.Item)
+     .HasForeignKey(o => o.ItemId)
+     .HasPrincipalKey(e => e.ItemId)
+     .OnDelete(DeleteBehavior.NoAction);
+        #endregion
+
+     
+        
         // Production Stock with items and warehouse
         #region Production Order
-      
-       
+
+
         builder.Entity<Warehouse>()
             .HasMany(w => w.ProductionOrders)
             .WithOne(po => po.Warehouse)
@@ -99,142 +360,6 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
         #endregion
 
-        // Receipt Purchase Stock with items and warehouse
-        #region Receipt Purchase Order
-        builder.Entity<ReceiptPurchaseOrder>()
-    .HasMany(rpo => rpo.ReceiptPurchaseOrderItems)
-    .WithOne(ri => ri.ReceiptPurchaseOrder)
-    .HasForeignKey(ri => ri.ReceiptPurchaseOrderId)
-    .HasPrincipalKey(rpo => rpo.ReceiptPurchaseOrderId)
-    .OnDelete(DeleteBehavior.Cascade);
-
-   builder.Entity<Item>()
-    .HasMany(i => i.ReceiptPurchaseOrderItems)
-    .WithOne(ri => ri.Item)
-    .HasForeignKey(ri => ri.ItemId)
-    .HasPrincipalKey(i => i.ItemId)
-    .OnDelete(DeleteBehavior.NoAction);
-
-        //    builder.Entity<ReceiptPurchaseOrderItem>()
-        //.HasOne(ri => ri.Comment)
-        //.WithOne(c => c.ReceiptPurchaseOrderItem)
-        //.HasForeignKey<ReceiptPurchaseOrderItemComment>(c => c.ReceiptPurchaseOrderItemId)
-        //.HasPrincipalKey<ReceiptPurchaseOrderItem>(ri => ri.ReceiptPurchaseOrderItemId)
-        //.OnDelete(DeleteBehavior.Cascade);
-        builder.Entity<Supplier>()
-           .HasMany(s => s.ReceiptPurchaseOrders)
-           .WithOne(ps => ps.Supplier)
-           .HasForeignKey(ps => ps.SupplierId)
-           .HasPrincipalKey(s => s.SupplierId)
-           .OnDelete(DeleteBehavior.NoAction);
-        builder.Entity<PurchaseOrder>()
-    .HasOne(ps => ps.ReceiptPurchaseOrder)
-    .WithOne(rpo => rpo.PurchaseOrder)
-    .HasForeignKey<ReceiptPurchaseOrder>(rpo => rpo.PurchaseOrderId)
-    .HasPrincipalKey<PurchaseOrder>(ps => ps.PurchaseOrderId)
-    .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
-
-
-        builder.Entity<ApplicationUser>()
-        .HasMany(w => w.ReceiptPurchaseOrders)
-        .WithOne(po => po.User)
-        .HasForeignKey(po => po.UserId)
-        .HasPrincipalKey(w => w.Id)
-        .OnDelete(DeleteBehavior.NoAction);
-        #endregion
-
-        // Purchase Order with items and warehouse
-        #region Purchase Order
-        builder.Entity<PurchaseOrder>()
-    .HasMany(ps => ps.PurchaseOrderItems)
-    .WithOne(pi => pi.PurchaseOrder)
-    .HasForeignKey(pi => pi.PurchaseOrderId)
-    .HasPrincipalKey(ps => ps.PurchaseOrderId)
-    .OnDelete(DeleteBehavior.Cascade);
-
-
-        builder.Entity<Item>()
-       .HasMany(i => i.PurchaseOrderItems)
-       .WithOne(pi => pi.Item)
-       .HasForeignKey(pi => pi.ItemId)
-       .HasPrincipalKey(i => i.ItemId)
-       .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<Warehouse>()
-        .HasMany(w => w.PurchaseOrders)
-        .WithOne(ps => ps.Warehouse)
-        .HasForeignKey(ps => ps.WarehouseId)
-        .HasPrincipalKey(w => w.WarehouseId)
-        .OnDelete(DeleteBehavior.NoAction);
-
-        //
-        builder.Entity<Supplier>()
-        .HasMany(s => s.PurchaseOrders)
-        .WithOne(ps => ps.Supplier)
-        .HasForeignKey(ps => ps.SupplierId)
-        .HasPrincipalKey(s => s.SupplierId)
-        .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<ApplicationUser>()
-      .HasMany(w => w.PurchaseOrders)
-      .WithOne(po => po.User)
-      .HasForeignKey(po => po.UserId)
-      .HasPrincipalKey(w => w.Id)
-      .OnDelete(DeleteBehavior.NoAction);
-
-        #endregion
-
-
-        // Sales Order with items and warehouse and customer
-        #region Sales Order
-        //  Warehouse  with Sales Order
-      builder.Entity<Warehouse>()
-     .HasMany(o => o.SalesOrders).WithOne(a => a.Warehouse)
-     .HasForeignKey(o => o.WarehouseId)
-     .HasPrincipalKey(e => e.WarehouseId)
-     .OnDelete(DeleteBehavior.NoAction);
-
-
-        //  Sales order with item
-
-        builder.Entity<SalesOrder>()
-     .HasMany(o => o.SalesOrderItems).WithOne(a => a.SalesOrder)
-     .HasForeignKey(o => o.SalesOrderId)
-     .HasPrincipalKey(e => e.SalesOrderId)
-     .OnDelete(DeleteBehavior.NoAction);
-
-
-      builder.Entity<SalesOrderItem>()
-     .HasMany(o => o.SalesOrderBatches).WithOne(a => a.SalesOrderItem)
-     .HasForeignKey(o => o.SalesOrderItemId)
-     .HasPrincipalKey(e => e.SalesOrderItemId)
-     .OnDelete(DeleteBehavior.Cascade);
-
-
-        builder.Entity<Item>()
-     .HasMany(o => o.SalesOrderItems).WithOne(a => a.Item)
-     .HasForeignKey(o => o.ItemId)
-     .HasPrincipalKey(e => e.ItemId)
-     .OnDelete(DeleteBehavior.NoAction);
-
-
-        // Customer with Sales order
-
-        builder.Entity<Customer>()
-     .HasMany(o => o.SalesOrders).WithOne(a => a.Customer)
-     .HasForeignKey(o => o.CustomerId)
-     .HasPrincipalKey(e => e.CustomerId)
-     .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<ApplicationUser>()
-      .HasMany(w => w.SalesOrders)
-      .WithOne(po => po.User)
-      .HasForeignKey(po => po.UserId)
-      .HasPrincipalKey(w => w.Id)
-      .OnDelete(DeleteBehavior.NoAction);
-
-        #endregion
-
         // Count Stock with items and warehouse
         #region Count Stock
 
@@ -274,123 +399,7 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
-        // Good return 
-        #region Good Return 
-        builder.Entity<ReceiptPurchaseOrder>()
-        .HasOne(ps => ps.GoodsReturnOrder)
-        .WithOne(rpo => rpo.ReceiptPurchaseOrder)
-        .HasForeignKey<GoodsReturnOrder>(rpo => rpo.ReceiptPurchaseOrderId)
-        .HasPrincipalKey<ReceiptPurchaseOrder>(ps => ps.ReceiptPurchaseOrderId)
-        .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
-
-        builder.Entity<GoodsReturnOrder>()
-        .HasMany(s => s.GoodsReturnOrderItems)
-        .WithOne(i => i.GoodsReturnOrder)
-        .HasForeignKey(i => i.GoodsReturnOrderId)
-        .HasPrincipalKey(s => s.GoodsReturnOrderId)
-        .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<ReceiptPurchaseOrderItem>()
-       .HasOne(ps => ps.GoodsReturnOrderItem)
-       .WithOne(rpo => rpo.ReceiptPurchaseOrderItem)
-       .HasForeignKey<GoodsReturnOrderItem>(rpo => rpo.ReceiptPurchaseOrderItemId)
-       .HasPrincipalKey<ReceiptPurchaseOrderItem>(ps => ps.ReceiptPurchaseOrderItemId)
-       .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
-
-        builder.Entity<GoodsReturnOrderItem>()
-        .HasMany(s => s.GoodsReturnOrderBatches)
-        .WithOne(i => i.GoodsReturnOrderItem)
-        .HasForeignKey(i => i.GoodsReturnOrderItemId)
-        .HasPrincipalKey(s => s.GoodsReturnOrderItemId)
-        .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<ReceiptPurchaseOrderBatch>()
-       .HasOne(ps => ps.GoodsReturnOrderBatch)
-       .WithOne(rpo => rpo.ReceiptPurchaseOrderBatch)
-       .HasForeignKey<GoodsReturnOrderBatch>(rpo => rpo.ReceiptPurchaseOrderBatchId)
-       .HasPrincipalKey<ReceiptPurchaseOrderBatch>(ps => ps.ReceiptPurchaseOrderBatchId)
-       .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
-        builder.Entity<ApplicationUser>()
-    .HasMany(w => w.GoodsReturnOrders)
-    .WithOne(po => po.User)
-    .HasForeignKey(po => po.UserId)
-    .HasPrincipalKey(w => w.Id)
-    .OnDelete(DeleteBehavior.NoAction);
-        builder.Entity<Supplier>()
-          .HasMany(s => s.GoodsReturnOrders)
-          .WithOne(ps => ps.Supplier)
-          .HasForeignKey(ps => ps.SupplierId)
-          .HasPrincipalKey(s => s.SupplierId)
-          .OnDelete(DeleteBehavior.NoAction);
-        builder.Entity<Item>()
-     .HasMany(o => o.GoodsReturnOrderItems).WithOne(a => a.Item)
-     .HasForeignKey(o => o.ItemId)
-     .HasPrincipalKey(e => e.ItemId)
-     .OnDelete(DeleteBehavior.NoAction);
-        #endregion
-
-        // Sales return 
-        #region Sales Return 
-
-        builder.Entity<SalesOrder>()
-        .HasOne(ps => ps.SalesReturnOrder)
-        .WithOne(rpo => rpo.SalesOrder)
-        .HasForeignKey<SalesReturnOrder>(rpo => rpo.SalesOrderId)
-        .HasPrincipalKey<SalesOrder>(ps => ps.SalesOrderId)
-        .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
-
-        builder.Entity<SalesReturnOrder>()
-        .HasMany(s => s.SalesReturnOrderItems)
-        .WithOne(i => i.SalesReturnOrder)
-        .HasForeignKey(i => i.SalesReturnOrderId)
-        .HasPrincipalKey(s => s.SalesReturnOrderId)
-        .OnDelete(DeleteBehavior.NoAction);
-
-
-        builder.Entity<SalesOrderItem>()
-       .HasOne(ps => ps.SalesReturnOrderItem)
-       .WithOne(rpo => rpo.SalesOrderItem)
-       .HasForeignKey<SalesReturnOrderItem>(rpo => rpo.SalesOrderItemId)
-       .HasPrincipalKey<SalesOrderItem>(ps => ps.SalesOrderItemId)
-       .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
-
-        builder.Entity<SalesReturnOrderItem>()
-        .HasMany(s => s.SalesReturnOrderBatches)
-        .WithOne(i => i.SalesReturnOrderItem)
-        .HasForeignKey(i => i.SalesReturnOrderItemId)
-        .HasPrincipalKey(s => s.SalesReturnOrderItemId)
-        .OnDelete(DeleteBehavior.NoAction);
-
-
-        builder.Entity<SalesOrderBatch>()
-       .HasOne(ps => ps.SalesReturnOrderBatch)
-       .WithOne(rpo => rpo.SalesOrderBatch)
-       .HasForeignKey<SalesReturnOrderBatch>(rpo => rpo.SalesOrderBatchId)
-       .HasPrincipalKey<SalesOrderBatch>(ps => ps.SalesOrderBatchId)
-       .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
       
-        
-    builder.Entity<ApplicationUser>()
-    .HasMany(w => w.SalesReturnOrders)
-    .WithOne(po => po.User)
-    .HasForeignKey(po => po.UserId)
-    .HasPrincipalKey(w => w.Id)
-    .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<Customer>()
-          .HasMany(s => s.SalesReturnOrders)
-          .WithOne(ps => ps.Customer)
-          .HasForeignKey(ps => ps.CustomerId)
-          .HasPrincipalKey(s => s.CustomerId)
-          .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<Item>()
-     .HasMany(o => o.SalesReturnOrderItems)
-     .WithOne(a => a.Item)
-     .HasForeignKey(o => o.ItemId)
-     .HasPrincipalKey(e => e.ItemId)
-     .OnDelete(DeleteBehavior.NoAction);
-        #endregion
 
         /** Need Modeify **/
         // receive with items and warehouse and transfer stock
@@ -401,11 +410,11 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
    .WithOne(c => c.TransferredStock)
    .HasForeignKey<ReceivedStock>(c => c.TransferredStockId)
    .HasPrincipalKey<TransferredStock>(ri => ri.TransferredStockId)
-   .OnDelete(DeleteBehavior.Cascade);
+   .OnDelete(DeleteBehavior.NoAction);
 
 
         builder.Entity<ReceivedStock>()
-  .HasMany(r => r.ReceivedItems)
+      .HasMany(r => r.ReceivedItems)
   .WithOne(i => i.ReceivedStock)
   .HasForeignKey(i => i.ReceivedStockId)
   .HasPrincipalKey(r => r.ReceivedStockId)
@@ -428,12 +437,14 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
   .HasPrincipalKey<TransferredStockBatch>(ri => ri.TransferredStockBatchId)
   .OnDelete(DeleteBehavior.NoAction);
 
+
         builder.Entity<ReceivedItem>()
 .HasMany(t => t.ReceivedStockBatches)
 .WithOne(i => i.ReceivedItem)
 .HasForeignKey(i => i.ReceivedItemId)
 .HasPrincipalKey(t => t.ReceivedItemId)
 .OnDelete(DeleteBehavior.Cascade);
+
         builder.Entity<Item>()
      .HasMany(i => i.ReceivedItems)
      .WithOne(ri => ri.Item)
@@ -645,10 +656,19 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         builder.Entity<ProcessItemIsProgress>()
         .HasIndex(p => new { p.ReferenceId, p.ProcessType, p.Status });
 
+
+        builder.Entity<ProcessItemIsProgress>()
+      .HasIndex(p => p.ProcessType);
+
+        builder.Entity<ProcessItemIsProgress>()
+             .HasIndex(p => p.ReferenceId);
+
+
+
         #endregion
 
         // Supplier  with Item 
-         #region Supplier  with Item 
+        #region Supplier  with Item 
         builder.Entity<Item>()
       .HasMany(o => o.SupplierItems).WithOne(a => a.Item)
       .HasForeignKey(o => o.ItemId)
@@ -712,15 +732,21 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 .HasForeignKey(s => s.ItemId)
 .HasPrincipalKey(i => i.ItemId)
 .OnDelete(DeleteBehavior.NoAction);
+
+
         builder.Entity<Warehouse>()
 .HasMany(i => i.WarehouseItems)
 .WithOne(s => s.Warehouse)
 .HasForeignKey(s => s.WarehouseId)
 .HasPrincipalKey(i => i.WarehouseId)
 .OnDelete(DeleteBehavior.NoAction);
+
+
         builder.Entity<WarehouseItem>()
       .HasIndex(wi => new { wi.ItemId, wi.WarehouseId })
       .IsUnique();
+        builder.Entity<WarehouseItem>()
+     .HasIndex(wi => wi.WarehouseId);
 
 
         builder.Entity<Item>()
@@ -728,9 +754,10 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
 
 
+
         #endregion
 
-         #region Sap
+        #region Sap
         builder.Entity<Sap>()
        .HasMany(i => i.Warehouses)
        .WithOne(s => s.Sap)

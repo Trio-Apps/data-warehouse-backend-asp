@@ -43,6 +43,7 @@ namespace DataWarehouse.Services
 
             #region Base Repository
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+            services.AddScoped(typeof(IBaseProcessesRepository<>), typeof(BaseProcessesRepository<>));
             #endregion
 
             #region Actors Repositories

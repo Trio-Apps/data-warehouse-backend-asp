@@ -1407,6 +1407,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ReceiptPurchaseOrderItemId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -1573,6 +1576,9 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ReceiptPurchaseOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("UnitPrice")

@@ -11669,44 +11669,6 @@
         }
       }
     },
-    "/api/SalesOrder/processing": {
-      "get": {
-        "tags": [
-          "SalesOrder"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SalesOrder"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SalesOrder"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SalesOrder"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/SalesOrderBatch": {
       "get": {
         "tags": [
@@ -11803,17 +11765,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSalesOrderBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSalesOrderBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSalesOrderBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             }
           }
@@ -11913,41 +11875,24 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddSalesOrderBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddSalesOrderBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AddSalesOrderBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SalesOrderBatch"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SalesOrderBatch"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SalesOrderBatch"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
@@ -12307,17 +12252,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSalesOrderItemDTO"
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSalesOrderItemDTO"
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSalesOrderItemDTO"
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
               }
             }
           }
@@ -12626,6 +12571,29 @@
       }
     },
     "/api/SalesReturnOrder/sales-order/{salesOrderId}": {
+      "get": {
+        "tags": [
+          "SalesReturnOrder"
+        ],
+        "parameters": [
+          {
+            "name": "salesOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SalesReturnOrder/by-sales-order/{salesOrderId}": {
       "get": {
         "tags": [
           "SalesReturnOrder"
@@ -17731,6 +17699,37 @@
         },
         "additionalProperties": false
       },
+      "AddGeneralItemDto": {
+        "required": [
+          "itemId",
+          "uoMEntry"
+        ],
+        "type": "object",
+        "properties": {
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "itemId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "comment": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AddGoodsReturnOrderBatchDTO": {
         "required": [
           "goodsReturnOrderItemId",
@@ -18187,38 +18186,6 @@
         },
         "additionalProperties": false
       },
-      "AddSalesOrderBatchDTO": {
-        "required": [
-          "quantity",
-          "salesOrderItemId"
-        ],
-        "type": "object",
-        "properties": {
-          "salesOrderItemId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "expiryDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "AddSalesOrderDTO": {
         "required": [
           "customerId",
@@ -18263,39 +18230,7 @@
             "$ref": "#/components/schemas/DynamicBarcodesDto"
           },
           "item": {
-            "$ref": "#/components/schemas/AddSalesOrderItemDTO"
-          }
-        },
-        "additionalProperties": false
-      },
-      "AddSalesOrderItemDTO": {
-        "required": [
-          "itemId",
-          "salesOrderId",
-          "uoMEntry"
-        ],
-        "type": "object",
-        "properties": {
-          "uoMEntry": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "salesOrderId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "itemId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/AddGeneralItemDto"
           }
         },
         "additionalProperties": false
@@ -18360,6 +18295,12 @@
         ],
         "type": "object",
         "properties": {
+          "salesOrderItemId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
           "quantity": {
             "minimum": 0.01,
             "type": "number",
@@ -18370,12 +18311,6 @@
             "minLength": 0,
             "type": "string",
             "nullable": true
-          },
-          "salesOrderItemId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -19642,6 +19577,37 @@
             "minLength": 1,
             "type": "string",
             "format": "email"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GeneralBatchDto": {
+        "required": [
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -21474,6 +21440,10 @@
             "type": "string",
             "nullable": true
           },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
           "userId": {
             "type": "string",
             "nullable": true
@@ -21512,6 +21482,10 @@
         "type": "object",
         "properties": {
           "salesOrderBatchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderItemId": {
             "type": "integer",
             "format": "int32"
           },
@@ -21668,6 +21642,10 @@
             "format": "double"
           },
           "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderId": {
             "type": "integer",
             "format": "int32"
           },
@@ -22828,6 +22806,56 @@
         },
         "additionalProperties": false
       },
+      "UpdateGeneralBatchDto": {
+        "required": [
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateGeneralItemDto": {
+        "required": [
+          "uoMEntry"
+        ],
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "comment": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateGoodsReturnOrderBatchDTO": {
         "required": [
           "goodsReturnOrderBatchId",
@@ -23245,36 +23273,6 @@
         },
         "additionalProperties": false
       },
-      "UpdateSalesOrderBatchDTO": {
-        "required": [
-          "quantity",
-          "salesOrderBatchId"
-        ],
-        "type": "object",
-        "properties": {
-          "salesOrderBatchId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "expiryDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "UpdateSalesOrderDTO": {
         "required": [
           "customerId"
@@ -23309,30 +23307,6 @@
         },
         "additionalProperties": false
       },
-      "UpdateSalesOrderItemDTO": {
-        "required": [
-          "salesOrderItemId",
-          "uoMEntry"
-        ],
-        "type": "object",
-        "properties": {
-          "salesOrderItemId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "uoMEntry": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
       "UpdateSalesReturnOrderBatchDTO": {
         "required": [
           "quantity",
@@ -23349,6 +23323,11 @@
             "maxLength": 500,
             "minLength": 0,
             "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           },
           "salesReturnOrderBatchId": {
@@ -23374,7 +23353,7 @@
             "type": "string",
             "nullable": true
           },
-          "isProcessing": {
+          "isDraft": {
             "type": "boolean"
           }
         },
@@ -23382,7 +23361,8 @@
       },
       "UpdateSalesReturnOrderItemDTO": {
         "required": [
-          "salesReturnOrderItemId"
+          "salesReturnOrderItemId",
+          "uoMEntry"
         ],
         "type": "object",
         "properties": {
@@ -23397,6 +23377,10 @@
             "minLength": 0,
             "type": "string",
             "nullable": true
+          },
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
           },
           "salesReturnOrderItemId": {
             "type": "integer",

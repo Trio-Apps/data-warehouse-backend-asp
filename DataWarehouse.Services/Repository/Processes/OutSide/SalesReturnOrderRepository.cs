@@ -1,23 +1,28 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-
 namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISalesReturnOrderRepository
 {
-    public SalesReturnOrderRepository(DataWarehouseDbContext context) : base(context)
+    private readonly IApprovalRepository approval;
+
+    public SalesReturnOrderRepository(IApprovalRepository approval, DataWarehouseDbContext context) : base(context)
     {
+        this.approval = approval;
     }
 
     public async Task<IEnumerable<SalesReturnOrder>> GetByWarehouseIdAsync(int warehouseId)
@@ -111,15 +116,41 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         if (entity.SalesReturnOrderId != salesReturnOrderId)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("ID mismatch");
 
+        #region like
+        var checkApprovalStatus = await GetProcessItem(entity.SalesReturnOrderId, ProcessType.SalesReturn);
+
+        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("You cannot edit any sales return order because its approval status is 'Approved' and all approval steps have been completed.");
+
+
         // Update fields if needed
         entity.UserId = userId;
         entity.Comment = dto.Comment;
 
-        entity.Status = dto.IsProcessing ?  GeneralStatus.Processing : entity.Status;
 
+
+        if (!dto.IsDraft)
+        {
+            await approval.StartProcessAsync(
+                processType: ProcessType.SalesReturn,
+                referenceId: entity.SalesReturnOrderId,
+                warehouseId: entity.WarehouseId,
+                userId: userId
+            );
+
+            entity.Status = GeneralStatus.Processing;
+        }
+        else
+        {
+            entity.Status = entity.Status == GeneralStatus.Processing ? GeneralStatus.Processing : GeneralStatus.Draft;
+        }
+
+        #endregion
+
+
+     
 
         await _context.SaveChangesAsync();
-
         var result = new SalesReturnOrderDTO
         {
             SalesReturnOrderId = entity.SalesReturnOrderId,
@@ -131,6 +162,51 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
         return GeneralResponse<SalesReturnOrderDTO>.SuccessResponse(result);
     }
+
+    public async Task<GeneralResponse<SalesReturnOrderDTO>> GetWithCustomerAsync(int salesOrderId, string userId, CancellationToken cancellationToken = default)
+    {
+        var res = await _context.SalesReturnOrders.Include(so => so.Customer)
+            .Include(s => s.SalesOrder)
+            .FirstOrDefaultAsync(so => so.SalesOrderId == salesOrderId);
+
+        if (res == null)
+            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("this SalesOrderId is not found");
+
+
+        var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.SalesReturn, res.SalesReturnOrderId);
+
+        var checkApprovalStatus = await approval.GetProcessItem(res.SalesReturnOrderId, ProcessType.SalesReturn, cancellationToken);
+
+
+        bool hasProgress = checkApprovalStatus != null;
+
+        string? approvalStatus = checkApprovalStatus?.Status.ToString();
+
+        var mapping = new SalesReturnOrderDTO
+        {
+            DueDate = res.SalesOrder.DueDate,
+            PostingDate = res.SalesOrder.PostingDate,
+            SalesOrderId = res.SalesOrderId,
+            Status = res.Status.ToString(),
+            Comment = res.Comment,
+            UserId = res.UserId,
+            WarehouseId = res.WarehouseId,
+            SalesReturnOrderId = res.SalesReturnOrderId,
+            CustomerName = res.Customer.CustomerName,
+            CustomerId = res.CustomerId,
+            CanApprove = approvalModel.CanApprove,
+            ProcessApprovalId = approvalModel.ProcessApprovalId,
+            ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
+            Reason = approvalModel.Reason,
+            Approval = hasProgress,
+            ApprovalStatus = checkApprovalStatus != null ? approvalStatus : null
+        };
+
+
+        return GeneralResponse<SalesReturnOrderDTO>.SuccessResponse(mapping);
+
+    }
+
 
     public async Task<GeneralResponse<SalesReturnOrderDTO>> GetBySalesOrderIdAsync(int salesOrderId)
     {
