@@ -1,0 +1,112 @@
+#,Module,Sub Module,Feature,Feature Description,Type,Phase #,Priority Phase,Priority,Shared in BRS?,Comments,Effected Pages
+1,Inventory,Stock transfers,Transfer Sending & Receiving,Enable warehouse users to initiate and confirm stock transfers between warehouses directly from WMS with full traceability in SAP B1,New,Phase 1,,,Yes,,New Pages
+2,Customer Portal,Admin,Approvals Process,"Introduce workflow approvals for key transactions (e.g., Purchase Requests, Transfers, Returns) based on user roles.",New,Phase 1,,,Yes,,All Pages
+3,Production,Production Orders,Bulk Production Order,Provide the ability to generate multiple  production orders in one step,New,Phase 1,,,Yes,,New Pages
+4,Inventory,Stock Counting,Counting Sheet,"Enable users to perform inventory counts within WMS, generate counting sheets, and post results directly to SAP B1.",New,Phase 1,,,Yes,,New Pages
+5,General guidline,All Documents,Attachments Management,"Enable adding, viewing, and syncing of attachments (e.g., photos, pdf ) with SAP B1 documents.",New,Phase 1,,,Yes,,"Purchasing , Quantity Adjustment"
+6,Customer Portal,Warehosue Setup,Warehouse-Level Access Restrictions,"Control user permissions by assigned warehouse(s), ensuring data segregation and operational security.",New,Phase 1,,,Yes,,All Pages
+7,Customer Portal,Item Setup,Dynamic Barcode,"Implement a custom barcode structure containing item and quantity details, allowing flexible decoding and faster transaction posting",New,Phase 1,,,Yes,,All Pages
+8,Login Page,,Save Password Option on Login,Enable users to save credentials securely for faster access,New,Phase 1,,,Yes,,Login
+9,General guidline,All Documents,Search & Scan Flexibility,Allow searching or scanning across multiple document types,New,Phase 1,,,Yes,,All Pages
+10,Purchasing,Goods Receipt PO (GRPO),Goods Receipt PO Enhancement,Enhance creating Goods Receipt PO,New,Phase 1,,,Yes,,Purchasing
+11,Customer Portal,Reasons Setup,Dynamic Reasons,"Quantity Adjustment reasons must be configurable from the WMS Customer Panel, and the latest configured reasons must 
+appear in the WMS Mobile Application. Plus Reason assignment to type of document",New,Phase 1,,,Yes,,"Quantity Adjustment, Stock Goods Receipt,  Purchase Return, Sales Return"
+12,Purchasing,Goods Return,Standalone Goods Return,Allow creation of independent Goods Return documents without referencing an existing GRPO or Delivery Note,New,Phase 1,,,Yes,,"Purchase Return, Sales Reutrn"
+13,Customer Portal,Document Settings,Disable Future Posting,Restrict users from posting documents with future-dated transactions to maintain accounting accuracy,New,Phase 1,,,Yes,,All Pages
+14,General guidline,Home Page ,Main Page Widgets — “Due Today” Functionality,Daily summary of all transactions that are due today ,New,Phase 1,,,Yes,,Main Page
+15,Inventory,Stock transfer request,Add “Required Date” in Stock Transfer Request Page,Add “Required Date” as a new field in the Stock Transfer Request,New,Phase 1,,,Yes,,Stock Transfer Request
+16,Web Base,Web Base,Web Based WMS,"Introduce a browser-accessible version of WMS for desktop users, maintaining full SAP B1 integration",New,Phase 1,,,Yes,,All Pages
+17,Customer Portal,Admin,Approval Process Enhancements,"Enhancements:
+1- New report Document Status Report (shows where the transaction is stuck)
+2- New report with action - Approval Decision Report (batch approve multiple documents)
+3- Conditional approval based on query
+4- Push notifications to creator and approver",New,Unassigned,Phase 1,,No,Enhancement on the previously shared (Approval Process),All Pages
+18,General guidline,All Documents,Include Cost Center in all transactions,Include default cost centers in WMS transactions based on the default cost centers mapped in Customer Poral,New,Unassigned,Phase 1,,No,,All Pages
+19,General guidline,All Documents,Multiple Languages Support,Include different languages in WMS app,New,Unassigned,Phase 2,,No,,All Pages
+20,General guidline,All Documents,Auto Save in Cache while scanning,"While the user scanning the item, the application must save the document in cache to prevent losing the tranaction in case the user clicks back or close the application by mistake.",New,Unassigned,Phase 1,,No,,All Pages
+21,Customer Portal,Item Setup ,Label Printing (Dynamic),Allow the client to design the label to be printed,New,Phase 2,,,No,,Printing
+22,Reports,Stock Reports,"Stock Control Report, Stock Audit Report",New stock reports to be generated from WMS,New,Phase 2,,,No,,New Pages
+23,Purchasing,Purchase request,Purchase Request Page,Add Purchase Request functionality in WMS App,New,Phase 2,,,No,,New Pages
+24,Master data,Item ,Item Master Data Page,Add Item Master data page in WMS app to view item details and allow to activate and deactivate an item,New,Phase 2,,,No,,New Pages
+25,Customer Portal,Warehosue Setup,Bin-Locations Support,Allow WMS to support bin-locations while adding the transactions,New,Phase 2,,,No,,All Pages
+26,Production,Reports,Production Orders Report,Add new production report to be generated from WMS app,New,Phase 2,,,No,,New Pages
+27,General guidline,Purchasing and sales,"Enhance Open PO, View Open SO pages","Add more filters in View Open PO, View Open SO pages and retrieve open lines only",Enhancment,Phase 2,,,No,,"View Open Purchase Orders
+View Open Sales Orders"
+28,Customer Portal,Admin,Layout Designer,Layout Designer to allow the user to print documents from WMS app,New,Phase 2,,,No,,New Pages
+29,General guidline,All Documents,Loading for each action in the application and App Performance,Ensure the performance of the application is stable,New,Phase 2,,,No,,All Pages
+30,Production,Production Orders,Enhance Bulk Production Orders creation,Retrieve list of BoM (Production) items where BoM line is Backflush only,New,Unassigned,Phase 2,,No,Enhancement on the previously shared (Bulk Production Orders ),Bulk Production Orders Page
+31,Inventory,Counting Sheet,Counting Sheet enhancment,Multiple counters handling in counting sheet,New,Unassigned,Phase 2,,No,Enhancement on the previously shared (Counting Sheet),Counting Sheet
+32,Inventory,Goods Receipt,Stock Goods Receipt,New Inventory Goods Receipt page and allow to copy from quantity adjustment,New,Unassigned,Phase 2,,No,,New Pages
+33,Inventory,Stock transfer,Bin-Locations Transfers,Allow the user to transfer items from Bin to Bin,New,Unassigned,Phase 2,,No,,New Pages
+34,Master data,Customer,Customers Page,Add new Page in WMS to view customer basic info,New,Unassigned,Phase 3,,No,,New Pages
+35,General guidline,All Documents,WMS Validations in client level,Add more validations in WMS before submit the transaction to SAP,New,Phase 3,,,No,,All Pages
+36,General guidline,All Documents,Serial Numbers Support,Allow the application to support serial number for items while creating the transactions,New,Phase 3,,,No,,All Pages
+37,Master data,Suppliers,Suppliers Pages,"Add a Transactions Report button on the Supplier details page; when clicked, it should fetch and show all transactions associated with that supplier.",Enhancment,Phase 3,,,No,,Suppliers
+38,Inventory,Snapshot,Stock Snapshot,"Create Stock Snapshot page, Audit count and save the count as a snapshot in time with no inventory impact",New,Phase 3,,,No,,New Pages
+39,Production,Bill Material,View BoM,Add new page to allow the user to view or update BoM from WMS,New,Phase 3,,,No,,New Pages
+40,General guidline,All Documents,Push Notifications,"Allow the application to send notifications to users such as approval request, alerts ..etc",New,Phase 3,,,No,,All Pages
+41,Purchasing,Goods return,Return Request,Add Return Request functionality,New,Phase 3,,,No,,New Pages
+42,Reports,,Reports enhancments,All reports to be filtered by Location,New,Phase 3,,,No,,All Reports Pages
+43,General guidline,All Documents,Support Multiple Companies ,Allow the user to switch between companies from WMS,New,Unassigned,Phase 3,,No,,Login
+44,General guidline,All Documents,GS1 Support,Support GS1 barcode,New,Unassigned,Phase 3,,No,,All Pages
+45,Inventory,Inventory transfer,Put-away functionality,"Put-away functionality (Quarantine, Ready to ship, etc.)",New,Unassigned,Phase 2,,No,,New Pages
+46,General guidline,All Documents,Offline mode,Allow the application to work offline,New,Unassigned,Phase 3,,No,,All Pages
+47,Inventory,Pick and Pack,Pick & Pack functionality,Pick and pack functionality to be added in WMS,New,Unassigned,Phase 3,,No,,New Pages
+48,Reports,Inventory,Batches Reports,"Batch Movement Report
+Batch Expiry Report
+Batch Quantities Report",New,Unassigned,Phase 2,,No,,New Pages
+49,General guidline,,Alerts Managment,Push Alerts based on SAP B1 query.,New,Unassigned,Phase 3,,No,,New Pages
+50,Reports,Inventory,Enhance Transaction Report (Stock Posting List),Add Filter by Transaction type and Add functionality to group transaction by Item,New,Unassigned,Phase 2,,No,,Transactions Report Pages
+51,Master data,Items,Check Item Price,Allow the user to check item price directly from WMS,New,Unassigned,Phase 3,,No,,New Pages
+52,General guidline,All Receiving Documents,Print Serial Number.,Allow the user to print serial number,New,Unassigned,Phase 3,,No,,New Pages
+53,General guidline,All Documents,Barcode scanning,"When scan a barcode, the app must set the default UoM by barcode and the user cannot change it",Enhancment,Unassigned,Phase 1,,No,,All Pages
+54,General guidline,All Documents,Set VAT ," preselected based on Item definition , this will require VAT Code mapping with SAP",New,Unassigned,Phase 2,,No,,"Purchasing, Sales Pages"
+55,General guidline,Purchasing and sales,Freights Management,"Allow the user to set freight code in the header level of the transactions, List of freights are reterived from SAP Business One",Enhancment,Unassigned,Phase 1,To be checked,No,,"Purchasing, Outbound Delivery"
+56,General guidline,All Documents,Remarks in transactions,Allow the user to add remarks in the header level of transaction,Enhancment,Unassigned,Phase 1,,No,,All Pages
+57,General guidline,All Documents,Document Totals,"View Total Before VAT, VAT total, Total After VAT",Enhancment,Unassigned,Phase 1,Can be postponed,No,,"Purchase Order
+Purchasing
+Purchase return
+Outbound Delivery
+Delivery Return"
+58,General guidline,Purchasing and sales,Open Quantity Visibility,Add a new column in Transactions to display the open quantity for each item when the transaction is based on a base document.,Enhancment,Unassigned,Phase 1,Can be postponed,No,,"Purchasing
+Purchase return
+Outbound Delivery
+Delivery Return
+Transfers"
+59,Customer Portal,Integration,Transactions Logs,Add a new Logs page to record failed transactions and allow users to review and re-submit them.,New,Unassigned,Phase 2,,No,,New Pages
+60,General guidline,All Documents,Drafts Pages Enhancment,Sort Draft documents by Date,Enhancment,Unassigned,Phase 1,Can be postponed,No,,All Drafts Pages
+61,General guidline,All Documents,User Defined Fields Management,"UDF behavior must match SAP Business One (B1). For example, if a UDF has valid values (dropdown) or a default value, it should be displayed and pre-filled exactly as in B1. The field control must be dynamic and rendered according to the UDF data type defined in SAP B1.",Enhancment,Unassigned,Phase 1,Can be postponed,No,,All Pages
+62,General guidline,All Documents,Add Created by info,Add Created by in UDF when post a transaction to SAP Business One,Enhancment,Unassigned,Phase 1,Can be postponed,No,,All Pages
+63,Customer Portal,Reasons Setup,Mandetory Reason,Reason selection is mandetory ,Enhancment,Unassigned,Phase 1,,No,,"Quantity Adjustment
+Goods Receipt new Page
+Sales Return
+Purchase Return"
+64,Production,Production Orders,Multiple Production Order Receipt,Allow the user to create multiple production receipt based on one production order,Enhancment,Unassigned,Phase 3,,No,,Production Order
+65,General guidline,All Documents,Special Characters,"The application must accept and handle Special Characters while posting to SAP, Retrive Data from SAP such as  Suppliers Code, Item Code",Enhancment,Unassigned,Phase 1,Can be postponed,No,,All Pages
+66,General guidline,All Documents,Copy from / Copy to functionality enhancment,"When copying from a PO, SO, or Transfer Request, retrieve and display the items in the same order as in the original SAP B1 document.",Enhancment,Unassigned,Phase 1,,No,,"Purchasing
+Purchase return
+Outbound Delivery
+Delivery Return
+Transfers"
+67,General guidline,All Documents,User Confirmation Functionality,"When the user clicks back, show a confirmation popup",Enhancment,Unassigned,Phase 1,,No,,All Pages
+68,General guidline,All Documents,Scan By BP Catalog Number,Allow the user to scan by Business Partner Catalog Number,Enhancment,Unassigned,Phase 3,,No,,"Purchasing, Sales Pages"
+69,General guidline,All Documents,Excel Exporting,Allow the user to export transactions / Reports to excel,New,Unassigned,Phase 3,,No,,All Pages
+70,General guidline,Report,"Consolidated Reports (Open Purchase Orders, Open Transfer Requests)",Add Consolidated Reports for Open Purchase Orders and Open Transfer Requests by item,New,Unassigned,Phase 3,,No,,New Pages
+71,Customer Portal,Item Setup,Master Data Sync,Enable automatic Master Data synchronization based on a predefined frequency configured in the Admin panel (frequency may vary per customer).,Enhancment,Unassigned,Phase 1,,No,,NA
+72,Customer Portal,Admin,Document Series,Support different document serial number series when posting transactions. The series should be determined via Warehouse Mapping in the customer portal (configurable per customer). Serial number series must be retrieved from SAP Business One.,New,Unassigned,Phase 2,,No,,All Pages
+73,Inventory,Stock Counting,Stock Posting Item Cost,"In Stock Posting, automatically retrieve the item cost when the counted quantity is greater than the stock-on-hand quantity.",Enhancment,Unassigned,Phase 1,It shoudl be there in existing code but double check,No,,Stock Counting
+74,General guidline,All Documents,Create UDFs and Service Layer Queries,Auto Create UDF when initilize the company,Enhancment,Unassigned,Phase 1,,No,,NA
+75,Login Page,,SAP B1 Licenses User Login,"If the user has an SAP Business One account, the application must authenticate access using that user; otherwise, it should log in using the default user configured in the admin panel.",New,Unassigned,Phase 1,,No,,Login
+76,IOS,IOS,iOS Deployment,Have a release to be work on iOS,New,Unassigned,Phase 3,,No,,NA
+77,Customer Portal,Warehouse Setup,Enhance Warehouses,Enhance the Warehouses and Suppliers pages by displaying additional information fields. - Cost Centers / Location Details and so on,Enhancment,Phase 3,,,No,,Warehouses Pages
+78,General guidline,All Documents,Set discount,Add Discount field on a line or header level and read based on saved values in previous document - non editable,New,Unassigned,Phase 2,,No,,"Purchasing, Sales Pages"
+79,General guidline,Purchasing and sales,Change discount,If user is authorized discount ccan be edited cbased on autorization and allowed discount percentage,,,,,,,
+80,General guidline,All Documents,Change VAT,If user is authorized VAT Code can be changed based on pre-defined list of VAT Codes from SAP,New,Unassigned,Phase 2,,No,,"Purchasing, Sales Pages"
+81,General guidline,All Documents,Approval,All document are subject to Approval ,New,,Phase 1,,,,
+82,General guidline,All Documents,Authorization,All documents are subject to Authorization,New,,Phase 1,,,,
+83,General guidline,All Documents,Notfication,All documents are subject to notfication,New,,Phase 1,,,,
+84,General guidline,All Documents,Layouts,All documents are subject to Layouts,New,,Phase 1,,,,
+85,General guidline,All Documents,Save as draft,All documents are subject to save as draft,New,,Phase 1,,,,
+86,General guidline,All Documents,Field update,"Authoity on the Price , add item , remove item , change field value",New,,Phase 1,,,,
+87,General guidline,All Documents,,All document filter document list by header fields ,New,,Phase 1,,,,
+88,Franchise Process,Purchasing and sales,,"Franchise Process for PO and Deliveries , automate creation of Sales Orders and receivings (Different Companies)",,,,,,,

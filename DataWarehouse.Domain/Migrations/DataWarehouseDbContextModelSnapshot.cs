@@ -999,6 +999,10 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasKey("ProcessItemIsProgressId");
 
+                    b.HasIndex("ProcessType");
+
+                    b.HasIndex("ReferenceId");
+
                     b.HasIndex("ReferenceId", "ProcessType", "Status");
 
                     b.ToTable("ProcessItemIsProgresses");
@@ -1309,7 +1313,13 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ReceiptPurchaseOrderId")
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PostingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReceiptPurchaseOrderId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -1328,7 +1338,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("GoodsReturnOrderId");
 
                     b.HasIndex("ReceiptPurchaseOrderId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[ReceiptPurchaseOrderId] IS NOT NULL");
 
                     b.HasIndex("SupplierId");
 
@@ -2760,8 +2771,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", "ReceiptPurchaseOrder")
                         .WithOne("GoodsReturnOrder")
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrder", "ReceiptPurchaseOrderId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Supplier", "Supplier")
                         .WithMany("GoodsReturnOrders")
@@ -2795,7 +2805,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrderItem", "GoodsReturnOrderItem")
                         .WithMany("GoodsReturnOrderBatches")
                         .HasForeignKey("GoodsReturnOrderItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrderBatch", "ReceiptPurchaseOrderBatch")
@@ -2814,7 +2824,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrder", "GoodsReturnOrder")
                         .WithMany("GoodsReturnOrderItems")
                         .HasForeignKey("GoodsReturnOrderId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
@@ -2969,7 +2979,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrder", "SalesOrder")
                         .WithMany("SalesOrderItems")
                         .HasForeignKey("SalesOrderId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -3023,7 +3033,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderItem", "SalesReturnOrderItem")
                         .WithMany("SalesReturnOrderBatches")
                         .HasForeignKey("SalesReturnOrderItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("SalesOrderBatch");
@@ -3048,7 +3058,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrder", "SalesReturnOrder")
                         .WithMany("SalesReturnOrderItems")
                         .HasForeignKey("SalesReturnOrderId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Item");
@@ -3145,7 +3155,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredStock", "TransferredStock")
                         .WithOne("ReceivedStock")
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.ReceivedStock", "TransferredStockId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")

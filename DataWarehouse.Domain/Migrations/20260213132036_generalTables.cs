@@ -1190,7 +1190,8 @@ namespace DataWarehouse.Domain.Migrations
                         name: "FK_SalesOrderItems_SalesOrders_SalesOrderId",
                         column: x => x.SalesOrderId,
                         principalTable: "SalesOrders",
-                        principalColumn: "SalesOrderId");
+                        principalColumn: "SalesOrderId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1260,8 +1261,7 @@ namespace DataWarehouse.Domain.Migrations
                         name: "FK_ReceivedStocks_TransferredStocks_TransferredStockId",
                         column: x => x.TransferredStockId,
                         principalTable: "TransferredStocks",
-                        principalColumn: "TransferredStockId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "TransferredStockId");
                     table.ForeignKey(
                         name: "FK_ReceivedStocks_Warehouses_SourceWarehouseId",
                         column: x => x.SourceWarehouseId,
@@ -1361,11 +1361,13 @@ namespace DataWarehouse.Domain.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
+                    PostingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     SupplierId = table.Column<int>(type: "int", nullable: false),
-                    ReceiptPurchaseOrderId = table.Column<int>(type: "int", nullable: false)
+                    ReceiptPurchaseOrderId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1402,6 +1404,7 @@ namespace DataWarehouse.Domain.Migrations
                     Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     UoMEntry = table.Column<int>(type: "int", nullable: false),
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -1481,7 +1484,8 @@ namespace DataWarehouse.Domain.Migrations
                         name: "FK_SalesReturnOrderItems_SalesReturnOrders_SalesReturnOrderId",
                         column: x => x.SalesReturnOrderId,
                         principalTable: "SalesReturnOrders",
-                        principalColumn: "SalesReturnOrderId");
+                        principalColumn: "SalesReturnOrderId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1555,6 +1559,7 @@ namespace DataWarehouse.Domain.Migrations
                     Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     UoMEntry = table.Column<int>(type: "int", nullable: false),
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -1569,7 +1574,8 @@ namespace DataWarehouse.Domain.Migrations
                         name: "FK_GoodsReturnOrderItems_GoodsReturnOrders_GoodsReturnOrderId",
                         column: x => x.GoodsReturnOrderId,
                         principalTable: "GoodsReturnOrders",
-                        principalColumn: "GoodsReturnOrderId");
+                        principalColumn: "GoodsReturnOrderId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_GoodsReturnOrderItems_Items_ItemId",
                         column: x => x.ItemId,
@@ -1632,7 +1638,8 @@ namespace DataWarehouse.Domain.Migrations
                         name: "FK_SalesReturnOrderBatches_SalesReturnOrderItems_SalesReturnOrderItemId",
                         column: x => x.SalesReturnOrderItemId,
                         principalTable: "SalesReturnOrderItems",
-                        principalColumn: "SalesReturnOrderItemId");
+                        principalColumn: "SalesReturnOrderItemId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1686,7 +1693,8 @@ namespace DataWarehouse.Domain.Migrations
                         name: "FK_GoodsReturnOrderBatches_GoodsReturnOrderItems_GoodsReturnOrderItemId",
                         column: x => x.GoodsReturnOrderItemId,
                         principalTable: "GoodsReturnOrderItems",
-                        principalColumn: "GoodsReturnOrderItemId");
+                        principalColumn: "GoodsReturnOrderItemId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_GoodsReturnOrderBatches_ReceiptPurchaseOrderBatches_ReceiptPurchaseOrderBatchId",
                         column: x => x.ReceiptPurchaseOrderBatchId,
@@ -1842,7 +1850,8 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_GoodsReturnOrders_ReceiptPurchaseOrderId",
                 table: "GoodsReturnOrders",
                 column: "ReceiptPurchaseOrderId",
-                unique: true);
+                unique: true,
+                filter: "[ReceiptPurchaseOrderId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GoodsReturnOrders_SupplierId",
@@ -1928,6 +1937,16 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_ProcessesTypesDates_ProcessesTypeId",
                 table: "ProcessesTypesDates",
                 column: "ProcessesTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProcessItemIsProgresses_ProcessType",
+                table: "ProcessItemIsProgresses",
+                column: "ProcessType");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProcessItemIsProgresses_ReferenceId",
+                table: "ProcessItemIsProgresses",
+                column: "ReferenceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProcessItemIsProgresses_ReferenceId_ProcessType_Status",

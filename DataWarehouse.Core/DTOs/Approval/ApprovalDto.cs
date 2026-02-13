@@ -108,6 +108,10 @@ namespace DataWarehouse.Core.DTOs.Approval
         public int? ProcessItemIsProgressId { get; set; }
         public int? ProcessApprovalId { get; set; } // Useful لو هتستخدمه في الموافقة المباشرة
         public string? Reason { get; set; } // سبب الرفض لو حبيت تستخدمه للـ Debug أو UI
+   
+       public bool hasProgress { get; set; }
+
+        public string? ApprovalStatus { get; set; } 
     }
 
 

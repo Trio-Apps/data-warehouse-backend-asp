@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -86,10 +87,7 @@ public class ReceiptPurchaseOrderItemController : ControllerBase
 
         var created = await _repository.AddReceiptPurchaseItemByReceiptPurchaseOrderIdAsync(
             ReceiptPurchaseOrderId,
-           isBarcode,
-            dto.Barcode,
-          
-            dto.Item);
+           isBarcode, dto.Barcode, dto.Item);
 
         if(!created.Success)
             return BadRequest(created);
@@ -102,8 +100,7 @@ public class ReceiptPurchaseOrderItemController : ControllerBase
 
     public async Task<IActionResult> Update(
      int id,
-
-     UpdateReceiptPurchaseOrderItemDTO dto)
+     UpdateGeneralItemDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -120,17 +117,13 @@ public class ReceiptPurchaseOrderItemController : ControllerBase
 
     [HttpDelete("Receipt-purchase-item-order/{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Delete}")]
-
     public async Task<IActionResult> Delete(int id)
     {
-        var receiptPurchaseOrderItem = await _repository.GetByIdAsync(id);
-        if (receiptPurchaseOrderItem == null)
-            return NotFound($"ReceiptPurchaseOrderItem with ID {id} not found.");
+      var res =  await _repository.DeleteReceiptPurchaseItemAsync(id);
+        if (!res.Success)
+            return BadRequest(res);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
-
-        return Ok(new { message = "deleted" });
+        return Ok(res);
     }
 }
 

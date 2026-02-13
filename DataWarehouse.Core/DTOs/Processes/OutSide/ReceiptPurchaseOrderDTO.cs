@@ -6,33 +6,18 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataWarehouse.Core.DTOs.Processes.OutSide;
 
-public class ReceiptPurchaseOrderDTO
+public class ReceiptPurchaseOrderDTO : GeneralOrderDto
 {
     public int ReceiptPurchaseOrderId { get; set; }
 
-    [Required(ErrorMessage = "Status is required")]
-    public string Status { get; set; } // ProductionStatus enum
+   
 
-    [Required(ErrorMessage = "Posting Date is required")]
-    public DateTime PostingDate { get; set; }
-
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
-
-    [Required(ErrorMessage = "User ID is required")]
-    public string UserId { get; set; }
-
-    public string? Comment { get; set; }
 
     [Required(ErrorMessage = "Purchase Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Purchase Order ID must be greater than 0")]
     public int PurchaseOrderId { get; set; }
 
-    [Required(ErrorMessage = "Warehouse ID is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
-    public int WarehouseId { get; set; }
-
-    public string? WarehouseCode { get; set; }
+   
 
     [Required(ErrorMessage = "Supplier ID is required")]
     public int SupplierId { get; set; }
@@ -149,7 +134,7 @@ public class AddReceiptPurchaseOrderItemCreateRequest
    
     public DynamicBarcodesDto? Barcode { get; set; }
 
-    public AddReceiptPurchaseOrderItemDTO? Item { get; set; }
+    public AddGeneralItemDto? Item { get; set; }
 }
 
 

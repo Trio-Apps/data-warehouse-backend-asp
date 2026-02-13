@@ -1,31 +1,31 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.BarCode;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
-using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
-using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.WebSockets;
-using System.Threading.Tasks;
+
 
 namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchaseOrderItem>, IReceiptPurchaseOrderItemRepository
 {
+    private readonly IBaseProcessesRepository<ReceiptPurchaseOrderItem> baseProcesses;
     private readonly ISapCache sapCache;
     private readonly IBarCodeOrdersRepository barcodeOrder;
 
-    public ReceiptPurchaseOrderItemRepository(ISapCache sapCache,DataWarehouseDbContext context, IBarCodeOrdersRepository barcodeOrder) : base(context)
+    public ReceiptPurchaseOrderItemRepository(IBaseProcessesRepository<ReceiptPurchaseOrderItem> baseProcesses, ISapCache sapCache,DataWarehouseDbContext context, IBarCodeOrdersRepository barcodeOrder) : base(context)
     {
+        this.baseProcesses = baseProcesses;
         this.sapCache = sapCache;
         this.barcodeOrder = barcodeOrder;
     }
@@ -92,116 +92,55 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
     public async Task<GeneralResponse<ReceiptPurchaseOrderItemDTO>> AddReceiptPurchaseItemByReceiptPurchaseOrderIdAsync(int ReceiptPurchaseOrderid, 
         bool isBarcode
          , DynamicBarcodesDto? barcodeDto,
-          AddReceiptPurchaseOrderItemDTO? dto)
+          AddGeneralItemDto? dto)
     {
-        var model = new ReceiptPurchaseOrderItem();
-        var entity = await _context.ReceiptPurchaseOrders.FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderId == ReceiptPurchaseOrderid);
+        var res = await baseProcesses.AddOrderItemAsync<ReceiptPurchaseOrder, ReceiptPurchaseOrderItem>(
+    ReceiptPurchaseOrderid,
+    ProcessType.Receipt,
+    isBarcode,
+    barcodeDto,
+    dto,
+     x => x.ReceiptPurchaseOrderId == ReceiptPurchaseOrderid,
+    _context.ReceiptPurchaseOrders,
+    _context.ReceiptPurchaseOrderItems);
 
-        if (entity == null)
-            return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse("id is not found");
-       
 
+        if (!res.Success)
+            return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(res.Message);
         
-        if (isBarcode)
-        {
-            var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
-
-            var item = new ItemByBarCodeDto();
-            if (isDynamic)
-            {
-                var resD = await barcodeOrder.GetItemByDynamicBarCodeAsync(entity.WarehouseId, barcodeDto);
-
-                if (!resD.Success)
-                    return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(resD.Message);
-
-                item = resD.Data;
-
-                if (resD.Data == null)
-                    return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(resD.Message);
-            }
-            else
-            {
-                var resD = await barcodeOrder.GetItemByStaticBarCodeAsync(entity.WarehouseId, barcodeDto);
-                if (!resD.Success)
-                    return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(resD.Message);
-
-                item = resD.Data;
-                if (resD.Data == null)
-                    return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(resD.Message);
-            }
-
-            model = new ReceiptPurchaseOrderItem()
-            {
-                ReceiptPurchaseOrderId = ReceiptPurchaseOrderid,
-                ItemId = item.Id,
-                Quantity = item.Quantity,
-                BarCode = item.Barcode,
-                UnitPrice = item.Price,
-                UoMEntry = item.UoMEntry
-            };
-        }
-        else
-        {
-            var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == dto.ItemId);
-            model = new ReceiptPurchaseOrderItem
-            {
-                ReceiptPurchaseOrderId = dto.ReceiptPurchaseOrderId,
-                ItemId = dto.ItemId,
-                Quantity = dto.Quantity,
-                BarCode = "",
-                UnitPrice = item.PurchasePrice,
-                UoMEntry = dto.UoMEntry
-
-            };
-        }
-
-        var itemFound = await CheckItemFound(model.ItemId, ReceiptPurchaseOrderid);
-
-        if (itemFound)
-            return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse("this item is found already in order");
-
-        var res = await AddAsync(model);
-        await SaveChangesAsync();
 
         var modelfin = new ReceiptPurchaseOrderItemDTO
         {
-            ReceiptPurchaseOrderId = res.ReceiptPurchaseOrderId,
-            Quantity = res.Quantity,
-            ItemId = res.ItemId,
-            ReceiptPurchaseOrderItemId = res.ReceiptPurchaseOrderItemId,
-            UoMEntry = res.UoMEntry,
-            BarCode = res.BarCode,
-            UnitPrice = res.UnitPrice,
-            ErrorMessage = res.ErrorMessage
+            ReceiptPurchaseOrderId = res.Data.ReceiptPurchaseOrderId,
+            Quantity = res.Data.Quantity,
+            ItemId = res.Data.ItemId,
+            ReceiptPurchaseOrderItemId = res.Data.ReceiptPurchaseOrderItemId,
+            UoMEntry = res.Data.UoMEntry,
+            BarCode = res.Data.BarCode,
+            UnitPrice = res.Data.UnitPrice,
+            ErrorMessage = res.Data.ErrorMessage
         };
 
         return GeneralResponse<ReceiptPurchaseOrderItemDTO>.SuccessResponse(modelfin);
     }
 
+
     public async Task<GeneralResponse<ReceiptPurchaseOrderItemDTO>> UpdateReceiptPurchaseItemAsync(int ReceiptPurchaseItemId,
-        UpdateReceiptPurchaseOrderItemDTO dto)
+        UpdateGeneralItemDto dto)
     {
-        var entity = await _context.ReceiptPurchaseOrderItems.FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderItemId == ReceiptPurchaseItemId);
-        if (entity == null)
-            return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse("id is not found");
-        if (entity.ReceiptPurchaseOrderItemId != ReceiptPurchaseItemId)
-        {
-            return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse("id not equal Receipt purchase order id!");
-        }
 
-        var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == entity.ItemId);
+        var res = await baseProcesses.UpdateOrderItemAsync<ReceiptPurchaseOrderItem>(
+       itemIdFromRoute: ReceiptPurchaseItemId,
+       processType: ProcessType.Receipt,
+       dto: dto,
+       itemSelector: x => x.ReceiptPurchaseOrderItemId == ReceiptPurchaseItemId, // Ãæ x => x.SalesOrderItemId == SalesItemId
+       itemSet: _context.ReceiptPurchaseOrderItems
+   );
 
-        if (dto.Quantity.HasValue && dto.Quantity.Value > 0)
-        {
-            entity.Quantity = dto.Quantity.Value;
-        }
+        if (!res.Success)
+            return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(res.Message);
 
-        if (dto.UoMEntry > 0)
-        {
-            entity.UoMEntry = dto.UoMEntry;
-        }
-
-        await _context.SaveChangesAsync();
+        var entity = res.Data;
 
         var result = new ReceiptPurchaseOrderItemDTO
         {
@@ -218,6 +157,57 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
         return GeneralResponse<ReceiptPurchaseOrderItemDTO>.SuccessResponse(result);
     }
 
+    public async Task<GeneralResponse<ReceiptPurchaseOrderItemDTO>> DeleteReceiptPurchaseItemAsync(int ReceiptPurchaseItemId)
+    {
+        var res = await baseProcesses.DeleteOrderItemAsync<ReceiptPurchaseOrderItem>(
+            itemIdFromRoute: ReceiptPurchaseItemId,
+            processType: ProcessType.Receipt,
+            itemSelector: x => x.ReceiptPurchaseOrderItemId == ReceiptPurchaseItemId,
+            itemSet: _context.ReceiptPurchaseOrderItems
+        );
+
+
+        if (!res.Success)
+            return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(res.Message);
+
+
+        var entity = res.Data;
+
+        var dto = new ReceiptPurchaseOrderItemDTO
+        {
+            ReceiptPurchaseOrderId = entity.ReceiptPurchaseOrderId,
+            Quantity = entity.Quantity,
+            Status = GetEnumString(entity.Status),
+            ItemId = entity.ItemId,
+            ReceiptPurchaseOrderItemId = entity.ReceiptPurchaseOrderItemId,
+            BarCode = entity.BarCode,
+            UoMEntry = entity.UoMEntry,
+            ErrorMessage = entity.ErrorMessage,
+            UnitPrice = entity.UnitPrice
+        };
+
+        return GeneralResponse<ReceiptPurchaseOrderItemDTO>.SuccessResponse(dto);
+    }
+
+    private string GetEnumString(GeneralItemStatus status)
+    {
+        switch (status)
+        {
+
+            case GeneralItemStatus.Planned:
+                return "Planned";
+            case GeneralItemStatus.Released:
+                return "Released";
+            case GeneralItemStatus.Received:
+                return "Received";
+            case GeneralItemStatus.Closed:
+                return "Closed";
+            case GeneralItemStatus.Failed:
+                return "Failed";
+            default:
+                return "Unknown";
+        }
+    }
     private async Task<bool> CheckDynamicCodeValidationLocal(string barCode)
     {
 

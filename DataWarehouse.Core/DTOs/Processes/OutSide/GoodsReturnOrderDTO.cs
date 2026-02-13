@@ -5,18 +5,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataWarehouse.Core.DTOs.Processes.OutSide;
 
-public class GoodsReturnOrderDTO
+public class GoodsReturnOrderDTO : GeneralOrderDto
 {
     public int GoodsReturnOrderId { get; set; }
 
-    [Required(ErrorMessage = "User ID is required")]
-    public string UserId { get; set; }
-
-    [Required(ErrorMessage = "Warehouse ID is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
-    public int WarehouseId { get; set; }
-
-    public string? WarehouseCode { get; set; }
 
     [Required(ErrorMessage = "Supplier ID is required")]
     public int SupplierId { get; set; }
@@ -25,20 +17,10 @@ public class GoodsReturnOrderDTO
 
     [Required(ErrorMessage = "Receipt Purchase Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Receipt Purchase Order ID must be greater than 0")]
-    public int ReceiptPurchaseOrderId { get; set; }
-
-    [Required(ErrorMessage = "Status is required")]
-    public string Status { get; set; } // ProductionStatus enum
-
-    [Required(ErrorMessage = "Posting Date is required")]
-    public DateTime PostingDate { get; set; }
-
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
+    public int? ReceiptPurchaseOrderId { get; set; }
 
    
 
-    public string? Comment { get; set; }
 
     public List<GoodsReturnOrderItemDTO>? Items { get; set; }
 }
@@ -51,14 +33,36 @@ public class AddGoodsReturnOrderDTO
 
     public string? Comment { get; set; }
 }
+public class AddGoodsReturnOrderWithoutRefDTO
+{
+
+    [Required(ErrorMessage = "Posting Date is required")]
+    public DateTime PostingDate { get; set; }
+    [Required(ErrorMessage = "Due Date is required")]
+    public DateTime DueDate { get; set; }
+    public string? Comment { get; set; }
+
+    [Required(ErrorMessage = "Supplier is required")]
+    public int SupplierId { get; set; }
+
+    [Required(ErrorMessage = "IsDraft is required")]
+    public bool IsDraft { get; set; }
+
+    [Required(ErrorMessage = "Warehouse ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
+    public int WarehouseId { get; set; }
+}
 
 public class UpdateGoodsReturnOrderDTO
 {
     [Required(ErrorMessage = "GoodsReturnOrderId is required")]
     public int GoodsReturnOrderId { get; set; }
-
-    [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
+    public DateTime? PostingDate { get; set; }
+
+    public DateTime? DueDate { get; set; }
+
+    public int? SupplierId { get; set; }
     public bool IsDraft { get; set; }
 
 }

@@ -1,26 +1,33 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
+using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrder>, IReceiptPurchaseOrderRepository
 {
-    public ReceiptPurchaseOrderRepository(DataWarehouseDbContext context) : base(context)
+    private readonly IApprovalRepository approval;
+
+    public ReceiptPurchaseOrderRepository(IApprovalRepository approval, DataWarehouseDbContext context) : base(context)
     {
+        this.approval = approval;
     }
 
     public async Task<IEnumerable<ReceiptPurchaseOrder>> GetByWarehouseIdAsync(int warehouseId)
@@ -66,6 +73,39 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             });
     }
 
+    public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetReceiptOrderByIdAsync(string userId, int receiptOrderId)
+    {
+        var res = await _context.ReceiptPurchaseOrders.Include(r => r.GoodsReturnOrder)
+            .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == receiptOrderId);
+
+        if (res == null)
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("Not Found");
+
+        var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.Receipt, res.ReceiptPurchaseOrderId);
+
+
+        var mapping = new ReceiptPurchaseOrderDTO
+        {
+            DueDate = res.DueDate,
+            PostingDate = res.PostingDate,
+            ReceiptPurchaseOrderId = res.ReceiptPurchaseOrderId,
+            Status = res.Status.ToString(),
+            UserId = res.UserId,
+            WarehouseId = res.WarehouseId,
+            PurchaseOrderId = res.PurchaseOrderId,
+            SupplierId = res.SupplierId,
+            Comment = res.Comment,
+            CanApprove = approvalModel.CanApprove,
+            ProcessApprovalId = approvalModel.ProcessApprovalId,
+            ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
+            Approval = approvalModel.hasProgress,
+            ApprovalStatus = approvalModel.ApprovalStatus,
+            IsReturn = res.GoodsReturnOrder != null,
+            ReturnOrderId = res.GoodsReturnOrder != null ? res.GoodsReturnOrder.GoodsReturnOrderId : null,
+        };
+        return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(mapping);
+    }
+
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderByWarehouseIdAsync(string userId, AddReceiptPurchaseOrderDTO dto)
     {
         var purchaseOrder = await _context.PurchaseOrders.Include(p=>p.ReceiptPurchaseOrder).FirstOrDefaultAsync(p=>p.PurchaseOrderId == dto.PurchaseOrderId);
@@ -75,12 +115,6 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         if(purchaseOrder.ReceiptPurchaseOrder != null)
             return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("purchaseOrder has receipt purchaseOrder already!");
-
-
-        //var suppler = await _context.Suppliers.FirstOrDefaultAsync(p => p.SupplierId == dto.SupplierId);
-
-        //if (suppler == null)
-        //    return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("suppler is not found");
 
 
         var mapping = new ReceiptPurchaseOrder
@@ -98,6 +132,17 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         var res = await AddAsync(mapping);
         await SaveChangesAsync();
+
+        // ✅ شغل الـ Approval Workflow لو مش Draft
+        if (!dto.IsDraft)
+        {
+            await approval.StartProcessAsync(
+                processType: ProcessType.Receipt,
+                referenceId: res.ReceiptPurchaseOrderId,
+                warehouseId: res.WarehouseId,
+                userId: userId
+            );
+        }
 
         var model = new ReceiptPurchaseOrderDTO
         {
@@ -128,13 +173,36 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("not found");
         }
 
+        var checkApprovalStatus = await approval.GetProcessItem(entity.ReceiptPurchaseOrderId, ProcessType.Receipt);
+
+        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("You cannot edit this order because its approval status is 'Approved' and all approval steps have been completed.");
+
+
         entity.DueDate = dto.DueDate;
         entity.PostingDate = dto.PostingDate;
         entity.UserId = userId;
         entity.Comment = dto.Comment;
         entity.Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing;
 
-       // entity.SupplierId = dto.SupplierId;
+        // entity.SupplierId = dto.SupplierId;
+
+
+        if (!dto.IsDraft)
+        {
+            await approval.StartProcessAsync(
+                processType: ProcessType.Receipt,
+                referenceId: entity.ReceiptPurchaseOrderId,
+                warehouseId: entity.WarehouseId,
+                userId: userId
+            );
+
+            entity.Status = GeneralStatus.Processing;
+        }
+        else
+        {
+            entity.Status = entity.Status == GeneralStatus.Processing ? GeneralStatus.Processing : GeneralStatus.Draft;
+        }
 
         await _context.SaveChangesAsync();
 
@@ -154,12 +222,57 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(result);
     }
 
-    public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetByPurchaseOrderIdAsync(int purchaseOrderId)
+    public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> DeleteReceiptOrderAsync(
+   int receiptOrderId,
+   CancellationToken cancellationToken = default)
     {
-        var res = await Query().FirstOrDefaultAsync(rpo => rpo.PurchaseOrderId == purchaseOrderId);
+        var entity = await _context.ReceiptPurchaseOrders
+            .FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderId == receiptOrderId, cancellationToken);
+
+        if (entity == null)
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("not found");
+
+        var checkApprovalStatus = await approval.GetProcessItem(
+            entity.ReceiptPurchaseOrderId,
+            ProcessType.Receipt,
+            cancellationToken);
+
+
+        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse(
+                "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
+
+
+        // Snapshot قبل الحذف علشان نرجعه في الـ response
+        var result = new ReceiptPurchaseOrderDTO
+        {
+            ReceiptPurchaseOrderId = entity.ReceiptPurchaseOrderId,
+            DueDate = entity.DueDate,
+            PostingDate = entity.PostingDate,
+            Status = entity.Status.ToString(),
+            UserId = entity.UserId,
+            WarehouseId = entity.WarehouseId,
+            SupplierId = entity.SupplierId,
+            Comment = entity.Comment
+        };
+
+        // لو عندك تفاصيل ومفيش Cascade Delete هتحتاج تمسحها الأول هنا
+        _context.ReceiptPurchaseOrders.Remove(entity);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(result);
+    }
+
+    public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetByPurchaseOrderIdAsync(string userId, int purchaseOrderId)
+    {
+        var res = await _context.ReceiptPurchaseOrders.Include(r=>r.GoodsReturnOrder)
+            .FirstOrDefaultAsync(rpo => rpo.PurchaseOrderId == purchaseOrderId);
 
         if (res == null)
            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("Not Found");
+
+        var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.Receipt, res.ReceiptPurchaseOrderId);
+
 
         var mapping = new ReceiptPurchaseOrderDTO
         {
@@ -171,7 +284,14 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             WarehouseId = res.WarehouseId,
             PurchaseOrderId = res.PurchaseOrderId,
             SupplierId = res.SupplierId,
-             Comment= res.Comment,
+            Comment= res.Comment,
+            CanApprove = approvalModel.CanApprove,
+            ProcessApprovalId = approvalModel.ProcessApprovalId,
+            ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
+            Approval = approvalModel.hasProgress,
+            ApprovalStatus = approvalModel.ApprovalStatus,
+            IsReturn = res.GoodsReturnOrder != null,
+            ReturnOrderId = res.GoodsReturnOrder != null ? res.GoodsReturnOrder.GoodsReturnOrderId : null,
         };
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(mapping);
     }

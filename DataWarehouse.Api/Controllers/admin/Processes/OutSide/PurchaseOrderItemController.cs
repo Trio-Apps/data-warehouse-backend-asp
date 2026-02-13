@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
@@ -29,7 +30,6 @@ public class PurchaseOrderItemController : ControllerBase
 
     [HttpGet]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
-
     public async Task<ActionResult<IEnumerable<PurchaseOrderItem>>> GetAll()
     {
         var PurchaseOrderItems = await _repository.GetAllAsync();
@@ -50,7 +50,6 @@ public class PurchaseOrderItemController : ControllerBase
 
     [HttpGet("purchase-order/{PurchaseOrderId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
-
     public async Task<ActionResult<IEnumerable<PurchaseOrderItem>>> GetByPurchaseOrderId(int PurchaseOrderId)
     {
         var PurchaseOrderItems = await _repository.GetByPurchaseItemByPurchaseOrderIdAsync(PurchaseOrderId);
@@ -61,7 +60,6 @@ public class PurchaseOrderItemController : ControllerBase
 
     [HttpGet("status/purchase-order/{PurchaseOrderId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
-
     public async Task<ActionResult<IEnumerable<PurchaseOrderItem>>>
         GetByPurchaseOrderIdWithPagination(int PurchaseOrderId, string? status, int skip, int pageSize)
     {
@@ -70,7 +68,6 @@ public class PurchaseOrderItemController : ControllerBase
     }
     [HttpPost("Purchase-order/{PurchaseOrderId}/add-barcode-or-no/{isBarcode:bool}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Create}")]
-
     public async Task<ActionResult<PurchaseOrderItem>> Create(
     int PurchaseOrderId,
     bool isBarcode,
@@ -104,7 +101,7 @@ public class PurchaseOrderItemController : ControllerBase
 
     public async Task<IActionResult> Update(
      int id,
-       UpdatePurchaseOrderItemDTO dto)
+       UpdateGeneralItemDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -126,14 +123,15 @@ public class PurchaseOrderItemController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Delete}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var PurchaseOrderItem = await _repository.GetByIdAsync(id);
-        if (PurchaseOrderItem == null)
-            return NotFound($"PurchaseOrderItem with ID {id} not found.");
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
+        var res = await _repository.DeletePurchaseItemAsync(id);
 
-        return Ok("delete");
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
     }
+
+    
 }
 

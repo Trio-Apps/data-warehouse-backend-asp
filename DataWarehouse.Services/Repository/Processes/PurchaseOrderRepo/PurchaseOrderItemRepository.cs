@@ -1,16 +1,20 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.BarCode;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Actors;
+using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -21,11 +25,13 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo;
 
 public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IPurchaseOrderItemRepository
 {
+    private readonly IBaseProcessesRepository<PurchaseOrderItem> baseProcesses;
     private readonly ISapCache sapCache;
     private readonly IBarCodeOrdersRepository barcodeOrder;
 
-    public PurchaseOrderItemRepository(ISapCache sapCache, DataWarehouseDbContext context, IBarCodeOrdersRepository barcodeOrder) : base(context)
+    public PurchaseOrderItemRepository(IBaseProcessesRepository<PurchaseOrderItem> baseProcesses, ISapCache sapCache, DataWarehouseDbContext context, IBarCodeOrdersRepository barcodeOrder) : base(context)
     {
+        this.baseProcesses = baseProcesses;
         this.sapCache = sapCache;
         this.barcodeOrder = barcodeOrder;
     }
@@ -118,88 +124,33 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
 
 
     // create
-    public async Task<GeneralResponse<PurchaseOrderItemDTO>> AddPurchaseItemByPurchaseOrderIdAsync(int PurchaseOrderid, bool isBarcode,
+    public async Task<GeneralResponse<PurchaseOrderItemDTO>> AddPurchaseItemByPurchaseOrderIdAsync(int PurchaseOrderId, bool isBarcode,
            DynamicBarcodesDto? barcodeDto,
-         
-           AddPurchaseOrderItemDTO? dto)
+
+           AddGeneralItemDto? dto)
     {
 
-        var model = new PurchaseOrderItem();
-        var entity = await _context.PurchaseOrders.FirstOrDefaultAsync(e => e.PurchaseOrderId == PurchaseOrderid);
-
-        if (entity == null)
-            return GeneralResponse<PurchaseOrderItemDTO>.FailResponse("id is not found");
-        if (isBarcode)
-        {
-            var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
-            var item = new ItemByBarCodeDto();
-            if (isDynamic)
-            {
-                var resD = await barcodeOrder.GetItemByDynamicBarCodeAsync(entity.WarehouseId, barcodeDto);
-
-                if (!resD.Success)
-                    return GeneralResponse<PurchaseOrderItemDTO>.FailResponse(resD.Message);
-
-                item = resD.Data;
+        var res = await baseProcesses.AddOrderItemAsync<PurchaseOrder, PurchaseOrderItem>(
+  PurchaseOrderId,
+  ProcessType.Purchase,
+  isBarcode,
+  barcodeDto,
+  dto,
+   x => x.PurchaseOrderId == PurchaseOrderId,
+  _context.PurchaseOrders,
+  _context.PurchaseOrderItems);
 
 
-                if (resD.Data == null)
-                    return GeneralResponse<PurchaseOrderItemDTO>.FailResponse(resD.Message);
-
-            }
-            else
-            {
-                
-                var resD = await barcodeOrder.GetItemByStaticBarCodeAsync(entity.WarehouseId, barcodeDto);
-                if (!resD.Success)
-                    return GeneralResponse<PurchaseOrderItemDTO>.FailResponse(resD.Message);
-
-                item = resD.Data;
-                if (resD.Data == null)
-                    return GeneralResponse<PurchaseOrderItemDTO>.FailResponse(resD.Message);
-
-            }
-
-            model = new PurchaseOrderItem()
-            {
-                Status = GeneralItemStatus.Planned,
-                PurchaseOrderId = PurchaseOrderid,
-                ItemId = item.Id,
-                // = DateTime.UtcNow,
-                Quantity = item.Quantity,
-                BarCode = item.Barcode,
-                UnitPrice = item.Price,
-                UoMEntry = item.UoMEntry
-            };
-        }
-        else
-        {
-            var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == dto.ItemId);
-           model = new PurchaseOrderItem
-            {
-                Status = GeneralItemStatus.Planned,
-                PurchaseOrderId = dto.PurchaseOrderId,
-                ItemId = dto.ItemId,
-              
-                Quantity = dto.Quantity,
-                 BarCode= "",
-                 UnitPrice = item.PurchasePrice,
-                  UoMEntry = dto.UoMEntry,
-            };
-        }
-
-          
-
-        var res = await AddAsync(model);
-        await SaveChangesAsync();
+        if (!res.Success)
+            return GeneralResponse<PurchaseOrderItemDTO>.FailResponse(res.Message);
 
         var modelfin = new PurchaseOrderItemDTO
         {
-            PurchaseOrderId = res.PurchaseOrderId,
-            Quantity = res.Quantity,
-            Status = GetEnumString(res.Status),
-            ItemId = res.ItemId,
-            PurchaseOrderItemId = res.PurchaseOrderItemId,
+            PurchaseOrderId = res.Data.PurchaseOrderId,
+            Quantity = res.Data.Quantity,
+            Status = GetEnumString(res.Data.Status),
+            ItemId = res.Data.ItemId,
+            PurchaseOrderItemId = res.Data.PurchaseOrderItemId,
 
         };
 
@@ -208,51 +159,21 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
 
     // update
     public async Task<GeneralResponse<PurchaseOrderItemDTO>> UpdatePurchaseItemAsync(int PurchaseItemId,
-           UpdatePurchaseOrderItemDTO dto)
+           UpdateGeneralItemDto dto)
     {
 
-        // 1️⃣ Get existing Company auth (record الوحيد)
-        var entity = await _context.PurchaseOrderItems.FirstOrDefaultAsync(e => e.PurchaseOrderItemId == dto.PurchaseOrderItemId);
-        if (entity == null)
-            return GeneralResponse<PurchaseOrderItemDTO>.FailResponse("id is not found");
-        if (entity.PurchaseOrderItemId != PurchaseItemId)
-        {
-            return GeneralResponse<PurchaseOrderItemDTO>.FailResponse("id not equal Purchase order id!");
-        }
-        if (entity == null)
-        {
-            return GeneralResponse<PurchaseOrderItemDTO>.FailResponse("not found");
+        var res = await baseProcesses.UpdateOrderItemAsync<PurchaseOrderItem>(
+        itemIdFromRoute: PurchaseItemId,
+        processType: ProcessType.Purchase,
+        dto: dto,
+        itemSelector: x => x.PurchaseOrderItemId == PurchaseItemId, // أو x => x.SalesOrderItemId == SalesItemId
+        itemSet: _context.PurchaseOrderItems
+    );
 
-        }
-        //if (entity.Status != GeneralItemStatus.Released)
-        //{
-        //    return GeneralResponse<PurchaseOrderItemDTO>.FailResponse("Purchase must be released to be edited!..");
+        if (!res.Success)
+            return GeneralResponse<PurchaseOrderItemDTO>.FailResponse(res.Message);
 
-        //}
-        var model = new PurchaseOrderItem();
-
-       
-            var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == entity.ItemId);
-
-            if (dto.Quantity.HasValue && dto.Quantity.Value > 0)
-            {
-                entity.Quantity = dto.Quantity.Value;
-            }
-
-            if (dto.UoMEntry > 0)
-            {
-                entity.UoMEntry = dto.UoMEntry;
-            }
-
-       
-
-
-        //if (isRecevied == true)
-        //    entity.Status = GeneralItemStatus.Received;
-        // Company.IsActive = dto.IsActive;
-
-        // 3️⃣ Save changes
-        await _context.SaveChangesAsync();
+        var entity = res.Data;
 
         // 4️⃣ Map to DTO
         var result = new PurchaseOrderItemDTO
@@ -269,6 +190,42 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
                ErrorMessage = entity.ErrorMessage
                 , 
                 UnitPrice = entity.UnitPrice    
+
+        };
+
+        return GeneralResponse<PurchaseOrderItemDTO>.SuccessResponse(result);
+    }
+    public async Task<GeneralResponse<PurchaseOrderItemDTO>> DeletePurchaseItemAsync(int PurchaseItemId)
+    {
+        var res = await baseProcesses.DeleteOrderItemAsync<PurchaseOrderItem>(
+            itemIdFromRoute: PurchaseItemId,
+            processType: ProcessType.Sales,
+            itemSelector: x => x.PurchaseOrderItemId == PurchaseItemId,
+            itemSet: _context.PurchaseOrderItems
+        );
+
+
+        if (!res.Success)
+            return GeneralResponse<PurchaseOrderItemDTO>.FailResponse(res.Message);
+
+
+        var entity = res.Data;
+
+        // 4️⃣ Map to DTO
+        var result = new PurchaseOrderItemDTO
+        {
+
+            PurchaseOrderId = entity.PurchaseOrderId,
+            Quantity = entity.Quantity,
+            Status = GetEnumString(entity.Status),
+            ItemId = entity.ItemId,
+            PurchaseOrderItemId = entity.PurchaseOrderItemId,
+            BarCode = entity.BarCode,
+            UoMEntry = entity.UoMEntry
+              ,
+            ErrorMessage = entity.ErrorMessage
+                ,
+            UnitPrice = entity.UnitPrice
 
         };
 

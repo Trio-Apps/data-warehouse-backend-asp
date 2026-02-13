@@ -4,29 +4,34 @@ using DataWarehouse.Core.DTOs.Processes.BulkProductions;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.ISap;
+using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Processes;
-
+using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
 using System.Security.Claims;
+using System.Threading;
 
 
 namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo;
 
 public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseOrderRepository
 {
+    private readonly IApprovalRepository approval;
     private readonly ISapCache sapCache;
     private readonly ISapSettingsRepository sap;
     private readonly IProcessesTypesDateRepository processes;
 
-    public PurchaseOrderRepository(ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, DataWarehouseDbContext context) : base(context)
+    public PurchaseOrderRepository(IApprovalRepository approval, ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, DataWarehouseDbContext context) : base(context)
     {
+        this.approval = approval;
         this.sapCache = sapCache;
         this.sap = sap;
         this.processes = processes;
@@ -85,90 +90,10 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             });
     }
 
-    public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationAsync
-        (int? warehouseId,string userId,DateTime? postingDate,DateTime? DueDate, string? status, int pageNumber, int pageSize)
-
-    {
-        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-        pageSize = pageSize <= 0 ? 10 : pageSize;
-
-       
-        var yourWarehouse = (await sap.GetYourWarehousesToEmployees(userId)).Data.FirstOrDefault();
-        if (yourWarehouse == null)
-            return GeneralResponse<PagedResult<PurchaseOrderDTO>>.FailResponse("user not valid");
-
-
-
-        var query = _context.Warehouses.Where(e => e.WarehouseId == (warehouseId==null?yourWarehouse.WarehouseId:warehouseId))
-            .AsNoTracking()
-            .SelectMany(e => e.PurchaseOrders);
-
-        // 🔹 Filtering
-
-        if (!string.IsNullOrEmpty(status))
-        {
-            if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
-            {
-                query = query.Where(e => e.Status == statusEnum);
-            }
-        }
-
-        // 🔹 Posting Date Filter
-        if (postingDate.HasValue)
-        {
-            var postDate = postingDate.Value.Date;
-            query = query.Where(e => e.PostingDate.Date == postDate);
-        }
-
-        // 🔹 Due Date Filter
-        if (DueDate.HasValue)
-        {
-            var dueDate = DueDate.Value.Date;
-            query = query.Where(e => e.DueDate.Date == dueDate);
-        }
-
-
-
-        var totalRecords = await query.CountAsync();
-
-        var data = await query
-
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(iw => new PurchaseOrderDTO
-            {
-                DueDate = iw.DueDate,
-                PostingDate = iw.PostingDate,
-                PurchaseOrderId = iw.PurchaseOrderId,
-                Status = iw.Status.ToString(),
-                 Comment = iw.Comment,
-                // string = enum
-                UserId = iw.UserId,
-                WarehouseId = iw.WarehouseId,
-                SupplierName = iw.Supplier.SupplierName,
-                Supplier = iw.Supplier,
-                IsReceipt = iw.ReceiptPurchaseOrder == null ? false : true,
-                ReceiptOrderId = iw.ReceiptPurchaseOrder == null ? null : iw.ReceiptPurchaseOrder.ReceiptPurchaseOrderId,
-                IsReturn = iw.ReceiptPurchaseOrder == null ? false : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? false : true),
-                ReturnOrderId = iw.ReceiptPurchaseOrder == null ? null : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? null : iw.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId)
-
-
-            })
-            .ToListAsync();
-
-        return GeneralResponse<PagedResult<PurchaseOrderDTO>>.SuccessResponse(
-            new PagedResult<PurchaseOrderDTO>
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords,
-                Data = data
-            });
-    }
-
+  
 
     public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
-       (int warehouseId, string userId, DateTime? postingDate, DateTime? DueDate,string? liveStatus, string? status, int pageNumber, int pageSize)
+       (int warehouseId, string userId, DateTime? postingDate, DateTime? DueDate,string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken=default)
 
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
@@ -210,39 +135,71 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
            if (liveStatus == "return")
               query = query.Where(e => e.ReceiptPurchaseOrder.GoodsReturnOrder != null);
-            
-
+           
         }
 
         query = query.OrderByDescending(e => e.CreatedAt); // تأكد هنا
 
+        // Approved references subquery (for Sales process only)
+        var processQuery = _context.ProcessItemIsProgresses
+       .AsNoTracking()
+       .Where(p => p.ProcessType == ProcessType.Purchase);
 
         var totalRecords = await query.CountAsync();
 
         var data = await query
-          
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(iw => new PurchaseOrderDTO
-            {
-                DueDate = iw.DueDate,
-                PostingDate = iw.PostingDate,
-                PurchaseOrderId = iw.PurchaseOrderId,
-                Status = iw.Status.ToString(),
-                Comment = iw.Comment,
-                // string = enum
-                UserId = iw.UserId,
-                WarehouseId = iw.WarehouseId,
-                SupplierName = iw.Supplier.SupplierName,
-                Supplier = iw.Supplier,
-                ItemCount = iw.PurchaseOrderItems.Count(),
-               //س  Approval = 
-                IsReceipt = iw.ReceiptPurchaseOrder == null ? false : true,
-                ReceiptOrderId = iw.ReceiptPurchaseOrder == null ? null : iw.ReceiptPurchaseOrder.ReceiptPurchaseOrderId,
-                IsReturn = iw.ReceiptPurchaseOrder == null ? false : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? false : true),
-                ReturnOrderId = iw.ReceiptPurchaseOrder == null ? null : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? null : iw.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId)
-            })
-            .ToListAsync();
+         .Skip((pageNumber - 1) * pageSize)
+         .Take(pageSize)
+         .Select(iw => new
+         {
+             Order = iw,
+
+             // هل فيه progress أصلاً؟
+             HasProgress = processQuery.Any(p => p.ReferenceId == iw.PurchaseOrderId),
+
+             // آخر Status (لو موجود)
+             LatestStatus = processQuery
+                 .Where(p => p.ReferenceId == iw.PurchaseOrderId)
+                 .OrderByDescending(p => p.ProcessItemIsProgressId) // أو CreatedAt لو عندك
+                 .Select(p => (ProcessStatus?)p.Status)
+                 .FirstOrDefault()
+         })
+         .Select(x => new PurchaseOrderDTO
+         {
+             DueDate = x.Order.DueDate,
+             PostingDate = x.Order.PostingDate,
+             PurchaseOrderId = x.Order.PurchaseOrderId,
+             Status = x.Order.Status.ToString(),
+             Comment = x.Order.Comment,
+             UserId = x.Order.UserId,
+             WarehouseId = x.Order.WarehouseId,
+
+             SupplierName = x.Order.Supplier.SupplierName,
+             Supplier = x.Order.Supplier,
+             ItemCount = x.Order.PurchaseOrderItems.Count(),
+
+             // ✅ وجود progress
+             Approval = x.HasProgress,
+
+             // ✅ اسم الحالة الحالية (آخر Status)
+             ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
+
+             // ✅ Special fields (Receipt/Return)
+             IsReceipt = x.Order.ReceiptPurchaseOrder != null,
+             ReceiptOrderId = x.Order.ReceiptPurchaseOrder != null
+                 ? x.Order.ReceiptPurchaseOrder.ReceiptPurchaseOrderId
+                 : null,
+
+             IsReturn = x.Order.ReceiptPurchaseOrder != null
+                 && x.Order.ReceiptPurchaseOrder.GoodsReturnOrder != null,
+
+             ReturnOrderId = x.Order.ReceiptPurchaseOrder != null
+                 && x.Order.ReceiptPurchaseOrder.GoodsReturnOrder != null
+                     ? x.Order.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId
+                     : null
+         })
+         .ToListAsync(cancellationToken);
+
 
         return GeneralResponse<PagedResult<PurchaseOrderDTO>>.SuccessResponse(
             new PagedResult<PurchaseOrderDTO>
@@ -253,6 +210,149 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 Data = data
             });
     }
+
+    public async Task<GeneralResponse<PurchaseOrderDTO>> GetWithSupplierAsync(string userId, int PurchaseOrderId,CancellationToken cancellationToken = default)
+    {
+
+        var res = await _context.PurchaseOrders
+            .Include(po => po.ReceiptPurchaseOrder)
+            .Include( po => po.Supplier)
+            .FirstOrDefaultAsync(po => po.PurchaseOrderId == PurchaseOrderId);
+
+        if (res == null)
+            return GeneralResponse<PurchaseOrderDTO>.FailResponse("this PurchaseOrderId is not found");
+     
+        var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.Purchase, res.PurchaseOrderId);
+
+        //var checkApprovalStatus = await approval.GetProcessItem(res.PurchaseOrderId, ProcessType.Purchase, cancellationToken);
+
+
+        //bool hasProgress = checkApprovalStatus != null;
+        //string? approvalStatus = checkApprovalStatus?.Status.ToString();
+
+        var mapping = new PurchaseOrderDTO
+        {
+            DueDate = res.DueDate,
+            PostingDate = res.PostingDate,
+            PurchaseOrderId = res.PurchaseOrderId,
+            Status = res.Status.ToString(),
+            Comment = res.Comment,
+            UserId = res.UserId,
+            WarehouseId = res.WarehouseId,
+
+            SupplierName = res.Supplier.SupplierName,
+            SupplierId = res.SupplierId,
+
+
+            // ✅ Approval fields (same shape as sales)
+            CanApprove = approvalModel.CanApprove,
+            ProcessApprovalId = approvalModel.ProcessApprovalId,
+            ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
+            Reason = approvalModel.Reason,
+            Approval = approvalModel.hasProgress,
+            ApprovalStatus = approvalModel.ApprovalStatus,
+
+
+            // ✅ Special fields (Receipt / Return)
+            IsReceipt = res.ReceiptPurchaseOrder != null,
+            ReceiptOrderId = res.ReceiptPurchaseOrder != null
+          ? res.ReceiptPurchaseOrder.ReceiptPurchaseOrderId
+          : null,
+
+            IsReturn = res.ReceiptPurchaseOrder != null
+          && res.ReceiptPurchaseOrder.GoodsReturnOrder != null,
+
+            ReturnOrderId = res.ReceiptPurchaseOrder != null
+          && res.ReceiptPurchaseOrder.GoodsReturnOrder != null
+              ? res.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId
+              : null
+        };
+
+
+
+        return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(mapping);
+    }
+    //public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationAsync
+    //  (int? warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize)
+
+    //{
+    //    pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+    //    pageSize = pageSize <= 0 ? 10 : pageSize;
+
+
+    //    var yourWarehouse = (await sap.GetYourWarehousesToEmployees(userId)).Data.FirstOrDefault();
+    //    if (yourWarehouse == null)
+    //        return GeneralResponse<PagedResult<PurchaseOrderDTO>>.FailResponse("user not valid");
+
+
+
+    //    var query = _context.Warehouses.Where(e => e.WarehouseId == (warehouseId == null ? yourWarehouse.WarehouseId : warehouseId))
+    //        .AsNoTracking()
+    //        .SelectMany(e => e.PurchaseOrders);
+
+    //    // 🔹 Filtering
+
+    //    if (!string.IsNullOrEmpty(status))
+    //    {
+    //        if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
+    //        {
+    //            query = query.Where(e => e.Status == statusEnum);
+    //        }
+    //    }
+
+    //    // 🔹 Posting Date Filter
+    //    if (postingDate.HasValue)
+    //    {
+    //        var postDate = postingDate.Value.Date;
+    //        query = query.Where(e => e.PostingDate.Date == postDate);
+    //    }
+
+    //    // 🔹 Due Date Filter
+    //    if (DueDate.HasValue)
+    //    {
+    //        var dueDate = DueDate.Value.Date;
+    //        query = query.Where(e => e.DueDate.Date == dueDate);
+    //    }
+
+
+
+    //    var totalRecords = await query.CountAsync();
+
+    //    var data = await query
+
+    //        .Skip((pageNumber - 1) * pageSize)
+    //        .Take(pageSize)
+    //        .Select(iw => new PurchaseOrderDTO
+    //        {
+    //            DueDate = iw.DueDate,
+    //            PostingDate = iw.PostingDate,
+    //            PurchaseOrderId = iw.PurchaseOrderId,
+    //            Status = iw.Status.ToString(),
+    //            Comment = iw.Comment,
+    //            // string = enum
+    //            UserId = iw.UserId,
+    //            WarehouseId = iw.WarehouseId,
+    //            SupplierName = iw.Supplier.SupplierName,
+    //            Supplier = iw.Supplier,
+    //            IsReceipt = iw.ReceiptPurchaseOrder == null ? false : true,
+    //            ReceiptOrderId = iw.ReceiptPurchaseOrder == null ? null : iw.ReceiptPurchaseOrder.ReceiptPurchaseOrderId,
+    //            IsReturn = iw.ReceiptPurchaseOrder == null ? false : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? false : true),
+    //            ReturnOrderId = iw.ReceiptPurchaseOrder == null ? null : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? null : iw.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId)
+
+
+    //        })
+    //        .ToListAsync();
+
+    //    return GeneralResponse<PagedResult<PurchaseOrderDTO>>.SuccessResponse(
+    //        new PagedResult<PurchaseOrderDTO>
+    //        {
+    //            PageNumber = pageNumber,
+    //            PageSize = pageSize,
+    //            TotalRecords = totalRecords,
+    //            Data = data
+    //        });
+    //}
+
 
     public async Task<GeneralResponse<List<NameStatus>>> GetPurchaseOrderStatus()
     {
@@ -283,13 +383,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         if (suppler == null)
             return GeneralResponse<PurchaseOrderDTO>.FailResponse("suppler is not found");
 
-        // var sapId = await sapCache.Get();
-
-        //  var checkValidDate = await ValidateBusinessDatesAsync(dto.PostingDate,dto.DueDate);
-
-        //if (!checkValidDate.IsValid)
-        //    return GeneralResponse<PurchaseOrderDTO>.FailResponse($"{checkValidDate.Message}");
-
         var mapping = new PurchaseOrder
         {
             Status = dto.IsDraft?GeneralStatus.Draft:GeneralStatus.Processing,
@@ -304,6 +397,17 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
         var res = await AddAsync(mapping);
          await SaveChangesAsync();
+
+        // ✅ شغل الـ Approval Workflow لو مش Draft
+        if (!dto.IsDraft)
+        {
+            await approval.StartProcessAsync(
+                processType: ProcessType.Purchase,
+                referenceId: res.PurchaseOrderId,
+                warehouseId: res.WarehouseId,
+                userId: userId
+            );
+        }
 
 
         var model = new PurchaseOrderDTO
@@ -369,8 +473,16 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         if (entity == null)
             return GeneralResponse<PurchaseOrderDTO>.FailResponse("not found");
 
+
+
         if (entity.PurchaseOrderId != productionId)
             return GeneralResponse<PurchaseOrderDTO>.FailResponse("id not equal production order id!");
+
+        var checkApprovalStatus = await approval.GetProcessItem(entity.PurchaseOrderId, ProcessType.Purchase);
+
+        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+            return GeneralResponse<PurchaseOrderDTO>.FailResponse("You cannot edit this order because its approval status is 'Approved' and all approval steps have been completed.");
+
 
         // 2) Extra validation (because DateTime/int are non-nullable and can be default/0)
         if (dto.PostingDate == default)
@@ -401,10 +513,23 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         if (dto.SupplierId.HasValue)
             entity.SupplierId = dto.SupplierId.Value;
 
+        if (!dto.IsDraft)
+        {
+            await approval.StartProcessAsync(
+                processType: ProcessType.Purchase,
+                referenceId: entity.PurchaseOrderId,
+                warehouseId: entity.WarehouseId,
+                userId: userId
+            );
 
-        entity.Status = dto.IsDraft
-            ? GeneralStatus.Draft
-            : GeneralStatus.Processing;
+            entity.Status = GeneralStatus.Processing;
+        }
+        else
+        {
+            
+            entity.Status = entity.Status == GeneralStatus.Processing ? GeneralStatus.Processing : GeneralStatus.Draft;
+        }
+
 
         entity.UserId = userId;
 
@@ -429,6 +554,47 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             SupplierId = entity.SupplierId,
             Status = entity.Status.ToString()
         };
+
+        return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(result);
+    }
+
+    public async Task<GeneralResponse<PurchaseOrderDTO>> DeletePurchaseOrderAsync(
+  int PurchaseOrderId,
+  CancellationToken cancellationToken = default)
+    {
+        var entity = await _context.PurchaseOrders
+            .FirstOrDefaultAsync(e => e.PurchaseOrderId == PurchaseOrderId, cancellationToken);
+
+        if (entity == null)
+            return GeneralResponse<PurchaseOrderDTO>.FailResponse("not found");
+
+        var checkApprovalStatus = await approval.GetProcessItem(
+            entity.PurchaseOrderId,
+            ProcessType.Purchase,
+            cancellationToken);
+
+
+        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+            return GeneralResponse<PurchaseOrderDTO>.FailResponse(
+                "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
+
+
+        // Snapshot قبل الحذف علشان نرجعه في الـ response
+        var result = new PurchaseOrderDTO
+        {
+            PurchaseOrderId = entity.PurchaseOrderId,
+            DueDate = entity.DueDate,
+            PostingDate = entity.PostingDate,
+            Status = entity.Status.ToString(),
+            UserId = entity.UserId,
+            WarehouseId = entity.WarehouseId,
+            SupplierId = entity.SupplierId,
+            Comment = entity.Comment
+        };
+
+        // لو عندك تفاصيل ومفيش Cascade Delete هتحتاج تمسحها الأول هنا
+        _context.PurchaseOrders.Remove(entity);
+        await _context.SaveChangesAsync(cancellationToken);
 
         return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(result);
     }
@@ -483,38 +649,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         return await QueryIncluding(false, po => po.Warehouse)
             .FirstOrDefaultAsync(po => po.PurchaseOrderId == PurchaseOrderId);
     }
-    public async Task<GeneralResponse<PurchaseOrderDTO>> GetWithSupplierAsync(int PurchaseOrderId)
-    {
-
-        var res = await QueryIncluding(false, po => po.Supplier)
-            .FirstOrDefaultAsync(po => po.PurchaseOrderId == PurchaseOrderId);
-
-        if (res == null)
-            return GeneralResponse<PurchaseOrderDTO>.FailResponse("this PurchaseOrderId is not found");
-
-        var mapping = new PurchaseOrderDTO
-        {
-            DueDate = res.DueDate,
-            PostingDate = res.PostingDate,
-            PurchaseOrderId = res.PurchaseOrderId,
-            Status = res.Status.ToString(),
-             Comment = res.Comment,
-            // string = enum
-            UserId = res.UserId,
-            WarehouseId = res.WarehouseId,
-            SupplierName = res.Supplier.SupplierName,
-            SupplierId = res.SupplierId
-             //   Supplier = res.Supplier,
-           // IsReceipt = res.ReceiptPurchaseOrder == null ? false : true,
-           // ReceiptOrderId = res.ReceiptPurchaseOrder == null ? null : res.ReceiptPurchaseOrder.ReceiptPurchaseOrderId,
-           // IsReturn = res.ReceiptPurchaseOrder == null ? false : (res.ReceiptPurchaseOrder.GoodsReturnOrder == null ? false : true),
-          //  ReturnOrderId = res.ReceiptPurchaseOrder == null ? null : (res.ReceiptPurchaseOrder.GoodsReturnOrder == null ? null : res.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId)
-
-        };
-
-
-        return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(mapping);
-    }
+  
 
     public async Task<IEnumerable<PurchaseOrder>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {

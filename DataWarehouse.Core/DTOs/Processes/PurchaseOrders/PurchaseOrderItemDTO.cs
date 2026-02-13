@@ -82,7 +82,7 @@ public class AddPurchaseOrderItemCreateRequest
    // public StaticBarcodesDto? StaticBarcodes { get; set; }
     public DynamicBarcodesDto? Barcode { get; set; }
 
-    public AddPurchaseOrderItemDTO? Item { get; set; }
+    public AddGeneralItemDto? Item { get; set; }
 }
 
 

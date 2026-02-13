@@ -244,7 +244,7 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
        dto: dto,
        itemSelector: x => x.SalesOrderItemId == SalesItemId, // أو x => x.SalesOrderItemId == SalesItemId
        itemSet: _context.SalesOrderItems
-   );
+       );
 
         if (!res.Success)
             return GeneralResponse<SalesOrderItemDTO>.FailResponse(res.Message);

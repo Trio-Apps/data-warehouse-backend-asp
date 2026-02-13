@@ -3724,17 +3724,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddGoodsReturnOrderDTO"
+                "$ref": "#/components/schemas/AddGoodsReturnOrderWithoutRefDTO"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddGoodsReturnOrderDTO"
+                "$ref": "#/components/schemas/AddGoodsReturnOrderWithoutRefDTO"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AddGoodsReturnOrderDTO"
+                "$ref": "#/components/schemas/AddGoodsReturnOrderWithoutRefDTO"
               }
             }
           }
@@ -3812,7 +3812,7 @@
         }
       }
     },
-    "/api/GoodsReturnOrder/warehouse/{warehouseId}/{skip}/{pageSize}": {
+    "/api/GoodsReturnOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}": {
       "get": {
         "tags": [
           "GoodsReturnOrder"
@@ -3828,6 +3828,29 @@
             }
           },
           {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postingDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dueDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
             "name": "skip",
             "in": "path",
             "required": true,
@@ -3838,6 +3861,29 @@
           },
           {
             "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/GoodsReturnOrder/receipt-purchase-order/{receiptPurchaseOrderId}": {
+      "get": {
+        "tags": [
+          "GoodsReturnOrder"
+        ],
+        "parameters": [
+          {
+            "name": "receiptPurchaseOrderId",
             "in": "path",
             "required": true,
             "schema": {
@@ -3871,24 +3917,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/GoodsReturnOrder"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GoodsReturnOrder"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GoodsReturnOrder"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       },
@@ -3939,29 +3968,6 @@
         "parameters": [
           {
             "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/GoodsReturnOrder/receipt-purchase-order/{receiptPurchaseOrderId}": {
-      "get": {
-        "tags": [
-          "GoodsReturnOrder"
-        ],
-        "parameters": [
-          {
-            "name": "receiptPurchaseOrderId",
             "in": "path",
             "required": true,
             "schema": {
@@ -7810,69 +7816,6 @@
         }
       }
     },
-    "/api/PurchaseOrder/warehouse/status/posting-date/due-date/{skip}/{pageSize}": {
-      "get": {
-        "tags": [
-          "PurchaseOrder"
-        ],
-        "parameters": [
-          {
-            "name": "warehouseId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "postingDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "dueDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "skip",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "pageSize",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/PurchaseOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}": {
       "get": {
         "tags": [
@@ -7940,6 +7883,46 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/PurchaseOrder/with-supplier/{id}": {
+      "get": {
+        "tags": [
+          "PurchaseOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionOrder"
+                }
+              }
+            }
           }
         }
       }
@@ -8041,46 +8024,6 @@
         "responses": {
           "200": {
             "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/PurchaseOrder/with-supplier/{id}": {
-      "get": {
-        "tags": [
-          "PurchaseOrder"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrder"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrder"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrder"
-                }
-              }
-            }
           }
         }
       }
@@ -8445,17 +8388,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatePurchaseOrderItemDTO"
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatePurchaseOrderItemDTO"
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatePurchaseOrderItemDTO"
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
               }
             }
           }
@@ -9610,17 +9553,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateReceiptPurchaseOrderItemDTO"
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateReceiptPurchaseOrderItemDTO"
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateReceiptPurchaseOrderItemDTO"
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
               }
             }
           }
@@ -17764,25 +17707,6 @@
         },
         "additionalProperties": false
       },
-      "AddGoodsReturnOrderDTO": {
-        "required": [
-          "receiptPurchaseOrderId"
-        ],
-        "type": "object",
-        "properties": {
-          "receiptPurchaseOrderId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "comment": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "AddGoodsReturnOrderItemDTO": {
         "required": [
           "quantity",
@@ -17806,6 +17730,44 @@
             "minLength": 0,
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddGoodsReturnOrderWithoutRefDTO": {
+        "required": [
+          "dueDate",
+          "isDraft",
+          "postingDate",
+          "supplierId",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "supplierId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isDraft": {
+            "type": "boolean"
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -17946,39 +17908,7 @@
             "$ref": "#/components/schemas/DynamicBarcodesDto"
           },
           "item": {
-            "$ref": "#/components/schemas/AddPurchaseOrderItemDTO"
-          }
-        },
-        "additionalProperties": false
-      },
-      "AddPurchaseOrderItemDTO": {
-        "required": [
-          "itemId",
-          "purchaseOrderId",
-          "uoMEntry"
-        ],
-        "type": "object",
-        "properties": {
-          "uoMEntry": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "purchaseOrderId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "itemId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/AddGeneralItemDto"
           }
         },
         "additionalProperties": false
@@ -18054,39 +17984,7 @@
             "$ref": "#/components/schemas/DynamicBarcodesDto"
           },
           "item": {
-            "$ref": "#/components/schemas/AddReceiptPurchaseOrderItemDTO"
-          }
-        },
-        "additionalProperties": false
-      },
-      "AddReceiptPurchaseOrderItemDTO": {
-        "required": [
-          "itemId",
-          "receiptPurchaseOrderId",
-          "uoMEntry"
-        ],
-        "type": "object",
-        "properties": {
-          "uoMEntry": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "receiptPurchaseOrderId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "itemId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/components/schemas/AddGeneralItemDto"
           }
         },
         "additionalProperties": false
@@ -19650,6 +19548,14 @@
           "status": {
             "$ref": "#/components/schemas/GeneralStatus"
           },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
           "comment": {
             "type": "string",
             "nullable": true
@@ -19677,7 +19583,8 @@
           },
           "receiptPurchaseOrderId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "receiptPurchaseOrder": {
             "$ref": "#/components/schemas/ReceiptPurchaseOrder"
@@ -20640,6 +20547,10 @@
             "type": "string",
             "nullable": true
           },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
           "userId": {
             "type": "string",
             "nullable": true
@@ -20700,6 +20611,9 @@
           "reason": {
             "type": "string",
             "nullable": true
+          },
+          "hasProgress": {
+            "type": "boolean"
           },
           "userId": {
             "minLength": 1,
@@ -20820,6 +20734,10 @@
             "type": "string",
             "nullable": true
           },
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "purchaseOrderId": {
             "type": "integer",
             "format": "int32"
@@ -20931,6 +20849,10 @@
             "type": "string",
             "nullable": true
           },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
           "userId": {
             "type": "string",
             "nullable": true
@@ -21000,6 +20922,10 @@
             "type": "string",
             "format": "date-time"
           },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "goodsReturnOrderBatch": {
             "$ref": "#/components/schemas/GoodsReturnOrderBatch"
           },
@@ -21047,6 +20973,10 @@
           "comment": {
             "type": "string",
             "nullable": true
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
           },
           "goodsReturnOrderItem": {
             "$ref": "#/components/schemas/GoodsReturnOrderItem"
@@ -21550,6 +21480,9 @@
           "reason": {
             "type": "string",
             "nullable": true
+          },
+          "hasProgress": {
+            "type": "boolean"
           },
           "userId": {
             "minLength": 1,
@@ -22892,9 +22825,22 @@
             "format": "int32"
           },
           "comment": {
-            "maxLength": 500,
-            "minLength": 0,
             "type": "string",
+            "nullable": true
+          },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "supplierId": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "isDraft": {
@@ -23061,30 +23007,6 @@
         },
         "additionalProperties": false
       },
-      "UpdatePurchaseOrderItemDTO": {
-        "required": [
-          "purchaseOrderItemId",
-          "uoMEntry"
-        ],
-        "type": "object",
-        "properties": {
-          "purchaseOrderItemId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "uoMEntry": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
       "UpdateReceiptPurchaseOrderBatchDTO": {
         "required": [
           "quantity",
@@ -23140,30 +23062,6 @@
           },
           "isDraft": {
             "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateReceiptPurchaseOrderItemDTO": {
-        "required": [
-          "receiptPurchaseOrderItemId",
-          "uoMEntry"
-        ],
-        "type": "object",
-        "properties": {
-          "receiptPurchaseOrderItemId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "uoMEntry": {
-            "type": "integer",
-            "format": "int32"
           }
         },
         "additionalProperties": false

@@ -55,24 +55,40 @@ public class ReceiptPurchaseOrderController : ControllerBase
     }
 
 
+    //[HttpGet("{id}")]
+    //[Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
+
+    //public async Task<ActionResult<ReceiptPurchaseOrder>> GetById(int id)
+    //{
+    //    var receiptPurchaseOrder = await _repository.GetByIdAsync(id);
+    //    if (receiptPurchaseOrder == null)
+    //        return NotFound($"ReceiptPurchaseOrder with ID {id} not found.");
+
+    //    return Ok(receiptPurchaseOrder);
+    //}
+
+
     [HttpGet("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
 
-    public async Task<ActionResult<ReceiptPurchaseOrder>> GetById(int id)
+    public async Task<ActionResult<ReceiptPurchaseOrder>> GetReceiptById(int id)
     {
-        var receiptPurchaseOrder = await _repository.GetByIdAsync(id);
-        if (receiptPurchaseOrder == null)
-            return NotFound($"ReceiptPurchaseOrder with ID {id} not found.");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        return Ok(receiptPurchaseOrder);
+        var res = await _repository.GetReceiptOrderByIdAsync(userId, id);
+        if (!res.Success)
+            return NotFound(res);
+
+        return Ok(res);
     }
-
     [HttpGet("purchase-order/{purchaseOrderId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
 
     public async Task<ActionResult<ReceiptPurchaseOrder>> GetByPurchaseOrderId(int purchaseOrderId)
     {
-        var receiptPurchaseOrder = await _repository.GetByPurchaseOrderIdAsync(purchaseOrderId);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var receiptPurchaseOrder = await _repository.GetByPurchaseOrderIdAsync(userId,purchaseOrderId);
         if (!receiptPurchaseOrder.Success)
             return NotFound($"ReceiptPurchaseOrder for PurchaseOrder ID {purchaseOrderId} not found.");
 
@@ -157,14 +173,11 @@ public class ReceiptPurchaseOrderController : ControllerBase
 
     public async Task<IActionResult> Delete(int id)
     {
-        var receiptPurchaseOrder = await _repository.GetByIdAsync(id);
-        if (receiptPurchaseOrder == null)
-            return NotFound($"ReceiptPurchaseOrder with ID {id} not found.");
+        var res =  await _repository.DeleteReceiptOrderAsync(id);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
-
-        return NoContent();
+        if (!res.Success)
+            return BadRequest(res);
+        return Ok(res);
     }
 
     [HttpGet("processing")]

@@ -484,7 +484,9 @@ namespace DataWarehouse.Services.Repository.IsProgress
                 CanApprove = false,
                 ProcessItemIsProgressId = null,
                 ProcessApprovalId = null,
-                Reason = "Unknown"
+                ApprovalStatus = null,
+                Reason = "Unknown",
+                hasProgress = false,
             };
 
             // 1. Get the process
@@ -493,6 +495,7 @@ namespace DataWarehouse.Services.Repository.IsProgress
                     p.ProcessType == processType &&
                     p.ReferenceId == referenceId);
 
+
             if (process == null)
             {
                 result.Reason = "Process not found.";
@@ -500,6 +503,8 @@ namespace DataWarehouse.Services.Repository.IsProgress
             }
 
             result.ProcessItemIsProgressId = process.ProcessItemIsProgressId;
+            result.hasProgress = true;
+            result.ApprovalStatus = process.Status.ToString();
 
             //if (process.Status != ProcessStatus.InProgress)
             //{

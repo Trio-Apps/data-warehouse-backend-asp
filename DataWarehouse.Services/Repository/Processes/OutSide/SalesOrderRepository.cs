@@ -220,11 +220,11 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
         var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.Sales, res.SalesOrderId);
 
-        var checkApprovalStatus = await approval.GetProcessItem(res.SalesOrderId, ProcessType.Sales, cancellationToken);
+       // var checkApprovalStatus = await approval.GetProcessItem(res.SalesOrderId, ProcessType.Sales, cancellationToken);
 
 
-        bool hasProgress = checkApprovalStatus != null;
-        string? approvalStatus = checkApprovalStatus?.Status.ToString();
+      //  bool hasProgress = checkApprovalStatus != null;
+      //  string? approvalStatus = checkApprovalStatus?.Status.ToString();
 
         var mapping = new SalesOrderDTO
         {
@@ -240,11 +240,12 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
             ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
+            Approval = approvalModel.hasProgress,
+            ApprovalStatus = approvalModel.ApprovalStatus,
             Reason = approvalModel.Reason,
             IsReturn = res.SalesReturnOrder != null ,
             ReturnOrderId = res.SalesReturnOrder != null ? res.SalesReturnOrder.SalesReturnOrderId : null,
-            Approval = hasProgress,
-            ApprovalStatus = checkApprovalStatus != null ? approvalStatus : null
+           
         };
 
 
@@ -424,6 +425,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
     {
         return await Query().Where(so => so.CustomerId == customerId).ToListAsync();
     }
+  
     public async Task<GeneralResponse<List<NameStatus>>> GetSalesOrderStatus()
     {
         var statuses = Enum.GetValues(typeof(GeneralStatus))

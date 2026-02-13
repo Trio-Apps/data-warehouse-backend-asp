@@ -2595,7 +2595,7 @@
     "Parameters": [
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddGoodsReturnOrderDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddGoodsReturnOrderWithoutRefDTO",
         "IsRequired": true
       }
     ],
@@ -2613,7 +2613,7 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.GoodsReturnOrderController",
-    "Method": "GetById",
+    "Method": "GetGoodsReturnById",
     "RelativePath": "api/GoodsReturnOrder/{id}",
     "HttpMethod": "GET",
     "IsController": true,
@@ -2625,17 +2625,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrder",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.GoodsReturnOrderController",
@@ -2744,6 +2734,47 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.GoodsReturnOrderController",
+    "Method": "GetByWarehouseIdWithPagination",
+    "RelativePath": "api/GoodsReturnOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "postingDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "dueDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.GoodsReturnOrderController",
     "Method": "GetByReceiptPurchaseOrderId",
     "RelativePath": "api/GoodsReturnOrder/receipt-purchase-order/{receiptPurchaseOrderId}",
     "HttpMethod": "GET",
@@ -2809,32 +2840,6 @@
         "StatusCode": 200
       }
     ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.GoodsReturnOrderController",
-    "Method": "GetByWarehouseIdWithPagination",
-    "RelativePath": "api/GoodsReturnOrder/warehouse/{warehouseId}/{skip}/{pageSize}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "warehouseId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "skip",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.GoodsReturnOrderBatchController",
@@ -5044,47 +5049,6 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.PurchaseOrderController",
-    "Method": "GetByWarehouseIdWithPagination",
-    "RelativePath": "api/PurchaseOrder/warehouse/status/posting-date/due-date/{skip}/{pageSize}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "warehouseId",
-        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "status",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "postingDate",
-        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "dueDate",
-        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "skip",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.PurchaseOrderController",
     "Method": "GetByIdWithSupplier",
     "RelativePath": "api/PurchaseOrder/with-supplier/{id}",
     "HttpMethod": "GET",
@@ -5170,7 +5134,7 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.PurchaseOrders.UpdatePurchaseOrderItemDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralItemDto",
         "IsRequired": true
       }
     ],
@@ -5343,7 +5307,7 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.ReceiptPurchaseOrderController",
-    "Method": "GetById",
+    "Method": "GetReceiptById",
     "RelativePath": "api/ReceiptPurchaseOrder/{id}",
     "HttpMethod": "GET",
     "IsController": true,
@@ -5843,7 +5807,7 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.UpdateReceiptPurchaseOrderItemDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralItemDto",
         "IsRequired": true
       }
     ],

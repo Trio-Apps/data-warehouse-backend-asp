@@ -1,15 +1,17 @@
 ﻿using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Auth;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DataWarehouse.Domain.Entities.Processes.OutSide
 {
-    public  class ReceiptPurchaseOrder
+    public  class ReceiptPurchaseOrder : IOrder
     {
         public int ReceiptPurchaseOrderId { get; set; }
         public GeneralStatus Status { get; set; }
@@ -18,7 +20,12 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public DateTime DueDate { get; set; }
         public string? Comment { get; set; }
 
-
+        [NotMapped]
+        public int Id
+        {
+            get => ReceiptPurchaseOrderId;
+            set => ReceiptPurchaseOrderId = value;
+        }
         // Navigation
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
@@ -34,5 +41,6 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public PurchaseOrder PurchaseOrder { get; set; }   // Assuming PurchaseStock entity
         public ICollection<ReceiptPurchaseOrderItem> ReceiptPurchaseOrderItems { get; set; }
             = new List<ReceiptPurchaseOrderItem>();
+
     }
 }

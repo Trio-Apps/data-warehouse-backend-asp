@@ -59,21 +59,20 @@ public class PurchaseOrderController : ControllerBase
         return Ok(res);
     }
 
-    [HttpGet("warehouse/status/posting-date/due-date/{skip}/{pageSize}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
+    //[HttpGet("warehouse/status/posting-date/due-date/{skip}/{pageSize}")]
+    //[Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
 
-    public async Task<IActionResult> GetByWarehouseIdWithPagination(int? warehouseId,string? status,DateTime? postingDate,DateTime? dueDate, int skip, int pageSize)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationAsync(warehouseId,userId,postingDate,dueDate,status, skip, pageSize);
-        if (!res.Success)
-            return BadRequest(res);
+    //public async Task<IActionResult> GetByWarehouseIdWithPagination(int? warehouseId,string? status,DateTime? postingDate,DateTime? dueDate, int skip, int pageSize)
+    //{
+    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    //    var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationAsync(warehouseId,userId,postingDate,dueDate,status, skip, pageSize);
+    //    if (!res.Success)
+    //        return BadRequest(res);
 
-        return Ok(res);
-    }
+    //    return Ok(res);
+    //}
     [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
-
     public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, string? status,string? liveStatus, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -82,6 +81,20 @@ public class PurchaseOrderController : ControllerBase
             return BadRequest(res);
         return Ok(res);
     }
+    [HttpGet("with-supplier/{id}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
+
+    public async Task<ActionResult<ProductionOrder>> GetByIdWithSupplier(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var res = await _repository.GetWithSupplierAsync(userId, id);
+        if (!res.Success)
+            return NotFound(res);
+
+        return Ok(res);
+    }
+
 
     [HttpGet("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
@@ -93,17 +106,6 @@ public class PurchaseOrderController : ControllerBase
             return NotFound($"ProductionOrder with ID {id} not found.");
 
         return Ok(productionOrder);
-    }
-    [HttpGet("with-supplier/{id}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
-
-    public async Task<ActionResult<ProductionOrder>> GetByIdWithSupplier(int id)
-    {
-        var res = await _repository.GetWithSupplierAsync(id);
-        if (!res.Success)
-            return NotFound(res);
-
-        return Ok(res);
     }
 
 
@@ -175,14 +177,12 @@ public class PurchaseOrderController : ControllerBase
 
     public async Task<IActionResult> Delete(int id)
     {
-        var productionOrder = await _repository.GetByIdAsync(id);
-        if (productionOrder == null)
-            return NotFound($"ProductionOrder with ID {id} not found.");
+       
+      var res =  await _repository.DeletePurchaseOrderAsync(id);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
+        if (!res.Success) return BadRequest(res);
 
-        return NoContent();
+        return Ok(res);
     }
 
 

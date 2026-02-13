@@ -1,6 +1,7 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.Based;
@@ -17,9 +18,11 @@ public interface IPurchaseOrderItemRepository : IBaseRepository<PurchaseOrderIte
        GetByPurchaseItemByPurchaseOrderIdWithPaginationAsync(int PurchaseOrderId, string? status, int pageNumber, int pageSize);
     Task<GeneralResponse<PurchaseOrderItemDTO>> AddPurchaseItemByPurchaseOrderIdAsync(int PurchaseOrderid, bool isBarcode, 
           DynamicBarcodesDto? dynamicDto,
-          AddPurchaseOrderItemDTO? dto);
+          AddGeneralItemDto? dto);
 
-    Task<GeneralResponse<PurchaseOrderItemDTO>> UpdatePurchaseItemAsync(int PurchaseItemId, 
-            UpdatePurchaseOrderItemDTO dto);
+    Task<GeneralResponse<PurchaseOrderItemDTO>> UpdatePurchaseItemAsync(int PurchaseItemId,
+            UpdateGeneralItemDto dto);
+
+    Task<GeneralResponse<PurchaseOrderItemDTO>> DeletePurchaseItemAsync(int PurchaseItemId);
 
 }

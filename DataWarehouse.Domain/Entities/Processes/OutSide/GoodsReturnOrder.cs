@@ -14,6 +14,8 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public int GoodsReturnOrderId { get; set; }
         public DateTime CreatedAt { get; set; }
         public GeneralStatus Status { get; set; }
+        public DateTime PostingDate { get; set; }
+        public DateTime DueDate { get; set; }
         public string? Comment { get; set; }
 
         // navigation
@@ -23,8 +25,8 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public Warehouse Warehouse { get; set; }
         public int SupplierId { get; set; }
         public Supplier Supplier { get; set; }
-        public int ReceiptPurchaseOrderId { get; set; }
-        public ReceiptPurchaseOrder ReceiptPurchaseOrder { get; set; }
+        public int? ReceiptPurchaseOrderId { get; set; }
+        public ReceiptPurchaseOrder? ReceiptPurchaseOrder { get; set; }
 
         public ICollection<GoodsReturnOrderItem> GoodsReturnOrderItems { get; set; } = new List<GoodsReturnOrderItem>();
 
