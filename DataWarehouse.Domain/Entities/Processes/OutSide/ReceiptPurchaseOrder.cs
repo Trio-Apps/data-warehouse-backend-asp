@@ -36,7 +36,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
 
 
         // Navigation
-        public GoodsReturnOrder GoodsReturnOrder { get; set; }
+        public GoodsReturnOrder? GoodsReturnOrder { get; set; }
         public int PurchaseOrderId { get; set; }  // FK → PurchaseOrder
         public PurchaseOrder PurchaseOrder { get; set; }   // Assuming PurchaseStock entity
         public ICollection<ReceiptPurchaseOrderItem> ReceiptPurchaseOrderItems { get; set; }

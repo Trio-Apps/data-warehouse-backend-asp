@@ -19,9 +19,11 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoodsReturnOrderRepository
 {
+    private readonly IProcessItemIsProgressRepository progress;
     private readonly IApprovalRepository approval;
-    public GoodsReturnOrderRepository(IApprovalRepository approval, DataWarehouseDbContext context) : base(context)
+    public GoodsReturnOrderRepository(IProcessItemIsProgressRepository progress, IApprovalRepository approval, DataWarehouseDbContext context) : base(context)
     {
+        this.progress = progress;
         this.approval = approval;
     }
 
@@ -285,6 +287,12 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse(
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
+        if (checkApprovalStatus != null)
+        {
+            var pro = await progress.GetByProcessTypeAndIdAsync(ProcessType.GoodsReturn,entity.GoodsReturnOrderId);
+            await progress.DeleteAsync(pro.ProcessItemIsProgressId);
+        }
+         
 
         // Snapshot قبل الحذف علشان نرجعه في الـ response
         var result = new GoodsReturnOrderDTO

@@ -1,5 +1,7 @@
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -12,6 +14,13 @@ public interface IGoodsReturnOrderItemRepository : IBaseRepository<GoodsReturnOr
 {
     Task<GeneralResponse<IEnumerable<GoodsReturnOrderItemDTO>>> GetByGoodsReturnOrderIdAsync(int goodsReturnOrderId);
     Task<GeneralResponse<PagedResult<GoodsReturnOrderItemDTO>>> GetByGoodsReturnOrderIdWithPaginationAsync(int goodsReturnOrderId, int pageNumber, int pageSize);
+    Task<GeneralResponse<GoodsReturnOrderItemDTO>> AddGoodsReturnItemByGoodsReturnOrderIdWithoutRefAsync(int goodsReturnOrderId,
+       bool isBarcode
+        , DynamicBarcodesDto? barcodeDto,
+         AddGeneralItemDto? dto);
+    Task<GeneralResponse<GoodsReturnOrderItemDTO>> UpdateGoodsReturnItemWithoutRefAsync(int goodsReturnOrderItemId,
+        UpdateGeneralItemDto dto);
+
     Task<GeneralResponse<GoodsReturnOrderItemDTO>> AddGoodsReturnOrderItemByReceiptPurchaseOrderItemIdAsync(string userId,int goodsReturnOrderId, AddGoodsReturnOrderItemDTO dto);
     Task<GeneralResponse<GoodsReturnOrderItemDTO>> UpdateGoodsReturnOrderItemAsync(int goodsReturnOrderItemId, UpdateGoodsReturnOrderItemDTO dto);
     Task<IEnumerable<GoodsReturnOrderItem>> GetByGoodsReturnOrderIdEntitiesAsync(int goodsReturnOrderId);

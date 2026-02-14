@@ -32,7 +32,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         }
         // Navigation
 
-        public GoodsReturnOrderItem GoodsReturnOrderItem { get; set; }
+        public GoodsReturnOrderItem? GoodsReturnOrderItem { get; set; }
         public int ReceiptPurchaseOrderId { get; set; }
         public int ItemId { get; set; }
         public ReceiptPurchaseOrder ReceiptPurchaseOrder { get; set; }

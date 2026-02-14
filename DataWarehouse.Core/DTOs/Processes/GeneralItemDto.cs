@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataWarehouse.Core.DTOs.BarCode;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -84,6 +85,13 @@ namespace DataWarehouse.Core.DTOs.Processes
         public string? BatchNumber { get; set; }
 
         public DateTime? ExpiryDate { get; set; }
+    }
+    public class AddGeneralItemByManualOrBarcodeDto
+    {
+
+        public DynamicBarcodesDto? Barcode { get; set; }
+
+        public AddGeneralItemDto? Item { get; set; }
     }
     public class AddGeneralBatchDto
     {

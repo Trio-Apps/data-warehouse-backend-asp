@@ -100,33 +100,23 @@ public class ReceiptPurchaseOrderItemDTO : GeneralItemDto
 
 }
 
-public class AddReceiptPurchaseOrderItemDTO
+public class AddReceiptPurchaseOrderItemDTO : AddGeneralItemDto
 {
-    [Required(ErrorMessage = "Unit is required")]
-    public int UoMEntry { get; set; }
-
-    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
-    public decimal Quantity { get; set; }
+  
 
     [Required(ErrorMessage = "Receipt Purchase Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Receipt Purchase Order ID must be greater than 0")]
     public int ReceiptPurchaseOrderId { get; set; }
 
-    [Required(ErrorMessage = "Item ID is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
-    public int ItemId { get; set; }
+   
 }
 
-public class UpdateReceiptPurchaseOrderItemDTO
+public class UpdateReceiptPurchaseOrderItemDTO : UpdateGeneralItemDto
 {
     [Required(ErrorMessage = "ReceiptPurchaseOrderItemId is required")]
     public int ReceiptPurchaseOrderItemId { get; set; }
 
-    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
-    public decimal? Quantity { get; set; }
-
-    [Required(ErrorMessage = "Unit is required")]
-    public int UoMEntry { get; set; }
+  
 }
 
 public class AddReceiptPurchaseOrderItemCreateRequest

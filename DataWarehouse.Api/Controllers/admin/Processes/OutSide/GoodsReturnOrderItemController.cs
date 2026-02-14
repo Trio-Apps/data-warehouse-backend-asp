@@ -1,3 +1,4 @@
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -83,6 +84,38 @@ public class GoodsReturnOrderItemController : ControllerBase
             return BadRequest(ModelState);
 
         var res = await _repository.UpdateGoodsReturnOrderItemAsync(id, dto);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpPost("witout-reference/goods-return-order/{goodsReturnOrderId}/add-barcode-or-no/{isBarcode:bool}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Create}")]
+    public async Task<ActionResult<GoodsReturnOrderItem>> CreateWithoutReference
+        (int goodsReturnOrderId, bool isBarcode, AddGeneralItemByManualOrBarcodeDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var created = await _repository.AddGoodsReturnItemByGoodsReturnOrderIdWithoutRefAsync(goodsReturnOrderId,isBarcode,
+            dto.Barcode,dto.Item);
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
+
+    [HttpPut("witout-reference/{id}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Edit}")]
+    public async Task<IActionResult> UpdateWithoutReference(int id, UpdateGeneralItemDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var res = await _repository.UpdateGoodsReturnItemWithoutRefAsync(id, dto);
         if (!res.Success)
             return BadRequest(res);
 

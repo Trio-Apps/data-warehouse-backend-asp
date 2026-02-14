@@ -26,7 +26,6 @@ public class GoodsReturnOrderController : ControllerBase
 
     [HttpGet]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]
-
     public async Task<ActionResult<IEnumerable<GoodsReturnOrder>>> GetAll()
     {
         var goodsReturnOrders = await _repository.GetAllAsync();
@@ -35,7 +34,6 @@ public class GoodsReturnOrderController : ControllerBase
 
     [HttpGet("warehouse/{warehouseId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]
-
     public async Task<ActionResult<IEnumerable<GoodsReturnOrder>>> GetByWarehouseId(int warehouseId)
     {
         var goodsReturnOrders = await _repository.GetByWarehouseIdAsync(warehouseId);

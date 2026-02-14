@@ -92,7 +92,7 @@ public class GoodsReturnOrderItemDTO
     public int GoodsReturnOrderId { get; set; }
 
     [Required(ErrorMessage = "ReceiptPurchaseOrderItemId is required")]
-    public int ReceiptPurchaseOrderItemId { get; set; }
+    public int? ReceiptPurchaseOrderItemId { get; set; }
 
     [Required(ErrorMessage = "ItemId is required")]
     public int ItemId { get; set; }
@@ -137,6 +137,20 @@ public class UpdateGoodsReturnOrderItemDTO
     public string? Comment { get; set; }
 }
 
+
+public class AddGoodsReturnOrderItemWithoutRefDTO : AddGeneralItemDto
+{
+    [Required(ErrorMessage = "GoodsReturnOrderItemId is required")]
+    public int GoodsReturnOrderItemId { get; set; }
+
+}
+
+public class UpdateGoodsReturnOrderItemWithoutRefDTO : UpdateGeneralItemDto
+{
+    [Required(ErrorMessage = "ReceiptPurchaseOrderItemId is required")]
+    public int ReceiptPurchaseOrderItemId { get; set; }
+
+}
 public class GoodsReturnOrderBatchDTO
 {
     public int GoodsReturnOrderBatchId { get; set; }
@@ -147,7 +161,7 @@ public class GoodsReturnOrderBatchDTO
 
     [Required(ErrorMessage = "Receipt Purchase Order Batch ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Receipt Purchase Order Batch ID must be greater than 0")]
-    public int ReceiptPurchaseOrderBatchId { get; set; }
+    public int? ReceiptPurchaseOrderBatchId { get; set; }
 
     [Required(ErrorMessage = "Quantity is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
@@ -168,9 +182,9 @@ public class AddGoodsReturnOrderBatchDTO
     [Range(1, int.MaxValue, ErrorMessage = "Goods Return Order Item ID must be greater than 0")]
     public int GoodsReturnOrderItemId { get; set; }
 
-    [Required(ErrorMessage = "Receipt Purchase Order Batch ID is required")]
+//    [Required(ErrorMessage = "Receipt Purchase Order Batch ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Receipt Purchase Order Batch ID must be greater than 0")]
-    public int ReceiptPurchaseOrderBatchId { get; set; }
+    public int? ReceiptPurchaseOrderBatchId { get; set; }
 
     [Required(ErrorMessage = "Quantity is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]

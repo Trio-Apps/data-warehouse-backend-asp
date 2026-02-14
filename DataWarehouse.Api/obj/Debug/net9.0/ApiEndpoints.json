@@ -2902,7 +2902,7 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.UpdateGoodsReturnOrderBatchDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralBatchDto",
         "IsRequired": true
       }
     ],
@@ -2965,7 +2965,7 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddGoodsReturnOrderBatchDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.GeneralBatchDto",
         "IsRequired": true
       }
     ],
@@ -3230,6 +3230,63 @@
       {
         "Name": "dto",
         "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddGoodsReturnOrderItemDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrderItem",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.GoodsReturnOrderItemController",
+    "Method": "UpdateWithoutReference",
+    "RelativePath": "api/GoodsReturnOrderItem/witout-reference/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralItemDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.GoodsReturnOrderItemController",
+    "Method": "CreateWithoutReference",
+    "RelativePath": "api/GoodsReturnOrderItem/witout-reference/goods-return-order/{goodsReturnOrderId}/add-barcode-or-no/{isBarcode}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "goodsReturnOrderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "isBarcode",
+        "Type": "System.Boolean",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddGeneralItemByManualOrBarcodeDto",
         "IsRequired": true
       }
     ],

@@ -1,9 +1,13 @@
 ﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,10 +19,12 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderItem>, IGoodsReturnOrderItemRepository
 {
+    private readonly IBaseProcessesRepository<GoodsReturnOrderItem> baseProcesses;
     private readonly IGoodsReturnOrderRepository goodsReturn;
 
-    public GoodsReturnOrderItemRepository(IGoodsReturnOrderRepository goodsReturn, DataWarehouseDbContext context) : base(context)
+    public GoodsReturnOrderItemRepository(IBaseProcessesRepository<GoodsReturnOrderItem> baseProcesses, IGoodsReturnOrderRepository goodsReturn, DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
         this.goodsReturn = goodsReturn;
     }
 
@@ -81,6 +87,78 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
                 TotalRecords = totalRecords
             });
     }
+
+
+    public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> AddGoodsReturnItemByGoodsReturnOrderIdWithoutRefAsync(int goodsReturnOrderId,
+      bool isBarcode
+       , DynamicBarcodesDto? barcodeDto,
+        AddGeneralItemDto? dto)
+    {
+        var res = await baseProcesses.AddOrderItemAsync<GoodsReturnOrder, GoodsReturnOrderItem>(
+    goodsReturnOrderId,
+    ProcessType.GoodsReturn,
+    isBarcode,
+    barcodeDto,
+    dto,
+     x => x.GoodsReturnOrderId == goodsReturnOrderId,
+    _context.GoodsReturnOrders,
+    _context.GoodsReturnOrderItems);
+
+
+        if (!res.Success)
+            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse(res.Message);
+
+
+        var modelfin = new GoodsReturnOrderItemDTO
+        {
+            GoodsReturnOrderId = res.Data.GoodsReturnOrderId,
+            Quantity = res.Data.Quantity,
+            ItemId = res.Data.ItemId,
+            GoodsReturnOrderItemId = res.Data.GoodsReturnOrderItemId,
+            UoMEntry = res.Data.UoMEntry,
+            BarCode = res.Data.BarCode,
+            UnitPrice = res.Data.UnitPrice,
+            ErrorMessage = res.Data.ErrorMessage
+        };
+
+        return GeneralResponse<GoodsReturnOrderItemDTO>.SuccessResponse(modelfin);
+    }
+
+
+    public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> UpdateGoodsReturnItemWithoutRefAsync(int goodsReturnOrderItemId,
+        UpdateGeneralItemDto dto)
+    {
+
+        var res = await baseProcesses.UpdateOrderItemAsync<GoodsReturnOrderItem>(
+       itemIdFromRoute: goodsReturnOrderItemId,
+       processType: ProcessType.GoodsReturn,
+       dto: dto,
+       itemSelector: x => x.GoodsReturnOrderItemId == goodsReturnOrderItemId, // أو x => x.SalesOrderItemId == SalesItemId
+       itemSet: _context.GoodsReturnOrderItems
+   );
+
+        if (!res.Success)
+            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse(res.Message);
+
+        var entity = res.Data;
+
+        var result = new GoodsReturnOrderItemDTO
+        {
+            GoodsReturnOrderId = entity.GoodsReturnOrderId,
+            GoodsReturnOrderItemId = entity.GoodsReturnOrderItemId,
+            Quantity = entity.Quantity,
+            ItemId = entity.ItemId,
+            ReceiptPurchaseOrderItemId = entity.ReceiptPurchaseOrderItemId,
+            BarCode = entity.BarCode,
+            UoMEntry = entity.UoMEntry,
+            ErrorMessage = entity.ErrorMessage,
+            UnitPrice = entity.UnitPrice
+        };
+
+        return GeneralResponse<GoodsReturnOrderItemDTO>.SuccessResponse(result);
+    }
+
+
 
     public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> AddGoodsReturnOrderItemByReceiptPurchaseOrderItemIdAsync(string userId,
         int receiptOrderId,

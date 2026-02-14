@@ -27,7 +27,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         }
 
 
-        public GoodsReturnOrderBatch GoodsReturnOrderBatch { get; set; } 
+        public GoodsReturnOrderBatch? GoodsReturnOrderBatch { get; set; } 
 
         public int ReceiptPurchaseOrderItemId { get; set; }
         public ReceiptPurchaseOrderItem ReceiptPurchaseOrderItem { get; set; }

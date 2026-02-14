@@ -71,6 +71,7 @@ public class PurchaseOrderController : ControllerBase
 
     //    return Ok(res);
     //}
+   
     [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
     public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, string? status,string? liveStatus, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)

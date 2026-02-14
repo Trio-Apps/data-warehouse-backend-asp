@@ -4230,17 +4230,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateGoodsReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateGoodsReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateGoodsReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             }
           }
@@ -4340,17 +4340,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddGoodsReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddGoodsReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AddGoodsReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             }
           }
@@ -4756,6 +4756,115 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/GoodsReturnOrderItem/witout-reference/goods-return-order/{goodsReturnOrderId}/add-barcode-or-no/{isBarcode}": {
+      "post": {
+        "tags": [
+          "GoodsReturnOrderItem"
+        ],
+        "parameters": [
+          {
+            "name": "goodsReturnOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "isBarcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReturnOrderItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReturnOrderItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReturnOrderItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/GoodsReturnOrderItem/witout-reference/{id}": {
+      "put": {
+        "tags": [
+          "GoodsReturnOrderItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -17642,6 +17751,18 @@
         },
         "additionalProperties": false
       },
+      "AddGeneralItemByManualOrBarcodeDto": {
+        "type": "object",
+        "properties": {
+          "barcode": {
+            "$ref": "#/components/schemas/DynamicBarcodesDto"
+          },
+          "item": {
+            "$ref": "#/components/schemas/AddGeneralItemDto"
+          }
+        },
+        "additionalProperties": false
+      },
       "AddGeneralItemDto": {
         "required": [
           "itemId",
@@ -17663,40 +17784,6 @@
             "minimum": 1,
             "type": "integer",
             "format": "int32"
-          },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "AddGoodsReturnOrderBatchDTO": {
-        "required": [
-          "goodsReturnOrderItemId",
-          "quantity",
-          "receiptPurchaseOrderBatchId"
-        ],
-        "type": "object",
-        "properties": {
-          "goodsReturnOrderItemId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "receiptPurchaseOrderBatchId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
           },
           "comment": {
             "maxLength": 500,
@@ -19560,6 +19647,10 @@
             "type": "string",
             "nullable": true
           },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
           "userId": {
             "type": "string",
             "nullable": true
@@ -19606,6 +19697,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "quantity": {
             "type": "number",
             "format": "double"
@@ -19629,7 +19724,8 @@
           },
           "receiptPurchaseOrderBatchId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "receiptPurchaseOrderBatch": {
             "$ref": "#/components/schemas/ReceiptPurchaseOrderBatch"
@@ -19679,6 +19775,10 @@
             "type": "string",
             "nullable": true
           },
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "goodsReturnOrderId": {
             "type": "integer",
             "format": "int32"
@@ -19688,7 +19788,8 @@
           },
           "receiptPurchaseOrderItemId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "receiptPurchaseOrderItem": {
             "$ref": "#/components/schemas/ReceiptPurchaseOrderItem"
@@ -22785,31 +22886,6 @@
           "uoMEntry": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateGoodsReturnOrderBatchDTO": {
-        "required": [
-          "goodsReturnOrderBatchId",
-          "quantity"
-        ],
-        "type": "object",
-        "properties": {
-          "goodsReturnOrderBatchId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

@@ -1,3 +1,4 @@
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -73,7 +74,7 @@ public class GoodsReturnOrderBatchController : ControllerBase
     [HttpPost("goods-return-order-item/{goodsReturnOrderItemId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Create}")]
     public async Task<ActionResult<GoodsReturnOrderBatch>> Create(
-        int goodsReturnOrderItemId, AddGoodsReturnOrderBatchDTO dto)
+        int goodsReturnOrderItemId, GeneralBatchDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -89,7 +90,7 @@ public class GoodsReturnOrderBatchController : ControllerBase
     [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Edit}")]
     public async Task<IActionResult> Update(
-        int id, [FromBody] UpdateGoodsReturnOrderBatchDTO dto)
+        int id, [FromBody] UpdateGeneralBatchDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
