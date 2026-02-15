@@ -26,6 +26,8 @@ namespace DataWarehouse.Domain.Entities.AllinAll
         public int CompanyId { get; set; }
         public Company Company { get; set; }
         public ICollection<SapUser> UserSaps { get; set; } = new List<SapUser>();
+        public ICollection<Supplier> Suppliers { get; set; } = new List<Supplier>();
+        public ICollection<Customer> Customers { get; set; } = new List<Customer>();
         public ICollection<SapEmployee>  SapEmployees { get; set; } = new List<SapEmployee>();
         public ICollection<Warehouse> Warehouses { get; set; } = new List<Warehouse>();
         public ICollection<Item> Items { get; set; } = new List<Item>();

@@ -19310,6 +19310,13 @@
             "type": "string",
             "format": "date-time"
           },
+          "sapId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sap": {
+            "$ref": "#/components/schemas/Sap"
+          },
           "salesOrders": {
             "type": "array",
             "items": {
@@ -21998,6 +22005,20 @@
             },
             "nullable": true
           },
+          "suppliers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Supplier"
+            },
+            "nullable": true
+          },
+          "customers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Customer"
+            },
+            "nullable": true
+          },
           "sapEmployees": {
             "type": "array",
             "items": {
@@ -22239,6 +22260,13 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "sapId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sap": {
+            "$ref": "#/components/schemas/Sap"
           },
           "supplierItems": {
             "type": "array",

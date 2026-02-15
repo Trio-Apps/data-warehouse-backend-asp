@@ -114,6 +114,8 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
 
             return $"Sync completed. Success: {totalSuccess}, Failed: {totalFail}";
         }
+       
+        
         private async Task<(ProductionOrderItem item, bool success, string error, int? absoluteEntry)>
             ProcessProductionItemAsync(int sapId, ProductionOrderItem productionItem, SemaphoreSlim semaphore)
         {
@@ -167,6 +169,9 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
         {
             return dateTime.ToString("yyyy-MM-dd");
         }
+
+
+
 
         public async Task<string> SyncProductionItemsReleasedAsync(int sapId)
         {

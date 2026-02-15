@@ -597,8 +597,6 @@ D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\static
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\staticwebassets.build.json.cache
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\staticwebassets.development.json
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\staticwebassets.build.endpoints.json
-D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\swae.build.ex.cache
-D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\DataWare.502B4901.Up2Date
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\DataWarehouse.Api.dll
 D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\refint\DataWarehouse.Api.dll
@@ -808,3 +806,5 @@ D:\Files\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\refint\Da
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\DataWarehouse.Api.pdb
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\DataWarehouse.Api.genruntimeconfig.cache
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\ref\DataWarehouse.Api.dll
+D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\swae.build.ex.cache
+D:\Projects\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

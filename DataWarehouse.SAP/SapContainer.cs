@@ -60,6 +60,7 @@ namespace DataWarehouse.SAP
             services.AddScoped<ISapSessionCache, SapSessionCache>();
             services.AddScoped<ISapConnectorFactory, SapConnectorFactory>();
             services.AddScoped<ISapDynamicBarCodeService, SapDynamicBarCodeService>();
+            services.AddScoped<IBusinessPartnersSupplierService, BusinessPartnersSupplierService>();
 
 
             //  services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));

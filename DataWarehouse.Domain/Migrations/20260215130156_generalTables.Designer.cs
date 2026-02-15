@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataWarehouse.Domain.Migrations
 {
     [DbContext(typeof(DataWarehouseDbContext))]
-    [Migration("20260214113518_kk")]
-    partial class kk
+    [Migration("20260215130156_generalTables")]
+    partial class generalTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -121,7 +121,12 @@ namespace DataWarehouse.Domain.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("SapId")
+                        .HasColumnType("int");
+
                     b.HasKey("CustomerId");
+
+                    b.HasIndex("SapId");
 
                     b.ToTable("Customers");
                 });
@@ -312,6 +317,9 @@ namespace DataWarehouse.Domain.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("SapId")
+                        .HasColumnType("int");
+
                     b.Property<string>("SupplierCode")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -323,6 +331,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("SupplierId");
+
+                    b.HasIndex("SapId");
 
                     b.ToTable("Suppliers");
                 });
@@ -2343,6 +2353,17 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("Item");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Customer", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.AllinAll.Sap", "Sap")
+                        .WithMany("Customers")
+                        .HasForeignKey("SapId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Sap");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.IncrementalSync.SapSyncPagination", b =>
                 {
                     b.HasOne("DataWarehouse.Domain.Entities.AllinAll.Sap", "Sap")
@@ -2391,6 +2412,17 @@ namespace DataWarehouse.Domain.Migrations
                 {
                     b.HasOne("DataWarehouse.Domain.Entities.AllinAll.Sap", "Sap")
                         .WithMany("Items")
+                        .HasForeignKey("SapId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Sap");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Supplier", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.AllinAll.Sap", "Sap")
+                        .WithMany("Suppliers")
                         .HasForeignKey("SapId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -3406,6 +3438,8 @@ namespace DataWarehouse.Domain.Migrations
                 {
                     b.Navigation("BarCodeSettings");
 
+                    b.Navigation("Customers");
+
                     b.Navigation("DocumentAttachments");
 
                     b.Navigation("DynamicBarCodes");
@@ -3421,6 +3455,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("SapSyncPaginations");
 
                     b.Navigation("SapSyncStatuses");
+
+                    b.Navigation("Suppliers");
 
                     b.Navigation("UserSaps");
 

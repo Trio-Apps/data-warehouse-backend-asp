@@ -1,4 +1,5 @@
-﻿using DataWarehouse.Domain.Entities.Processes.OutSide;
+﻿using DataWarehouse.Domain.Entities.AllinAll;
+using DataWarehouse.Domain.Entities.Processes.OutSide;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -14,20 +15,26 @@ namespace DataWarehouse.Domain.Entities.Actors
 
 
 
+        //[MaxLength(50)]
+        //public string CustomerCode { get; set; }
+
         [MaxLength(200)]
-        public string CustomerName { get; set; }
+        public string? CustomerName { get; set; }
 
         [MaxLength(50)]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
 
         [MaxLength(100)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [MaxLength(300)]
-        public string Address { get; set; }
+        public string? Address { get; set; }
 
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        public int SapId { get; set; }
+        public Sap Sap { get; set; }
 
 
         // Navigation: Customer ↔ SalesOrders (CreatedBy)

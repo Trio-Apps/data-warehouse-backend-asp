@@ -52,24 +52,6 @@ namespace DataWarehouse.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Customers",
-                columns: table => new
-                {
-                    CustomerId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Customers", x => x.CustomerId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Permissions",
                 columns: table => new
                 {
@@ -101,25 +83,6 @@ namespace DataWarehouse.Domain.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProcessItemIsProgresses", x => x.ProcessItemIsProgressId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Suppliers",
-                columns: table => new
-                {
-                    SupplierId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    SupplierCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    SupplierName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Suppliers", x => x.SupplierId);
                 });
 
             migrationBuilder.CreateTable(
@@ -441,6 +404,30 @@ namespace DataWarehouse.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Customers",
+                columns: table => new
+                {
+                    CustomerId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SapId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customers", x => x.CustomerId);
+                    table.ForeignKey(
+                        name: "FK_Customers_Saps_SapId",
+                        column: x => x.SapId,
+                        principalTable: "Saps",
+                        principalColumn: "SapId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DocumentAttachments",
                 columns: table => new
                 {
@@ -585,6 +572,31 @@ namespace DataWarehouse.Domain.Migrations
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_SapUsers_Saps_SapId",
+                        column: x => x.SapId,
+                        principalTable: "Saps",
+                        principalColumn: "SapId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Suppliers",
+                columns: table => new
+                {
+                    SupplierId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SupplierCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SupplierName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SapId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Suppliers", x => x.SupplierId);
+                    table.ForeignKey(
+                        name: "FK_Suppliers_Saps_SapId",
                         column: x => x.SapId,
                         principalTable: "Saps",
                         principalColumn: "SapId");
@@ -1564,7 +1576,7 @@ namespace DataWarehouse.Domain.Migrations
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GoodsReturnOrderId = table.Column<int>(type: "int", nullable: false),
-                    ReceiptPurchaseOrderItemId = table.Column<int>(type: "int", nullable: false),
+                    ReceiptPurchaseOrderItemId = table.Column<int>(type: "int", nullable: true),
                     ItemId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -1683,7 +1695,7 @@ namespace DataWarehouse.Domain.Migrations
                     BatchNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReceiptPurchaseOrderBatchId = table.Column<int>(type: "int", nullable: false),
+                    ReceiptPurchaseOrderBatchId = table.Column<int>(type: "int", nullable: true),
                     GoodsReturnOrderItemId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -1805,6 +1817,11 @@ namespace DataWarehouse.Domain.Migrations
                 column: "WarehouseId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Customers_SapId",
+                table: "Customers",
+                column: "SapId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DocumentAttachments_SapId",
                 table: "DocumentAttachments",
                 column: "SapId");
@@ -1828,7 +1845,8 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_GoodsReturnOrderBatches_ReceiptPurchaseOrderBatchId",
                 table: "GoodsReturnOrderBatches",
                 column: "ReceiptPurchaseOrderBatchId",
-                unique: true);
+                unique: true,
+                filter: "[ReceiptPurchaseOrderBatchId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GoodsReturnOrderItems_GoodsReturnOrderId",
@@ -1844,7 +1862,8 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_GoodsReturnOrderItems_ReceiptPurchaseOrderItemId",
                 table: "GoodsReturnOrderItems",
                 column: "ReceiptPurchaseOrderItemId",
-                unique: true);
+                unique: true,
+                filter: "[ReceiptPurchaseOrderItemId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GoodsReturnOrders_ReceiptPurchaseOrderId",
@@ -2224,6 +2243,11 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_SupplierItems_SupplierId",
                 table: "SupplierItems",
                 column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Suppliers_SapId",
+                table: "Suppliers",
+                column: "SapId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransferredItems_ItemId",

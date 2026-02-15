@@ -66,54 +66,61 @@ namespace DataWarehouse.Api
                         "*/2 * * * *"
                     );
 
-                    RecurringJob.AddOrUpdate<SapJobsExecutor>(
-                        $"sap:{sapId}:dynamic-barcodes-delete-sync",
-                        j => j.SyncDeleteDynamicBarcodesAsync(sapId),
-                        "*/2 * * * *"
-                    );
-                    //   RecurringJob.AddOrUpdate<SapWarehouseService>(
-                    //       $"sap:{sapId}:warehouses-sync",
-                    //       job => job.SyncWarehouseAsync(sapId),
-                    //        "*/2 * * * *"
-                    //   );
+                RecurringJob.AddOrUpdate<SapJobsExecutor>(
+                    $"sap:{sapId}:dynamic-barcodes-delete-sync",
+                    j => j.SyncDeleteDynamicBarcodesAsync(sapId),
+                    "*/2 * * * *"
+                );
 
-                    //   RecurringJob.AddOrUpdate<SapItemService>(
-                    //       $"sap:{sapId}:items-sync",
-                    //       job => job.SyncItemsAsync(sapId),
-                    //    "*/2 * * * *"
-                    //   );
+                RecurringJob.AddOrUpdate<SapJobsExecutor>(
+                 $"sap:{sapId}:business-partners-sync",
+                 j => j.SyncBusinessPartnersAsync(sapId),
+                 "*/2 * * * *"
+             );
 
-                    //   RecurringJob.AddOrUpdate<SapBarCodeService>(
-                    //       $"sap:{sapId}:barcodes-sync",
-                    //       job => job.SyncBarCodeAsync(sapId),
-                    //       "*/2 * * * *"
-                    //   );
-                    //   RecurringJob.AddOrUpdate<SapBarCodeService>(
-                    //    $"sap:{sapId}:barcodes-Add-UomGeoup-sync",
-                    //    job => job.SyncItemUomGroupAsync(sapId),
-                    //   "*/2 * * * *"
-                    //);
+                //   RecurringJob.AddOrUpdate<SapWarehouseService>(
+                //       $"sap:{sapId}:warehouses-sync",
+                //       job => job.SyncWarehouseAsync(sapId),
+                //        "*/2 * * * *"
+                //   );
 
-                    //   RecurringJob.AddOrUpdate<SapBarCodeService>(
-                    //      $"sap:{sapId}:barcodes-delete-sync",
-                    //      job => job.SyncDeleteBarCodeAsync(sapId),
-                    //      "*/2 * * * *"
-                    //  );
-                    //   RecurringJob.AddOrUpdate<SapDynamicBarCodeService>(
-                    //    $"sap:{sapId}:dynamic-barcodes-sync",
-                    //    job => job.SyncDynamicBarcodeAsync(sapId),
-                    //    "*/2 * * * *"
-                    //  );
+                //   RecurringJob.AddOrUpdate<SapItemService>(
+                //       $"sap:{sapId}:items-sync",
+                //       job => job.SyncItemsAsync(sapId),
+                //    "*/2 * * * *"
+                //   );
+
+                //   RecurringJob.AddOrUpdate<SapBarCodeService>(
+                //       $"sap:{sapId}:barcodes-sync",
+                //       job => job.SyncBarCodeAsync(sapId),
+                //       "*/2 * * * *"
+                //   );
+                //   RecurringJob.AddOrUpdate<SapBarCodeService>(
+                //    $"sap:{sapId}:barcodes-Add-UomGeoup-sync",
+                //    job => job.SyncItemUomGroupAsync(sapId),
+                //   "*/2 * * * *"
+                //);
+
+                //   RecurringJob.AddOrUpdate<SapBarCodeService>(
+                //      $"sap:{sapId}:barcodes-delete-sync",
+                //      job => job.SyncDeleteBarCodeAsync(sapId),
+                //      "*/2 * * * *"
+                //  );
+                //   RecurringJob.AddOrUpdate<SapDynamicBarCodeService>(
+                //    $"sap:{sapId}:dynamic-barcodes-sync",
+                //    job => job.SyncDynamicBarcodeAsync(sapId),
+                //    "*/2 * * * *"
+                //  );
 
 
-                    //   RecurringJob.AddOrUpdate<SapDynamicBarCodeService>(
-                    //      $"sap:{sapId}:dynamic-barcodes-delete-sync",
-                    //      job => job.SyncDeleteDynamicBarCodeAsync(sapId),
-                    //      "*/2 * * * *"
-                    //    );
+                //   RecurringJob.AddOrUpdate<SapDynamicBarCodeService>(
+                //      $"sap:{sapId}:dynamic-barcodes-delete-sync",
+                //      job => job.SyncDeleteDynamicBarCodeAsync(sapId),
+                //      "*/2 * * * *"
+                //    );
 
 
-                }
+            }
 
 
             RecurringJob.AddOrUpdate<SapJobDiscoveryService>(

@@ -1,4 +1,5 @@
-﻿using DataWarehouse.Domain.Entities.Processes;
+﻿using DataWarehouse.Domain.Entities.AllinAll;
+using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using System;
 using System.Collections.Generic;
@@ -18,19 +19,22 @@ namespace DataWarehouse.Domain.Entities.Actors
         public string SupplierCode { get; set; }
 
         [MaxLength(200)]
-        public string SupplierName { get; set; }
+        public string? SupplierName { get; set; }
 
         [MaxLength(50)]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
 
         [MaxLength(100)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [MaxLength(300)]
-        public string Address { get; set; }
+        public string? Address { get; set; }
 
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        public int SapId { get; set; }
+        public Sap Sap { get; set; }
 
 
         // Navigation property: one supplier has many supplier items

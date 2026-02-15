@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "AS27X99hmCw=",
+  "dgSpecHash": "AkbtI/DGjRc=",
   "success": true,
-  "projectFilePath": "D:\\Projects\\EnterPrice-DataWarehouse\\DataWarehouse.Api\\DataWarehouse.Api.csproj",
+  "projectFilePath": "D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse.Api\\DataWarehouse.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Trio App 4\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Trio App 4\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

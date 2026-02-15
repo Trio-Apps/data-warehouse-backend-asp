@@ -117,3 +117,4 @@ D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\refint
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.pdb
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.genruntimeconfig.cache
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\ref\DataWarehouse.Domain.dll
+D:\Projects\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.sourcelink.json

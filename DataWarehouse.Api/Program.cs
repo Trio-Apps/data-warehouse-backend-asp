@@ -59,19 +59,23 @@ builder.Services.AddHangfire(config =>
         builder.Configuration.GetConnectionString("connectionString"));
 });
 
-builder.Services.AddHangfireServer();
+
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular",
-        policy =>
-        {
-            policy
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials()
-                .SetIsOriginAllowed(origin => true);
-        });
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy
+   .WithOrigins(
+                "https://datawarehouse.runasp.net",
+                "http://localhost:4200",
+                "https://localhost:4200"
+            ).AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // خليه بس لو فعلاً بتستخدم Cookies
+    });
 });
+builder.Services.AddHangfireServer();
 
 builder.Services.AddProblemDetails();
 
@@ -79,12 +83,6 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
-//// seed sap
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    await SapSeeder.SeedAsync(services);
-//}
 
 //// seed Roles
 // ✅ الطريقة الصحيحة
@@ -101,27 +99,6 @@ using (var scope = app.Services.CreateScope())
 
 }
 
-// seed Incremental
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    await EntitiesSyncSeeder.SeedAsync(services);
-//}
-
-// seed Sap Auth
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    await SapSeeder.SeedAsync(services);
-//}
-
-// seed BarCode Settings
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    await BarCodeSeeder.SeedAsync(services);
-//}
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -131,12 +108,12 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAngular");
 
 // Enable static files serving from wwwroot
 app.UseStaticFiles();
 
 app.UseRouting();                // 1️⃣ الأول
+app.UseCors("AllowAngular");
 
 app.UseAuthentication();         // 2️⃣
 app.UseAuthorization();          // 3️⃣

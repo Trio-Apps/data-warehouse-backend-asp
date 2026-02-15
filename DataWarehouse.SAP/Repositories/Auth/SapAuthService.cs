@@ -153,6 +153,7 @@ namespace DataWarehouse.SAP.Auth
                 throw;
             }
 
+
             // 5️⃣ Log status code & response body
             var body = await response.Content.ReadAsStringAsync();
             logger.LogInformation("SAP Re-Login StatusCode: {StatusCode}", response.StatusCode);

@@ -608,7 +608,7 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
 
         //  Approval with User Or and Warehouse and BarCode its Tables
-         #region Approval with User Or and Warehouse and BarCode its Tables
+        #region Approval with User Or and Warehouse and BarCode its Tables
 
 
         builder.Entity<ApplicationUser>()
@@ -683,6 +683,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
        .OnDelete(DeleteBehavior.NoAction);
 
 
+        builder.Entity<Sap>()
+       .HasMany(o => o.Suppliers).WithOne(a => a.Sap)
+       .HasForeignKey(o => o.SapId)
+       .HasPrincipalKey(e => e.SapId)
+       .OnDelete(DeleteBehavior.NoAction);
+
 
 
         builder.Entity<Item>()
@@ -699,7 +705,18 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
        .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
-         #region User  with Warehouse and Incremental 
+        // Customer
+
+        #region Customer
+        builder.Entity<Sap>()
+    .HasMany(o => o.Customers).WithOne(a => a.Sap)
+    .HasForeignKey(o => o.SapId)
+    .HasPrincipalKey(e => e.SapId)
+    .OnDelete(DeleteBehavior.NoAction);
+
+        #endregion
+
+        #region User  with Warehouse and Incremental 
         // User  with Warehouse 
 
         builder.Entity<ApplicationUser>()
