@@ -15,8 +15,8 @@ namespace DataWarehouse.Domain.Entities.Actors
 
 
 
-        //[MaxLength(50)]
-        //public string CustomerCode { get; set; }
+        [MaxLength(50)]
+        public string CustomerCode { get; set; }
 
         [MaxLength(200)]
         public string? CustomerName { get; set; }

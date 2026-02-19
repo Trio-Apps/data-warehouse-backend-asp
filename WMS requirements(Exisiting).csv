@@ -1,0 +1,198 @@
+Module,Sub Module,Feature,Feature Description,Type
+General,Login Page,FR-LOGIN-001,Validate SAP Account Number Username and Password when user clicks Login,Existing
+General,Login Page,FR-LOGIN-002,Authenticate user against backend API,Existing
+General,Login Page,FR-LOGIN-003,Redirect user to WMS Main Menu on successful login,Existing
+General,Login Page,FR-LOGIN-004,Display error message on failed login (Invalid credentials Inactive user SAP connectivity issues),Existing
+General,Home Page ,FR-HOME-001,Display Home Page after successful login based on user authorization,Existing
+General,Home Page ,FR-HOME-002,"Display header info (  logged-in user, connected database)",Existing
+General,Home Page ,FR-HOME-003,Provide navigation tiles to modules (Master Data Purchasing Outbound Deliveries Production Inventory Printing Reports Exporting),Existing
+General,Home Page ,FR-HOME-004,Navigate to selected module when user selects a tile,Existing
+General,Home Page ,FR-HOME-005,Provide menu actions for Sync Data and Logout,Existing
+General,Home Page ,FR-HOME-006,Trigger data synchronization and display last sync timestamp when Sync Data is selected,Existing
+General,Home Page ,FR-HOME-007,End user session and redirect to Login Page on Logout,Existing
+Master data,Master Data Menu,FR-MD-001,Provide Master Data menu accessible from Home Page,Existing
+Master data,Master Data Menu,FR-MD-002,"Display tiles for Items Barcode Manager , Warehouses ,and Suppliers",Existing
+Master data,Master Data Menu,FR-MD-003,Navigate to selected master data screen when user selects a tile,Existing
+Master data,Master Data Menu,FR-MD-004,Provide Back action to return to previous screen,Existing
+Master data,Items Barcode Manager,FR-BCM-001,Allow user to select an item (Related to WMS) and view its associated barcodes,Existing
+Master data,Items Barcode Manager,FR-BCM-002,Allow user to select a Unit of Measure (UoM) for barcode entry,Existing
+Master data,Items Barcode Manager,FR-BCM-003,Allow user to add a new barcode for the selected item and UoM,Existing
+Master data,Items Barcode Manager,FR-BCM-004,Allow user to edit an existing barcode for an item,Existing
+Master data,Items Barcode Manager,FR-BCM-005,Allow user to delete an existing barcode that is no longer needed,Existing
+Master data,Items Barcode Manager,FR-BCM-006,Display all barcode records for the selected item including multiple barcodes,Existing
+Master data,Warehouses,FR-WH-001,Allow user to select a warehouse retrieved from SAP B1 (Related to WMS),Existing
+Master data,Warehouses,FR-WH-002,Restrict warehouse list to warehouses assigned to the logged-in user,Existing
+Master data,Warehouses,FR-WH-003,Display selected warehouse details in read- only format (Warehouse Code and Warehouse Name),Existing
+Master data,Warehouses,FR-WH-004,Provide access to Transactions Report and In-Warehouse Report,Existing
+Master data,Suppliers,FR-SUP-001,Allow user to select a supplier retrieved from SAP B1 (Related to WMS),Existing
+Master data,Suppliers,FR-SUP-002,"Display selected supplier details in readonly format (Supplier Code, Supplier Name, and Email)",Existing
+Purchasing,Purchasing Menu,FR-PUR-001,"Display tiles (View Open PO , Create PO ,Goods Receipt PO, Goods Return ,Draft GRPO Documents, Draft Purchase Orders)",Existing
+Purchasing,Purchasing Menu,FR-PUR-002,Navigate to selected purchasing screen when user selects an option,Existing
+Purchasing,View Open PO,FR-VPO-001,Allow user to filter open purchase orders by date ,Existing
+Purchasing,View Open PO,FR-VPO-002,Retrieve and display open purchase orders (those related to the  default warehouse of the signed in user) when user clicks Filter,Existing
+Purchasing,View Open PO,FR-VPO-003,"Allow user to group the list by No Grouping , Group by Supplier , or Group by Date",Existing
+Purchasing,View Open PO,FR-VPO-004,"Display PO header information (PO Number , Supplier Name , Document Date)",Existing
+Purchasing,View Open PO,FR-VPO-005,"Allow user to expand a PO to view line details (Item Code,  Item Name.  Open Quantity,  Delivery Date) only lines whose status is Open",Existing
+Purchasing,View Open PO,FR-VPO-006,Provide To GRPO action to open GRPO creation screen for a selected PO,Existing
+Purchasing,View Open PO,FR-VPO-007,Auto-load selected PO lines into GRPO screen with zero quantity by default,Existing
+Purchasing,Create Purchase Order,FR-CPO-001,Allow user to select Supplier( Related to WMS) and enter Supplier Reference Number,Existing
+Purchasing,Create Purchase Order,FR-CPO-002,Allow user to enter Document Date and Required Date,Existing
+Purchasing,Create Purchase Order,FR-CPO-003,Allow user to select  Warehouse from DDL (Related to WMS and the default of the signed in user),Existing
+Purchasing,Create Purchase Order,FR-CPO-004,"Allow user to add items using Scan Item (manual entry ,search , or camera scan)",Existing
+Purchasing,Create Purchase Order,FR-CPO-005,"Display purchase order lines in a table (Barcode ,Item Code ,Item Name ,Quantity, Price, UOM ( list of all UOM related to the item))",Existing
+Purchasing,Create Purchase Order,FR-CPO-006,Allow user to delete a row in PO lines,Existing
+Purchasing,Create Purchase Order,FR-CPO-007,Allow user to Submit the purchase order,Existing
+Purchasing,Create Purchase Order,FR-CPO-008,Allow user to Save as Draft for later retrieval,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-001,Allow user to create a Goods Receipt PO (GRPO) from the WMS mobile app,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-002,Allow user to select a supplier (WMS-related suppliers only),Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-003,Display open Purchase Orders for the selected supplier filtered by the logged-in user’s default/assigned WMS warehouses,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-004,Allow user to select a base Purchase Order (PO) to create a GRPO,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-005,"Auto-fill GRPO header information  (Supplier ref no, warehouse, and date) after selecting supplier and base document",Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-006,Load Purchase Order lines into the GRPO lines table with default quantity set to zero,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-007,"Load line details from the base Purchase Order including Barcode ,Item Code, Item Name, Price, and UoM",Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-008,Allow user to update Supplier Reference Number warehouse and document date,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-009,"Allow user to adjust line quantity, warehouse ,and UoM for each item line",Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-010,Display item price automatically based on  base document pricing,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-011,Allow user to add additional item lines by scanning or searching items,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-012,Allow user to delete an item line from the GRPO before posting,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-013,Restrict warehouse dropdown to display only WMS-related warehouses assigned to the logged-in user,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-014,If an item is batch-managed prompt user to enter batch details for that item line,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-015,"Allow user to enter batch details including Batch Number ,Batch Quantity, and Expiry Date",Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-016,Allow user to create multiple batches for a single GRPO line when required,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-017,Validate that total batch quantities for a line must equal the GRPO line quantity (not less or more),Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-018,Allow user to delete a batch entry if added by mistake,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-019,Allow user to edit existing batch entries (batch number quantity expiry date) before submitting,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-020,Allow user to save the GRPO as Draft,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-021,Allow user to submit the GRPO and create it in SAP Business One,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-022,Create GRPO in SAP Business One with linkage to the selected Purchase Order when GRPO is based on a PO,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-023,Support creating a standalone GRPO without selecting a base Purchase Order,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-024,For standalone GRPO allow user to select supplier document date and warehouse,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-025,For standalone GRPO allow user to add items by scanning barcode or searching items,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-026,"For standalone GRPO allow user to enter quantities , prices , warehouse, and UoM per line",Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-027,For standalone GRPO support batch-managed items by allowing batch entry (batch number quantity expiry date) and validating totals,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-028,Submit standalone GRPO and create it in SAP Business One without Purchase Order linkage,Existing
+Purchasing,Goods Receipt PO (GRPO),FR-GRPO-029,Display submit error message if posting fails due to SAP validation or connectivity issues,Existing
+Purchasing,Goods Return,FR-GR-001,Allow user to create a Goods Return transaction from the WMS mobile app,Existing
+Purchasing,Goods Return,FR-GR-002,Allow user to select a supplier (related to WMS),Existing
+Purchasing,Goods Return,FR-GR-003,Display available GRPO documents for the selected supplier filtered by the logged-in user’s default/assigned WMS warehouses,Existing
+Purchasing,Goods Return,FR-GR-004,Require selecting a base Goods Receipt PO (GRPO) before returning goods (no return without predefined GRPO),Existing
+Purchasing,Goods Return,FR-GR-005,Auto-fill Goods Return header information after selecting supplier and GRPO,Existing
+Purchasing,Goods Return,FR-GR-006,Load GRPO lines into the Goods Return lines table with default quantity set to zero,Existing
+Purchasing,Goods Return,FR-GR-007,"Load item details from base GRPO lines (Barcode ,Item Code, Item Name ,UoM) into the return lines table",Existing
+Purchasing,Goods Return,FR-GR-008,Allow user to update return line quantity and warehouse before posting,Existing
+Purchasing,Goods Return,FR-GR-009,Allow user to add additional item lines by scanning or searching items ,Existing
+Purchasing,Goods Return,FR-GR-010,Allow user to delete an item line from the Goods Return before posting,Existing
+Purchasing,Goods Return,FR-GR-011,Restrict warehouse dropdown to display only Related to WMS and the assigned warehouses for the signed-in users,Existing
+Purchasing,Goods Return,FR-GR-012,If an item is batch-managed  prompt user to select from existing batches created in the selected GRPO based on the warehouse,Existing
+Purchasing,Goods Return,FR-GR-013,For batch-managed items allow user to enter batch return quantities,Existing
+Purchasing,Goods Return,FR-GR-014,Allow user to select multiple batches for a single return line,Existing
+Purchasing,Goods Return,FR-GR-015,Validate that total batch quantities for a line must equal the line quantity (not less or more),Existing
+Purchasing,Goods Return,FR-GR-016,Allow user to delete a batch selection ,Existing
+Purchasing,Goods Return,FR-GR-017,Allow user to submit the Goods Return and create it in SAP Business One,Existing
+Purchasing,Goods Return,FR-GR-018,Display submit error message if posting fails,Existing
+Purchasing,Draft GRPO,FR-DGRPO-001,Allow user to save a GRPO as a draft instead of posting to SAP,Existing
+Purchasing,Draft GRPO,FR-DGRPO-002,Store locally saved Draft GRPO on the device ,Existing
+Purchasing,Draft GRPO,FR-DGRPO-003,"Display a list of Draft GRPO records including Draft Number ,Supplier Code, and Document Date on header",Existing
+Purchasing,Draft GRPO,FR-DGRPO-004,"Allow user to expand a Draft GRPO to view line details (Item Code, Item Name, Quantity)",Existing
+Purchasing,Draft GRPO,FR-DGRPO-005,Allow user to open a draft (View GRPO) and load it into the GRPO creation screen to continue editing and submit,Existing
+Purchasing,Draft GRPO,FR-DGRPO-006,Allow user to delete locally saved Draft GRPO records from the device,Existing
+Purchasing,Draft GRPO,FR-DGRPO-007,Retrieve Draft GRPO documents from SAP Business One and display them in the Draft GRPO list,Existing
+Purchasing,Draft GRPO,FR-DGRPO-008,Prevent deleting Draft GRPO records retrieved from SAP Business One,Existing
+Purchasing,Draft GRPO,FR-DGRPO-009,Allow user to open an SAP Draft GRPO (View GRPO) and load it into the GRPO creation screen for completion and submission,Existing
+Purchasing,Draft GRPO,FR-DGRPO-010,When loading a draft into the GRPO creation screen pre-fill header and lines exactly as saved in the draft,Existing
+Purchasing,Draft PO,FR-DPO-001,Allow user to save a Purchase Order as a draft locally instead of posting to SAP,Existing
+Purchasing,Draft PO,FR-DPO-002,"Display a list of Draft PO records including Draft Number, Supplier Code ,and Document Date",Existing
+Purchasing,Draft PO,FR-DPO-003,"Allow user to expand a Draft PO to view line details (Item Code, Item Name, Quantity)",Existing
+Purchasing,Draft PO,FR-DPO-004,Allow user to open a draft (View PO) and load it into the Purchase Order creation screen to continue editing and post,Existing
+Purchasing,Draft PO,FR-DPO-005,Allow user to delete locally saved Draft PO records from the device,Existing
+Sales,Outbound Deliveries Menu,FR-OBD-001,Provide Outbound Deliveries menu accessible from Home Page,Existing
+Sales,Outbound Deliveries Menu,FR-OBD-002,"Display options (View Open SO, Sales Delivery, Sales Return)",Existing
+Sales,Outbound Deliveries Menu,FR-OBD-003,Navigate to selected outbound deliveries screen when user selects an option,Existing
+Sales,View Open Sales Orders,FR-VSO-001,Allow user to filter open Sales Orders by document date,Existing
+Sales,View Open Sales Orders,FR-VSO-002,Retrieve and display open Sales Orders those related to the logged-in user’s default/assigned warehouse  when  Filter is clicked,Existing
+Sales,View Open Sales Orders,FR-VSO-003,"Allow user to group the list by No Grouping, Group by Customer , or Group by Date",Existing
+Sales,View Open Sales Orders,FR-VSO-004,"Display Sales Order header information (SO Number, Customer Name , Document Date) only lines whose status is Open",Existing
+Sales,View Open Sales Orders,FR-VSO-005,"Allow user to expand a Sales Order to view line details (Item Code, Item Name, Quantity , Delivery Date)",Existing
+Sales,View Open Sales Orders,FR-VSO-006,Provide To Delivery action to open Sales Delivery transaction for the selected Sales Order,Existing
+Sales,View Open Sales Orders,FR-VSO-007,Preload selected Sales Order information into the Sales Delivery screen when user selects To Delivery,Existing
+Sales,Delivery Note,FR-DLV-001,Allow user to create a Sales Delivery Note from the WMS mobile app,Existing
+Sales,Delivery Note,FR-DLV-002,Allow user to select a customer (WMS-related customers only),Existing
+Sales,Delivery Note,FR-DLV-003,Display open Sales Orders for the selected customer filtered by the logged-in user’s default/assigned WMS warehouses,Existing
+Sales,Delivery Note,FR-DLV-004,Allow user to select a base Sales Order (SO) to create a Delivery Note,Existing
+Sales,Delivery Note,FR-DLV-005,Auto-fill Delivery header information after selecting customer and Sales Order ,Existing
+Sales,Delivery Note,FR-DLV-006,Allow user to enter an optional Customer Reference Number,Existing
+Sales,Delivery Note,FR-DLV-007,Load Sales Order lines into the Delivery Note lines table with default quantity set to zero,Existing
+Sales,Delivery Note,FR-DLV-008,"Load line details from the base Sales Order including Barcode ,Item Code, Item Name ,Price ,and UoM",Existing
+Sales,Delivery Note,FR-DLV-009,Allow user to update Customer Reference Number warehouse and posting date,Existing
+Sales,Delivery Note,FR-DLV-010,Allow user to adjust line quantity and UoM for each item line,Existing
+Sales,Delivery Note,FR-DLV-011,Display item price automatically based on SAP Business One default price list or base document pricing,Existing
+Sales,Delivery Note,FR-DLV-012,Allow user to add additional item lines by scanning or searching items,Existing
+Sales,Delivery Note,FR-DLV-013,Allow user to delete an item line from the Delivery Note before posting,Existing
+Sales,Delivery Note,FR-DLV-014,Restrict warehouse dropdown to display only WMS-related warehouses assigned to the logged-in user,Existing
+Sales,Delivery Note,FR-DLV-015,If an item is batch-managed retrieve only available batches for that item in the selected warehouse,Existing
+Sales,Delivery Note,FR-DLV-016,Allow user to select batch numbers and quantities for batch-managed items,Existing
+Sales,Delivery Note,FR-DLV-017,Allow user to create multiple batch selections for a single delivery line when required,Existing
+Sales,Delivery Note,FR-DLV-018,Validate that total batch quantities for a line must equal the delivery line quantity,Existing
+Sales,Delivery Note,FR-DLV-019,Allow user to submit the Delivery Note and create it in SAP Business One,Existing
+Sales,Delivery Note,FR-DLV-020,Create Delivery Note in SAP Business One with linkage to the selected Sales Order when delivery is based on an SO,Existing
+Sales,Delivery Note,FR-DLV-021,Support creating a standalone Delivery Note without selecting a base Sales Order,Existing
+Sales,Delivery Note,FR-DLV-022,For standalone Delivery Note allow user to select customer posting date and warehouse,Existing
+Sales,Delivery Note,FR-DLV-023,For standalone Delivery Note allow user to add delivery items by scanning barcode or searching items,Existing
+Sales,Delivery Note,FR-DLV-024,For standalone Delivery Note allow user to enter quantities and UoM per line,Existing
+Sales,Delivery Note,FR-DLV-025,For standalone Delivery Note support batch-managed items by retrieving available batches from the selected warehouse and allowing batch quantity selection,Existing
+Sales,Delivery Note,FR-DLV-026,Submit standalone Delivery Note and create it in SAP Business One without Sales Order linkage,Existing
+Sales,Delivery Note,FR-DLV-027,Display submit error message if posting fails due to SAP validation or connectivity issues,Existing
+Sales,Sales Return,FR-SR-001,Allow user to create a Sales Return from the WMS mobile app,Existing
+Sales,Sales Return,FR-SR-002,Allow user to select a customer (WMS-related customers only),Existing
+Sales,Sales Return,FR-SR-003,Display Delivery Notes for the selected customer filtered by the logged-in user’s default/assigned WMS warehouses,Existing
+Sales,Sales Return,FR-SR-004,Allow user to select a base Delivery Note (DN) to create a Sales Return,Existing
+Sales,Sales Return,FR-SR-005,Auto-fill Sales Return header information after selecting customer and Delivery Note,Existing
+Sales,Sales Return,FR-SR-006,Load Delivery Note lines into the Sales Return lines table with default quantity set to zero,Existing
+Sales,Sales Return,FR-SR-007,"Load line details from the base Delivery Note including Item Name, Quantity ,and UoM",Existing
+Sales,Sales Return,FR-SR-008,Allow user to scan items ,Existing
+Sales,Sales Return,FR-SR-009,Allow user to adjust return quantities per line,Existing
+Sales,Sales Return,FR-SR-010,Allow user to select posting date for the Sales Return,Existing
+Sales,Sales Return,FR-SR-011,If an item is batch-managed retrieve the exact batches issued in the selected Delivery Note,Existing
+Sales,Sales Return,FR-SR-012,Automatically load/select issued batches for batch-managed items based on the original Delivery Note,Existing
+Sales,Sales Return,FR-SR-013,Allow user to adjust batch return quantities for the loaded batches,Existing
+Sales,Sales Return,FR-SR-014,Allow user to create multiple batch selections for a single return line when required,Existing
+Sales,Sales Return,FR-SR-015,Validate that total batch quantities for a line must equal the return line quantity,Existing
+Sales,Sales Return,FR-SR-016,Allow user to delete a batch entry if added by mistake,Existing
+Sales,Sales Return,FR-SR-017,Allow user to add additional item lines by scanning or searching items ,Existing
+Sales,Sales Return,FR-SR-018,Allow user to delete an item line from the Sales Return before posting,Existing
+Sales,Sales Return,FR-SR-019,Allow user to submit the Sales Return and create it in SAP Business One,Existing
+Sales,Sales Return,FR-SR-020,Create Sales Return in SAP Business One with linkage to the selected Delivery Note when return is based on a DN,Existing
+Sales,Sales Return,FR-SR-021,Support creating a standalone Sales Return without selecting a base Delivery Note,Existing
+Sales,Sales Return,FR-SR-022,For standalone Sales Return allow user to select customer and posting date,Existing
+Sales,Sales Return,FR-SR-023,For standalone Sales Return allow user to add return items by scanning barcode or searching items,Existing
+Sales,Sales Return,FR-SR-024,For standalone Sales Return allow user to enter quantities and UoM per line,Existing
+Sales,Sales Return,FR-SR-025,For standalone Sales Return support batch-managed items by retrieving available batches and allowing batch quantity selection,Existing
+Sales,Sales Return,FR-SR-026,Submit standalone Sales Return and create it in SAP Business One without Delivery Note linkage,Existing
+Sales,Sales Return,FR-SR-027,Display submit error message if posting fails due to SAP validation or connectivity issues,Existing
+Production,Production Menu,FR-PROD-001,Provide Production module menu accessible from Home Page,Existing
+Production,Production Menu,FR-PROD-002,Display options (Production Orders and View Production Orders),Existing
+Production,Production Menu,FR-PROD-003,Navigate to selected production screen when user selects an option,Existing
+Production,Production Orders,FR-PRO-001,Allow user to create and execute a production cycle from the WMS mobile app based on SAP Business One Production BOM,Existing
+Production,Production Orders,FR-PRO-002,Allow user to select a finished good item and restrict the list to items that have a Production BOM in SAP Business One,Existing
+Production,Production Orders,FR-PRO-003,Allow user to select production date,Existing
+Production,Production Orders,FR-PRO-004,Allow user to change the finished good quantity in the header and automatically recalculate BOM component required quantities accordingly,Existing
+Production,Production Orders,FR-PRO-005,Allow user to select the warehouse(related to WMS and default warehouse assigned to logged-in user) for production ,Existing
+Production,Production Orders,FR-PRO-006,If the finished good is batch-managed allow user to create finished good batch(es) at header level by entering Batch Number Batch Quantity and Expiry Date,Existing
+Production,Production Orders,FR-PRO-007,Validate that finished good batch quantities total must equal the finished good production quantity before submission,Existing
+Production,Production Orders,FR-PRO-008,Allow user to add multiple finished good batches for the same production request,Existing
+Production,Production Orders,FR-PRO-009,Allow user to delete or edit a finished good batch entry before submission,Existing
+Production,Production Orders,FR-PRO-010,Automatically retrieve required raw materials/components from the finished good BOM after selecting the item,Existing
+Production,Production Orders,FR-PRO-011,"Display BOM component lines including Item Code, Item Name, required quantity, and available quantity in warehouse (In Whs Qty)",Existing
+Production,Production Orders,FR-PRO-012,Allow user to edit component line quantity only for components with Issue Type = Manual (not allowed for Backflush items),Existing
+Production,Production Orders,FR-PRO-013,If a component item is batch-managed allow user to select batch number(s) from available batches in the selected warehouse and enter batch quantities,Existing
+Production,Production Orders,FR-PRO-014,Validate that total selected batch quantities for a batch-managed component line must equal the required/entered issue quantity for that line,Existing
+Production,Production Orders,FR-PRO-015,Display component issue type per line (e.g. Backflush or Manual),Existing
+Production,Production Orders,FR-PRO-016,Allow user to remove a component line ,Existing
+Production,Production Orders,FR-PRO-017,When the user changes the header warehouse reload and display In Whs Qty for BOM component lines based on the selected warehouse,Existing
+Production,Production Orders,FR-PRO-018,Default each component line warehouse to the selected header warehouse,Existing
+Production,Production Orders,FR-PRO-019,Allow user to submit the production request,Existing
+Production,Production Orders,FR-PRO-020,On submit create a Production Order in SAP Business One for the selected finished good,Existing
+Production,Production Orders,FR-PRO-021,Automatically release the Production Order in SAP Business One after creation,Existing
+Production,Production Orders,FR-PRO-022,Automatically post Receipt of Finished Goods to inventory through an Inventory Goods Receipt document,Existing
+Production,Production Orders,FR-PRO-023,Automatically close the Production Order in SAP Business One after completing the production cycle,Existing
+Production,Production Orders,FR-PRO-024,Display submit error message if production processing fails due to SAP validation or connectivity issues,Existing

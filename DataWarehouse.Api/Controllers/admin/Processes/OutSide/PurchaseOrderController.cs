@@ -74,10 +74,10 @@ public class PurchaseOrderController : ControllerBase
    
     [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
-    public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, string? status,string? liveStatus, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
+    public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId,int? supplierId, string? status,string? liveStatus, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(warehouseId, userId, postingDate, dueDate,liveStatus, status, skip, pageSize);
+        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(warehouseId, userId, supplierId, postingDate, dueDate,liveStatus, status, skip, pageSize);
         if (!res.Success)
             return BadRequest(res);
         return Ok(res);

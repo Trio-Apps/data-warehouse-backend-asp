@@ -2,9 +2,13 @@ using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.Actors;
+using DataWarehouse.Core.Interfaces.Company;
+using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.CompanyRepo;
+using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +18,33 @@ namespace DataWarehouse.Services.Repository.Actors;
 
 public class SupplierRepository : BaseRepository<Supplier>, ISupplierRepository
 {
-    public SupplierRepository(DataWarehouseDbContext context) : base(context)
+    private readonly ICompanyCache companyCache;
+    private readonly ISapCache sapCache;
+
+    public SupplierRepository(ICompanyCache companyCache, ISapCache sapCache, DataWarehouseDbContext context) : base(context)
     {
+        this.companyCache = companyCache;
+        this.sapCache = sapCache;
     }
 
     public async Task<GeneralResponse<IEnumerable<Supplier>>> GetAllSuppliersAsync()
     {
-        var suppliers = await GetAllAsync();
+        var sapId = await sapCache.Get();
+
+        if(sapId == null)
+        {
+            var companyId = await companyCache.Get();
+            var sap = await _context.Saps.Where(c => c.CompanyId == companyId).FirstOrDefaultAsync();
+            if (sap == null)
+                return GeneralResponse<IEnumerable<Supplier>>.FailResponse("Not Found Any Suppliers In This Company");
+
+            await sapCache.UpdateSapUserClaimAsync(sap.SapId.ToString());
+            sapId = sap.SapId;
+        }
+
+
+
+        var suppliers = await _context.Suppliers.Where(s => s.SapId == sapId).ToListAsync();
         return GeneralResponse<IEnumerable<Supplier>>.SuccessResponse(suppliers, "Suppliers retrieved successfully");
     }
 

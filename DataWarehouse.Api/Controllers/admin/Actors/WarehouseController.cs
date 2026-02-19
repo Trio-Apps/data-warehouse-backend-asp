@@ -94,10 +94,11 @@ public class WarehouseController : ControllerBase
         return Ok(items);
     }
 
+
     [HttpGet("GetItemsByWarehouseId/{warehouseId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Items_Get}")]
     public async Task<IActionResult> GetItemsByWarehouseId(
-  int warehouseId)
+    int warehouseId)
     {
         // 1??  Õﬁﬁ „‰ «·‹ ModelState ··‹ parameters
         if (!ModelState.IsValid)

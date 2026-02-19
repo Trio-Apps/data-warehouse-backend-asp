@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
+using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Core.Interfaces.Based;
@@ -36,16 +37,120 @@ namespace DataWarehouse.Services.Repository.Based
         public async Task<ProcessItemIsProgress> GetProcessItem(int OrderId, ProcessType type, CancellationToken cancellationToken = default)
         {
             return await _context.ProcessItemIsProgresses
-     .AsNoTracking()
-     .Where(p =>
+         .AsNoTracking()
+         .Where(p =>
          p.ProcessType == type &&
          p.ReferenceId == OrderId)
-     .OrderByDescending(p => p.ProcessItemIsProgressId) // آخر حالة
-     .FirstOrDefaultAsync(cancellationToken);
+         .OrderByDescending(p => p.ProcessItemIsProgressId) // آخر حالة
+         .FirstOrDefaultAsync(cancellationToken);
         }
 
 
-        public async Task<GeneralResponse<TOrderItem>> AddOrderItemAsync<TOrder, TOrderItem>(
+public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetOrderItemsByOrderIdWithPaginationAsync<TOrder, TOrderItem, TDto, TExtra, TStatusEnum>(
+    int orderId,
+    int pageNumber,
+    int pageSize,
+    string? status,
+    Func<TOrder, TExtra> extraSelector,
+    Expression<Func<TOrder, bool>> orderIdSelector,
+    DbSet<TOrder> orderSet,
+    DbSet<TOrderItem> itemSet,
+    Expression<Func<TOrderItem, bool>> itemFilter,
+    Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include,
+    Expression<Func<TOrderItem, TDto>> selector,
+    Expression<Func<TOrderItem, int>> orderByDescSelector,
+    Expression<Func<TOrderItem, TStatusEnum>> itemStatusSelector
+)
+    where TOrder : class, IOrder
+    where TOrderItem : class, IOrderItem
+    where TStatusEnum : struct, Enum
+    {
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        pageSize = pageSize <= 0 ? 10 : pageSize;
+
+        var order = await orderSet.AsNoTracking().FirstOrDefaultAsync(orderIdSelector);
+        if (order == null)
+            return GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>.FailResponse("Order not found");
+
+      
+
+        IQueryable<TOrderItem> query = itemSet.AsNoTracking();
+
+        if (include != null)
+            query = include(query);
+
+        query = query.Where(itemFilter);
+
+        // Status filter (string -> enum)
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (!Enum.TryParse<TStatusEnum>(status, true, out var statusEnum))
+                return GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>.FailResponse("Invalid status");
+
+            query = query.Where(x => EF.Property<TStatusEnum>(x, ((MemberExpression)itemStatusSelector.Body).Member.Name).Equals(statusEnum));
+            // NOTE: السطر ده بيعتمد ان itemStatusSelector عبارة عن x => x.Status (member access)
+            // لو ممكن تبقى expression أعقد، قولي وهنعملها safer.
+        }
+
+        var totalRecords = await query.CountAsync();
+
+        var data = await query
+            .OrderByDescending(orderByDescSelector)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(selector)
+            .ToListAsync();
+
+        var extra = extraSelector(order);
+
+        return GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>.SuccessResponse(
+            new PagedResult<TDto>
+            {
+                Data = data,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords
+            },
+            extra
+        );
+    }
+   
+        
+    public async Task<GeneralResponse<IEnumerable<TDto>>> GetOrderItemsByOrderIdAsync<TOrder, TOrderItem, TDto>(
+    int orderId,
+    Expression<Func<TOrder, bool>> orderIdSelector,
+    DbSet<TOrder> orderSet,
+    DbSet<TOrderItem> itemSet,
+    Expression<Func<TOrderItem, bool>> itemFilter,
+    Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include = null,
+    Expression<Func<TOrderItem, TDto>> selector = null!
+)
+    where TOrder : class, IOrder
+    where TOrderItem : class, IOrderItem
+    {
+        // 1) Validate Order exists
+        var order = await orderSet.AsNoTracking().FirstOrDefaultAsync(orderIdSelector);
+        if (order == null)
+            return GeneralResponse<IEnumerable<TDto>>.FailResponse("Order not found");
+
+        
+
+        // 3) Build query
+        IQueryable<TOrderItem> query = itemSet.AsNoTracking();
+
+        if (include != null)
+            query = include(query);
+
+        var data = await query
+            .Where(itemFilter)
+            .Select(selector)
+            .ToListAsync();
+
+        return GeneralResponse<IEnumerable<TDto>>.SuccessResponse(data);
+    }
+
+
+    public async Task<GeneralResponse<TOrderItem>> AddOrderItemAsync<TOrder, TOrderItem>(
         int orderId,
         ProcessType processType,
         bool isBarcode,
@@ -107,7 +212,7 @@ namespace DataWarehouse.Services.Repository.Based
                 model.ItemId = dto.ItemId;
                 model.Quantity = dto.Quantity;
                 model.BarCode = "";
-                model.UnitPrice = item.SalesPrice;
+                model.UnitPrice = dto.UnitPrice??item.SalesPrice;
                 model.UoMEntry = dto.UoMEntry;
                 model.Status = GeneralItemStatus.Planned;
             }
@@ -150,6 +255,11 @@ namespace DataWarehouse.Services.Repository.Based
                 entity.UoMEntry = dto.UoMEntry;
             }
 
+            if (dto.UnitPrice.HasValue)
+            {
+                entity.UnitPrice = dto.UnitPrice;
+            }
+
             await _context.SaveChangesAsync();
 
             return GeneralResponse<TOrderItem>.SuccessResponse(entity);
@@ -185,7 +295,36 @@ namespace DataWarehouse.Services.Repository.Based
             return GeneralResponse<TOrderItem>.SuccessResponse(snapshot);
         }
 
+        public async Task<GeneralResponse<IEnumerable<TDto>>> GetOrderBatchesAsync<TOrderItem, TBatch, TDto>(
+    int orderItemId,
+    Expression<Func<TOrderItem, bool>> orderItemSelector,
+    DbSet<TOrderItem> orderItemSet,
+    Expression<Func<TBatch, bool>> batchItemSelector,
+    DbSet<TBatch> batchSet,
+    Func<TBatch, TDto> map)
+    where TOrderItem : class, IOrderItem
+    where TBatch : class, IOrderBatch
+        {
+            // 1) Load OrderItem
+            var orderItem = await orderItemSet
+                .AsNoTracking()
+                .FirstOrDefaultAsync(orderItemSelector);
 
+            if (orderItem == null)
+                return GeneralResponse<IEnumerable<TDto>>.FailResponse("Order Item not found");
+
+         
+            // 3) Get batches
+            var batches = await batchSet
+                .AsNoTracking()
+                .Where(batchItemSelector)
+                .ToListAsync();
+
+            // 4) Map
+            var dtos = batches.Select(map);
+
+            return GeneralResponse<IEnumerable<TDto>>.SuccessResponse(dtos);
+        }
         public async Task<GeneralResponse<TBatch>> AddOrderBatchAsync<TOrderItem, TBatch>(
     int orderItemId,
     ProcessType processType,
@@ -202,12 +341,19 @@ namespace DataWarehouse.Services.Repository.Based
             if (orderItem == null)
                 return GeneralResponse<TBatch>.FailResponse("Order Item not found");
 
+
+             var item = await _context.Items.Where(i=>i.ItemId == orderItem.ItemId).FirstOrDefaultAsync();
+          
+            if(item == null || item.BatchNumbers == false)
+                return GeneralResponse<TBatch>.FailResponse("You cannot add any batch to this Item.");
+
             // 2) Approval check (هنا نستخدم OrderId من الـ entity بعد تحميله)
             var approval = await GetProcessItem(orderItem.OrderId, processType);
             if (approval != null && approval.Status == ProcessStatus.Approved)
                 return GeneralResponse<TBatch>.FailResponse(
                     "You cannot add any batch because its approval status is 'Approved' and all approval steps have been completed."
                 );
+
 
             // 3) Sum existing batches
             var existingTotal = await batchSet
@@ -227,6 +373,7 @@ namespace DataWarehouse.Services.Repository.Based
                 Comment = dto.Comment,
                 ExpiryDate = dto.ExpiryDate,
                 CreatedAt = DateTime.UtcNow,
+                BatchNumber = dto.BatchNumber,
                 // BatchNumber = dto.BatchNumber // لو موجودة عندك في dto
             };
 
@@ -289,6 +436,9 @@ namespace DataWarehouse.Services.Repository.Based
 
             if (dto.Comment != null)
                 batch.Comment = dto.Comment;
+
+            if (dto.BatchNumber != null)
+                batch.BatchNumber = dto.BatchNumber;
 
             if (dto.ExpiryDate.HasValue)
                 batch.ExpiryDate = dto.ExpiryDate;

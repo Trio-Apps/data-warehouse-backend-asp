@@ -58,25 +58,50 @@ namespace DataWarehouse.SAP.Repositories.Based
 
                 try
                 {
-                    var json = JsonSerializer.Serialize(entity);
+                    var json = JsonSerializer.Serialize(entity, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    });
+
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     response = await client.PostAsync(entityType, content);
 
+                    var responseBody = await response.Content.ReadAsStringAsync();
+
                     // Unauthorized → ReLogin مرة واحدة
                     if (response.StatusCode == HttpStatusCode.Unauthorized && attempt == 1)
                     {
-                        _logger.LogWarning("SAP returned 401 on POST. Forcing re-login and retrying...");
+                        _logger.LogWarning("SAP returned 401 on POST. Forcing re-login and retrying... Url={Url}", entityType);
                         await _sapAuth.ForceReLoginAsync(sapId);
                         continue;
                     }
 
-                    response.EnsureSuccessStatusCode();
-                    break; // ✅ نجاح
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogError(
+                            "SAP POST failed. Status={StatusCode} {Reason}. Url={Url}. Request={Request}. Response={Response}",
+                            (int)response.StatusCode,
+                            response.ReasonPhrase,
+                            entityType,
+                            json,
+                            responseBody);
+
+                        // ارمي exception فيها التفاصيل (مفيدة جداً)
+                        throw new HttpRequestException(
+                            $"SAP POST failed: {(int)response.StatusCode} {response.ReasonPhrase}\n" +
+                            $"Url: {entityType}\n" +
+                            $"Response: {responseBody}");
+                    }
+
+                    // ✅ نجاح
+                    _logger.LogInformation("SAP POST success. Url={Url}. Response={Response}", entityType, responseBody);
+                    break;
                 }
                 catch (HttpRequestException ex)
                 {
-                    _logger.LogError(ex, "HTTP POST to SAP failed!");
+                    _logger.LogError(ex, "HTTP POST to SAP failed! Url={Url}", entityType);
                     throw;
                 }
             }

@@ -93,20 +93,22 @@ namespace DataWarehouse.Domain.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CustomerId"));
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CustomerName")
+                    b.Property<string>("CustomerCode")
                         .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CustomerName")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -114,7 +116,6 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -294,7 +295,6 @@ namespace DataWarehouse.Domain.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SupplierId"));
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
@@ -302,7 +302,6 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -310,7 +309,6 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -323,7 +321,6 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("SupplierName")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -1512,7 +1509,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PurchaseOrderId")
+                    b.Property<int?>("PurchaseOrderId")
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -1531,7 +1528,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("ReceiptPurchaseOrderId");
 
                     b.HasIndex("PurchaseOrderId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[PurchaseOrderId] IS NOT NULL");
 
                     b.HasIndex("SupplierId");
 
@@ -1929,6 +1927,15 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
@@ -2902,8 +2909,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.PurchaseOrder", "PurchaseOrder")
                         .WithOne("ReceiptPurchaseOrder")
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", "PurchaseOrderId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Supplier", "Supplier")
                         .WithMany("ReceiptPurchaseOrders")
@@ -3608,8 +3614,7 @@ namespace DataWarehouse.Domain.Migrations
                 {
                     b.Navigation("PurchaseOrderItems");
 
-                    b.Navigation("ReceiptPurchaseOrder")
-                        .IsRequired();
+                    b.Navigation("ReceiptPurchaseOrder");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedItem", b =>

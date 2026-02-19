@@ -137,7 +137,6 @@ public class GoodsReturnOrderController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Create}")]
-
     public async Task<ActionResult<GoodsReturnOrder>> Create(AddGoodsReturnOrderWithoutRefDTO dto)
     {
         if (!ModelState.IsValid)

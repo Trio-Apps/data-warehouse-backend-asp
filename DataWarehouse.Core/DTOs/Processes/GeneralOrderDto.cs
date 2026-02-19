@@ -31,6 +31,8 @@ namespace DataWarehouse.Core.DTOs.Processes
 
         [Required(ErrorMessage = "Due Date is required")]
         public DateTime DueDate { get; set; }
+
+        public DateTime CreatedAt { get; set; }
         public bool? Approval { get; set; }
         public string ApprovalStatus { get; set; }
         public bool? IsReturn { get; set; }

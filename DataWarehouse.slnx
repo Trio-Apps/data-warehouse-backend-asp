@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="docker-compose.yml" />
+  </Folder>
   <Project Path="DataWarehouse.Api/DataWarehouse.Api.csproj" />
   <Project Path="DataWarehouse.Core/DataWarehouse.Core.csproj" />
   <Project Path="DataWarehouse.Domain/DataWarehouse.Domain.csproj" />

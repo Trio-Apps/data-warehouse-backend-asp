@@ -165,7 +165,6 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             SupplierId = res.SupplierId,
-            ReceiptPurchaseOrderId = res.ReceiptPurchaseOrderId
         };
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(model);

@@ -19,7 +19,7 @@ namespace DataWarehouse.Services.Repository.Permissions
             var db = scope.ServiceProvider.GetRequiredService<DataWarehouseDbContext>();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
 
-         //   await db.Database.MigrateAsync();
+            //   await db.Database.MigrateAsync();
 
             // 1) Seed Permissions
             var existingKeys = await db.Permissions.Select(p => p.Key).ToListAsync();
@@ -75,20 +75,20 @@ namespace DataWarehouse.Services.Repository.Permissions
 
             }
 
-           
-            
+
+
             // مثال: SuperAdmin ياخد كل حاجة
             await GrantAll(superRole);
 
             // Admin ياخد مجموعة معينة (مثال)
-           // var adminPermKeys = new[] { AppPermissions.Users_Create, AppPermissions.Users_Edit };
+            // var adminPermKeys = new[] { AppPermissions.Users_Create, AppPermissions.Users_Edit };
             var adminPermKeys = new List<string>();
             var adminPerms = permissions.Where(p => !adminPermKeys.Contains(p.Key)).ToList();
 
             foreach (var p in adminPerms)
             {
                 var exists = await db.RolePermissions.AnyAsync(rp => rp.RoleId == adminRole.Id && rp.PermissionId == p.PermissionId);
-               
+
                 if (!exists)
                     db.RolePermissions.Add(new RolePermission { RoleId = adminRole.Id, PermissionId = p.PermissionId });
             }

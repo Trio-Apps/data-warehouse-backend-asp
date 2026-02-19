@@ -18,7 +18,7 @@ public interface IPurchaseOrderRepository : IBaseRepository<PurchaseOrder>
     //Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationAsync
     //    (int? warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize);
     Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
-       (int warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize,CancellationToken cancellationToken=default);
+       (int warehouseId, string userId, int? supplierId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize,CancellationToken cancellationToken=default);
     Task<GeneralResponse<PurchaseOrderDTO>> AddPurchaseOrderByWarehouseIdAsync(string userId,
            AddPurchaseOrderDTO dto);
     Task<GeneralResponse<PurchaseOrderDTO>> UpdatePurchaseOrderAsync(string userId, int PurchaseId, UpdatePurchaseOrderDTO dto);

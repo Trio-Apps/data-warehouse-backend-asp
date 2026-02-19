@@ -6,6 +6,7 @@ using DataWarehouse.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,11 @@ namespace DataWarehouse.Domain.Entities.Processes
             set => PurchaseOrderId = value;
         }
 
+        public int? DocEntry {  get; set; }
+        public int? DocNum {  set; get; }
+        public string? DocType { get; set; }
+      
+
         // Navigation
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
@@ -38,7 +44,7 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int SupplierId { get; set; }
         public Supplier Supplier { get; set; }
 
-        public ReceiptPurchaseOrder ReceiptPurchaseOrder { get; set; }
+        public ReceiptPurchaseOrder? ReceiptPurchaseOrder { get; set; }
 
         public ICollection<PurchaseOrderItem> PurchaseOrderItems { get; set; }
             = new List<PurchaseOrderItem>();

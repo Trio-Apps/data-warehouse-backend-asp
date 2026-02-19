@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
+using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums.Approval;
@@ -15,6 +16,38 @@ namespace DataWarehouse.Core.Interfaces.Based
 {
     public interface IBaseProcessesRepository<T>
     {
+
+        Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetOrderItemsByOrderIdWithPaginationAsync<TOrder, TOrderItem, TDto, TExtra, TStatusEnum>(
+   int orderId,
+   int pageNumber,
+   int pageSize,
+   string? status,
+   Func<TOrder, TExtra> extraSelector,
+   Expression<Func<TOrder, bool>> orderIdSelector,
+   DbSet<TOrder> orderSet,
+   DbSet<TOrderItem> itemSet,
+   Expression<Func<TOrderItem, bool>> itemFilter,
+   Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include,
+   Expression<Func<TOrderItem, TDto>> selector,
+   Expression<Func<TOrderItem, int>> orderByDescSelector,
+   Expression<Func<TOrderItem, TStatusEnum>> itemStatusSelector
+)
+   where TOrder : class, IOrder
+   where TOrderItem : class, IOrderItem
+   where TStatusEnum : struct, Enum;
+
+    Task<GeneralResponse<IEnumerable<TDto>>> GetOrderItemsByOrderIdAsync<TOrder, TOrderItem, TDto>(
+    int orderId,
+    Expression<Func<TOrder, bool>> orderIdSelector,
+    DbSet<TOrder> orderSet,
+    DbSet<TOrderItem> itemSet,
+    Expression<Func<TOrderItem, bool>> itemFilter,
+    Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include = null,
+    Expression<Func<TOrderItem, TDto>> selector = null!
+)
+    where TOrder : class, IOrder
+    where TOrderItem : class, IOrderItem;
+
         Task<GeneralResponse<TOrderItem>> AddOrderItemAsync<TOrder, TOrderItem>(
         int orderId,
         ProcessType processType,
@@ -43,7 +76,17 @@ namespace DataWarehouse.Core.Interfaces.Based
         DbSet<TOrderItem> itemSet)
         where TOrderItem : class, IOrderItem;
 
-    
+        // batch
+
+        Task<GeneralResponse<IEnumerable<TDto>>> GetOrderBatchesAsync<TOrderItem, TBatch, TDto>(
+    int orderItemId,
+    Expression<Func<TOrderItem, bool>> orderItemSelector,
+    DbSet<TOrderItem> orderItemSet,
+    Expression<Func<TBatch, bool>> batchItemSelector,
+    DbSet<TBatch> batchSet,
+    Func<TBatch, TDto> map)
+    where TOrderItem : class, IOrderItem
+    where TBatch : class, IOrderBatch;
 
     Task<GeneralResponse<TBatch>> AddOrderBatchAsync<TOrderItem, TBatch>(
     int orderItemId,

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <parameters>
   <parameter name="IIS Web Application Name" description="" value="datawareehouse" tags="IisApp">
-    <parameterEntry kind="ProviderPath" scope="IisApp" match="^D:\\Projects\\data-warehouse-backend-asp\\DataWarehouse\.Api\\obj\\Release\\net9\.0\\win-x86\\PubTmp\\Out\\$" />
+    <parameterEntry kind="ProviderPath" scope="IisApp" match="^D:\\Files\\data-warehouse-backend-asp\\DataWarehouse\.Api\\obj\\Release\\net9\.0\\win-x86\\PubTmp\\Out\\$" />
   </parameter>
 </parameters>

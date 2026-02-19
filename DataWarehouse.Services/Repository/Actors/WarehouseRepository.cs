@@ -50,11 +50,10 @@ public class WarehouseRepository : BaseRepository<Warehouse>, IWarehouseReposito
         List<WarehouseDTO> res;
         if (checkRole.IsGlobal)
         {
-            var companyId = await companyCache.Get();
 
             if (sapId == null)
             {
-
+                var companyId = await companyCache.Get();
                 var sap = await _context.Saps.Where(c => c.CompanyId == companyId).FirstOrDefaultAsync();
                 if (sap == null)
                     return GeneralResponse<IEnumerable<WarehouseDTO>>.FailResponse("Not Found Any Warehouses In This Company");

@@ -70,7 +70,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 PurchaseOrderId = iw.PurchaseOrderId,
                 Status = iw.Status.ToString(),
                  Comment = iw.Comment,
-                CreatedDate = iw.CreatedAt,
+                CreatedAt = iw.CreatedAt,
                 // string = enum
                 UserId = iw.UserId,
                 WarehouseId = warehouseId,
@@ -93,7 +93,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
   
 
     public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
-       (int warehouseId, string userId, DateTime? postingDate, DateTime? DueDate,string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken=default)
+       (int warehouseId, string userId,int? supplierId, DateTime? postingDate, DateTime? DueDate,string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken=default)
 
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
@@ -105,6 +105,11 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
         // 🔹 Filtering
 
+
+        if (supplierId.HasValue)
+        {
+            query = query.Where(e => e.SupplierId == supplierId);
+        }
         if (!string.IsNullOrEmpty(status))
         {
             if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
@@ -224,11 +229,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
      
         var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.Purchase, res.PurchaseOrderId);
 
-        //var checkApprovalStatus = await approval.GetProcessItem(res.PurchaseOrderId, ProcessType.Purchase, cancellationToken);
-
-
-        //bool hasProgress = checkApprovalStatus != null;
-        //string? approvalStatus = checkApprovalStatus?.Status.ToString();
 
         var mapping = new PurchaseOrderDTO
         {
@@ -239,9 +239,13 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             Comment = res.Comment,
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
+            CreatedAt = res.CreatedAt,
+
 
             SupplierName = res.Supplier.SupplierName,
+            
             SupplierId = res.SupplierId,
+            SupplierCode = res.Supplier.SupplierCode,
 
 
             // ✅ Approval fields (same shape as sales)
@@ -420,6 +424,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
         return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(model);
     }
+
+
     private async Task<(bool IsValid, string Message)> ValidateBusinessDatesAsync(
       DateTime postingDate,
       DateTime dueDate)

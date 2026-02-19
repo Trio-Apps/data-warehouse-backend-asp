@@ -1,9 +1,12 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,16 +18,40 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchaseOrderBatch>, IReceiptPurchaseOrderBatchRepository
 {
-    public ReceiptPurchaseOrderBatchRepository(DataWarehouseDbContext context) : base(context)
+    private readonly IBaseProcessesRepository<ReceiptPurchaseOrderBatch> baseProcesses;
+
+    public ReceiptPurchaseOrderBatchRepository(IBaseProcessesRepository<ReceiptPurchaseOrderBatch> baseProcesses, DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
     }
 
-    public async Task<GeneralResponse<IEnumerable<ReceiptPurchaseOrderBatchDTO>>> GetByReceiptPurchaseOrderItemIdAsync(int receiptPurchaseOrderItemId)
-    {
-        var res = await Query().Where(b => b.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId).ToListAsync();
+    //public async Task<GeneralResponse<IEnumerable<ReceiptPurchaseOrderBatchDTO>>> GetByReceiptPurchaseOrderItemIdAsync(int receiptPurchaseOrderItemId)
+    //{
+    //    var res = await Query().Where(b => b.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId).ToListAsync();
 
-        return GeneralResponse<IEnumerable<ReceiptPurchaseOrderBatchDTO>>.SuccessResponse(
-            res.Select(b => new ReceiptPurchaseOrderBatchDTO
+    //    return GeneralResponse<IEnumerable<ReceiptPurchaseOrderBatchDTO>>.SuccessResponse(
+    //        res.Select(b => new ReceiptPurchaseOrderBatchDTO
+    //        {
+    //            ReceiptPurchaseOrderBatchId = b.ReceiptPurchaseOrderBatchId,
+    //            ReceiptPurchaseOrderItemId = b.ReceiptPurchaseOrderItemId,
+    //            Quantity = b.Quantity,
+    //            Comment = b.Comment,
+    //            BatchNumber = b.BatchNumber,
+    //            ExpiryDate = b.ExpiryDate
+    //        }));
+    //}
+    public async Task<GeneralResponse<IEnumerable<ReceiptPurchaseOrderBatchDTO>>> GetByReceiptPurchaseOrderItemIdAsync(
+    int receiptPurchaseOrderItemId)
+    {
+        var res = await baseProcesses.GetOrderBatchesAsync<ReceiptPurchaseOrderItem, ReceiptPurchaseOrderBatch, ReceiptPurchaseOrderBatchDTO>(
+            orderItemId: receiptPurchaseOrderItemId,
+            orderItemSelector: i => i.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId,
+            orderItemSet: _context.ReceiptPurchaseOrderItems,
+
+            batchItemSelector: b => b.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId,
+            batchSet: _context.ReceiptPurchaseOrderBatches,
+
+            map: b => new ReceiptPurchaseOrderBatchDTO
             {
                 ReceiptPurchaseOrderBatchId = b.ReceiptPurchaseOrderBatchId,
                 ReceiptPurchaseOrderItemId = b.ReceiptPurchaseOrderItemId,
@@ -32,7 +59,10 @@ public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchas
                 Comment = b.Comment,
                 BatchNumber = b.BatchNumber,
                 ExpiryDate = b.ExpiryDate
-            }));
+            }
+        );
+
+        return res;
     }
 
     public async Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderBatchDTO>>> GetByReceiptPurchaseOrderItemIdWithPaginationAsync(int receiptPurchaseOrderItemId, int pageNumber, int pageSize)
@@ -70,98 +100,61 @@ public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchas
             });
     }
 
-    public async Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> AddByReceiptPurchaseOrderItemIdAsync(int receiptPurchaseOrderItemId, AddReceiptPurchaseOrderBatchDTO dto)
+ 
+    public async Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> AddByReceiptPurchaseOrderItemIdAsync(int receiptPurchaseOrderItemId, GeneralBatchDto dto)
     {
-        if (receiptPurchaseOrderItemId != dto.ReceiptPurchaseOrderItemId)
-            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Receipt Purchase Order Item ID mismatch");
+        var res = await baseProcesses.AddOrderBatchAsync<ReceiptPurchaseOrderItem, ReceiptPurchaseOrderBatch>(
+            orderItemId: receiptPurchaseOrderItemId,
+            processType: ProcessType.Receipt,
+            dto: dto,
+            // ✅ لازم predicate على العمود الحقيقي
+            orderItemSelector: i => i.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId,
+            orderItemSet: _context.ReceiptPurchaseOrderItems,
 
-        var receiptPurchaseOrderItem = await _context.ReceiptPurchaseOrderItems
-            .FirstOrDefaultAsync(i => i.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId);
+            // ✅ لازم predicate على العمود الحقيقي
+            batchItemSelector: b => b.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId,
+            batchSet: _context.ReceiptPurchaseOrderBatches
+        );
 
-        if (receiptPurchaseOrderItem == null)
-            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Receipt Purchase Order Item not found");
+        if (!res.Success)
+            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse(res.Message);
 
-        // 🔍 1. حساب مجموع كميات الباتشات الحالية
-        var existingBatchesTotalQuantity = await _context.ReceiptPurchaseOrderBatches
-            .Where(b => b.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId)
-            .SumAsync(b => b.Quantity);
-
-        // 🔍 2. حساب الكمية بعد الإضافة
-        var totalAfterAdd = existingBatchesTotalQuantity + dto.Quantity;
-
-        // 🛑 3. التحقق
-        if (totalAfterAdd > receiptPurchaseOrderItem.Quantity)
-            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Total batch quantities exceed item quantity");
-
-        // ✅ 4. الإضافة
-        var mapping = new ReceiptPurchaseOrderBatch
-        {
-            ReceiptPurchaseOrderItemId = dto.ReceiptPurchaseOrderItemId,
-            Quantity = dto.Quantity,
-            Comment = dto.Comment,
-            ExpiryDate = dto.ExpiryDate,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var res = await AddAsync(mapping);
-        await SaveChangesAsync();
+        var saved = res.Data;
 
         var model = new ReceiptPurchaseOrderBatchDTO
         {
-            ReceiptPurchaseOrderBatchId = res.ReceiptPurchaseOrderBatchId,
-            ReceiptPurchaseOrderItemId = res.ReceiptPurchaseOrderItemId,
-            Quantity = res.Quantity,
-            Comment = res.Comment,
-            BatchNumber = res.BatchNumber,
-            ExpiryDate = res.ExpiryDate
+            ReceiptPurchaseOrderBatchId = saved.ReceiptPurchaseOrderBatchId,
+            ReceiptPurchaseOrderItemId = saved.ReceiptPurchaseOrderItemId,
+            Quantity = saved.Quantity,
+            Comment = saved.Comment,
+            BatchNumber = saved.BatchNumber,
+            ExpiryDate = saved.ExpiryDate
         };
 
         return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.SuccessResponse(model);
     }
-
     public async Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> UpdateReceiptPurchaseOrderBatchAsync(
-     int receiptPurchaseOrderBatchId,
-     UpdateReceiptPurchaseOrderBatchDTO dto)
+    int receiptPurchaseOrderBatchId,
+    UpdateGeneralBatchDto dto)
     {
-        if (receiptPurchaseOrderBatchId != dto.ReceiptPurchaseOrderBatchId)
-            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("ID mismatch");
+        var res = await baseProcesses.UpdateOrderBatchAsync<ReceiptPurchaseOrderItem, ReceiptPurchaseOrderBatch>(
+            batchId: receiptPurchaseOrderBatchId,
+            processType: ProcessType.Receipt,
+            dto: dto,
 
-        var entity = await _context.ReceiptPurchaseOrderBatches
-            .FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderBatchId == receiptPurchaseOrderBatchId);
+            batchSet: _context.ReceiptPurchaseOrderBatches,
+            orderItemSet: _context.ReceiptPurchaseOrderItems,
 
-        if (entity == null)
-            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Receipt Purchase Order Batch not found");
+            batchIdSelector: x => x.ReceiptPurchaseOrderBatchId,
+            orderItemIdSelector: x => x.ReceiptPurchaseOrderItemId,
+            orderItemIdForItemSelector: x => x.ReceiptPurchaseOrderItemId
+        );
 
-        // 🔍 1. جلب الـ Parent Item
-        var receiptPurchaseOrderItem = await _context.ReceiptPurchaseOrderItems
-            .FirstOrDefaultAsync(i => i.ReceiptPurchaseOrderItemId == entity.ReceiptPurchaseOrderItemId);
+        if (!res.Success)
+            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse(res.Message);
 
-        if (receiptPurchaseOrderItem == null)
-            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Receipt Purchase Order Item not found");
+        var entity = res.Data;
 
-        // 🔍 2. حساب مجموع الباتشات الأخرى (بدون الحالي)
-        var otherBatchesTotalQuantity = await _context.ReceiptPurchaseOrderBatches
-            .Where(b =>
-                b.ReceiptPurchaseOrderItemId == entity.ReceiptPurchaseOrderItemId &&
-                b.ReceiptPurchaseOrderBatchId != entity.ReceiptPurchaseOrderBatchId)
-            .SumAsync(b => b.Quantity);
-
-        // 🔍 3. حساب الإجمالي بعد التعديل
-        var totalAfterUpdate = otherBatchesTotalQuantity + dto.Quantity;
-
-        // 🛑 4. التحقق
-        if (totalAfterUpdate > receiptPurchaseOrderItem.Quantity)
-            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse(
-                "Total batch quantities exceed item quantity");
-
-        // ✅ 5. التعديل
-        entity.Quantity = dto.Quantity;
-        entity.Comment = dto.Comment;
-        entity.ExpiryDate = dto.ExpiryDate;
-
-        await _context.SaveChangesAsync();
-
-        // 🎯 6. الإرجاع
         var result = new ReceiptPurchaseOrderBatchDTO
         {
             ReceiptPurchaseOrderBatchId = entity.ReceiptPurchaseOrderBatchId,
@@ -175,6 +168,111 @@ public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchas
         return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.SuccessResponse(result);
     }
 
+
+    //public async Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> UpdateReceiptPurchaseOrderBatchAsync(
+    // int receiptPurchaseOrderBatchId,
+    // UpdateReceiptPurchaseOrderBatchDTO dto)
+    //{
+    //    if (receiptPurchaseOrderBatchId != dto.ReceiptPurchaseOrderBatchId)
+    //        return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("ID mismatch");
+
+    //    var entity = await _context.ReceiptPurchaseOrderBatches
+    //        .FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderBatchId == receiptPurchaseOrderBatchId);
+
+    //    if (entity == null)
+    //        return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Receipt Purchase Order Batch not found");
+
+    //    // 🔍 1. جلب الـ Parent Item
+    //    var receiptPurchaseOrderItem = await _context.ReceiptPurchaseOrderItems
+    //        .FirstOrDefaultAsync(i => i.ReceiptPurchaseOrderItemId == entity.ReceiptPurchaseOrderItemId);
+
+    //    if (receiptPurchaseOrderItem == null)
+    //        return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Receipt Purchase Order Item not found");
+
+    //    // 🔍 2. حساب مجموع الباتشات الأخرى (بدون الحالي)
+    //    var otherBatchesTotalQuantity = await _context.ReceiptPurchaseOrderBatches
+    //        .Where(b =>
+    //            b.ReceiptPurchaseOrderItemId == entity.ReceiptPurchaseOrderItemId &&
+    //            b.ReceiptPurchaseOrderBatchId != entity.ReceiptPurchaseOrderBatchId)
+    //        .SumAsync(b => b.Quantity);
+
+    //    // 🔍 3. حساب الإجمالي بعد التعديل
+    //    var totalAfterUpdate = otherBatchesTotalQuantity + dto.Quantity;
+
+    //    // 🛑 4. التحقق
+    //    if (totalAfterUpdate > receiptPurchaseOrderItem.Quantity)
+    //        return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse(
+    //            "Total batch quantities exceed item quantity");
+
+    //    // ✅ 5. التعديل
+    //    entity.Quantity = dto.Quantity;
+    //    entity.Comment = dto.Comment;
+    //    entity.ExpiryDate = dto.ExpiryDate;
+
+    //    await _context.SaveChangesAsync();
+
+    //    // 🎯 6. الإرجاع
+    //    var result = new ReceiptPurchaseOrderBatchDTO
+    //    {
+    //        ReceiptPurchaseOrderBatchId = entity.ReceiptPurchaseOrderBatchId,
+    //        ReceiptPurchaseOrderItemId = entity.ReceiptPurchaseOrderItemId,
+    //        Quantity = entity.Quantity,
+    //        Comment = entity.Comment,
+    //        BatchNumber = entity.BatchNumber,
+    //        ExpiryDate = entity.ExpiryDate
+    //    };
+
+    //    return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.SuccessResponse(result);
+    //}
+
+    //public async Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> AddByReceiptPurchaseOrderItemIdAsync(int receiptPurchaseOrderItemId, AddReceiptPurchaseOrderBatchDTO dto)
+    //{
+    //    if (receiptPurchaseOrderItemId != dto.ReceiptPurchaseOrderItemId)
+    //        return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Receipt Purchase Order Item ID mismatch");
+
+    //    var receiptPurchaseOrderItem = await _context.ReceiptPurchaseOrderItems
+    //        .FirstOrDefaultAsync(i => i.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId);
+
+    //    if (receiptPurchaseOrderItem == null)
+    //        return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Receipt Purchase Order Item not found");
+
+    //    // 🔍 1. حساب مجموع كميات الباتشات الحالية
+    //    var existingBatchesTotalQuantity = await _context.ReceiptPurchaseOrderBatches
+    //        .Where(b => b.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId)
+    //        .SumAsync(b => b.Quantity);
+
+    //    // 🔍 2. حساب الكمية بعد الإضافة
+    //    var totalAfterAdd = existingBatchesTotalQuantity + dto.Quantity;
+
+    //    // 🛑 3. التحقق
+    //    if (totalAfterAdd > receiptPurchaseOrderItem.Quantity)
+    //        return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse("Total batch quantities exceed item quantity");
+
+    //    // ✅ 4. الإضافة
+    //    var mapping = new ReceiptPurchaseOrderBatch
+    //    {
+    //        ReceiptPurchaseOrderItemId = dto.ReceiptPurchaseOrderItemId,
+    //        Quantity = dto.Quantity,
+    //        Comment = dto.Comment,
+    //        ExpiryDate = dto.ExpiryDate,
+    //        CreatedAt = DateTime.UtcNow
+    //    };
+
+    //    var res = await AddAsync(mapping);
+    //    await SaveChangesAsync();
+
+    //    var model = new ReceiptPurchaseOrderBatchDTO
+    //    {
+    //        ReceiptPurchaseOrderBatchId = res.ReceiptPurchaseOrderBatchId,
+    //        ReceiptPurchaseOrderItemId = res.ReceiptPurchaseOrderItemId,
+    //        Quantity = res.Quantity,
+    //        Comment = res.Comment,
+    //        BatchNumber = res.BatchNumber,
+    //        ExpiryDate = res.ExpiryDate
+    //    };
+
+    //    return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.SuccessResponse(model);
+    //}
 
 
 

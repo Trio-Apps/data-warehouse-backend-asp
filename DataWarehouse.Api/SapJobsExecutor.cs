@@ -2,6 +2,7 @@
 using Dataitem.SAP.Repositories.Actors;
 using DataWarehouse.SAP.Interfaces.Actors;
 using DataWarehouse.SAP.Interfaces.BarCode;
+using DataWarehouse.SAP.Interfaces.Proccesses;
 using DataWarehouse.SAP.Repositories.Actors;
 using DataWarehouse.SAP.Repositories.BarCode;
 using Hangfire;
@@ -18,19 +19,22 @@ namespace DataWarehouse.Api
         private readonly ISapBarCodeService _barCodeService;
         private readonly ISapDynamicBarCodeService _dynamicBarCodeService;
         private readonly IBusinessPartnersSupplierService businessPartnersService;
+        private readonly ISapPurchaseService purchaseService;
 
         public SapJobsExecutor(
             ISapWarehouseService warehouseService,
             ISapItemService itemService,
             ISapBarCodeService barCodeService,
             ISapDynamicBarCodeService dynamicBarCodeService,
-            IBusinessPartnersSupplierService businessPartnersService)
+            IBusinessPartnersSupplierService businessPartnersService,
+            ISapPurchaseService purchaseService)
         {
             _warehouseService = warehouseService;
             _itemService = itemService;
             _barCodeService = barCodeService;
             _dynamicBarCodeService = dynamicBarCodeService;
             this.businessPartnersService = businessPartnersService;
+            this.purchaseService = purchaseService;
         }
 
         // =========================
@@ -91,6 +95,14 @@ namespace DataWarehouse.Api
         public async Task SyncBusinessPartnersAsync(int sapId)
         {
             await businessPartnersService.SyncBusinessPartnersAsync(sapId);
+        }
+
+        // purchase
+        [DisableConcurrentExecution(1800)]
+        [AutomaticRetry(Attempts = 0)]
+        public async Task SyncPurchaseAsync(int sapId)
+        {
+            await purchaseService.SyncPurchaseAsync(sapId);
         }
     }
 

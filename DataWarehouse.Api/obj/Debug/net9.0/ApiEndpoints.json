@@ -4974,6 +4974,11 @@
         "IsRequired": true
       },
       {
+        "Name": "supplierId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
         "Name": "status",
         "Type": "System.String",
         "IsRequired": false
@@ -5479,6 +5484,57 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.ReceiptPurchaseOrderController",
+    "Method": "GetByWarehouseIdWithPagination",
+    "RelativePath": "api/ReceiptPurchaseOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "supplierId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "liveStatus",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "postingDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "dueDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.ReceiptPurchaseOrderController",
     "Method": "GetPendingReceipts",
     "RelativePath": "api/ReceiptPurchaseOrder/processing",
     "HttpMethod": "GET",
@@ -5628,6 +5684,32 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.ReceiptPurchaseOrderController",
+    "Method": "CreateWithDefaultItems",
+    "RelativePath": "api/ReceiptPurchaseOrder/with-default-items",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddReceiptPurchaseOrderDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.ReceiptPurchaseOrderBatchController",
     "Method": "GetAll",
     "RelativePath": "api/ReceiptPurchaseOrderBatch",
@@ -5688,7 +5770,7 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.UpdateReceiptPurchaseOrderBatchDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralBatchDto",
         "IsRequired": true
       }
     ],
@@ -5751,7 +5833,7 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddReceiptPurchaseOrderBatchDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.GeneralBatchDto",
         "IsRequired": true
       }
     ],

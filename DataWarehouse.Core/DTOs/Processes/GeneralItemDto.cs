@@ -32,9 +32,10 @@ namespace DataWarehouse.Core.DTOs.Processes
         public string? Comment { get; set; }
 
 
+
         public string? ItemCode { get; set; }
         public string? ItemName { get; set; }
-        public bool? IsBatches { get; set; }
+        public bool IsBatches { get; set; }
 
         public string? UnitName { get; set; }
     }
@@ -47,6 +48,9 @@ namespace DataWarehouse.Core.DTOs.Processes
 
         [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
         public decimal Quantity { get; set; }
+
+        [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
+        public decimal? UnitPrice { get; set; }
 
         [Required(ErrorMessage = "Item ID is required")]
         [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
@@ -65,7 +69,10 @@ namespace DataWarehouse.Core.DTOs.Processes
         [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
         public string? Comment { get; set; }
 
-      
+        [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
+        public decimal? UnitPrice { get; set; }
+
+
         [Required(ErrorMessage = "Unit is required")]
         public int UoMEntry { get; set; }
     }
@@ -111,6 +118,8 @@ namespace DataWarehouse.Core.DTOs.Processes
 
         [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
         public string? Comment { get; set; }
+
+        public string?  BatchNumber { get; set; }
 
         public DateTime? ExpiryDate { get; set; }
     }

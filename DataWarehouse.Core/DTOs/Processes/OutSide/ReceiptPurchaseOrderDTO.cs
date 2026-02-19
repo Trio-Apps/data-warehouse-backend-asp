@@ -13,9 +13,8 @@ public class ReceiptPurchaseOrderDTO : GeneralOrderDto
    
 
 
-    [Required(ErrorMessage = "Purchase Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Purchase Order ID must be greater than 0")]
-    public int PurchaseOrderId { get; set; }
+    public int? PurchaseOrderId { get; set; }
 
    
 
@@ -49,6 +48,28 @@ public class AddReceiptPurchaseOrderDTO
 
     //[Required(ErrorMessage = "Supplier ID is required")]
     //public int SupplierId { get; set; }
+}
+
+
+public class AddReceiptPurchaseOrderWithoutRefDTO
+{
+
+    [Required(ErrorMessage = "Posting Date is required")]
+    public DateTime PostingDate { get; set; }
+
+    [Required(ErrorMessage = "Due Date is required")]
+    public DateTime DueDate { get; set; }
+
+    public string? Comment { get; set; }
+
+    [Required(ErrorMessage = "Warehouse ID is required")]
+     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
+    public int WarehouseId { get; set; }
+
+    public bool IsDraft { get; set; }
+
+    [Required(ErrorMessage = "Supplier ID is required")]
+    public int SupplierId { get; set; }
 }
 
 public class UpdateReceiptPurchaseOrderDTO

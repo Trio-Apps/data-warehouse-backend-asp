@@ -142,10 +142,10 @@ public class BusinessPartnersSupplierService : IBusinessPartnersSupplierService
             .Select(bp => new Supplier
             {
                 SupplierCode = bp.CardCode,            // CardCode -> SupplierCode
-                SupplierName = bp.CardName??"Name",            // CardName -> SupplierName
-                Phone = bp.Phone1??"03216446544",                     // Phone1 -> Phone
-                Email = bp.EmailAddress??"email@gmail.com",               // EmailAddress -> Email
-                Address = bp.Address ?? "email@gmail.com",                  // Address -> Address
+                SupplierName = bp.CardName,            // CardName -> SupplierName
+                Phone = bp.Phone1,                     // Phone1 -> Phone
+                Email = bp.EmailAddress,               // EmailAddress -> Email
+                Address = bp.Address,                  // Address -> Address
                 IsActive = true,
                 CreatedAt = now,
 
@@ -185,10 +185,11 @@ public class BusinessPartnersSupplierService : IBusinessPartnersSupplierService
             .Where(bp => !existingNames.Contains(bp.CardName))
             .Select(bp => new Customer
             {
-                CustomerName = bp.CardName ?? "Name",            // CardName -> CustomerName
-                Phone = bp.Phone1 ?? "03216446544",                     // Phone1 -> Phone
-                Email = bp.EmailAddress ?? "email@gmail.com",               // EmailAddress -> Email
-                Address = bp.Address ?? "email@gmail.com",                  // Address -> Address
+                CustomerCode = bp.CardCode,
+                CustomerName = bp.CardName,            // CardName -> CustomerName
+                Phone = bp.Phone1,                     // Phone1 -> Phone
+                Email = bp.EmailAddress,               // EmailAddress -> Email
+                Address = bp.Address,                  // Address -> Address
                 IsActive = true,
                 CreatedAt = now,
 

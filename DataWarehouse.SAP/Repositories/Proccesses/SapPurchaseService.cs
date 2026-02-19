@@ -1,20 +1,15 @@
 ﻿using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.SAP.Interfaces.Based;
 using DataWarehouse.SAP.Interfaces.Proccesses;
-using DataWarehouse.SAP.Models.Processes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace DataWarehouse.SAP.Repositories.Proccesses
 {
@@ -23,11 +18,11 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
         private readonly IBaseSap<SapPurchaseOrderDto> sap;
         private readonly IDynamicBarCodeRepository dynamicBarCodeRepository;
         private readonly ISapSyncStatusRepository _syncRepo;
-        private readonly ILogger<SapBulkProductionService> logger;
+        private readonly ILogger<SapPurchaseService> logger;
         private readonly DataWarehouseDbContext _context;
 
         public SapPurchaseService(IBaseSap<SapPurchaseOrderDto> sap, IDynamicBarCodeRepository dynamicBarCodeRepository,
-            ISapSyncStatusRepository syncRepo, DataWarehouseDbContext context, ILogger<SapBulkProductionService> logger)
+            ISapSyncStatusRepository syncRepo, DataWarehouseDbContext context, ILogger<SapPurchaseService> logger)
         {
             this.sap = sap;
             this.dynamicBarCodeRepository = dynamicBarCodeRepository;
@@ -39,87 +34,126 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
         /// <summary>
         /// Sync Approved Purchase Orders for a given sapId (Warehouse.SapId)
         /// </summary>
+
         public async Task<string> SyncPurchaseAsync(int sapId)
         {
-            int batchSize = 200; // PO أقل من production items غالباً
-            int skip = 0;
+            const int batchSize = 200;     // PO أقل من production items غالباً
+         //   const int parallelism = 1;     // عدد الـ tasks في نفس الوقت
+
             int totalSuccess = 0;
             int totalFail = 0;
 
             while (true)
             {
-                // ✅ هات IDs للأوامر Approved من جدول الـ Process
+                // ✅ IDs للأوامر Approved من جدول الـ Process
                 var approvedIdsQuery = _context.ProcessItemIsProgresses
                     .AsNoTracking()
                     .Where(p => p.ProcessType == ProcessType.Purchase && p.Status == ProcessStatus.Approved)
                     .Select(p => p.ReferenceId)
                     .Distinct();
 
-                // ✅ جيب Batch من PurchaseOrders اللي Approval + تبع sapId + موجودة في approvedIds
+
+                // ✅ أهم تعديل: مفيش Skip
+                // كل مرة هجيب "أول batch" من اللي لسه Processing
                 var batch = await _context.PurchaseOrders
+                    .AsTracking()
                     .Include(po => po.Warehouse)
                     .Include(po => po.Supplier)
                     .Include(po => po.PurchaseOrderItems)
                         .ThenInclude(i => i.Item)
-                    .Where(po => po.Status == GeneralStatus.Approval
+                    .Where(po => po.Status == GeneralStatus.Processing
                                  && po.Warehouse.SapId == sapId
                                  && approvedIdsQuery.Contains(po.PurchaseOrderId))
                     .OrderBy(po => po.PurchaseOrderId)
-                    .Skip(skip)
                     .Take(batchSize)
                     .ToListAsync();
 
                 if (!batch.Any())
                     break;
 
-                // ✅ Parallel processing (زي production)
-                var semaphore = new SemaphoreSlim(5);
-                var tasks = batch.Select(order =>
-                    ProcessPurchaseOrderAsync(sapId, order, semaphore)
-                );
+                // ✅ Parallel processing
+                //  using var semaphore = new SemaphoreSlim(parallelism);
 
-                var results = await Task.WhenAll(tasks);
+                //   var tasks = batch.Select(order =>
 
-                // ✅ Update statuses in-memory
-                foreach (var (order, success, error) in results)
+                var taskSuccess = 0;
+                var taskFail = 0;
+                foreach (var order in batch)
                 {
+                    var (_, success, error) = await ProcessPurchaseOrderAsync(sapId, order);
+
                     if (success)
                     {
                         order.Status = GeneralStatus.Completed;
 
-                        // كمان نقدر نعلّم الـ items إنها synced (اختار status مناسب عندك)
                         foreach (var it in order.PurchaseOrderItems)
                         {
-                            it.Status = GeneralItemStatus.Received; // "Released" = تم إرساله/اعتماده في SAP
+                            it.Status = GeneralItemStatus.Received;
                             it.ErrorMessage = null;
+
+                            _context.Entry(it).Property(x => x.Status).IsModified = true;
+                            _context.Entry(it).Property(x => x.ErrorMessage).IsModified = true;
                         }
+
+
+                        _context.Entry(order).Property(x => x.Status).IsModified = true;
+                        taskSuccess++;
                     }
                     else
                     {
                         order.Status = GeneralStatus.PartiallyFailed;
+
                         foreach (var it in order.PurchaseOrderItems)
                         {
                             it.Status = GeneralItemStatus.Failed;
                             it.ErrorMessage = error;
+
+                            _context.Entry(it).Property(x => x.Status).IsModified = true;
+                            _context.Entry(it).Property(x => x.ErrorMessage).IsModified = true;
                         }
+
+                        _context.Entry(order).Property(x => x.Status).IsModified = true;
+                        taskFail++;
                     }
                 }
 
-                // ✅ Save batch once
-                await _context.SaveChangesAsync();
 
-                totalSuccess += results.Count(r => r.success);
-                totalFail += results.Count(r => !r.success);
+
+                // ✅ Save batch once
+                try
+                {
+                    // مهم جدًا لو AutoDetectChanges مقفول في أي مكان
+                    _context.ChangeTracker.DetectChanges();
+
+                    var affected = await _context.SaveChangesAsync();
+                    logger.LogInformation("SaveChanges affected rows={Affected}", affected);
+
+                    _context.ChangeTracker.Clear();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    logger.LogError(ex, "Concurrency issue while saving purchase orders batch for sapId={SapId}", sapId);
+                    throw;
+                }
+                catch (DbUpdateException ex)
+                {
+                    logger.LogError(ex, "DB update issue while saving purchase orders batch for sapId={SapId}", sapId);
+                    throw;
+                }
+
+                totalSuccess += taskSuccess;
+                totalFail += taskFail;
 
                 logger.LogInformation(
-                    "PO Batch processed: {Success} succeeded, {Failed} failed. Total so far: {TotalSuccess}/{TotalFail}",
-                    results.Count(r => r.success),
-                    results.Count(r => !r.success),
+                    "PO Batch processed for sapId={SapId}: {Success} succeeded, {Failed} failed. Total so far: {TotalSuccess}/{TotalFail}",
+                    sapId,
+                   taskSuccess,
+                    taskFail,
                     totalSuccess,
                     totalFail
                 );
 
-                skip += batchSize;
+                // مفيش skip هنا
             }
 
             if (totalSuccess == 0 && totalFail == 0)
@@ -127,12 +161,9 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
             return $"Sync completed. Success: {totalSuccess}, Failed: {totalFail}";
         }
-
         private async Task<(PurchaseOrder order, bool success, string? error)>
-            ProcessPurchaseOrderAsync(int sapId, PurchaseOrder order, SemaphoreSlim semaphore)
+            ProcessPurchaseOrderAsync(int sapId, PurchaseOrder order)
         {
-            await semaphore.WaitAsync();
-
             try
             {
                 // ✅ Validate minimum
@@ -150,10 +181,11 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 {
                     CardCode = order.Supplier.SupplierCode,
                     CardName = order.Supplier.SupplierName, // optional
-                    DocDate = ConvertToSapDateFormat(order.PostingDate == default ? order.CreatedAt : order.PostingDate),
+                    DocDate = ConvertToSapDateFormat(order.DueDate == default ? order.CreatedAt : order.DueDate),
                     NumAtCard = $"PO-{order.PurchaseOrderId}",
                     BPL_IDAssignedToInvoice = TryResolveBplId(order)
                 };
+
 
                 foreach (var line in order.PurchaseOrderItems)
                 {
@@ -183,29 +215,27 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 // ملاحظة: لو عندك AddPostSapAsync استخدمه هنا
                 var response = await sap.AddSapAsync(sapId, url, sapDto);
 
-               // var (docEntry, docNum) = ExtractDocEntryAndDocNum(response);
+               
+                logger.LogInformation("Purchase order synced: {Id}", order.PurchaseOrderId);
 
-                //if (docEntry == null)
-                //    throw new InvalidOperationException($"PO#{order.PurchaseOrderId}: SAP response has no DocEntry.");
+                //var orderFetch = await _context.PurchaseOrders.FirstOrDefaultAsync(e => e.PurchaseOrderId == order.PurchaseOrderId);
 
-                // ✅ حدّث Process table + Sync repo (اختياري)
-               // await MarkProcessCompletedAsync(order.PurchaseOrderId);
-               // await _syncRepo.MarkSuccessAsync(ProcessType.Purchase, order.PurchaseOrderId, docEntry.Value, docNum ?? 0);
+                //orderFetch.Status = GeneralStatus.Completed;
 
-                logger.LogInformation("Purchase order synced: {Id} -> DocEntry={DocEntry}", order.PurchaseOrderId);
+                //await _context.SaveChangesAsync();
 
                 return (order, true, null);
             }
             catch (Exception ex)
             {
+                //order.Status = GeneralStatus.PartiallyFailed;
+                //await _context.SaveChangesAsync();
+
                 logger.LogError(ex, "Failed to sync purchase order: {Id}", order.PurchaseOrderId);
                 //await _syncRepo.MarkFailedAsync(ProcessType.Purchase, order.PurchaseOrderId, ex.Message);
                 return (order, false, ex.Message);
             }
-            finally
-            {
-                semaphore.Release();
-            }
+           
         }
 
         private async Task MarkProcessCompletedAsync(int purchaseOrderId)

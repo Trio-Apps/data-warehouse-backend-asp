@@ -35,7 +35,6 @@ public class ReceiptPurchaseOrderController : ControllerBase
 
     [HttpGet("warehouse/{warehouseId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
-
     public async Task<ActionResult<IEnumerable<ReceiptPurchaseOrder>>> GetByWarehouseId(int warehouseId)
     {
         var receiptPurchaseOrders = await _repository.GetByWarehouseIdAsync(warehouseId);
@@ -44,7 +43,6 @@ public class ReceiptPurchaseOrderController : ControllerBase
 
     [HttpGet("warehouse/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
-
     public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, int skip, int pageSize)
     {
         var res = await _repository.GetByWarehouseIdWithPaginationAsync(warehouseId, skip, pageSize);
@@ -53,7 +51,18 @@ public class ReceiptPurchaseOrderController : ControllerBase
 
         return Ok(res);
     }
+    [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
+    public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, int? supplierId, string? status, string? liveStatus, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(warehouseId, userId, supplierId, postingDate, dueDate, liveStatus, status, skip, pageSize);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
 
     //[HttpGet("{id}")]
     //[Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
@@ -88,7 +97,7 @@ public class ReceiptPurchaseOrderController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var receiptPurchaseOrder = await _repository.GetByPurchaseOrderIdAsync(userId,purchaseOrderId);
+        var receiptPurchaseOrder = await _repository.GetByPurchaseOrderIdAsync(userId, purchaseOrderId);
         if (!receiptPurchaseOrder.Success)
             return NotFound($"ReceiptPurchaseOrder for PurchaseOrder ID {purchaseOrderId} not found.");
 
@@ -127,7 +136,6 @@ public class ReceiptPurchaseOrderController : ControllerBase
 
     [HttpGet("{id}/with-purchase-order")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
-
     public async Task<ActionResult<ReceiptPurchaseOrder>> GetWithPurchaseOrder(int id)
     {
         var receiptPurchaseOrder = await _repository.GetWithPurchaseOrderAsync(id);
@@ -139,7 +147,6 @@ public class ReceiptPurchaseOrderController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Create}")]
-
     public async Task<ActionResult<ReceiptPurchaseOrder>> Create(AddReceiptPurchaseOrderDTO dto)
     {
         if (!ModelState.IsValid)
@@ -147,11 +154,47 @@ public class ReceiptPurchaseOrderController : ControllerBase
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var created = await _repository.AddReceiptPurchaseOrderByWarehouseIdAsync(userId, dto);
+        var created = await _repository.AddReceiptPurchaseOrderByPurchaseOrderIdAsync(userId, dto);
+
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
+    [HttpPost("with-default-items")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Create}")]
+    public async Task<ActionResult<ReceiptPurchaseOrder>> CreateWithDefaultItems(AddReceiptPurchaseOrderDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var created = await _repository.AddReceiptPurchaseOrderAndItemsByPurchaseOrderIdAsync(userId, dto);
+
+        if (!created.Success)
+            return BadRequest(created);
 
         return Ok(created);
     }
 
+
+    [HttpPost("without-reference")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Create}")]
+    public async Task<ActionResult<ReceiptPurchaseOrder>> CreateWithoutReference(AddReceiptPurchaseOrderWithoutRefDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var created = await _repository.AddReceiptPurchaseOrderAsync(userId, dto);
+
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
     [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Edit}")]
 
