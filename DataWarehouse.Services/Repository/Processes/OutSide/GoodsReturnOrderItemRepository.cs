@@ -160,6 +160,7 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
 
 
 
+
     public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> AddGoodsReturnOrderItemByReceiptPurchaseOrderItemIdAsync(string userId,
         int receiptOrderId,
         AddGoodsReturnOrderItemDTO dto)
@@ -175,7 +176,7 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
 
         if (goodsReturnOrder.GoodsReturnOrder == null)
         {
-            var modelGood = new AddGoodsReturnOrderDTO
+            var modelGood = new AddGoodsReturnOrderModel
             {
                 ReceiptPurchaseOrderId = receiptOrderId,
                 Comment = dto.Comment,

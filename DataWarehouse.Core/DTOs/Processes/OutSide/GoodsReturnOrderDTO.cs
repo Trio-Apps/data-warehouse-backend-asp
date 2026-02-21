@@ -25,7 +25,7 @@ public class GoodsReturnOrderDTO : GeneralOrderDto
     public List<GoodsReturnOrderItemDTO>? Items { get; set; }
 }
 
-public class AddGoodsReturnOrderDTO
+public class AddGoodsReturnOrderModel
 {
     [Required(ErrorMessage = "Receipt Purchase Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Receipt Purchase Order ID must be greater than 0")]
@@ -33,6 +33,21 @@ public class AddGoodsReturnOrderDTO
 
     public string? Comment { get; set; }
 }
+
+public class AddGoodsReturnOrderDTO
+{
+    [Required(ErrorMessage = "Receipt Purchase Order ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Receipt Purchase Order ID must be greater than 0")]
+    public int ReceiptPurchaseOrderId { get; set; }
+
+    public DateTime PostingDate { get; set; }
+
+    public DateTime DueDate { get; set; }
+
+    public string? Comment { get; set; }
+    public bool IsDraft { get; set; }
+}
+
 public class AddGoodsReturnOrderWithoutRefDTO
 {
 

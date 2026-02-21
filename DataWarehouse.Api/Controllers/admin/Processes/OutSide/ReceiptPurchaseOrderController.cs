@@ -51,6 +51,7 @@ public class ReceiptPurchaseOrderController : ControllerBase
 
         return Ok(res);
     }
+  
     [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
     public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, int? supplierId, string? status, string? liveStatus, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
@@ -206,6 +207,22 @@ public class ReceiptPurchaseOrderController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var res = await _repository.UpdateReceiptPurchaseOrderAsync(userId, id, dto);
+        if (!res.Success) return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpPut("without-reference/{id}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Edit}")]
+
+    public async Task<IActionResult> UpdateWithoutReference(int id, [FromBody] UpdateReceiptPurchaseOrderWithoutRefDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var res = await _repository.UpdateReceiptPurchaseOrderWithoutRefAsync(userId, id, dto);
         if (!res.Success) return BadRequest(res);
 
         return Ok(res);

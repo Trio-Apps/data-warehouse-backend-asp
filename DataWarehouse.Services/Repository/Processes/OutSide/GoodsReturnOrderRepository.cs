@@ -1,7 +1,6 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
-using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
@@ -10,10 +9,6 @@ using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
@@ -31,7 +26,6 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
     {
         return await Query().Where(gro => gro.WarehouseId == warehouseId).ToListAsync();
     }
-
 
     public async Task<GeneralResponse<PagedResult<GoodsReturnOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
     (int warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
@@ -122,8 +116,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             });
     }
 
-
-    public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderAsync(string userId, AddGoodsReturnOrderWithoutRefDTO dto)
+    public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderWithoutRefAsync(string userId, AddGoodsReturnOrderWithoutRefDTO dto)
     {
 
         var suppler = await _context.Suppliers.FirstOrDefaultAsync(p => p.SupplierId == dto.SupplierId);
@@ -169,42 +162,131 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(model);
     }
-
-    public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderByReceiptPurchaseOrderIdAsync(string userId, AddGoodsReturnOrderDTO dto)
+    
+    public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderAndItemsByReceiptOrderAsync(
+    string userId,
+    AddGoodsReturnOrderDTO dto)
     {
-        var receiptPurchaseOrder = await _context.ReceiptPurchaseOrders
-            .Include(rpo => rpo.GoodsReturnOrder)
-            .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
+        var receiptOrder = await _context.ReceiptPurchaseOrders
+            .Include(p => p.GoodsReturnOrder)
+            .Include(p => p.ReceiptPurchaseOrderItems) // ✅ هات items
+            .FirstOrDefaultAsync(p => p.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
 
-        if (receiptPurchaseOrder == null)
-            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("Receipt Purchase Order is not found");
+        if (receiptOrder == null)
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("purchaseOrder is not found");
 
-        if (receiptPurchaseOrder.GoodsReturnOrder != null)
-            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("Receipt Purchase Order already has a Goods Return Order!");
+        if (receiptOrder.Status != GeneralStatus.Processing)
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("You can add Receipt, if purchase order status is completed only");
 
+        if (receiptOrder.GoodsReturnOrder != null)
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("purchaseOrder has receipt purchaseOrder already!");
+
+        if (receiptOrder.ReceiptPurchaseOrderItems == null || !receiptOrder.ReceiptPurchaseOrderItems.Any())
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("purchaseOrder has no items to receipt");
+
+        var returnOrder = new GoodsReturnOrder
+        {
+            Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
+
+            PostingDate = dto.PostingDate,
+
+            DueDate = dto.DueDate,
+
+
+            CreatedAt = DateTime.UtcNow,
+            UserId = userId,
+            WarehouseId = receiptOrder.WarehouseId,
+            Comment = dto.Comment,
+            SupplierId = receiptOrder.SupplierId,
+            ReceiptPurchaseOrderId = dto.ReceiptPurchaseOrderId,
+
+            // ✅ Copy PO items -> Receipt PO items
+            GoodsReturnOrderItems = receiptOrder.ReceiptPurchaseOrderItems.Select(poi => new GoodsReturnOrderItem
+            {
+                ReceiptPurchaseOrderItemId = poi.ReceiptPurchaseOrderItemId,
+                ItemId = poi.ItemId,
+                Quantity = poi.Quantity,
+                UoMEntry = poi.UoMEntry,
+                BarCode = poi.BarCode,
+                UnitPrice = poi.UnitPrice,
+
+                // منطق الستاتس: لسه الاستلام ما تمش
+                Status = GeneralItemStatus.Planned,
+
+                // optional
+                ErrorMessage = null,
+                Comment = null
+            }).ToList()
+        };
+
+        await _context.GoodsReturnOrders.AddAsync(returnOrder);
+        await SaveChangesAsync();
+
+        // ✅ شغل الـ Approval Workflow لو مش Draft
+        if (!dto.IsDraft)
+        {
+            await approval.StartProcessAsync(
+                processType: ProcessType.GoodsReturn,
+                referenceId: returnOrder.GoodsReturnOrderId,
+                warehouseId: returnOrder.WarehouseId,
+                userId: userId
+            );
+        }
+
+        var model = new GoodsReturnOrderDTO
+        {
+            ReceiptPurchaseOrderId = returnOrder.ReceiptPurchaseOrderId,
+            DueDate = returnOrder.DueDate,
+            PostingDate = returnOrder.PostingDate,
+            Status = returnOrder.Status.ToString(),
+            UserId = returnOrder.UserId,
+            WarehouseId = returnOrder.WarehouseId,
+            GoodsReturnOrderId = returnOrder.GoodsReturnOrderId,
+            SupplierId = returnOrder.SupplierId,
+            Comment = returnOrder.Comment
+        };
+
+        return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(model);
+    }
+
+    public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderAsync(string userId, AddGoodsReturnOrderDTO dto)
+    {
+
+        var receiptOrder = await _context.ReceiptPurchaseOrders.FirstOrDefaultAsync(p => p.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
+       
         var goodsReturnOrder = new GoodsReturnOrder
         {
+            Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
+            PostingDate = dto.PostingDate,
+            DueDate = dto.DueDate,
+            CreatedAt = DateTime.UtcNow,
             UserId = userId,
-            WarehouseId = receiptPurchaseOrder.WarehouseId,
-            SupplierId = receiptPurchaseOrder.SupplierId,
-            DueDate = receiptPurchaseOrder.DueDate,
-            PostingDate = receiptPurchaseOrder.PostingDate,   
-            ReceiptPurchaseOrderId = dto.ReceiptPurchaseOrderId,
-            Status = GeneralStatus.Draft,
-            CreatedAt = DateTime.UtcNow
+            WarehouseId = receiptOrder.WarehouseId,
+            Comment = dto.Comment,
+            SupplierId = receiptOrder.SupplierId,
+            ReceiptPurchaseOrderId = dto.ReceiptPurchaseOrderId
         };
 
 
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
 
+        // ✅ شغل الـ Approval Workflow لو مش Draft
+        if (!dto.IsDraft)
+        {
+            await approval.StartProcessAsync(
+                processType: ProcessType.GoodsReturn,
+                referenceId: res.GoodsReturnOrderId,
+                warehouseId: res.WarehouseId,
+                userId: userId
+            );
+        }
         var model = new GoodsReturnOrderDTO
         {
             GoodsReturnOrderId = res.GoodsReturnOrderId,
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             SupplierId = res.SupplierId,
-            ReceiptPurchaseOrderId = res.ReceiptPurchaseOrderId
         };
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(model);
@@ -219,6 +301,15 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         if (entity.GoodsReturnOrderId != goodsReturnOrderId)
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("ID mismatch");
+
+        if (entity.ReceiptPurchaseOrderId != null)
+        {
+            if (dto.SupplierId != null)
+            {
+                return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("You cannot edit on supplier, because supplier is based on Receipt Purchase order.");
+
+            }
+        }
 
         // Update fields if needed
         entity.UserId = userId;
@@ -371,6 +462,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(mapping);
     }
+   
     public async Task<GeneralResponse<GoodsReturnOrderDTO>> GetGoodsReturnOrderByIdAsync(string userId, int goodsReturnOrderId)
     {
         var res = await _context.GoodsReturnOrders
@@ -470,6 +562,48 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         return await QueryIncluding(false, gro => gro.Warehouse)
             .FirstOrDefaultAsync(gro => gro.GoodsReturnOrderId == goodsReturnOrderId);
     }
+
+    // inside
+    public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderByReceiptPurchaseOrderIdAsync(string userId, AddGoodsReturnOrderModel dto)
+    {
+        var receiptPurchaseOrder = await _context.ReceiptPurchaseOrders
+            .Include(rpo => rpo.GoodsReturnOrder)
+            .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
+
+        if (receiptPurchaseOrder == null)
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("Receipt Purchase Order is not found");
+
+        if (receiptPurchaseOrder.GoodsReturnOrder != null)
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("Receipt Purchase Order already has a Goods Return Order!");
+
+        var goodsReturnOrder = new GoodsReturnOrder
+        {
+            UserId = userId,
+            WarehouseId = receiptPurchaseOrder.WarehouseId,
+            SupplierId = receiptPurchaseOrder.SupplierId,
+            DueDate = receiptPurchaseOrder.DueDate,
+            PostingDate = receiptPurchaseOrder.PostingDate,
+            ReceiptPurchaseOrderId = dto.ReceiptPurchaseOrderId,
+            Status = GeneralStatus.Draft,
+            CreatedAt = DateTime.UtcNow
+        };
+
+
+        var res = await AddAsync(goodsReturnOrder);
+        await SaveChangesAsync();
+
+        var model = new GoodsReturnOrderDTO
+        {
+            GoodsReturnOrderId = res.GoodsReturnOrderId,
+            UserId = res.UserId,
+            WarehouseId = res.WarehouseId,
+            SupplierId = res.SupplierId,
+            ReceiptPurchaseOrderId = res.ReceiptPurchaseOrderId
+        };
+
+        return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(model);
+    }
+
 
 }
 

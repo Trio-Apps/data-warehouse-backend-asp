@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DataWarehouse.SAP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0aa02fc122df885b054b34631f4a82eb463a2d80")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fe787d5873abc7d8d7f8bbad30a81d629587fb12")]
 [assembly: System.Reflection.AssemblyProductAttribute("DataWarehouse.SAP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DataWarehouse.SAP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

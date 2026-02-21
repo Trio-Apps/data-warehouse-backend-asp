@@ -22,6 +22,7 @@ public class ReceiptPurchaseOrderDTO : GeneralOrderDto
     public int SupplierId { get; set; }
 
     public string? SupplierName { get; set; }
+    public string? SupplierCode { get; set; }
 
     public List<ReceiptPurchaseOrderItemDTO>? Items { get; set; }
 }
@@ -76,16 +77,29 @@ public class UpdateReceiptPurchaseOrderDTO
 {
     public int ReceiptPurchaseOrderId { get; set; }
 
-    [Required(ErrorMessage = "Posting Date is required")]
-    public DateTime PostingDate { get; set; }
+    public DateTime? PostingDate { get; set; }
 
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
+    public int? SupplierId { get; set; }
+
 
     public string? Comment { get; set; }
     public bool IsDraft { get; set; }
 }
 
+public class UpdateReceiptPurchaseOrderWithoutRefDTO
+{
+    public int ReceiptPurchaseOrderId { get; set; }
+
+    public DateTime? PostingDate { get; set; }
+
+    public DateTime? DueDate { get; set; }
+
+    public int? SupplierId { get; set; }
+    public string? Comment { get; set; }
+
+    public bool IsDraft { get; set; }
+}
 public class ReceiptPurchaseOrderItemDTO : GeneralItemDto
 {
     public int ReceiptPurchaseOrderItemId { get; set; }

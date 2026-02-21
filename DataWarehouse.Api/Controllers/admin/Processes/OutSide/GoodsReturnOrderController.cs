@@ -42,7 +42,6 @@ public class GoodsReturnOrderController : ControllerBase
 
     [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]
-
     public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, string? status, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -76,9 +75,9 @@ public class GoodsReturnOrderController : ControllerBase
 
         return Ok(goodsReturnOrder);
     }
+   
     [HttpGet("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]
-
     public async Task<IActionResult> GetGoodsReturnById(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -135,10 +134,44 @@ public class GoodsReturnOrderController : ControllerBase
         return Ok(goodsReturnOrder);
     }
 
-    [HttpPost]
+    [HttpPost("without-reference")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Create}")]
-    public async Task<ActionResult<GoodsReturnOrder>> Create(AddGoodsReturnOrderWithoutRefDTO dto)
+    public async Task<ActionResult<GoodsReturnOrder>> CreateWithoutReference(AddGoodsReturnOrderWithoutRefDTO dto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var created = await _repository.AddGoodsReturnOrderWithoutRefAsync(userId, dto);
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
+
+    [HttpPost("with-default-items")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Create}")]
+    public async Task<ActionResult<GoodsReturnOrder>> CreateWithDefaultItems(AddGoodsReturnOrderDTO dto)
+    {
+
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var created = await _repository.AddGoodsReturnOrderAndItemsByReceiptOrderAsync(userId, dto);
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
+
+    [HttpPost()]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Create}")]
+    public async Task<ActionResult<GoodsReturnOrder>> Create(AddGoodsReturnOrderDTO dto)
+    {
+
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
@@ -148,25 +181,9 @@ public class GoodsReturnOrderController : ControllerBase
         if (!created.Success)
             return BadRequest(created);
 
+
         return Ok(created);
     }
-
-    //[HttpPost("without-reference")]
-    //[Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Create}")]
-
-    //public async Task<ActionResult<GoodsReturnOrder>> CreateWithoutReference(AddGoodsReturnOrderWithoutRefDTO dto)
-    //{
-    //    if (!ModelState.IsValid)
-    //        return BadRequest(ModelState);
-
-    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-    //    var created = await _repository.AddGoodsReturnOrderAsync(userId, dto);
-    //    if (!created.Success)
-    //        return BadRequest(created);
-
-    //    return Ok(created);
-    //}
 
     [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Edit}")]

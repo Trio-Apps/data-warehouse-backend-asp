@@ -3724,17 +3724,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddGoodsReturnOrderWithoutRefDTO"
+                "$ref": "#/components/schemas/AddGoodsReturnOrderDTO"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddGoodsReturnOrderWithoutRefDTO"
+                "$ref": "#/components/schemas/AddGoodsReturnOrderDTO"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AddGoodsReturnOrderWithoutRefDTO"
+                "$ref": "#/components/schemas/AddGoodsReturnOrderDTO"
               }
             }
           }
@@ -4110,6 +4110,102 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReturnOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReturnOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReturnOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/GoodsReturnOrder/without-reference": {
+      "post": {
+        "tags": [
+          "GoodsReturnOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGoodsReturnOrderWithoutRefDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGoodsReturnOrderWithoutRefDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGoodsReturnOrderWithoutRefDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReturnOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReturnOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReturnOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/GoodsReturnOrder/with-default-items": {
+      "post": {
+        "tags": [
+          "GoodsReturnOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGoodsReturnOrderDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGoodsReturnOrderDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGoodsReturnOrderDTO"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -9162,6 +9258,96 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/ReceiptPurchaseOrder/without-reference": {
+      "post": {
+        "tags": [
+          "ReceiptPurchaseOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReceiptPurchaseOrderWithoutRefDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReceiptPurchaseOrderWithoutRefDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReceiptPurchaseOrderWithoutRefDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptPurchaseOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptPurchaseOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptPurchaseOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ReceiptPurchaseOrder/without-reference/{id}": {
+      "put": {
+        "tags": [
+          "ReceiptPurchaseOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReceiptPurchaseOrderWithoutRefDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReceiptPurchaseOrderWithoutRefDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReceiptPurchaseOrderWithoutRefDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -17935,6 +18121,36 @@
         },
         "additionalProperties": false
       },
+      "AddGoodsReturnOrderDTO": {
+        "required": [
+          "receiptPurchaseOrderId"
+        ],
+        "type": "object",
+        "properties": {
+          "receiptPurchaseOrderId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "AddGoodsReturnOrderItemDTO": {
         "required": [
           "quantity",
@@ -18181,6 +18397,43 @@
           },
           "item": {
             "$ref": "#/components/schemas/AddGeneralItemDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddReceiptPurchaseOrderWithoutRefDTO": {
+        "required": [
+          "dueDate",
+          "postingDate",
+          "supplierId",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "isDraft": {
+            "type": "boolean"
+          },
+          "supplierId": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -23262,10 +23515,6 @@
         "additionalProperties": false
       },
       "UpdateReceiptPurchaseOrderDTO": {
-        "required": [
-          "dueDate",
-          "postingDate"
-        ],
         "type": "object",
         "properties": {
           "receiptPurchaseOrderId": {
@@ -23274,11 +23523,50 @@
           },
           "postingDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "dueDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
+          },
+          "supplierId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateReceiptPurchaseOrderWithoutRefDTO": {
+        "type": "object",
+        "properties": {
+          "receiptPurchaseOrderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "supplierId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "comment": {
             "type": "string",

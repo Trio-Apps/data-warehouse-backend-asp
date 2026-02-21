@@ -20,7 +20,7 @@ public interface IReceiptPurchaseOrderRepository : IBaseRepository<ReceiptPurcha
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderByPurchaseOrderIdAsync(string userId, AddReceiptPurchaseOrderDTO dto);
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderAndItemsByPurchaseOrderIdAsync(string userId, AddReceiptPurchaseOrderDTO dto);
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderDTO dto);
-   
+    Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderWithoutRefAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderWithoutRefDTO dto);
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> DeleteReceiptOrderAsync(
     int receiptOrderId,
     CancellationToken cancellationToken = default);

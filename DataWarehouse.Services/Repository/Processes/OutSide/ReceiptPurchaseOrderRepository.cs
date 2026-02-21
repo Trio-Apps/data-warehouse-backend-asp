@@ -73,8 +73,6 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             });
     }
 
-
-
     public async Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
        (int warehouseId, string userId, int? supplierId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
 
@@ -191,10 +189,10 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             });
     }
 
-
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetReceiptOrderByIdAsync(string userId, int receiptOrderId)
     {
         var res = await _context.ReceiptPurchaseOrders.Include(r => r.GoodsReturnOrder)
+            .Include(r=>r.Supplier)
             .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == receiptOrderId);
 
         if (res == null)
@@ -214,6 +212,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             PurchaseOrderId = res.PurchaseOrderId,
             CreatedAt = res.CreatedAt,
             SupplierId = res.SupplierId,
+            SupplierName =res.Supplier.SupplierName,
+           SupplierCode = res.Supplier.SupplierCode,
             Comment = res.Comment,
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
@@ -225,7 +225,6 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         };
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(mapping);
     }
-
 
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderAsync(string userId, AddReceiptPurchaseOrderWithoutRefDTO dto)
     {
@@ -413,6 +412,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(model);
     }
+    
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderDTO dto)
     {
         var entity = await _context.ReceiptPurchaseOrders.FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
@@ -431,11 +431,101 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
             return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("You cannot edit this order because its approval status is 'Approved' and all approval steps have been completed.");
 
+        if (entity.PurchaseOrderId != null)
+        {
+            if (dto.SupplierId != null)
+            {
+                return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("You cannot edit on supplier, because supplier is based on purchase order.");
 
-        entity.DueDate = dto.DueDate;
-        entity.PostingDate = dto.PostingDate;
+            }
+        }
+        if (dto.PostingDate.HasValue)
+          entity.PostingDate = dto.PostingDate.Value;
+
+        if (dto.DueDate.HasValue)
+            entity.DueDate = dto.DueDate.Value;
+
+        if (dto.SupplierId.HasValue)
+            entity.SupplierId = dto.SupplierId.Value;
+
         entity.UserId = userId;
+        if (dto.Comment != null)
+            entity.Comment = dto.Comment;
+        entity.Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing;
+
+        // entity.SupplierId = dto.SupplierId;
+
+
+        if (!dto.IsDraft)
+        {
+            await approval.StartProcessAsync(
+                processType: ProcessType.Receipt,
+                referenceId: entity.ReceiptPurchaseOrderId,
+                warehouseId: entity.WarehouseId,
+                userId: userId
+            );
+
+            entity.Status = GeneralStatus.Processing;
+        }
+        else
+        {
+            entity.Status = entity.Status == GeneralStatus.Processing ? GeneralStatus.Processing : GeneralStatus.Draft;
+        }
+
+        await _context.SaveChangesAsync();
+
+        var result = new ReceiptPurchaseOrderDTO
+        {
+            ReceiptPurchaseOrderId = entity.ReceiptPurchaseOrderId,
+            DueDate = entity.DueDate,
+            PostingDate = entity.PostingDate,
+            Status = entity.Status.ToString(),
+            UserId = entity.UserId,
+            WarehouseId = entity.WarehouseId,
+            PurchaseOrderId = entity.PurchaseOrderId,
+            SupplierId = entity.SupplierId,
+            Comment = entity.Comment
+        };
+
+        return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(result);
+    }
+
+    public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderWithoutRefAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderWithoutRefDTO dto)
+    {
+        var entity = await _context.ReceiptPurchaseOrders.FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
+
+        if (entity.ReceiptPurchaseOrderId != receiptPurchaseOrderId)
+        {
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("id not equal receipt purchase order id!");
+        }
+        if (entity == null)
+        {
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("not found");
+        }
+        if(entity.PurchaseOrder != null)
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("this endpoint not valid, this for receipt without reference.");
+
+
+        var checkApprovalStatus = await approval.GetProcessItem(entity.ReceiptPurchaseOrderId, ProcessType.Receipt);
+
+        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("You cannot edit this order because its approval status is 'Approved' and all approval steps have been completed.");
+
+
+        if (dto.PostingDate.HasValue)
+            entity.PostingDate = dto.PostingDate.Value;
+
+        if (dto.DueDate.HasValue)
+            entity.DueDate = dto.DueDate.Value;
+
+        if (dto.SupplierId.HasValue)
+            entity.SupplierId = dto.SupplierId.Value;
+
+        entity.UserId = userId;
+
+        if(dto.Comment != null)
         entity.Comment = dto.Comment;
+
         entity.Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing;
 
         // entity.SupplierId = dto.SupplierId;
@@ -476,8 +566,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     }
 
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> DeleteReceiptOrderAsync(
-   int receiptOrderId,
-   CancellationToken cancellationToken = default)
+    int receiptOrderId,
+    CancellationToken cancellationToken = default)
     {
         var entity = await _context.ReceiptPurchaseOrders
             .FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderId == receiptOrderId, cancellationToken);

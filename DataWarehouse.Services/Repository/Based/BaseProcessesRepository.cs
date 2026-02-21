@@ -45,122 +45,122 @@ namespace DataWarehouse.Services.Repository.Based
          .FirstOrDefaultAsync(cancellationToken);
         }
 
-
-public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetOrderItemsByOrderIdWithPaginationAsync<TOrder, TOrderItem, TDto, TExtra, TStatusEnum>(
-    int orderId,
-    int pageNumber,
-    int pageSize,
-    string? status,
-    Func<TOrder, TExtra> extraSelector,
-    Expression<Func<TOrder, bool>> orderIdSelector,
-    DbSet<TOrder> orderSet,
-    DbSet<TOrderItem> itemSet,
-    Expression<Func<TOrderItem, bool>> itemFilter,
-    Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include,
-    Expression<Func<TOrderItem, TDto>> selector,
-    Expression<Func<TOrderItem, int>> orderByDescSelector,
-    Expression<Func<TOrderItem, TStatusEnum>> itemStatusSelector
+        #region order item
+        public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetOrderItemsByOrderIdWithPaginationAsync<TOrder, TOrderItem, TDto, TExtra, TStatusEnum>(
+  int orderId,
+  int pageNumber,
+  int pageSize,
+  string? status,
+  Func<TOrder, TExtra> extraSelector,
+  Expression<Func<TOrder, bool>> orderIdSelector,
+  DbSet<TOrder> orderSet,
+  DbSet<TOrderItem> itemSet,
+  Expression<Func<TOrderItem, bool>> itemFilter,
+  Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include,
+  Expression<Func<TOrderItem, TDto>> selector,
+  Expression<Func<TOrderItem, int>> orderByDescSelector,
+  Expression<Func<TOrderItem, TStatusEnum>> itemStatusSelector
 )
-    where TOrder : class, IOrder
-    where TOrderItem : class, IOrderItem
-    where TStatusEnum : struct, Enum
-    {
-        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-        pageSize = pageSize <= 0 ? 10 : pageSize;
-
-        var order = await orderSet.AsNoTracking().FirstOrDefaultAsync(orderIdSelector);
-        if (order == null)
-            return GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>.FailResponse("Order not found");
-
-      
-
-        IQueryable<TOrderItem> query = itemSet.AsNoTracking();
-
-        if (include != null)
-            query = include(query);
-
-        query = query.Where(itemFilter);
-
-        // Status filter (string -> enum)
-        if (!string.IsNullOrWhiteSpace(status))
+  where TOrder : class, IOrder
+  where TOrderItem : class, IOrderItem
+  where TStatusEnum : struct, Enum
         {
-            if (!Enum.TryParse<TStatusEnum>(status, true, out var statusEnum))
-                return GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>.FailResponse("Invalid status");
+            pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+            pageSize = pageSize <= 0 ? 10 : pageSize;
 
-            query = query.Where(x => EF.Property<TStatusEnum>(x, ((MemberExpression)itemStatusSelector.Body).Member.Name).Equals(statusEnum));
-            // NOTE: السطر ده بيعتمد ان itemStatusSelector عبارة عن x => x.Status (member access)
-            // لو ممكن تبقى expression أعقد، قولي وهنعملها safer.
+            var order = await orderSet.AsNoTracking().FirstOrDefaultAsync(orderIdSelector);
+            if (order == null)
+                return GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>.FailResponse("Order not found");
+
+
+
+            IQueryable<TOrderItem> query = itemSet.AsNoTracking();
+
+            if (include != null)
+                query = include(query);
+
+            query = query.Where(itemFilter);
+
+            // Status filter (string -> enum)
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                if (!Enum.TryParse<TStatusEnum>(status, true, out var statusEnum))
+                    return GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>.FailResponse("Invalid status");
+
+                query = query.Where(x => EF.Property<TStatusEnum>(x, ((MemberExpression)itemStatusSelector.Body).Member.Name).Equals(statusEnum));
+                // NOTE: السطر ده بيعتمد ان itemStatusSelector عبارة عن x => x.Status (member access)
+                // لو ممكن تبقى expression أعقد، قولي وهنعملها safer.
+            }
+
+            var totalRecords = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(orderByDescSelector)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(selector)
+                .ToListAsync();
+
+            var extra = extraSelector(order);
+
+            return GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>.SuccessResponse(
+                new PagedResult<TDto>
+                {
+                    Data = data,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalRecords = totalRecords
+                },
+                extra
+            );
         }
 
-        var totalRecords = await query.CountAsync();
 
-        var data = await query
-            .OrderByDescending(orderByDescSelector)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(selector)
-            .ToListAsync();
-
-        var extra = extraSelector(order);
-
-        return GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>.SuccessResponse(
-            new PagedResult<TDto>
-            {
-                Data = data,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords
-            },
-            extra
-        );
-    }
-   
-        
-    public async Task<GeneralResponse<IEnumerable<TDto>>> GetOrderItemsByOrderIdAsync<TOrder, TOrderItem, TDto>(
-    int orderId,
-    Expression<Func<TOrder, bool>> orderIdSelector,
-    DbSet<TOrder> orderSet,
-    DbSet<TOrderItem> itemSet,
-    Expression<Func<TOrderItem, bool>> itemFilter,
-    Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include = null,
-    Expression<Func<TOrderItem, TDto>> selector = null!
-)
-    where TOrder : class, IOrder
-    where TOrderItem : class, IOrderItem
-    {
-        // 1) Validate Order exists
-        var order = await orderSet.AsNoTracking().FirstOrDefaultAsync(orderIdSelector);
-        if (order == null)
-            return GeneralResponse<IEnumerable<TDto>>.FailResponse("Order not found");
-
-        
-
-        // 3) Build query
-        IQueryable<TOrderItem> query = itemSet.AsNoTracking();
-
-        if (include != null)
-            query = include(query);
-
-        var data = await query
-            .Where(itemFilter)
-            .Select(selector)
-            .ToListAsync();
-
-        return GeneralResponse<IEnumerable<TDto>>.SuccessResponse(data);
-    }
-
-
-    public async Task<GeneralResponse<TOrderItem>> AddOrderItemAsync<TOrder, TOrderItem>(
+        public async Task<GeneralResponse<IEnumerable<TDto>>> GetOrderItemsByOrderIdAsync<TOrder, TOrderItem, TDto>(
         int orderId,
-        ProcessType processType,
-        bool isBarcode,
-        DynamicBarcodesDto? barcodeDto,
-        AddGeneralItemDto? dto,
         Expression<Func<TOrder, bool>> orderIdSelector,
-        DbSet<TOrder>  orderSet,
-        DbSet<TOrderItem> itemSet)
+        DbSet<TOrder> orderSet,
+        DbSet<TOrderItem> itemSet,
+        Expression<Func<TOrderItem, bool>> itemFilter,
+        Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include = null,
+        Expression<Func<TOrderItem, TDto>> selector = null!
+    )
         where TOrder : class, IOrder
-        where TOrderItem : class, IOrderItem, new()
+        where TOrderItem : class, IOrderItem
+        {
+            // 1) Validate Order exists
+            var order = await orderSet.AsNoTracking().FirstOrDefaultAsync(orderIdSelector);
+            if (order == null)
+                return GeneralResponse<IEnumerable<TDto>>.FailResponse("Order not found");
+
+
+
+            // 3) Build query
+            IQueryable<TOrderItem> query = itemSet.AsNoTracking();
+
+            if (include != null)
+                query = include(query);
+
+            var data = await query
+                .Where(itemFilter)
+                .Select(selector)
+                .ToListAsync();
+
+            return GeneralResponse<IEnumerable<TDto>>.SuccessResponse(data);
+        }
+
+
+        public async Task<GeneralResponse<TOrderItem>> AddOrderItemAsync<TOrder, TOrderItem>(
+            int orderId,
+            ProcessType processType,
+            bool isBarcode,
+            DynamicBarcodesDto? barcodeDto,
+            AddGeneralItemDto? dto,
+            Expression<Func<TOrder, bool>> orderIdSelector,
+            DbSet<TOrder> orderSet,
+            DbSet<TOrderItem> itemSet)
+            where TOrder : class, IOrder
+            where TOrderItem : class, IOrderItem, new()
         {
 
             var order = await orderSet.FirstOrDefaultAsync(orderIdSelector);
@@ -212,7 +212,7 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetO
                 model.ItemId = dto.ItemId;
                 model.Quantity = dto.Quantity;
                 model.BarCode = "";
-                model.UnitPrice = dto.UnitPrice??item.SalesPrice;
+                model.UnitPrice = dto.UnitPrice ?? item.SalesPrice;
                 model.UoMEntry = dto.UoMEntry;
                 model.Status = GeneralItemStatus.Planned;
             }
@@ -237,7 +237,7 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetO
             if (entity == null)
                 return GeneralResponse<TOrderItem>.FailResponse("id is not found");
 
-          
+
             // Approval check
             var approval = await GetProcessItem(entity.OrderId, processType);
 
@@ -277,7 +277,7 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetO
             if (entity == null)
                 return GeneralResponse<TOrderItem>.FailResponse("id is not found");
 
-           
+
             // Approval check
             var approval = await GetProcessItem(entity.OrderId, processType);
 
@@ -295,15 +295,19 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetO
             return GeneralResponse<TOrderItem>.SuccessResponse(snapshot);
         }
 
+        #endregion
+
+
+        #region batches
         public async Task<GeneralResponse<IEnumerable<TDto>>> GetOrderBatchesAsync<TOrderItem, TBatch, TDto>(
-    int orderItemId,
-    Expression<Func<TOrderItem, bool>> orderItemSelector,
-    DbSet<TOrderItem> orderItemSet,
-    Expression<Func<TBatch, bool>> batchItemSelector,
-    DbSet<TBatch> batchSet,
-    Func<TBatch, TDto> map)
-    where TOrderItem : class, IOrderItem
-    where TBatch : class, IOrderBatch
+int orderItemId,
+Expression<Func<TOrderItem, bool>> orderItemSelector,
+DbSet<TOrderItem> orderItemSet,
+Expression<Func<TBatch, bool>> batchItemSelector,
+DbSet<TBatch> batchSet,
+Func<TBatch, TDto> map)
+where TOrderItem : class, IOrderItem
+where TBatch : class, IOrderBatch
         {
             // 1) Load OrderItem
             var orderItem = await orderItemSet
@@ -313,7 +317,7 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetO
             if (orderItem == null)
                 return GeneralResponse<IEnumerable<TDto>>.FailResponse("Order Item not found");
 
-         
+
             // 3) Get batches
             var batches = await batchSet
                 .AsNoTracking()
@@ -342,9 +346,9 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetO
                 return GeneralResponse<TBatch>.FailResponse("Order Item not found");
 
 
-             var item = await _context.Items.Where(i=>i.ItemId == orderItem.ItemId).FirstOrDefaultAsync();
-          
-            if(item == null || item.BatchNumbers == false)
+            var item = await _context.Items.Where(i => i.ItemId == orderItem.ItemId).FirstOrDefaultAsync();
+
+            if (item == null || item.BatchNumbers == false)
                 return GeneralResponse<TBatch>.FailResponse("You cannot add any batch to this Item.");
 
             // 2) Approval check (هنا نستخدم OrderId من الـ entity بعد تحميله)
@@ -426,7 +430,7 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetO
 
             var newQty = dto.Quantity ?? batch.Quantity;
 
-            if ((otherTotal - batch.Quantity ) + newQty > orderItem.Quantity)
+            if ((otherTotal - batch.Quantity) + newQty > orderItem.Quantity)
                 return GeneralResponse<TBatch>.FailResponse(
                     "Total batch quantities exceed order item quantity");
 
@@ -504,6 +508,8 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<TDto>, TExtra>> GetO
 
             return GeneralResponse<TBatch>.SuccessResponse(snapshot);
         }
+
+        #endregion
 
         // ===== helpers =====
 
