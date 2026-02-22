@@ -1465,6 +1465,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
                     b.Property<int>("PurchaseOrderId")
                         .HasColumnType("int");
 
@@ -1593,6 +1596,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PurchaseOrderItemId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -1611,6 +1620,10 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("ReceiptPurchaseOrderItemId");
 
                     b.HasIndex("ItemId");
+
+                    b.HasIndex("PurchaseOrderItemId")
+                        .IsUnique()
+                        .HasFilter("[PurchaseOrderItemId] IS NOT NULL");
 
                     b.HasIndex("ReceiptPurchaseOrderId");
 
@@ -2957,6 +2970,11 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.PurchaseOrderItem", "PurchaseOrderItem")
+                        .WithOne("ReceiptPurchaseOrderItem")
+                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrderItem", "PurchaseOrderItemId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", "ReceiptPurchaseOrder")
                         .WithMany("ReceiptPurchaseOrderItems")
                         .HasForeignKey("ReceiptPurchaseOrderId")
@@ -2964,6 +2982,8 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Item");
+
+                    b.Navigation("PurchaseOrderItem");
 
                     b.Navigation("ReceiptPurchaseOrder");
                 });
@@ -3552,6 +3572,11 @@ namespace DataWarehouse.Domain.Migrations
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrderItem", b =>
                 {
                     b.Navigation("GoodsReturnOrderBatches");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.PurchaseOrderItem", b =>
+                {
+                    b.Navigation("ReceiptPurchaseOrderItem");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", b =>

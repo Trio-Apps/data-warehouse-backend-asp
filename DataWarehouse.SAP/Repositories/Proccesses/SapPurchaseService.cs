@@ -63,7 +63,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     .Include(po => po.Warehouse)
                     .Include(po => po.Supplier)
                     .Include(po => po.PurchaseOrderItems)
-                        .ThenInclude(i => i.Item)
+                    .ThenInclude(i => i.Item)
                     .Where(po => po.Status == GeneralStatus.Processing
                                  && po.Warehouse.SapId == sapId
                                  && approvedIdsQuery.Contains(po.PurchaseOrderId))
@@ -97,14 +97,26 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         order.DocEntry = res.DocEntry;
                         order.DocNum = res.DocNum;
                         order.DocType = res.DocType;
+                        var sapLinesByItem = res.DocumentLines
+                       .Where(x => !string.IsNullOrWhiteSpace(x.ItemCode))
+                         .ToDictionary(x => x.ItemCode!, x => x.LineNum);
+
 
                         foreach (var it in order.PurchaseOrderItems)
                         {
                             it.Status = GeneralItemStatus.Received;
                             it.ErrorMessage = null;
 
+                            // لو عندك ItemCode في it.Item.ItemCode
+                            var itemCode = it.Item?.ItemCode;
+                            if (itemCode != null && sapLinesByItem.TryGetValue(itemCode, out var lineNum))
+                                it.LineNum = lineNum;
+
                             _context.Entry(it).Property(x => x.Status).IsModified = true;
                             _context.Entry(it).Property(x => x.ErrorMessage).IsModified = true;
+
+                            // بس فعل ده لو العمود موجود في DB
+                            _context.Entry(it).Property(x => x.LineNum).IsModified = true;
                         }
 
 
@@ -309,6 +321,15 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
         public int? DocEntry { get; set; }
         public int? DocNum { set; get; }
         public string? DocType { get; set; }
+
+        public List<PurchaseItemAsBasedOn> DocumentLines { get; set; } = new();
+
+
+    }
+    public class PurchaseItemAsBasedOn
+    {
+        public int LineNum { get; set; }
+        public string ItemCode {  set; get; }= string.Empty;
 
     }
 }

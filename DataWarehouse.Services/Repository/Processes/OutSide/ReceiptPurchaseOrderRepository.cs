@@ -30,6 +30,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         this.approval = approval;
     }
 
+
     public async Task<IEnumerable<ReceiptPurchaseOrder>> GetByWarehouseIdAsync(int warehouseId)
     {
         return await Query().Where(rpo => rpo.WarehouseId == warehouseId).ToListAsync();

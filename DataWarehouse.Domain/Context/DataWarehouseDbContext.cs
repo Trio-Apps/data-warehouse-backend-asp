@@ -24,8 +24,6 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 {
     public DataWarehouseDbContext(DbContextOptions<DataWarehouseDbContext> options) : base(options)
     {
-
-
     }
 
 
@@ -954,6 +952,7 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
 
         #endregion
+
 
         base.OnModelCreating(builder);
     }

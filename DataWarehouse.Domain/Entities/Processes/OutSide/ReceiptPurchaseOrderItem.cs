@@ -13,8 +13,6 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
     public  class ReceiptPurchaseOrderItem : IOrderItem
     {
         public int ReceiptPurchaseOrderItemId { get; set; }
-
-
         public decimal Quantity { get; set; }
         public int UoMEntry { get; set; }
         public string? BarCode { get; set; }

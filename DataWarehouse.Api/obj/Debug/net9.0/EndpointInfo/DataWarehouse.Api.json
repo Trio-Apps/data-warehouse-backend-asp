@@ -21184,6 +21184,11 @@
             "type": "string",
             "nullable": true
           },
+          "lineNum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "orderId": {
             "type": "integer",
             "format": "int32"
@@ -21201,6 +21206,9 @@
           },
           "item": {
             "$ref": "#/components/schemas/Item"
+          },
+          "receiptPurchaseOrderItem": {
+            "$ref": "#/components/schemas/ReceiptPurchaseOrderItem"
           }
         },
         "additionalProperties": false
@@ -21429,6 +21437,11 @@
             "type": "string",
             "nullable": true
           },
+          "lineNum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "orderId": {
             "type": "integer",
             "format": "int32"
@@ -21440,15 +21453,23 @@
             "type": "integer",
             "format": "int32"
           },
+          "receiptPurchaseOrder": {
+            "$ref": "#/components/schemas/ReceiptPurchaseOrder"
+          },
           "itemId": {
             "type": "integer",
             "format": "int32"
           },
-          "receiptPurchaseOrder": {
-            "$ref": "#/components/schemas/ReceiptPurchaseOrder"
-          },
           "item": {
             "$ref": "#/components/schemas/Item"
+          },
+          "purchaseOrderItemId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "purchaseOrderItem": {
+            "$ref": "#/components/schemas/PurchaseOrderItem"
           },
           "receiptPurchaseOrderBatches": {
             "type": "array",
