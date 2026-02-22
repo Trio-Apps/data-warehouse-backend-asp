@@ -38,7 +38,7 @@ namespace DataWarehouse.SAP.Repositories.Based
             this.clientFactory = clientFactory;
             _logger = logger;
         }
-        public async Task<bool?> AddSapAsync(int sapId, string entityType, T entity)
+        public async Task<string> AddSapAsync(int sapId, string entityType, T entity)
         {
             var client = await clientFactory.Create(sapId);
 
@@ -121,7 +121,7 @@ namespace DataWarehouse.SAP.Repositories.Based
             // آخر تأكيد
             response.EnsureSuccessStatusCode();
 
-            return true;
+            return body;
         }
 
 

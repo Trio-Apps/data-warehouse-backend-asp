@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DataWarehouse.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fe787d5873abc7d8d7f8bbad30a81d629587fb12")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc893a4e29c7e924be21918afc8ebfd9290546a0")]
 [assembly: System.Reflection.AssemblyProductAttribute("DataWarehouse.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DataWarehouse.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

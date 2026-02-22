@@ -98,6 +98,15 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
          .OnDelete(DeleteBehavior.NoAction);
 
 
+      builder.Entity<ReceiptPurchaseOrderItem>()
+      .HasOne(ps => ps.PurchaseOrderItem)
+      .WithOne(rpo => rpo.ReceiptPurchaseOrderItem)
+      .HasForeignKey<ReceiptPurchaseOrderItem>(rpo => rpo.PurchaseOrderItemId)
+      .HasPrincipalKey<PurchaseOrderItem>(ps => ps.PurchaseOrderItemId)
+      .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
+
+
+
         builder.Entity<Supplier>()
            .HasMany(s => s.ReceiptPurchaseOrders)
            .WithOne(ps => ps.Supplier)
@@ -948,10 +957,6 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
         base.OnModelCreating(builder);
     }
-
-
-
-
 
 
     // DbSets

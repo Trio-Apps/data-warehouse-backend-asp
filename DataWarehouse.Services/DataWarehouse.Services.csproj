@@ -10,7 +10,6 @@
     <Folder Include="Mappings\" />
     <Folder Include="Repository\Actors\" />
     <Folder Include="Repository\Dashboard\" />
-    <Folder Include="Repository\Processes\OutSide\" />
     <Folder Include="Services\Actors\" />
     <Folder Include="Services\BarCode\" />
     <Folder Include="Services\Based\" />

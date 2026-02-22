@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Domain.Context;
+using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
@@ -8,6 +9,8 @@ using DataWarehouse.SAP.Interfaces.Based;
 using DataWarehouse.SAP.Interfaces.Proccesses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using static DataWarehouse.SAP.Models.Actors.ItemSapModel;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
@@ -80,11 +83,20 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 var taskFail = 0;
                 foreach (var order in batch)
                 {
-                    var (_, success, error) = await ProcessPurchaseOrderAsync(sapId, order);
+                    var (_, success,body, error) = await ProcessPurchaseOrderAsync(sapId, order);
 
                     if (success)
                     {
                         order.Status = GeneralStatus.Completed;
+                      var  res = JsonSerializer.Deserialize<PurchaseAsBasedOn>(body,
+                       new JsonSerializerOptions
+                       {
+                           PropertyNameCaseInsensitive = true
+                       });
+
+                        order.DocEntry = res.DocEntry;
+                        order.DocNum = res.DocNum;
+                        order.DocType = res.DocType;
 
                         foreach (var it in order.PurchaseOrderItems)
                         {
@@ -97,6 +109,10 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
 
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
+
+                        _context.Entry(order).Property(x => x.DocEntry).IsModified = true;
+                        _context.Entry(order).Property(x => x.DocNum).IsModified = true;
+                        _context.Entry(order).Property(x => x.DocType).IsModified = true;
                         taskSuccess++;
                     }
                     else
@@ -161,7 +177,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
             return $"Sync completed. Success: {totalSuccess}, Failed: {totalFail}";
         }
-        private async Task<(PurchaseOrder order, bool success, string? error)>
+        private async Task<(PurchaseOrder order, bool success,string res, string? error)>
             ProcessPurchaseOrderAsync(int sapId, PurchaseOrder order)
         {
             try
@@ -224,7 +240,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
                 //await _context.SaveChangesAsync();
 
-                return (order, true, null);
+                return (order, true, response, null);
             }
             catch (Exception ex)
             {
@@ -233,7 +249,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
                 logger.LogError(ex, "Failed to sync purchase order: {Id}", order.PurchaseOrderId);
                 //await _syncRepo.MarkFailedAsync(ProcessType.Purchase, order.PurchaseOrderId, ex.Message);
-                return (order, false, ex.Message);
+                return (order, false,"", ex.Message);
             }
            
         }
@@ -263,37 +279,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             return null;
         }
 
-        //private static (int? docEntry, int? docNum) ExtractDocEntryAndDocNum(string response)
-        //{
-        //    // حاول JSON parsing أولاً
-        //    try
-        //    {
-        //        using var doc = JsonDocument.Parse(response);
-        //        var root = doc.RootElement;
-
-        //        int? docEntry = null;
-        //        int? docNum = null;
-
-        //        if (root.TryGetProperty("DocEntry", out var de) && de.ValueKind == JsonValueKind.Number)
-        //            docEntry = de.GetInt32();
-
-        //        if (root.TryGetProperty("DocNum", out var dn) && dn.ValueKind == JsonValueKind.Number)
-        //            docNum = dn.GetInt32();
-
-        //        return (docEntry, docNum);
-        //    }
-        //    catch
-        //    {
-        //        // fallback regex
-        //        var entryMatch = Regex.Match(response, @"""DocEntry""\s*:\s*(\d+)");
-        //        var numMatch = Regex.Match(response, @"""DocNum""\s*:\s*(\d+)");
-
-        //        int? docEntry = entryMatch.Success ? int.Parse(entryMatch.Groups[1].Value) : null;
-        //        int? docNum = numMatch.Success ? int.Parse(numMatch.Groups[1].Value) : null;
-
-        //        return (docEntry, docNum);
-        //    }
-        //}
+ 
     }
 
     public class SapPurchaseOrderDto
@@ -315,5 +301,14 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
         public int? UoMEntry { get; set; }
         public string? BarCode { get; set; }
         public decimal? UnitPrice { get; set; }
+    }
+
+    public class PurchaseAsBasedOn
+    {
+
+        public int? DocEntry { get; set; }
+        public int? DocNum { set; get; }
+        public string? DocType { get; set; }
+
     }
 }

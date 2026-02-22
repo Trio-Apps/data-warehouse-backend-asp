@@ -14,6 +14,7 @@ public class GoodsReturnOrderDTO : GeneralOrderDto
     public int SupplierId { get; set; }
 
     public string? SupplierName { get; set; }
+    public string? SupplierCode { get; set; }
 
     [Required(ErrorMessage = "Receipt Purchase Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Receipt Purchase Order ID must be greater than 0")]

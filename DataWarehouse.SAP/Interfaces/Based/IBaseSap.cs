@@ -10,7 +10,7 @@ namespace DataWarehouse.SAP.Interfaces.Based
     public  interface IBaseSap<T>
     {
 
-        Task<bool?> AddSapAsync(int sapId, string entityType,T entity);
+        Task<string> AddSapAsync(int sapId, string entityType,T entity);
         Task DeleteSap(int sapId, string entityType);
          Task<int> GetByIdSap(int sapId, string entityType, string id);
 

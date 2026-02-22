@@ -9310,48 +9310,6 @@
         }
       }
     },
-    "/api/ReceiptPurchaseOrder/without-reference/{id}": {
-      "put": {
-        "tags": [
-          "ReceiptPurchaseOrder"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateReceiptPurchaseOrderWithoutRefDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateReceiptPurchaseOrderWithoutRefDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateReceiptPurchaseOrderWithoutRefDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/ReceiptPurchaseOrder/processing": {
       "get": {
         "tags": [
@@ -23515,38 +23473,6 @@
         "additionalProperties": false
       },
       "UpdateReceiptPurchaseOrderDTO": {
-        "type": "object",
-        "properties": {
-          "receiptPurchaseOrderId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "postingDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "dueDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "supplierId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "comment": {
-            "type": "string",
-            "nullable": true
-          },
-          "isDraft": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateReceiptPurchaseOrderWithoutRefDTO": {
         "type": "object",
         "properties": {
           "receiptPurchaseOrderId": {

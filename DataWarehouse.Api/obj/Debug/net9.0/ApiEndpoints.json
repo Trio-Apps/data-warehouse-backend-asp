@@ -5788,27 +5788,6 @@
     ]
   },
   {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.ReceiptPurchaseOrderController",
-    "Method": "UpdateWithoutReference",
-    "RelativePath": "api/ReceiptPurchaseOrder/without-reference/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.UpdateReceiptPurchaseOrderWithoutRefDTO",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.ReceiptPurchaseOrderBatchController",
     "Method": "GetAll",
     "RelativePath": "api/ReceiptPurchaseOrderBatch",

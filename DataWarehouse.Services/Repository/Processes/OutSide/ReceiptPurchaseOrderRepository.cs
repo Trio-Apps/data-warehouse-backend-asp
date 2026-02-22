@@ -226,6 +226,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(mapping);
     }
 
+   // without reference
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderAsync(string userId, AddReceiptPurchaseOrderWithoutRefDTO dto)
     {
 
@@ -490,81 +491,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(result);
     }
 
-    public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderWithoutRefAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderWithoutRefDTO dto)
-    {
-        var entity = await _context.ReceiptPurchaseOrders.FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
-
-        if (entity.ReceiptPurchaseOrderId != receiptPurchaseOrderId)
-        {
-            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("id not equal receipt purchase order id!");
-        }
-        if (entity == null)
-        {
-            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("not found");
-        }
-        if(entity.PurchaseOrder != null)
-            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("this endpoint not valid, this for receipt without reference.");
-
-
-        var checkApprovalStatus = await approval.GetProcessItem(entity.ReceiptPurchaseOrderId, ProcessType.Receipt);
-
-        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
-            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("You cannot edit this order because its approval status is 'Approved' and all approval steps have been completed.");
-
-
-        if (dto.PostingDate.HasValue)
-            entity.PostingDate = dto.PostingDate.Value;
-
-        if (dto.DueDate.HasValue)
-            entity.DueDate = dto.DueDate.Value;
-
-        if (dto.SupplierId.HasValue)
-            entity.SupplierId = dto.SupplierId.Value;
-
-        entity.UserId = userId;
-
-        if(dto.Comment != null)
-        entity.Comment = dto.Comment;
-
-        entity.Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing;
-
-        // entity.SupplierId = dto.SupplierId;
-
-
-        if (!dto.IsDraft)
-        {
-            await approval.StartProcessAsync(
-                processType: ProcessType.Receipt,
-                referenceId: entity.ReceiptPurchaseOrderId,
-                warehouseId: entity.WarehouseId,
-                userId: userId
-            );
-
-            entity.Status = GeneralStatus.Processing;
-        }
-        else
-        {
-            entity.Status = entity.Status == GeneralStatus.Processing ? GeneralStatus.Processing : GeneralStatus.Draft;
-        }
-
-        await _context.SaveChangesAsync();
-
-        var result = new ReceiptPurchaseOrderDTO
-        {
-            ReceiptPurchaseOrderId = entity.ReceiptPurchaseOrderId,
-            DueDate = entity.DueDate,
-            PostingDate = entity.PostingDate,
-            Status = entity.Status.ToString(),
-            UserId = entity.UserId,
-            WarehouseId = entity.WarehouseId,
-            PurchaseOrderId = entity.PurchaseOrderId,
-            SupplierId = entity.SupplierId,
-            Comment = entity.Comment
-        };
-
-        return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(result);
-    }
-
+  
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> DeleteReceiptOrderAsync(
     int receiptOrderId,
     CancellationToken cancellationToken = default)
@@ -748,4 +675,79 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     {
         return await Query().Where(rpo => rpo.Status == GeneralStatus.Processing).ToListAsync();
     }
+    //public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderWithoutRefAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderWithoutRefDTO dto)
+    //{
+    //    var entity = await _context.ReceiptPurchaseOrders.FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
+
+    //    if (entity.ReceiptPurchaseOrderId != receiptPurchaseOrderId)
+    //    {
+    //        return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("id not equal receipt purchase order id!");
+    //    }
+    //    if (entity == null)
+    //    {
+    //        return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("not found");
+    //    }
+    //    if (entity.PurchaseOrder != null)
+    //        return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("this endpoint not valid, this for receipt without reference.");
+
+
+    //    var checkApprovalStatus = await approval.GetProcessItem(entity.ReceiptPurchaseOrderId, ProcessType.Receipt);
+
+    //    if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+    //        return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("You cannot edit this order because its approval status is 'Approved' and all approval steps have been completed.");
+
+
+    //    if (dto.PostingDate.HasValue)
+    //        entity.PostingDate = dto.PostingDate.Value;
+
+    //    if (dto.DueDate.HasValue)
+    //        entity.DueDate = dto.DueDate.Value;
+
+    //    if (dto.SupplierId.HasValue)
+    //        entity.SupplierId = dto.SupplierId.Value;
+
+    //    entity.UserId = userId;
+
+    //    if (dto.Comment != null)
+    //        entity.Comment = dto.Comment;
+
+    //    entity.Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing;
+
+    //    // entity.SupplierId = dto.SupplierId;
+
+
+    //    if (!dto.IsDraft)
+    //    {
+    //        await approval.StartProcessAsync(
+    //            processType: ProcessType.Receipt,
+    //            referenceId: entity.ReceiptPurchaseOrderId,
+    //            warehouseId: entity.WarehouseId,
+    //            userId: userId
+    //        );
+
+    //        entity.Status = GeneralStatus.Processing;
+    //    }
+    //    else
+    //    {
+    //        entity.Status = entity.Status == GeneralStatus.Processing ? GeneralStatus.Processing : GeneralStatus.Draft;
+    //    }
+
+    //    await _context.SaveChangesAsync();
+
+    //    var result = new ReceiptPurchaseOrderDTO
+    //    {
+    //        ReceiptPurchaseOrderId = entity.ReceiptPurchaseOrderId,
+    //        DueDate = entity.DueDate,
+    //        PostingDate = entity.PostingDate,
+    //        Status = entity.Status.ToString(),
+    //        UserId = entity.UserId,
+    //        WarehouseId = entity.WarehouseId,
+    //        PurchaseOrderId = entity.PurchaseOrderId,
+    //        SupplierId = entity.SupplierId,
+    //        Comment = entity.Comment
+    //    };
+
+    //    return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(result);
+    //}
+
 }

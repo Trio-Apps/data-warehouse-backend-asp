@@ -212,21 +212,21 @@ public class ReceiptPurchaseOrderController : ControllerBase
         return Ok(res);
     }
 
-    [HttpPut("without-reference/{id}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Edit}")]
+    //[HttpPut("without-reference/{id}")]
+    //[Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Edit}")]
 
-    public async Task<IActionResult> UpdateWithoutReference(int id, [FromBody] UpdateReceiptPurchaseOrderWithoutRefDTO dto)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+    //public async Task<IActionResult> UpdateWithoutReference(int id, [FromBody] UpdateReceiptPurchaseOrderWithoutRefDTO dto)
+    //{
+    //    if (!ModelState.IsValid)
+    //        return BadRequest(ModelState);
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var res = await _repository.UpdateReceiptPurchaseOrderWithoutRefAsync(userId, id, dto);
-        if (!res.Success) return BadRequest(res);
+    //    var res = await _repository.UpdateReceiptPurchaseOrderWithoutRefAsync(userId, id, dto);
+    //    if (!res.Success) return BadRequest(res);
 
-        return Ok(res);
-    }
+    //    return Ok(res);
+    //}
 
     [HttpDelete("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Delete}")]

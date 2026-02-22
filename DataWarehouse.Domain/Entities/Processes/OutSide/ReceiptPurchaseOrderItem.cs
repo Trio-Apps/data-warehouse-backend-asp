@@ -23,6 +23,8 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public decimal? UnitPrice { get; set; }
         public string? ErrorMessage { get; set; }
         public string? Comment { get; set; }
+        public int? LineNum { get; set; }
+
 
         [NotMapped]
         public int OrderId
@@ -33,10 +35,15 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         // Navigation
 
         public GoodsReturnOrderItem? GoodsReturnOrderItem { get; set; }
+
         public int ReceiptPurchaseOrderId { get; set; }
-        public int ItemId { get; set; }
         public ReceiptPurchaseOrder ReceiptPurchaseOrder { get; set; }
+
+        public int ItemId { get; set; }
         public Item Item { get; set; }
+
+        public int? PurchaseOrderItemId { get; set; }
+        public PurchaseOrderItem? PurchaseOrderItem { get; set; }
 
         public ICollection<ReceiptPurchaseOrderBatch> ReceiptPurchaseOrderBatches { get; set; } = new List<ReceiptPurchaseOrderBatch>();
 
