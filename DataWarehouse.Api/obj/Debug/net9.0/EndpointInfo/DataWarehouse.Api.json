@@ -3828,6 +3828,14 @@
             }
           },
           {
+            "name": "supplierId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "status",
             "in": "query",
             "schema": {

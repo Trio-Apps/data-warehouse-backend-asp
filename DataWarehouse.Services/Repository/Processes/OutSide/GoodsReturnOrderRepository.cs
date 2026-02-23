@@ -28,7 +28,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
     }
 
     public async Task<GeneralResponse<PagedResult<GoodsReturnOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
-    (int warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    (int warehouseId, string userId, int? supplierId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
@@ -38,6 +38,10 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             .Where(gro => gro.WarehouseId == warehouseId);
 
 
+        if (supplierId.HasValue)
+        {
+            query = query.Where(e => e.SupplierId == supplierId);
+        }
         // 🔹 Filtering
         if (!string.IsNullOrEmpty(status))
         {
@@ -95,6 +99,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 WarehouseId = x.Order.WarehouseId,
 
                 SupplierName = x.Order.Supplier.SupplierName,
+                SupplierCode = x.Order.Supplier.SupplierCode,
                 ItemCount = x.Order.GoodsReturnOrderItems.Count(),
 
                 // ✅ وجود progress

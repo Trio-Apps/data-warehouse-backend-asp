@@ -63,6 +63,7 @@ public class WarehouseController : ControllerBase
 
         return Ok(warehouses);
     }
+   
     [HttpGet("FilterByUpdateDateAndPagination/{updateDate}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Items_Get}")]
     public async Task<ActionResult<PagedResult<Item>>> FilterByUpdateDateAndPagination(

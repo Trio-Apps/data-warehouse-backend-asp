@@ -128,7 +128,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         // Approved references subquery (for Sales process only)
         var processQuery = _context.ProcessItemIsProgresses
        .AsNoTracking()
-       .Where(p => p.ProcessType == ProcessType.Purchase);
+       .Where(p => p.ProcessType == ProcessType.Receipt);
 
         var totalRecords = await query.CountAsync();
 
@@ -144,7 +144,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
              // آخر Status (لو موجود)
              LatestStatus = processQuery
-                 .Where(p => p.ReferenceId == iw.PurchaseOrderId)
+                 .Where(p => p.ReferenceId == iw.ReceiptPurchaseOrderId)
                  .OrderByDescending(p => p.ProcessItemIsProgressId) // أو CreatedAt لو عندك
                  .Select(p => (ProcessStatus?)p.Status)
                  .FirstOrDefault()
@@ -226,6 +226,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         };
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(mapping);
     }
+
 
    // without reference
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderAsync(string userId, AddReceiptPurchaseOrderWithoutRefDTO dto)

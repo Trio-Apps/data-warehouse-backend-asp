@@ -63,12 +63,8 @@ public class AuthServices : IAuthServices
             .Include(u => u.CompanyUser)
             .FirstOrDefaultAsync(u => u.Email == email);
 
-      
-
+     
         return user;
-
-
-
     }
 
 

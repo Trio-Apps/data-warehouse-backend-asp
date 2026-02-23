@@ -42,11 +42,11 @@ public class GoodsReturnOrderController : ControllerBase
 
     [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]
-    public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, string? status, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
+    public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, int? supplierId, string? status, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(warehouseId, userId, postingDate, dueDate, status, skip, pageSize);
+        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(warehouseId, userId,supplierId, postingDate, dueDate, status, skip, pageSize);
         if (!res.Success)
             return BadRequest(res);
 

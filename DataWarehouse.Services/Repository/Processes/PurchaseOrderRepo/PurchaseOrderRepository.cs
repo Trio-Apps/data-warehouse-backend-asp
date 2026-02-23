@@ -491,24 +491,19 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
 
         // 2) Extra validation (because DateTime/int are non-nullable and can be default/0)
-        if (dto.PostingDate == default)
-            return GeneralResponse<PurchaseOrderDTO>.FailResponse("Posting Date is required");
+        //if (dto.PostingDate == default)
+        //    return GeneralResponse<PurchaseOrderDTO>.FailResponse("Posting Date is required");
 
-        if (dto.DueDate == default)
-            return GeneralResponse<PurchaseOrderDTO>.FailResponse("Due Date is required");
+        //if (dto.DueDate == default)
+        //    return GeneralResponse<PurchaseOrderDTO>.FailResponse("Due Date is required");
 
-        if (dto.DueDate < dto.PostingDate)
-            return GeneralResponse<PurchaseOrderDTO>.FailResponse("Due Date must be >= Posting Date");
+        //if (dto.DueDate < dto.PostingDate)
+        //    return GeneralResponse<PurchaseOrderDTO>.FailResponse("Due Date must be >= Posting Date");
 
-        if (dto.SupplierId <= 0)
-            return GeneralResponse<PurchaseOrderDTO>.FailResponse("SupplierId is invalid");
+        //if (dto.SupplierId <= 0)
+        //    return GeneralResponse<PurchaseOrderDTO>.FailResponse("SupplierId is invalid");
 
-        var supplierExists = await _context.Suppliers
-            .AnyAsync(s => s.SupplierId == dto.SupplierId);
-
-        if (!supplierExists)
-            return GeneralResponse<PurchaseOrderDTO>.FailResponse("supplier not found");
-
+       
         // 3) Update fields (Full Update)
         if (dto.PostingDate.HasValue)
             entity.PostingDate = dto.PostingDate.Value;
@@ -517,7 +512,16 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             entity.DueDate = dto.DueDate.Value;
 
         if (dto.SupplierId.HasValue)
+        {
+            var supplierExists = await _context.Suppliers
+           .AnyAsync(s => s.SupplierId == dto.SupplierId);
+
+            if (!supplierExists)
+                return GeneralResponse<PurchaseOrderDTO>.FailResponse("supplier not found");
+
+
             entity.SupplierId = dto.SupplierId.Value;
+        }
 
         if (!dto.IsDraft)
         {
