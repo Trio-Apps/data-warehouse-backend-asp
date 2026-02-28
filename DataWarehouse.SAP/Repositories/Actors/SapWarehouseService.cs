@@ -139,6 +139,7 @@ namespace DataWarehouse.SAP.Repositories.Actors
 
             await _syncRepo.UpdateLastSyncPaginationSkipAsync( sapId,
                EntitiesName.warehouse.ToString(),skip);
+
             await _context.SaveChangesAsync();
 
             return newWarehouses.Count;

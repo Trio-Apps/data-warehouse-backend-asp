@@ -1,6 +1,5 @@
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
-using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
@@ -35,10 +34,18 @@ public class SalesOrderController : ControllerBase
 
     [HttpGet("warehouse/{warehouseId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
-
     public async Task<ActionResult<IEnumerable<SalesOrder>>> GetByWarehouseId(int warehouseId)
     {
         var salesOrders = await _repository.GetByWarehouseIdAsync(warehouseId);
+        return Ok(salesOrders);
+    }
+
+
+    [HttpGet("items-in-warehouse/warehouse/{warehouseId}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Items_Get}")]
+    public async Task<ActionResult<IEnumerable<SalesOrder>>> GetItemsByWarehouseId(int warehouseId)
+    {
+        var salesOrders = await _repository.GetItemsByWarehouseIdAsync(warehouseId);
         return Ok(salesOrders);
     }
 
@@ -53,12 +60,14 @@ public class SalesOrderController : ControllerBase
 
         return Ok(res);
     }
+    
     [HttpGet("with-customer/{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
-
     public async Task<IActionResult> GetByIdWithCustomer(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
 
         var res = await _repository.GetWithCustomerAsync(id,userId);
         if (!res.Success)
@@ -84,12 +93,13 @@ public class SalesOrderController : ControllerBase
 
     [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
-
-    public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, string? status, string? liveStatus, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
+    public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, int? customerId, string? status, string? liveStatus, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
     {
-
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(warehouseId, userId, postingDate, dueDate, liveStatus, status, skip, pageSize);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
+
+        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(warehouseId, userId, customerId, postingDate, dueDate, liveStatus, status, skip, pageSize);
         if (!res.Success)
             return BadRequest(res);
 
@@ -100,7 +110,6 @@ public class SalesOrderController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
-
     public async Task<ActionResult<SalesOrder>> GetById(int id)
     {
         var salesOrder = await _repository.GetByIdAsync(id);
@@ -109,6 +118,7 @@ public class SalesOrderController : ControllerBase
 
         return Ok(salesOrder);
     }
+
 
     [HttpGet("status")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
@@ -145,8 +155,12 @@ public class SalesOrderController : ControllerBase
             return BadRequest(ModelState);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
 
         var created = await _repository.AddSalesOrderByWarehouseIdAsync(userId, dto);
+        if (!created.Success)
+            return BadRequest(created);
 
         return Ok(created);
     }
@@ -160,6 +174,10 @@ public class SalesOrderController : ControllerBase
             return BadRequest(ModelState);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
+
+        dto.SalesOrderId = id;
 
         var res = await _repository.UpdateSalesOrderAsync(userId, id, dto);
         if (!res.Success) return BadRequest(res);
@@ -172,12 +190,11 @@ public class SalesOrderController : ControllerBase
 
     public async Task<IActionResult> Delete(int id)
     {
-        var salesOrder = await _repository.DeleteSalesOrderAsync(id);
-        if (!salesOrder.Success)
-            return NotFound(salesOrder);
+        var res = await _repository.DeleteSalesOrderAsync(id);
+        if (!res.Success)
+            return BadRequest(res);
 
-   
-        return NoContent();
+        return Ok(res);
     }
 
     //[HttpGet("processing")]

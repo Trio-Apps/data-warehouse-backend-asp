@@ -1,6 +1,8 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -16,8 +18,11 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBatch>, ISalesReturnOrderBatchRepository
 {
-    public SalesReturnOrderBatchRepository(DataWarehouseDbContext context) : base(context)
+    private readonly IBaseProcessesRepository<SalesReturnOrderBatch> baseProcesses;
+
+    public SalesReturnOrderBatchRepository(IBaseProcessesRepository<SalesReturnOrderBatch> baseProcesses, DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
     }
 
     public async Task<GeneralResponse<IEnumerable<SalesReturnOrderBatchDTO>>> GetBySalesReturnOrderItemIdAsync(int salesReturnOrderItemId)
@@ -73,106 +78,62 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
             });
     }
 
-    public async Task<GeneralResponse<SalesReturnOrderBatchDTO>> AddBySalesReturnOrderItemIdAsync(int salesReturnOrderItemId, AddSalesReturnOrderBatchDTO dto)
+    public async Task<GeneralResponse<SalesReturnOrderBatchDTO>> AddBySalesReturnOrderItemIdAsync(int salesReturnOrderItemId,
+        GeneralBatchDto dto)
     {
-        if (salesReturnOrderItemId != dto.SalesReturnOrderItemId)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("Sales Return Order Item ID mismatch");
+        var res = await baseProcesses.AddOrderBatchAsync<SalesReturnOrderItem, SalesReturnOrderBatch>(
+            orderItemId: salesReturnOrderItemId,
+            processType: ProcessType.SalesReturn,
+            dto: dto,
 
-        var salesReturnOrderItem = await _context.SalesReturnOrderItems
-            .Include(sroi => sroi.SalesOrderItem)
-            .FirstOrDefaultAsync(i => i.SalesReturnOrderItemId == salesReturnOrderItemId);
+            // ✅ لازم predicate على العمود الحقيقي
+            orderItemSelector: i => i.SalesReturnOrderItemId == salesReturnOrderItemId,
+            orderItemSet: _context.SalesReturnOrderItems,
 
-         
+            // ✅ لازم predicate على العمود الحقيقي
+            batchItemSelector: b => b.SalesReturnOrderItemId == salesReturnOrderItemId,
+            batchSet: _context.SalesReturnOrderBatches
+        );
 
+        if (!res.Success)
+            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse(res.Message);
 
-        if (salesReturnOrderItem == null)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("Sales Return Order Item not found");
-
-        var checkApprovalStatus = await GetProcessItem(salesReturnOrderItem.SalesReturnOrderId, ProcessType.SalesReturn);
-
-        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("You cannot add any batch to return item because its approval status is 'Approved' and all approval steps have been completed.");
-
-
-        // Validate SalesOrderBatch exists
-        var salesOrderBatch = await _context.SalesOrderBatches
-            .FirstOrDefaultAsync(b => b.SalesOrderBatchId == dto.SalesOrderBatchId);
-
-        if (salesOrderBatch == null)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("Sales Order Batch not found");
-
-        // Validate that the sales batch belongs to the same sales item
-        if (salesOrderBatch.SalesOrderItemId != salesReturnOrderItem.SalesOrderItemId)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("Sales Order Batch does not belong to the same Sales Order Item");
-
-        // Check if this batch already exists for this return item
-        var existingBatch = await _context.SalesReturnOrderBatches
-            .FirstOrDefaultAsync(b => b.SalesReturnOrderItemId == salesReturnOrderItemId && 
-                                      b.SalesOrderBatchId == dto.SalesOrderBatchId);
-
-        if (existingBatch != null)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("This batch already exists for this return item");
-
-        // Validate quantity doesn't exceed sales batch quantity
-        if (dto.Quantity > salesOrderBatch.Quantity)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("Return batch quantity cannot exceed sales batch quantity");
-
-        var mapping = new SalesReturnOrderBatch
-        {
-            SalesReturnOrderItemId = dto.SalesReturnOrderItemId,
-            SalesOrderBatchId = dto.SalesOrderBatchId,
-            Quantity = dto.Quantity,
-            Comment = dto.Comment,
-            BatchNumber = salesOrderBatch.BatchNumber,
-            ExpiryDate = salesOrderBatch.ExpiryDate,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var res = await AddAsync(mapping);
-        await SaveChangesAsync();
+        var saved = res.Data;
 
         var model = new SalesReturnOrderBatchDTO
         {
-            SalesReturnOrderBatchId = res.SalesReturnOrderBatchId,
-            SalesReturnOrderItemId = res.SalesReturnOrderItemId,
-            SalesOrderBatchId = res.SalesOrderBatchId,
-            Quantity = res.Quantity,
-            Comment = res.Comment,
-            BatchNumber = res.BatchNumber,
-            ExpiryDate = res.ExpiryDate
+            SalesReturnOrderBatchId = saved.SalesReturnOrderBatchId,
+            SalesReturnOrderItemId = saved.SalesReturnOrderItemId,
+            SalesOrderBatchId = saved.SalesOrderBatchId,
+            Quantity = saved.Quantity,
+            Comment = saved.Comment,
+            BatchNumber = saved.BatchNumber,
+            ExpiryDate = saved.ExpiryDate
         };
 
         return GeneralResponse<SalesReturnOrderBatchDTO>.SuccessResponse(model);
     }
 
-    public async Task<GeneralResponse<SalesReturnOrderBatchDTO>> UpdateSalesReturnOrderBatchAsync(int salesReturnOrderBatchId, UpdateSalesReturnOrderBatchDTO dto)
+    public async Task<GeneralResponse<SalesReturnOrderBatchDTO>> UpdateSalesReturnOrderBatchAsync(
+        int salesReturnOrderBatchId, UpdateGeneralBatchDto dto)
     {
-        var entity = await _context.SalesReturnOrderBatches
-            .Include(x=>x.SalesReturnOrderItem)
-            .Include(b => b.SalesOrderBatch)
-            .FirstOrDefaultAsync(e => e.SalesReturnOrderBatchId == dto.SalesReturnOrderBatchId);
+        var res = await baseProcesses.UpdateOrderBatchAsync<SalesReturnOrderItem, SalesReturnOrderBatch>(
+            batchId: salesReturnOrderBatchId,
+            processType: ProcessType.SalesReturn,
+            dto: dto,
 
-        if (entity == null)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("Sales Return Order Batch not found");
+            batchSet: _context.SalesReturnOrderBatches,
+            orderItemSet: _context.SalesReturnOrderItems,
 
-        if (entity.SalesReturnOrderBatchId != salesReturnOrderBatchId)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("ID mismatch");
+            batchIdSelector: x => x.SalesReturnOrderBatchId,
+            orderItemIdSelector: x => x.SalesReturnOrderItemId,
+            orderItemIdForItemSelector: x => x.SalesReturnOrderItemId
+        );
 
+        if (!res.Success)
+            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse(res.Message);
 
-        var checkApprovalStatus = await GetProcessItem(entity.SalesReturnOrderItem.SalesReturnOrderId, ProcessType.SalesReturn);
-
-        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("You cannot edit on any batch to return item because its approval status is 'Approved' and all approval steps have been completed.");
-
-
-        // Validate quantity doesn't exceed sales batch quantity
-        if (dto.Quantity > entity.SalesOrderBatch.Quantity)
-            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse("Return batch quantity cannot exceed sales batch quantity");
-
-        entity.Quantity = dto.Quantity?? entity.Quantity;
-        entity.Comment = dto.Comment;
-
-        await _context.SaveChangesAsync();
+        var entity = res.Data;
 
         var result = new SalesReturnOrderBatchDTO
         {
@@ -187,5 +148,42 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
 
         return GeneralResponse<SalesReturnOrderBatchDTO>.SuccessResponse(result);
     }
+
+    public async Task<GeneralResponse<SalesReturnOrderBatchDTO>> DeleteSalesReturnOrderBatchAsync(
+        int salesReturnOrderBatchId)
+    {
+        var res = await baseProcesses.DeleteOrderBatchAsync<SalesReturnOrderItem, SalesReturnOrderBatch>(
+            batchIdFromRoute: salesReturnOrderBatchId,
+            processType: ProcessType.SalesReturn,
+
+            batchSet: _context.SalesReturnOrderBatches,
+            orderItemSet: _context.SalesReturnOrderItems,
+
+            batchIdSelector: b => b.SalesReturnOrderBatchId,
+            batchOrderItemIdSelector: b => b.SalesReturnOrderItemId,  // FK الحقيقي
+            orderItemPkSelector: i => i.SalesReturnOrderItemId,       // PK الحقيقي للـ item
+            orderIdSelector: i => i.SalesReturnOrderId                // OrderId الحقيقي
+        );
+
+        if (!res.Success)
+            return GeneralResponse<SalesReturnOrderBatchDTO>.FailResponse(res.Message);
+
+        var entity = res.Data;
+
+        var result = new SalesReturnOrderBatchDTO
+        {
+            SalesReturnOrderBatchId = entity.SalesReturnOrderBatchId,
+            SalesReturnOrderItemId = entity.SalesReturnOrderItemId,
+            SalesOrderBatchId = entity.SalesOrderBatchId,
+            Quantity = entity.Quantity,
+            Comment = entity.Comment,
+            BatchNumber = entity.BatchNumber,
+            ExpiryDate = entity.ExpiryDate
+        };
+
+        return GeneralResponse<SalesReturnOrderBatchDTO>.SuccessResponse(result);
+    }
+
+
 }
 

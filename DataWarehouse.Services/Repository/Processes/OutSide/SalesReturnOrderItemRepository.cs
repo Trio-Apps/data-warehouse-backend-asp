@@ -1,6 +1,9 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -16,10 +19,13 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderItem>, ISalesReturnOrderItemRepository
 {
+    private readonly IBaseProcessesRepository<SalesReturnOrderItem> baseProcesses;
     private readonly ISalesReturnOrderRepository salesReturn;
 
-    public SalesReturnOrderItemRepository(ISalesReturnOrderRepository salesReturn, DataWarehouseDbContext context) : base(context)
+   
+    public SalesReturnOrderItemRepository(IBaseProcessesRepository<SalesReturnOrderItem> baseProcesses, ISalesReturnOrderRepository salesReturn, DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
         this.salesReturn = salesReturn;
     }
 
@@ -84,36 +90,103 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
             });
     }
 
-    public async Task<GeneralResponse<SalesReturnOrderItemDTO>> AddSalesReturnOrderItemBySalesOrderItemIdAsync(string userId,
-        int salesOrderId,
-        AddSalesReturnOrderItemDTO dto)
+    //
+    public async Task<GeneralResponse<SalesReturnOrderItemDTO>> AddSalesReturnItemBySalesReturnOrderIdWithoutRefAsync(
+    int salesReturnOrderId,
+    bool isBarcode,
+    DynamicBarcodesDto? barcodeDto,
+    AddGeneralItemDto? dto)
     {
-        // Validate SalesReturnOrder exists
-        var salesReturnOrder = await _context.SalesOrders
-            .FirstOrDefaultAsync(sro => sro.SalesOrderId == salesOrderId);
-        if (salesReturnOrder == null)
+        var res = await baseProcesses.AddOrderItemAsync<SalesReturnOrder, SalesReturnOrderItem>(
+            salesReturnOrderId,
+            ProcessType.SalesReturn,
+            isBarcode,
+            barcodeDto,
+            dto,
+            x => x.SalesReturnOrderId == salesReturnOrderId,
+            _context.SalesReturnOrders,
+            _context.SalesReturnOrderItems
+        );
+
+        if (!res.Success)
+            return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse(res.Message);
+
+        var modelfin = new SalesReturnOrderItemDTO
+        {
+            SalesReturnOrderId = res.Data.SalesReturnOrderId,
+            Quantity = res.Data.Quantity,
+            ItemId = res.Data.ItemId,
+            SalesReturnOrderItemId = res.Data.SalesReturnOrderItemId,
+            UoMEntry = res.Data.UoMEntry,
+            BarCode = res.Data.BarCode,
+            UnitPrice = res.Data.UnitPrice,
+            ErrorMessage = res.Data.ErrorMessage
+        };
+
+        return GeneralResponse<SalesReturnOrderItemDTO>.SuccessResponse(modelfin);
+    }
+
+    public async Task<GeneralResponse<SalesReturnOrderItemDTO>> UpdateSalesReturnItemWithoutRefAsync(
+    int salesReturnOrderItemId,
+    UpdateGeneralItemDto dto)
+    {
+        var res = await baseProcesses.UpdateOrderItemAsync<SalesReturnOrderItem>(
+            itemIdFromRoute: salesReturnOrderItemId,
+            processType: ProcessType.SalesReturn,
+            dto: dto,
+            itemSelector: x => x.SalesReturnOrderItemId == salesReturnOrderItemId,
+            itemSet: _context.SalesReturnOrderItems
+        );
+
+        if (!res.Success)
+            return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse(res.Message);
+
+        var entity = res.Data;
+
+        var result = new SalesReturnOrderItemDTO
+        {
+            SalesReturnOrderId = entity.SalesReturnOrderId,
+            SalesReturnOrderItemId = entity.SalesReturnOrderItemId,
+            Quantity = entity.Quantity,
+            ItemId = entity.ItemId,
+            SalesOrderItemId = entity.SalesOrderItemId,
+            BarCode = entity.BarCode,
+            UoMEntry = entity.UoMEntry,
+            ErrorMessage = entity.ErrorMessage,
+            UnitPrice = entity.UnitPrice
+        };
+
+        return GeneralResponse<SalesReturnOrderItemDTO>.SuccessResponse(result);
+    }
+
+
+    public async Task<GeneralResponse<SalesReturnOrderItemDTO>> AddSalesReturnOrderItemBySalesOrderItemIdAsync(
+    string userId,
+    int salesOrderId,
+    AddSalesReturnOrderItemDTO dto)
+    {
+        // Validate SalesOrder exists
+        var salesOrder = await _context.SalesOrders
+            .FirstOrDefaultAsync(so => so.SalesOrderId == salesOrderId);
+
+        if (salesOrder == null)
             return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("Sales Order not found");
 
-
-        var checkApprovalStatus = await GetProcessItem(salesOrderId, ProcessType.Sales);
-
-        if (checkApprovalStatus == null ||  ( checkApprovalStatus != null && checkApprovalStatus.Status != ProcessStatus.Approved))
-            return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("You cannot add any item to return because its approval status is not 'Approved' and all approval steps haven't been completed.");
-
-
-
-        if (salesReturnOrder.SalesReturnOrder == null)
+        // لو مفيش SalesReturnOrder، اعمله
+        if (salesOrder.SalesReturnOrder == null)
         {
-            var modelGood = new AddSalesReturnOrderDTO
+            var modelReturnOrder = new AddSalesReturnOrderDTO
             {
-                 SalesOrderId = salesOrderId,
-                Comment = dto.Comment,
+                SalesOrderId = salesOrderId,
+                Comment = dto.Comment
             };
-            var addGoodOrder = await salesReturn.AddSalesReturnOrderBySalesOrderIdAsync(userId, modelGood);
+
+            await salesReturn.AddSalesReturnOrderAsync(userId, modelReturnOrder);
         }
 
-          salesReturnOrder = await _context.SalesOrders
-            .FirstOrDefaultAsync(sro => sro.SalesOrderId == salesOrderId);
+        // reload
+        salesOrder = await _context.SalesOrders
+            .FirstOrDefaultAsync(so => so.SalesOrderId == salesOrderId);
 
         // Get SalesOrderItem with its batches
         var salesOrderItem = await _context.SalesOrderItems
@@ -138,20 +211,19 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
         // Create SalesReturnOrderItem
         var salesReturnOrderItem = new SalesReturnOrderItem
         {
-            SalesReturnOrderId = salesReturnOrder.SalesReturnOrder.SalesReturnOrderId,
+            SalesReturnOrderId = salesOrder.SalesReturnOrder.SalesReturnOrderId,
             SalesOrderItemId = dto.SalesOrderItemId,
             ItemId = salesOrderItem.ItemId,
             Quantity = dto.Quantity,
             UoMEntry = salesOrderItem.UoMEntry,
             BarCode = salesOrderItem.BarCode,
             UnitPrice = salesOrderItem.UnitPrice,
-            Status = salesOrderItem.Status
         };
 
         var res = await AddAsync(salesReturnOrderItem);
         await SaveChangesAsync();
 
-        // Automatically add batches from SalesOrderBatch
+        // Automatically add batches from SalesOrderBatch (نفس لوجيك GoodsReturn)
         if (salesOrderItem.SalesOrderBatches != null && salesOrderItem.SalesOrderBatches.Any())
         {
             var batchesToAdd = new List<SalesReturnOrderBatch>();
@@ -159,10 +231,10 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
 
             foreach (var salesBatch in salesOrderItem.SalesOrderBatches.OrderBy(b => b.CreatedAt))
             {
-                if (remainingQuantity <= 0)
-                    break;
-
                 decimal batchQuantity = remainingQuantity > salesBatch.Quantity ? salesBatch.Quantity : remainingQuantity;
+
+                if (remainingQuantity <= 0)
+                    batchQuantity = 0;
 
                 var returnBatch = new SalesReturnOrderBatch
                 {
@@ -199,7 +271,6 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
             BarCode = finalItem.BarCode,
             UnitPrice = finalItem.UnitPrice,
             ErrorMessage = finalItem.ErrorMessage,
-            Status = finalItem.Status.ToString(),
             SalesReturnOrderId = finalItem.SalesReturnOrderId,
             SalesOrderItemId = finalItem.SalesOrderItemId,
             ItemId = finalItem.ItemId,
@@ -218,9 +289,10 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
         return GeneralResponse<SalesReturnOrderItemDTO>.SuccessResponse(model);
     }
 
+
     public async Task<GeneralResponse<SalesReturnOrderItemDTO>> UpdateSalesReturnOrderItemAsync(
-        int salesReturnOrderItemId,
-        UpdateSalesReturnOrderItemDTO dto)
+    int salesReturnOrderItemId,
+    UpdateSalesReturnOrderItemDTO dto)
     {
         var entity = await _context.SalesReturnOrderItems
             .Include(sroi => sroi.SalesOrderItem)
@@ -229,13 +301,6 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
         if (entity == null)
             return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("Sales Return Order Item not found");
 
-
-        var checkApprovalStatus = await GetProcessItem(entity.SalesReturnOrderId, ProcessType.SalesReturn);
-
-        if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
-            return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("You cannot edit any return item because its approval status is 'Approved' and all approval steps have been completed.");
-
-
         if (entity.SalesReturnOrderItemId != salesReturnOrderItemId)
             return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("ID mismatch");
 
@@ -243,8 +308,63 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
         if (dto.Quantity.HasValue && dto.Quantity.Value > entity.SalesOrderItem.Quantity)
             return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("Return quantity cannot exceed sales quantity");
 
+        // بعد تحديث الكمية:
         if (dto.Quantity.HasValue && dto.Quantity.Value > 0)
+        {
             entity.Quantity = dto.Quantity.Value;
+
+            // 🧹 احذف الباتشات القديمة
+            var existingBatches = await _context.SalesReturnOrderBatches
+                .Where(b => b.SalesReturnOrderItemId == entity.SalesReturnOrderItemId)
+                .ToListAsync();
+
+            if (existingBatches.Any())
+            {
+                _context.SalesReturnOrderBatches.RemoveRange(existingBatches);
+                await _context.SaveChangesAsync();
+            }
+
+            // 🔄 رجّع SalesOrderItem وباتشاته
+            var salesOrderItem = await _context.SalesOrderItems
+                .Include(soi => soi.SalesOrderBatches)
+                .FirstOrDefaultAsync(soi => soi.SalesOrderItemId == entity.SalesOrderItemId);
+
+            if (salesOrderItem == null)
+                return GeneralResponse<SalesReturnOrderItemDTO>.FailResponse("Sales Order Item not found");
+
+            // ✅ إعادة بناء الباتشات
+            var newBatches = new List<SalesReturnOrderBatch>();
+            decimal remainingQty = dto.Quantity.Value;
+
+            foreach (var salesBatch in salesOrderItem.SalesOrderBatches.OrderBy(b => b.CreatedAt))
+            {
+                decimal batchQty = Math.Min(salesBatch.Quantity, remainingQty);
+
+                if (batchQty <= 0)
+                    batchQty = 0;
+
+                newBatches.Add(new SalesReturnOrderBatch
+                {
+                    SalesReturnOrderItemId = entity.SalesReturnOrderItemId,
+                    SalesOrderBatchId = salesBatch.SalesOrderBatchId,
+                    Quantity = batchQty,
+                    BatchNumber = salesBatch.BatchNumber,
+                    ExpiryDate = salesBatch.ExpiryDate,
+                    CreatedAt = DateTime.UtcNow,
+                    Comment = dto.Comment
+                });
+
+                remainingQty -= batchQty;
+            }
+
+            if (newBatches.Any())
+            {
+                await _context.SalesReturnOrderBatches.AddRangeAsync(newBatches);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+       
 
         await _context.SaveChangesAsync();
 
@@ -256,7 +376,6 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
             ErrorMessage = entity.ErrorMessage,
-            Status = entity.Status.ToString(),
             SalesReturnOrderId = entity.SalesReturnOrderId,
             SalesOrderItemId = entity.SalesOrderItemId,
             ItemId = entity.ItemId
@@ -264,11 +383,11 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
 
         return GeneralResponse<SalesReturnOrderItemDTO>.SuccessResponse(result);
     }
-
     public async Task<IEnumerable<SalesReturnOrderItem>> GetBySalesReturnOrderIdEntitiesAsync(int salesReturnOrderId)
     {
         return await Query().Where(sroi => sroi.SalesReturnOrderId == salesReturnOrderId).ToListAsync();
     }
+
 
     public async Task<IEnumerable<SalesReturnOrderItem>> GetByItemIdAsync(int itemId)
     {

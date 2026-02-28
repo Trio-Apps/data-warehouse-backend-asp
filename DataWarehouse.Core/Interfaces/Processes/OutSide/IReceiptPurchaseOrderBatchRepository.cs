@@ -15,5 +15,7 @@ public interface IReceiptPurchaseOrderBatchRepository : IBaseRepository<ReceiptP
     Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderBatchDTO>>> GetByReceiptPurchaseOrderItemIdWithPaginationAsync(int receiptPurchaseOrderItemId, int pageNumber, int pageSize);
     Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> AddByReceiptPurchaseOrderItemIdAsync(int receiptPurchaseOrderItemId, GeneralBatchDto dto);
     Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> UpdateReceiptPurchaseOrderBatchAsync(int receiptPurchaseOrderBatchId, UpdateGeneralBatchDto dto);
+    Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> DeleteReceiptPurchaseOrderBatchAsync(
+      int receiptPurchaseOrderBatchId);
 }
 

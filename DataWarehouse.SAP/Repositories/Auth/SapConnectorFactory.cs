@@ -34,6 +34,12 @@ namespace DataWarehouse.SAP.Repositories.Auth
 
             client.BaseAddress = new Uri(sap.SapUrl);
 
+            // ✅ فعل gzip
+            //client.DefaultRequestHeaders.AcceptEncoding.Clear();
+            //client.DefaultRequestHeaders.AcceptEncoding.Add(
+            //    new System.Net.Http.Headers.StringWithQualityHeaderValue("gzip"));
+
+
             return client;
         }
     }

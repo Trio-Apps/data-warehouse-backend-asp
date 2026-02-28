@@ -22,6 +22,7 @@ namespace DataWarehouse.Api
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<DataWarehouseDbContext>();
 
+
             var sapIds = context.Saps
                 .Where(x => x.IsActive)
                 .Select(x => x.SapId)
@@ -126,6 +127,7 @@ namespace DataWarehouse.Api
 
 
             }
+
 
 
             RecurringJob.AddOrUpdate<SapJobDiscoveryService>(

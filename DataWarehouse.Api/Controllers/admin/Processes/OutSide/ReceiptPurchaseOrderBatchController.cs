@@ -111,14 +111,13 @@ public class ReceiptPurchaseOrderBatchController : ControllerBase
 
     public async Task<IActionResult> Delete(int id)
     {
-        var batch = await _repository.GetByIdAsync(id);
-        if (batch == null)
-            return NotFound($"ReceiptPurchaseOrderBatch with ID {id} not found.");
+        var res = await _repository.DeleteReceiptPurchaseOrderBatchAsync(id);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
+        if (!res.Success)
+            return BadRequest(res);
 
-        return NoContent();
+        return Ok(res);
+
     }
 
 

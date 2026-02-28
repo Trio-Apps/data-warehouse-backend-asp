@@ -28,19 +28,47 @@ public class AddSalesReturnOrderDTO
     [Required(ErrorMessage = "Sales Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order ID must be greater than 0")]
     public int SalesOrderId { get; set; }
+    [Required(ErrorMessage = "Posting Date is required")]
+    public DateTime PostingDate { get; set; }
+    [Required(ErrorMessage = "Due Date is required")]
+    public DateTime DueDate { get; set; }
 
     public string? Comment { get; set; }
+
+    public bool IsDraft { get; set; }
+}
+
+public class AddSalesReturnOrderWithoutRefDTO
+{
+    [Required(ErrorMessage = "Posting Date is required")]
+    public DateTime PostingDate { get; set; }
+    [Required(ErrorMessage = "Due Date is required")]
+    public DateTime DueDate { get; set; }
+    public string? Comment { get; set; }
+
+    [Required(ErrorMessage = "Customer Id is required")]
+    public int CustomerId { get; set; }
+
+    [Required(ErrorMessage = "IsDraft is required")]
+    public bool IsDraft { get; set; }
+
+    [Required(ErrorMessage = "Warehouse ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
+    public int WarehouseId { get; set; }
 }
 
 public class UpdateSalesReturnOrderDTO
 {
     [Required(ErrorMessage = "SalesReturnOrderId is required")]
     public int SalesReturnOrderId { get; set; }
-
-    [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
+    public DateTime? PostingDate { get; set; }
+    public DateTime? DueDate { get; set; }
     public string? Comment { get; set; }
 
+    public int? CustomerId { get; set; }
+
     public bool IsDraft { get; set; }
+
 }
 
 public class SalesReturnOrderItemDTO : GeneralItemDto

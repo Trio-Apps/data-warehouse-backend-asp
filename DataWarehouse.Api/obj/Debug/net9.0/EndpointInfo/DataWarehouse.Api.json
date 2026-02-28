@@ -11738,6 +11738,55 @@
         }
       }
     },
+    "/api/SalesOrder/items-in-warehouse/warehouse/{warehouseId}": {
+      "get": {
+        "tags": [
+          "SalesOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SalesOrder"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SalesOrder"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SalesOrder"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/SalesOrder/warehouse/{warehouseId}/{skip}/{pageSize}": {
       "get": {
         "tags": [
@@ -11812,6 +11861,14 @@
             "name": "warehouseId",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -12808,6 +12865,78 @@
         }
       }
     },
+    "/api/SalesReturnOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "SalesReturnOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postingDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dueDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/SalesReturnOrder/{id}": {
       "get": {
         "tags": [
@@ -12826,24 +12955,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SalesReturnOrder"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SalesReturnOrder"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SalesReturnOrder"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       },
@@ -13106,6 +13218,142 @@
         }
       }
     },
+    "/api/SalesReturnOrder/{id}/with-warehouse": {
+      "get": {
+        "tags": [
+          "SalesReturnOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/SalesReturnOrder/without-reference": {
+      "post": {
+        "tags": [
+          "SalesReturnOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSalesReturnOrderWithoutRefDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSalesReturnOrderWithoutRefDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSalesReturnOrderWithoutRefDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/SalesReturnOrder/with-default-items": {
+      "post": {
+        "tags": [
+          "SalesReturnOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSalesReturnOrderDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSalesReturnOrderDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSalesReturnOrderDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/SalesReturnOrderBatch": {
       "get": {
         "tags": [
@@ -13202,17 +13450,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSalesReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSalesReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateSalesReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             }
           }
@@ -13312,17 +13560,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddSalesReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddSalesReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AddSalesReturnOrderBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             }
           }
@@ -13728,6 +13976,115 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/SalesReturnOrderItem/witout-reference/sales-return-order/{salesReturnOrderId}/add-barcode-or-no/{isBarcode}": {
+      "post": {
+        "tags": [
+          "SalesReturnOrderItem"
+        ],
+        "parameters": [
+          {
+            "name": "salesReturnOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "isBarcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrderItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrderItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesReturnOrderItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/SalesReturnOrderItem/witout-reference/{id}": {
+      "put": {
+        "tags": [
+          "SalesReturnOrderItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -18548,42 +18905,10 @@
         },
         "additionalProperties": false
       },
-      "AddSalesReturnOrderBatchDTO": {
-        "required": [
-          "quantity",
-          "salesOrderBatchId",
-          "salesReturnOrderItemId"
-        ],
-        "type": "object",
-        "properties": {
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "salesReturnOrderItemId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "salesOrderBatchId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
       "AddSalesReturnOrderDTO": {
         "required": [
+          "dueDate",
+          "postingDate",
           "salesOrderId"
         ],
         "type": "object",
@@ -18594,9 +18919,20 @@
             "type": "integer",
             "format": "int32"
           },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
           "comment": {
             "type": "string",
             "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -18624,6 +18960,44 @@
             "minLength": 0,
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddSalesReturnOrderWithoutRefDTO": {
+        "required": [
+          "customerId",
+          "dueDate",
+          "isDraft",
+          "postingDate",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isDraft": {
+            "type": "boolean"
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -22192,9 +22566,21 @@
           "status": {
             "$ref": "#/components/schemas/GeneralStatus"
           },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
           "comment": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           },
           "userId": {
             "type": "string",
@@ -22262,6 +22648,10 @@
             "type": "string",
             "format": "date-time"
           },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "salesOrderBatchId": {
             "type": "integer",
             "format": "int32"
@@ -22309,6 +22699,10 @@
           "errorMessage": {
             "type": "string",
             "nullable": true
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
           },
           "salesReturnOrderId": {
             "type": "integer",
@@ -23672,40 +24066,6 @@
         },
         "additionalProperties": false
       },
-      "UpdateSalesReturnOrderBatchDTO": {
-        "required": [
-          "quantity",
-          "salesReturnOrderBatchId"
-        ],
-        "type": "object",
-        "properties": {
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "batchNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "expiryDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "salesReturnOrderBatchId": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
       "UpdateSalesReturnOrderDTO": {
         "required": [
           "salesReturnOrderId"
@@ -23716,10 +24076,23 @@
             "type": "integer",
             "format": "int32"
           },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
+          "postingDate": {
             "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "isDraft": {

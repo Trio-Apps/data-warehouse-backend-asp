@@ -120,71 +120,6 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO
     );
 }
 
-//   public async Task<GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO>, string>>
-//GetByPurchaseItemByPurchaseOrderIdWithPaginationAsync(int purchaseOrderId, string? status, int pageNumber, int pageSize)
-//   {
-//       pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-//       pageSize = pageSize <= 0 ? 10 : pageSize;
-
-//       var purchase = await _context.PurchaseOrders
-//           .AsNoTracking()
-//           .FirstOrDefaultAsync(p => p.PurchaseOrderId == purchaseOrderId);
-
-//       if (purchase == null)
-//           return GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO>, string>
-//               .FailResponse("purchase not found");
-
-//       var query = _context.PurchaseOrderItems
-//           .AsNoTracking()
-//           .Where(b => b.PurchaseOrderId == purchaseOrderId);
-
-//       if (!string.IsNullOrWhiteSpace(status))
-//       {
-//           if (!Enum.TryParse<GeneralItemStatus>(status, true, out var statusEnum))
-//               return GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO>, string>
-//                   .FailResponse("Invalid status");
-
-//           query = query.Where(iw => iw.Status == statusEnum);
-//       }
-
-//       var totalRecords = await query.CountAsync();
-
-//       var data = await query
-//           .OrderByDescending(x => x.PurchaseOrderItemId)
-//           .Skip((pageNumber - 1) * pageSize)
-//           .Take(pageSize)
-//           .Select(e => new PurchaseOrderItemDTO
-//           {
-//               ItemId = e.ItemId,
-//               Status = e.Status.ToString(),
-//               ErrorMessage = e.ErrorMessage,
-//               Quantity = e.Quantity,
-//               PurchaseOrderItemId = e.PurchaseOrderItemId,
-//               PurchaseOrderId = e.PurchaseOrderId,
-//               BarCode = e.BarCode,
-//               UnitPrice = e.UnitPrice,
-//               UoMEntry = e.UoMEntry,
-//               UnitName = e.Item.ItemUomGroups
-//                   .Where(i => i.UomEntry == e.UoMEntry)
-//                   .Select(i => i.UomCode)
-//                   .FirstOrDefault(),
-//               ItemCode = e.Item.ItemCode,
-//               ItemName = e.Item.ItemName,
-//           })
-//           .ToListAsync();
-
-//       return GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO>, string>
-//           .SuccessResponse(new PagedResult<PurchaseOrderItemDTO>
-//           {
-//               Data = data,
-//               PageNumber = pageNumber,
-//               PageSize = pageSize,
-//               TotalRecords = totalRecords
-//           }, purchase.Status.ToString());
-//   }
-
-
-// create
 public async Task<GeneralResponse<PurchaseOrderItemDTO>> AddPurchaseItemByPurchaseOrderIdAsync(int PurchaseOrderId, bool isBarcode,
            DynamicBarcodesDto? barcodeDto,
 
@@ -339,5 +274,72 @@ public async Task<GeneralResponse<PurchaseOrderItemDTO>> AddPurchaseItemByPurcha
     }
 
 
+
+
+    //   public async Task<GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO>, string>>
+    //GetByPurchaseItemByPurchaseOrderIdWithPaginationAsync(int purchaseOrderId, string? status, int pageNumber, int pageSize)
+    //   {
+    //       pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+    //       pageSize = pageSize <= 0 ? 10 : pageSize;
+
+    //       var purchase = await _context.PurchaseOrders
+    //           .AsNoTracking()
+    //           .FirstOrDefaultAsync(p => p.PurchaseOrderId == purchaseOrderId);
+
+    //       if (purchase == null)
+    //           return GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO>, string>
+    //               .FailResponse("purchase not found");
+
+    //       var query = _context.PurchaseOrderItems
+    //           .AsNoTracking()
+    //           .Where(b => b.PurchaseOrderId == purchaseOrderId);
+
+    //       if (!string.IsNullOrWhiteSpace(status))
+    //       {
+    //           if (!Enum.TryParse<GeneralItemStatus>(status, true, out var statusEnum))
+    //               return GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO>, string>
+    //                   .FailResponse("Invalid status");
+
+    //           query = query.Where(iw => iw.Status == statusEnum);
+    //       }
+
+    //       var totalRecords = await query.CountAsync();
+
+    //       var data = await query
+    //           .OrderByDescending(x => x.PurchaseOrderItemId)
+    //           .Skip((pageNumber - 1) * pageSize)
+    //           .Take(pageSize)
+    //           .Select(e => new PurchaseOrderItemDTO
+    //           {
+    //               ItemId = e.ItemId,
+    //               Status = e.Status.ToString(),
+    //               ErrorMessage = e.ErrorMessage,
+    //               Quantity = e.Quantity,
+    //               PurchaseOrderItemId = e.PurchaseOrderItemId,
+    //               PurchaseOrderId = e.PurchaseOrderId,
+    //               BarCode = e.BarCode,
+    //               UnitPrice = e.UnitPrice,
+    //               UoMEntry = e.UoMEntry,
+    //               UnitName = e.Item.ItemUomGroups
+    //                   .Where(i => i.UomEntry == e.UoMEntry)
+    //                   .Select(i => i.UomCode)
+    //                   .FirstOrDefault(),
+    //               ItemCode = e.Item.ItemCode,
+    //               ItemName = e.Item.ItemName,
+    //           })
+    //           .ToListAsync();
+
+    //       return GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO>, string>
+    //           .SuccessResponse(new PagedResult<PurchaseOrderItemDTO>
+    //           {
+    //               Data = data,
+    //               PageNumber = pageNumber,
+    //               PageSize = pageSize,
+    //               TotalRecords = totalRecords
+    //           }, purchase.Status.ToString());
+    //   }
+
+
+    // create
 
 }

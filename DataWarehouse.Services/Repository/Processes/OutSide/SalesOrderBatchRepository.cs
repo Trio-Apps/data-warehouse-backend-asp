@@ -27,10 +27,15 @@ public class SalesOrderBatchRepository : BaseRepository<SalesOrderBatch>, ISales
 
     public async Task<GeneralResponse<IEnumerable<SalesOrderBatchDTO>>> GetBySalesOrderItemIdAsync(int salesOrderItemId)
     {
-        var res = await Query().Where(b => b.SalesOrderItemId == salesOrderItemId).ToListAsync();
+        var res = await baseProcesses.GetOrderBatchesAsync<SalesOrderItem, SalesOrderBatch, SalesOrderBatchDTO>(
+            orderItemId: salesOrderItemId,
+            orderItemSelector: i => i.SalesOrderItemId == salesOrderItemId,
+            orderItemSet: _context.SalesOrderItems,
 
-        return GeneralResponse<IEnumerable<SalesOrderBatchDTO>>.SuccessResponse(
-            res.Select(b => new SalesOrderBatchDTO
+            batchItemSelector: b => b.SalesOrderItemId == salesOrderItemId,
+            batchSet: _context.SalesOrderBatches,
+
+            map: b => new SalesOrderBatchDTO
             {
                 SalesOrderBatchId = b.SalesOrderBatchId,
                 SalesOrderItemId = b.SalesOrderItemId,
@@ -38,7 +43,10 @@ public class SalesOrderBatchRepository : BaseRepository<SalesOrderBatch>, ISales
                 Comment = b.Comment,
                 BatchNumber = b.BatchNumber,
                 ExpiryDate = b.ExpiryDate
-            }));
+            }
+        );
+
+        return res;
     }
 
     public async Task<GeneralResponse<PagedResult<SalesOrderBatchDTO>>> GetBySalesOrderItemIdWithPaginationAsync(int salesOrderItemId, int pageNumber, int pageSize)

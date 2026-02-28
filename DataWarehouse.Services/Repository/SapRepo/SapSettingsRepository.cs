@@ -51,8 +51,6 @@ namespace DataWarehouse.Services.Repository.SapRepo
         public async Task<GeneralResponse<SapDto>> AddSapAuthasync(string userId, AddSapDto dto)
         {
 
-           
-
             var testResult = await TestAsync(dto);
 
             if (!testResult.IsSuccess)
@@ -68,10 +66,9 @@ namespace DataWarehouse.Services.Repository.SapRepo
             var role = (await userManager.GetRolesAsync(user)).ToList();
 
 
-            Sap mapping;
+                 Sap mapping;
 
-            if (role.Contains("admin"))
-            {
+           
                 var companyId = await companyCache.Get();
                 var settingBarcode = await _context.BarCodeSettings.Where(s => s.CompanyId == companyId).FirstOrDefaultAsync();
 
@@ -87,24 +84,8 @@ namespace DataWarehouse.Services.Repository.SapRepo
                     Password = dto.Password,
                     CompanyId = companyId??0
                 };
-            }
-            else
-            {
-                var settingBarcode = await _context.BarCodeSettings.Where(s => s.CompanyId == dto.CompanyId).FirstOrDefaultAsync();
-                if (settingBarcode == null)
-                    return GeneralResponse<SapDto>.FailResponse("Add the barcode setting before adding any SAP, in order to retrieve all valid barcodes.");
-
-                mapping = new Sap
-                {
-                    SapUrl = dto.SapUrl,
-                    Name = dto.Name,
-                    CompanyDB = dto.CompanyDB,
-                    UserName = dto.UserName,
-                    Password = dto.Password,
-                    CompanyId = dto.CompanyId 
-                };
-            }
-
+            
+         
             var res = await AddAsync(mapping);
             // 3️⃣ Save changes
             await _context.SaveChangesAsync();

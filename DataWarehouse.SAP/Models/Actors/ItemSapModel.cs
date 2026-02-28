@@ -61,8 +61,8 @@ namespace DataWarehouse.SAP.Models.Actors
         public class SapItemWarehouseDto
         {
             public string WarehouseCode { get; set; }
-            public double? MinimalStock { get; set; }
-            public double? InStock { get; set; }
+            public decimal? MinimalStock { get; set; }
+            public decimal? InStock { get; set; }
             
         }
 

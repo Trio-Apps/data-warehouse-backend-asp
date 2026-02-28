@@ -1,3 +1,4 @@
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -75,7 +76,7 @@ public class SalesReturnOrderBatchController : ControllerBase
     [HttpPost("sales-return-order-item/{salesReturnOrderItemId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Create}")]
 
-    public async Task<ActionResult<SalesReturnOrderBatch>> Create(int salesReturnOrderItemId, AddSalesReturnOrderBatchDTO dto)
+    public async Task<ActionResult<SalesReturnOrderBatch>> Create(int salesReturnOrderItemId, GeneralBatchDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -90,7 +91,7 @@ public class SalesReturnOrderBatchController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Edit}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateSalesReturnOrderBatchDTO dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateGeneralBatchDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -107,14 +108,13 @@ public class SalesReturnOrderBatchController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Delete}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var batch = await _repository.GetByIdAsync(id);
-        if (batch == null)
-            return NotFound($"SalesReturnOrderBatch with ID {id} not found.");
+        var res = await _repository.DeleteSalesReturnOrderBatchAsync(id);
+        if (!res.Success)
+            return BadRequest(res);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
-
-        return NoContent();
+        return Ok(res);
     }
+
+
 }
 

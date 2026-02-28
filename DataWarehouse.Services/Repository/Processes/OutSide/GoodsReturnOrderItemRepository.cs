@@ -88,7 +88,6 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
             });
     }
 
-
     public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> AddGoodsReturnItemByGoodsReturnOrderIdWithoutRefAsync(int goodsReturnOrderId,
       bool isBarcode
        , DynamicBarcodesDto? barcodeDto,
@@ -124,7 +123,6 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
         return GeneralResponse<GoodsReturnOrderItemDTO>.SuccessResponse(modelfin);
     }
 
-
     public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> UpdateGoodsReturnItemWithoutRefAsync(int goodsReturnOrderItemId,
         UpdateGeneralItemDto dto)
     {
@@ -158,9 +156,7 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
         return GeneralResponse<GoodsReturnOrderItemDTO>.SuccessResponse(result);
     }
 
-
-
-
+    // reference
     public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> AddGoodsReturnOrderItemByReceiptPurchaseOrderItemIdAsync(string userId,
         int receiptOrderId,
         AddGoodsReturnOrderItemDTO dto)
@@ -395,6 +391,7 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
 
         return GeneralResponse<GoodsReturnOrderItemDTO>.SuccessResponse(result);
     }
+
 
     public async Task<IEnumerable<GoodsReturnOrderItem>> GetByGoodsReturnOrderIdEntitiesAsync(int goodsReturnOrderId)
     {

@@ -26,13 +26,13 @@ public class SalesReturnOrderController : ControllerBase
 
     [HttpGet]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
-
     public async Task<ActionResult<IEnumerable<SalesReturnOrder>>> GetAll()
     {
         var salesReturnOrders = await _repository.GetAllAsync();
         return Ok(salesReturnOrders);
     }
-
+    
+     
     [HttpGet("warehouse/{warehouseId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
     public async Task<ActionResult<IEnumerable<SalesReturnOrder>>> GetByWarehouseId(int warehouseId)
@@ -40,6 +40,7 @@ public class SalesReturnOrderController : ControllerBase
         var salesReturnOrders = await _repository.GetByWarehouseIdAsync(warehouseId);
         return Ok(salesReturnOrders);
     }
+
 
     [HttpGet("warehouse/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
@@ -52,16 +53,33 @@ public class SalesReturnOrderController : ControllerBase
         return Ok(res);
     }
 
+
+    [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
+    public async Task<IActionResult> GetByWarehouseIdWithPagination(int warehouseId, int? customerId, string? status, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(warehouseId, userId, customerId, postingDate, dueDate, status, skip, pageSize);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+
+
     [HttpGet("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
-
-    public async Task<ActionResult<SalesReturnOrder>> GetById(int id)
+    public async Task<IActionResult> GetSalesReturnById(int id)
     {
-        var salesReturnOrder = await _repository.GetByIdAsync(id);
-        if (salesReturnOrder == null)
-            return NotFound($"SalesReturnOrder with ID {id} not found.");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        return Ok(salesReturnOrder);
+        var res = await _repository.GetSalesReturnOrderByIdAsync(userId, id);
+        if (!res.Success)
+            return NotFound(res);
+
+        return Ok(res);
     }
 
     [HttpGet("sales-order/{salesOrderId}")]
@@ -134,6 +152,17 @@ public class SalesReturnOrderController : ControllerBase
         return Ok(salesReturnOrder);
     }
 
+    [HttpGet("{id}/with-warehouse")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
+    public async Task<ActionResult<SalesReturnOrder>> GetWithWarehouse(int id)
+    {
+        var salesReturnOrder = await _repository.GetWithWarehouseAsync(id);
+        if (salesReturnOrder == null)
+            return NotFound($"SalesReturnOrder with ID {id} not found.");
+
+        return Ok(salesReturnOrder);
+    }
+
     [HttpPost]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Create}")]
 
@@ -144,7 +173,39 @@ public class SalesReturnOrderController : ControllerBase
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var created = await _repository.AddSalesReturnOrderBySalesOrderIdAsync(userId, dto);
+        var created = await _repository.AddSalesReturnOrderAsync(userId, dto);
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
+
+    [HttpPost("without-reference")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Create}")]
+    public async Task<ActionResult<SalesReturnOrder>> CreateWithoutReference(AddSalesReturnOrderWithoutRefDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var created = await _repository.AddSalesReturnOrderWithoutRefAsync(userId, dto);
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
+
+    [HttpPost("with-default-items")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Create}")]
+    public async Task<ActionResult<SalesReturnOrder>> CreateWithDefaultItems(AddSalesReturnOrderDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var created = await _repository.AddSalesReturnOrderAndItemsBySalesOrderIdAsync(userId, dto);
         if (!created.Success)
             return BadRequest(created);
 
@@ -153,7 +214,6 @@ public class SalesReturnOrderController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Edit}")]
-
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSalesReturnOrderDTO dto)
     {
         if (!ModelState.IsValid)
@@ -170,17 +230,14 @@ public class SalesReturnOrderController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Delete}")]
-
     public async Task<IActionResult> Delete(int id)
     {
-        var salesReturnOrder = await _repository.GetByIdAsync(id);
-        if (salesReturnOrder == null)
-            return NotFound($"SalesReturnOrder with ID {id} not found.");
+        var res = await _repository.DeleteSalesReturnOrderAsync(id);
+        if (!res.Success)
+            return BadRequest(res);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
-
-        return NoContent();
+        return Ok(res);
     }
+
 }
 

@@ -107,14 +107,13 @@ public class GoodsReturnOrderBatchController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Delete}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var batch = await _repository.GetByIdAsync(id);
-        if (batch == null)
-            return NotFound($"GoodsReturnOrderBatch with ID {id} not found.");
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
+        var res = await _repository.DeleteGoodsReturnOrderBatchAsync(id);
 
-        return NoContent();
+        if(!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
     }
 }
 

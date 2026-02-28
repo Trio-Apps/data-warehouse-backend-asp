@@ -2,9 +2,13 @@ using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Actors;
+using DataWarehouse.Core.Interfaces.Company;
+using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.CompanyRepo;
+using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +18,35 @@ namespace DataWarehouse.Services.Repository.Actors;
 
 public class CustomerRepository : BaseRepository<Customer>, ICustomerRepository
 {
-    public CustomerRepository(DataWarehouseDbContext context) : base(context)
+    private readonly ISapCache sapCache;
+    private readonly ICompanyCache companyCache;
+
+    public CustomerRepository(ISapCache sapCache,ICompanyCache companyCache, DataWarehouseDbContext context) : base(context)
     {
+        this.sapCache = sapCache;
+        this.companyCache = companyCache;
     }
 
     public async Task<GeneralResponse<IEnumerable<Customer>>> GetAllCustomersAsync()
     {
-        var customers = await GetAllAsync();
+
+        var sapId = await sapCache.Get();
+
+        if (sapId == null)
+        {
+            var companyId = await companyCache.Get();
+            var sap = await _context.Saps.Where(c => c.CompanyId == companyId).FirstOrDefaultAsync();
+            if (sap == null)
+                return GeneralResponse<IEnumerable<Customer>>.FailResponse("Not Found Any Customers In This Company");
+
+            await sapCache.UpdateSapUserClaimAsync(sap.SapId.ToString());
+            sapId = sap.SapId;
+        }
+
+
+
+        var customers = await _context.Customers.Where(s => s.SapId == sapId).ToListAsync();
+       
         return GeneralResponse<IEnumerable<Customer>>.SuccessResponse(customers, "Customers retrieved successfully");
     }
 

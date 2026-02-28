@@ -37,165 +37,89 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
 
     public async Task<GeneralResponse<IEnumerable<SalesOrderItemDTO>>> GetBySalesItemBySalesOrderIdAsync(int SalesOrderId)
     {
-        var salesOrder = await _context.SalesOrders.FirstOrDefaultAsync(s=>s.SalesOrderId == SalesOrderId) ;
-      
-        if (salesOrder == null)
-            return GeneralResponse<IEnumerable<SalesOrderItemDTO>>.FailResponse("sales order id is not found");
-       
-        
-        var res = await Query().Include(e=>e.Item).Where(soi => soi.SalesOrderId == SalesOrderId).Select(e => new SalesOrderItemDTO
-        {
-            ItemId = e.ItemId,
-            SalesOrderItemId = e.SalesOrderItemId,
-            SalesOrderId = e.SalesOrderId,
-            Quantity = e.Quantity,
-            Status = e.Status.ToString(),
-            ErrorMessage = e.ErrorMessage,
-            UoMEntry = e.UoMEntry,
-            BarCode = e.BarCode,
-            UnitPrice = e.UnitPrice,
-            UnitName = e.Item.ItemUomGroups.FirstOrDefault(i => i.UomEntry == e.UoMEntry).UomCode,
-            ItemCode = e.Item.ItemCode,
-            ItemName = e.Item.ItemName,
-        }).ToListAsync();
+        var res = await baseProcesses.GetOrderItemsByOrderIdAsync<SalesOrder, SalesOrderItem, SalesOrderItemDTO>(
+            orderId: SalesOrderId,
+            orderIdSelector: x => x.SalesOrderId == SalesOrderId,
+            orderSet: _context.SalesOrders,
+            itemSet: _context.SalesOrderItems,
+            itemFilter: soi => soi.SalesOrderId == SalesOrderId,
+            include: q => q
+                .Include(x => x.Item)
+                .ThenInclude(i => i.ItemUomGroups),
+            selector: e => new SalesOrderItemDTO
+            {
+                ItemId = e.ItemId,
+                Status = e.Status.ToString(),
+                ErrorMessage = e.ErrorMessage,
+                Quantity = e.Quantity,
+                SalesOrderItemId = e.SalesOrderItemId,
+                SalesOrderId = e.SalesOrderId,
+                BarCode = e.BarCode,
+                UnitPrice = e.UnitPrice,
+                UoMEntry = e.UoMEntry,
+                UnitName = e.Item.ItemUomGroups
+                    .Where(i => i.UomEntry == e.UoMEntry)
+                    .Select(i => i.UomCode)
+                    .FirstOrDefault(),
+                ItemCode = e.Item.ItemCode,
+                ItemName = e.Item.ItemName
+            }
+        );
 
-       
-
-        return GeneralResponse<IEnumerable<SalesOrderItemDTO>>.SuccessResponse(res);
+        return res;
     }
 
 
     public async Task<GeneralResponse<PagedResult<SalesOrderItemDTO>>>
      GetBySalesItemBySalesOrderIdWithPaginationAsync(int SalesOrderId, string? status, int pageNumber, int pageSize)
     {
-        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-        pageSize = pageSize <= 0 ? 10 : pageSize;
+        var res = await baseProcesses.GetOrderItemsByOrderIdWithPaginationAsync<
+            SalesOrder,
+            SalesOrderItem,
+            SalesOrderItemDTO,
+            string,
+            GeneralItemStatus>(
+            orderId: SalesOrderId,
+            pageNumber: pageNumber,
+            pageSize: pageSize,
+            status: status,
+            extraSelector: o => o.Status.ToString(),
+            orderIdSelector: o => o.SalesOrderId == SalesOrderId,
+            orderSet: _context.SalesOrders,
+            itemSet: _context.SalesOrderItems,
+            itemFilter: i => i.SalesOrderId == SalesOrderId,
+            include: q => q
+                .Include(x => x.Item)
+                .ThenInclude(i => i.ItemUomGroups),
+            selector: e => new SalesOrderItemDTO
+            {
+                ItemId = e.ItemId,
+                Status = e.Status.ToString(),
+                ErrorMessage = e.ErrorMessage,
+                Quantity = e.Quantity,
+                SalesOrderItemId = e.SalesOrderItemId,
+                SalesOrderId = e.SalesOrderId,
+                BarCode = e.BarCode,
+                UnitPrice = e.UnitPrice,
+                UoMEntry = e.UoMEntry,
+                UnitName = e.Item.ItemUomGroups
+                    .Where(i => i.UomEntry == e.UoMEntry)
+                    .Select(i => i.UomCode)
+                    .FirstOrDefault(),
+                ItemCode = e.Item.ItemCode,
+                ItemName = e.Item.ItemName
+            },
+            orderByDescSelector: x => x.SalesOrderItemId,
+            itemStatusSelector: x => x.Status
+        );
 
-        var query = _context.SalesOrderItems.AsNoTracking().Where(b => b.SalesOrderId == SalesOrderId);
+        if (!res.Success)
+            return GeneralResponse<PagedResult<SalesOrderItemDTO>>.FailResponse(res.Message);
 
-        // 🔹 Filtering
-        if (!string.IsNullOrWhiteSpace(status))
-        {
-            var statusEnum = Enum.Parse<GeneralItemStatus>(status, ignoreCase: true);
-            query = query.Where(iw => iw.Status == statusEnum);
-        }
-
-        var totalRecords = await query.CountAsync();
-
-        var data = query.Select(e => new SalesOrderItemDTO
-        {
-            ItemId = e.ItemId,
-            Status = e.Status.ToString(),
-            ErrorMessage = e.ErrorMessage,
-            Quantity = e.Quantity,
-            SalesOrderItemId = e.SalesOrderItemId,
-            SalesOrderId = e.SalesOrderId,
-            UoMEntry = e.UoMEntry,
-            BarCode = e.BarCode,
-            UnitPrice = e.UnitPrice
-        }).ToList();
-
-        return GeneralResponse<PagedResult<SalesOrderItemDTO>>.SuccessResponse(new PagedResult<SalesOrderItemDTO>
-        {
-            Data = data,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            TotalRecords = totalRecords
-        });
+        return GeneralResponse<PagedResult<SalesOrderItemDTO>>.SuccessResponse(res.Data);
     }
 
-    // create
-    //public async Task<GeneralResponse<SalesOrderItemDTO>> AddSalesItemBySalesOrderIdAsync(int SalesOrderid, bool isBarcode,
-    //       DynamicBarcodesDto? barcodeDto,
-    //       AddSalesOrderItemDTO? dto)
-    //{
-    //    var model = new SalesOrderItem();
-    //    var entity = await _context.SalesOrders.FirstOrDefaultAsync(e => e.SalesOrderId == SalesOrderid);
-
-
-    //    if (entity == null)
-    //        return GeneralResponse<SalesOrderItemDTO>.FailResponse("id is not found");
-
-    //    var checkApprovalStatus = await GetProcessItem(entity.SalesOrderId, ProcessType.Sales);
-
-    //    if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
-    //        return GeneralResponse<SalesOrderItemDTO>.FailResponse("You cannot add any item because its approval status is 'Approved' and all approval steps have been completed.");
-
-
-    //    if (isBarcode)
-    //    {
-    //        var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
-    //        var item = new ItemByBarCodeDto();
-    //        if (isDynamic)
-    //        {
-    //            var resD = await barcodeOrder.GetItemByDynamicBarCodeAsync(entity.WarehouseId, barcodeDto);
-
-    //            if (!resD.Success)
-    //                return GeneralResponse<SalesOrderItemDTO>.FailResponse(resD.Message);
-
-
-    //            item = resD.Data;
-
-    //            if (resD.Data == null)
-    //                return GeneralResponse<SalesOrderItemDTO>.FailResponse(resD.Message);
-    //        }
-    //        else
-    //        {
-    //            var resD = await barcodeOrder.GetItemByStaticBarCodeAsync(entity.WarehouseId, barcodeDto);
-    //            if (!resD.Success)
-    //                return GeneralResponse<SalesOrderItemDTO>.FailResponse(resD.Message);
-
-
-    //            item = resD.Data;
-    //            if (resD.Data == null)
-    //                return GeneralResponse<SalesOrderItemDTO>.FailResponse(resD.Message);
-    //        }
-
-    //        model = new SalesOrderItem()
-    //        {
-    //            Status = GeneralItemStatus.Planned,
-    //            SalesOrderId = SalesOrderid,
-    //            ItemId = item.Id,
-    //            Quantity = item.Quantity,
-    //            BarCode = item.Barcode,
-    //            UnitPrice = item.Price,
-    //            UoMEntry = item.UoMEntry
-    //        };
-    //    }
-    //    else
-    //    {
-    //        var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == dto.ItemId);
-    //        model = new SalesOrderItem
-    //        {
-    //            Status = GeneralItemStatus.Planned,
-    //            SalesOrderId = dto.SalesOrderId,
-    //            ItemId = dto.ItemId,
-    //            Quantity = dto.Quantity,
-    //            BarCode = "",
-    //            UnitPrice = item.SalesPrice,
-    //            UoMEntry = dto.UoMEntry,
-    //        };
-    //    }
-
-    //    var res = await AddAsync(model);
-    //    await SaveChangesAsync();
-
-    //    var modelfin = new SalesOrderItemDTO
-    //    {
-    //        SalesOrderId = res.SalesOrderId,
-    //        Quantity = res.Quantity,
-    //        Status = GetEnumString(res.Status),
-    //        ItemId = res.ItemId,
-    //        SalesOrderItemId = res.SalesOrderItemId,
-    //        UoMEntry = res.UoMEntry,
-    //        BarCode = res.BarCode,
-    //        UnitPrice = res.UnitPrice,
-    //        ErrorMessage = res.ErrorMessage
-    //    };
-
-    //    return GeneralResponse<SalesOrderItemDTO>.SuccessResponse(modelfin);
-    //}
-
+ 
 
     public async Task<GeneralResponse<SalesOrderItemDTO>> AddSalesItemBySalesOrderIdAsync(int SalesOrderid, bool isBarcode,
            DynamicBarcodesDto? barcodeDto,
@@ -388,4 +312,96 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
                 return "Unknown";
         }
     }
+    // create
+    //public async Task<GeneralResponse<SalesOrderItemDTO>> AddSalesItemBySalesOrderIdAsync(int SalesOrderid, bool isBarcode,
+    //       DynamicBarcodesDto? barcodeDto,
+    //       AddSalesOrderItemDTO? dto)
+    //{
+    //    var model = new SalesOrderItem();
+    //    var entity = await _context.SalesOrders.FirstOrDefaultAsync(e => e.SalesOrderId == SalesOrderid);
+
+
+    //    if (entity == null)
+    //        return GeneralResponse<SalesOrderItemDTO>.FailResponse("id is not found");
+
+    //    var checkApprovalStatus = await GetProcessItem(entity.SalesOrderId, ProcessType.Sales);
+
+    //    if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
+    //        return GeneralResponse<SalesOrderItemDTO>.FailResponse("You cannot add any item because its approval status is 'Approved' and all approval steps have been completed.");
+
+
+    //    if (isBarcode)
+    //    {
+    //        var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
+    //        var item = new ItemByBarCodeDto();
+    //        if (isDynamic)
+    //        {
+    //            var resD = await barcodeOrder.GetItemByDynamicBarCodeAsync(entity.WarehouseId, barcodeDto);
+
+    //            if (!resD.Success)
+    //                return GeneralResponse<SalesOrderItemDTO>.FailResponse(resD.Message);
+
+
+    //            item = resD.Data;
+
+    //            if (resD.Data == null)
+    //                return GeneralResponse<SalesOrderItemDTO>.FailResponse(resD.Message);
+    //        }
+    //        else
+    //        {
+    //            var resD = await barcodeOrder.GetItemByStaticBarCodeAsync(entity.WarehouseId, barcodeDto);
+    //            if (!resD.Success)
+    //                return GeneralResponse<SalesOrderItemDTO>.FailResponse(resD.Message);
+
+
+    //            item = resD.Data;
+    //            if (resD.Data == null)
+    //                return GeneralResponse<SalesOrderItemDTO>.FailResponse(resD.Message);
+    //        }
+
+    //        model = new SalesOrderItem()
+    //        {
+    //            Status = GeneralItemStatus.Planned,
+    //            SalesOrderId = SalesOrderid,
+    //            ItemId = item.Id,
+    //            Quantity = item.Quantity,
+    //            BarCode = item.Barcode,
+    //            UnitPrice = item.Price,
+    //            UoMEntry = item.UoMEntry
+    //        };
+    //    }
+    //    else
+    //    {
+    //        var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == dto.ItemId);
+    //        model = new SalesOrderItem
+    //        {
+    //            Status = GeneralItemStatus.Planned,
+    //            SalesOrderId = dto.SalesOrderId,
+    //            ItemId = dto.ItemId,
+    //            Quantity = dto.Quantity,
+    //            BarCode = "",
+    //            UnitPrice = item.SalesPrice,
+    //            UoMEntry = dto.UoMEntry,
+    //        };
+    //    }
+
+    //    var res = await AddAsync(model);
+    //    await SaveChangesAsync();
+
+    //    var modelfin = new SalesOrderItemDTO
+    //    {
+    //        SalesOrderId = res.SalesOrderId,
+    //        Quantity = res.Quantity,
+    //        Status = GetEnumString(res.Status),
+    //        ItemId = res.ItemId,
+    //        SalesOrderItemId = res.SalesOrderItemId,
+    //        UoMEntry = res.UoMEntry,
+    //        BarCode = res.BarCode,
+    //        UnitPrice = res.UnitPrice,
+    //        ErrorMessage = res.ErrorMessage
+    //    };
+
+    //    return GeneralResponse<SalesOrderItemDTO>.SuccessResponse(modelfin);
+    //}
+
 }

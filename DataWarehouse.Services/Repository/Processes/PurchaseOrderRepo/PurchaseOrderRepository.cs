@@ -42,7 +42,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         return await Query().Where(po => po.WarehouseId == warehouseId).ToListAsync();
     }
 
-
     public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize)
 
     {
@@ -89,8 +88,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 Data = data
             });
     }
-
-  
 
     public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
        (int warehouseId, string userId,int? supplierId, DateTime? postingDate, DateTime? DueDate,string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken=default)
@@ -178,11 +175,9 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
              Comment = x.Order.Comment,
              UserId = x.Order.UserId,
              WarehouseId = x.Order.WarehouseId,
-
              SupplierName = x.Order.Supplier.SupplierName,
              Supplier = x.Order.Supplier,
              ItemCount = x.Order.PurchaseOrderItems.Count(),
-
              // ✅ وجود progress
              Approval = x.HasProgress,
 
@@ -276,88 +271,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
         return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(mapping);
     }
-    //public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationAsync
-    //  (int? warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize)
-
-    //{
-    //    pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-    //    pageSize = pageSize <= 0 ? 10 : pageSize;
-
-
-    //    var yourWarehouse = (await sap.GetYourWarehousesToEmployees(userId)).Data.FirstOrDefault();
-    //    if (yourWarehouse == null)
-    //        return GeneralResponse<PagedResult<PurchaseOrderDTO>>.FailResponse("user not valid");
-
-
-
-    //    var query = _context.Warehouses.Where(e => e.WarehouseId == (warehouseId == null ? yourWarehouse.WarehouseId : warehouseId))
-    //        .AsNoTracking()
-    //        .SelectMany(e => e.PurchaseOrders);
-
-    //    // 🔹 Filtering
-
-    //    if (!string.IsNullOrEmpty(status))
-    //    {
-    //        if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
-    //        {
-    //            query = query.Where(e => e.Status == statusEnum);
-    //        }
-    //    }
-
-    //    // 🔹 Posting Date Filter
-    //    if (postingDate.HasValue)
-    //    {
-    //        var postDate = postingDate.Value.Date;
-    //        query = query.Where(e => e.PostingDate.Date == postDate);
-    //    }
-
-    //    // 🔹 Due Date Filter
-    //    if (DueDate.HasValue)
-    //    {
-    //        var dueDate = DueDate.Value.Date;
-    //        query = query.Where(e => e.DueDate.Date == dueDate);
-    //    }
-
-
-
-    //    var totalRecords = await query.CountAsync();
-
-    //    var data = await query
-
-    //        .Skip((pageNumber - 1) * pageSize)
-    //        .Take(pageSize)
-    //        .Select(iw => new PurchaseOrderDTO
-    //        {
-    //            DueDate = iw.DueDate,
-    //            PostingDate = iw.PostingDate,
-    //            PurchaseOrderId = iw.PurchaseOrderId,
-    //            Status = iw.Status.ToString(),
-    //            Comment = iw.Comment,
-    //            // string = enum
-    //            UserId = iw.UserId,
-    //            WarehouseId = iw.WarehouseId,
-    //            SupplierName = iw.Supplier.SupplierName,
-    //            Supplier = iw.Supplier,
-    //            IsReceipt = iw.ReceiptPurchaseOrder == null ? false : true,
-    //            ReceiptOrderId = iw.ReceiptPurchaseOrder == null ? null : iw.ReceiptPurchaseOrder.ReceiptPurchaseOrderId,
-    //            IsReturn = iw.ReceiptPurchaseOrder == null ? false : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? false : true),
-    //            ReturnOrderId = iw.ReceiptPurchaseOrder == null ? null : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? null : iw.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId)
-
-
-    //        })
-    //        .ToListAsync();
-
-    //    return GeneralResponse<PagedResult<PurchaseOrderDTO>>.SuccessResponse(
-    //        new PagedResult<PurchaseOrderDTO>
-    //        {
-    //            PageNumber = pageNumber,
-    //            PageSize = pageSize,
-    //            TotalRecords = totalRecords,
-    //            Data = data
-    //        });
-    //}
-
-
+   
     public async Task<GeneralResponse<List<NameStatus>>> GetPurchaseOrderStatus()
     {
         var statuses = Enum.GetValues(typeof(GeneralStatus))
@@ -425,7 +339,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(model);
     }
 
-
     private async Task<(bool IsValid, string Message)> ValidateBusinessDatesAsync(
       DateTime postingDate,
       DateTime dueDate)
@@ -489,19 +402,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         if (checkApprovalStatus != null && checkApprovalStatus.Status == ProcessStatus.Approved)
             return GeneralResponse<PurchaseOrderDTO>.FailResponse("You cannot edit this order because its approval status is 'Approved' and all approval steps have been completed.");
 
-
-        // 2) Extra validation (because DateTime/int are non-nullable and can be default/0)
-        //if (dto.PostingDate == default)
-        //    return GeneralResponse<PurchaseOrderDTO>.FailResponse("Posting Date is required");
-
-        //if (dto.DueDate == default)
-        //    return GeneralResponse<PurchaseOrderDTO>.FailResponse("Due Date is required");
-
-        //if (dto.DueDate < dto.PostingDate)
-        //    return GeneralResponse<PurchaseOrderDTO>.FailResponse("Due Date must be >= Posting Date");
-
-        //if (dto.SupplierId <= 0)
-        //    return GeneralResponse<PurchaseOrderDTO>.FailResponse("SupplierId is invalid");
 
        
         // 3) Update fields (Full Update)
@@ -689,4 +589,85 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 return "Unknown";
         }
     }
+    //public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationAsync
+    //  (int? warehouseId, string userId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize)
+
+    //{
+    //    pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+    //    pageSize = pageSize <= 0 ? 10 : pageSize;
+
+
+    //    var yourWarehouse = (await sap.GetYourWarehousesToEmployees(userId)).Data.FirstOrDefault();
+    //    if (yourWarehouse == null)
+    //        return GeneralResponse<PagedResult<PurchaseOrderDTO>>.FailResponse("user not valid");
+
+
+
+    //    var query = _context.Warehouses.Where(e => e.WarehouseId == (warehouseId == null ? yourWarehouse.WarehouseId : warehouseId))
+    //        .AsNoTracking()
+    //        .SelectMany(e => e.PurchaseOrders);
+
+    //    // 🔹 Filtering
+
+    //    if (!string.IsNullOrEmpty(status))
+    //    {
+    //        if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
+    //        {
+    //            query = query.Where(e => e.Status == statusEnum);
+    //        }
+    //    }
+
+    //    // 🔹 Posting Date Filter
+    //    if (postingDate.HasValue)
+    //    {
+    //        var postDate = postingDate.Value.Date;
+    //        query = query.Where(e => e.PostingDate.Date == postDate);
+    //    }
+
+    //    // 🔹 Due Date Filter
+    //    if (DueDate.HasValue)
+    //    {
+    //        var dueDate = DueDate.Value.Date;
+    //        query = query.Where(e => e.DueDate.Date == dueDate);
+    //    }
+
+
+
+    //    var totalRecords = await query.CountAsync();
+
+    //    var data = await query
+
+    //        .Skip((pageNumber - 1) * pageSize)
+    //        .Take(pageSize)
+    //        .Select(iw => new PurchaseOrderDTO
+    //        {
+    //            DueDate = iw.DueDate,
+    //            PostingDate = iw.PostingDate,
+    //            PurchaseOrderId = iw.PurchaseOrderId,
+    //            Status = iw.Status.ToString(),
+    //            Comment = iw.Comment,
+    //            // string = enum
+    //            UserId = iw.UserId,
+    //            WarehouseId = iw.WarehouseId,
+    //            SupplierName = iw.Supplier.SupplierName,
+    //            Supplier = iw.Supplier,
+    //            IsReceipt = iw.ReceiptPurchaseOrder == null ? false : true,
+    //            ReceiptOrderId = iw.ReceiptPurchaseOrder == null ? null : iw.ReceiptPurchaseOrder.ReceiptPurchaseOrderId,
+    //            IsReturn = iw.ReceiptPurchaseOrder == null ? false : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? false : true),
+    //            ReturnOrderId = iw.ReceiptPurchaseOrder == null ? null : (iw.ReceiptPurchaseOrder.GoodsReturnOrder == null ? null : iw.ReceiptPurchaseOrder.GoodsReturnOrder.GoodsReturnOrderId)
+
+
+    //        })
+    //        .ToListAsync();
+
+    //    return GeneralResponse<PagedResult<PurchaseOrderDTO>>.SuccessResponse(
+    //        new PagedResult<PurchaseOrderDTO>
+    //        {
+    //            PageNumber = pageNumber,
+    //            PageSize = pageSize,
+    //            TotalRecords = totalRecords,
+    //            Data = data
+    //        });
+    //}
+
 }

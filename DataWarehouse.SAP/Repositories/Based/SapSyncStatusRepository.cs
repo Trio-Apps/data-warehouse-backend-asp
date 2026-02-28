@@ -77,19 +77,19 @@ namespace DataWarehouse.SAP.Repositories.Based
                 return dto.Skip;
             }
 
+
             // إذا موجود بالفعل، رجع القيمة
             return res.Skip; // res هنا nullable، فنستخدم Value
         }
 
         public async Task UpdateLastSyncPaginationSkipAsync(int sapId, string entity, int skip)
         {
-
-
             var row = await _context.SapSyncPaginations
              .FirstOrDefaultAsync(x => x.SapId == sapId && x.EntityName == entity );
-         
-                row.Skip = skip;
-            
+
+              row.Skip = skip;
+
+
             await _context.SaveChangesAsync();
         }
     }

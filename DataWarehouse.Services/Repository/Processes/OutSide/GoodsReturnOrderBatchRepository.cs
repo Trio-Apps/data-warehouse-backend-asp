@@ -25,23 +25,7 @@ public class GoodsReturnOrderBatchRepository : BaseRepository<GoodsReturnOrderBa
         this.baseProcesses = baseProcesses;
     }
 
-    public async Task<GeneralResponse<IEnumerable<GoodsReturnOrderBatchDTO>>> GetByGoodsReturnOrderItemIdAsync(int goodsReturnOrderItemId)
-    {
-        var res = await Query().Where(b => b.GoodsReturnOrderItemId == goodsReturnOrderItemId).ToListAsync();
-
-        return GeneralResponse<IEnumerable<GoodsReturnOrderBatchDTO>>.SuccessResponse(
-            res.Select(b => new GoodsReturnOrderBatchDTO
-            {
-                GoodsReturnOrderBatchId = b.GoodsReturnOrderBatchId,
-                GoodsReturnOrderItemId = b.GoodsReturnOrderItemId,
-                ReceiptPurchaseOrderBatchId = b.ReceiptPurchaseOrderBatchId,
-                Quantity = b.Quantity,
-                Comment = b.Comment,
-                BatchNumber = b.BatchNumber,
-                ExpiryDate = b.ExpiryDate
-            }));
-    }
-
+  
     public async Task<GeneralResponse<PagedResult<GoodsReturnOrderBatchDTO>>> GetByGoodsReturnOrderItemIdWithPaginationAsync(int goodsReturnOrderItemId, int pageNumber, int pageSize)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
@@ -78,7 +62,34 @@ public class GoodsReturnOrderBatchRepository : BaseRepository<GoodsReturnOrderBa
                 TotalRecords = totalRecords
             });
     }
+    public async Task<GeneralResponse<IEnumerable<GoodsReturnOrderBatchDTO>>> GetByGoodsReturnOrderItemIdAsync(
+     int goodsReturnOrderItemId)
+    {
+        var res = await baseProcesses.GetOrderBatchesAsync<
+            GoodsReturnOrderItem,
+            GoodsReturnOrderBatch,
+            GoodsReturnOrderBatchDTO>(
+            orderItemId: goodsReturnOrderItemId,
+            orderItemSelector: i => i.GoodsReturnOrderItemId == goodsReturnOrderItemId,
+            orderItemSet: _context.GoodsReturnOrderItems,
 
+            batchItemSelector: b => b.GoodsReturnOrderItemId == goodsReturnOrderItemId,
+            batchSet: _context.GoodsReturnOrderBatches,
+
+            map: b => new GoodsReturnOrderBatchDTO
+            {
+                GoodsReturnOrderBatchId = b.GoodsReturnOrderBatchId,
+                GoodsReturnOrderItemId = b.GoodsReturnOrderItemId,
+                ReceiptPurchaseOrderBatchId = b.ReceiptPurchaseOrderBatchId,
+                Quantity = b.Quantity,
+                Comment = b.Comment,
+                BatchNumber = b.BatchNumber,
+                ExpiryDate = b.ExpiryDate
+            }
+        );
+
+        return res;
+    }
     public async Task<GeneralResponse<GoodsReturnOrderBatchDTO>> AddByGoodsReturnOrderItemIdAsync(int goodsReturnOrderItemId, GeneralBatchDto dto)
     {
         var res = await baseProcesses.AddOrderBatchAsync<GoodsReturnOrderItem, GoodsReturnOrderBatch>(
@@ -88,7 +99,6 @@ public class GoodsReturnOrderBatchRepository : BaseRepository<GoodsReturnOrderBa
             // ✅ لازم predicate على العمود الحقيقي
             orderItemSelector: i => i.GoodsReturnOrderItemId == goodsReturnOrderItemId,
             orderItemSet: _context.GoodsReturnOrderItems,
-
             // ✅ لازم predicate على العمود الحقيقي
             batchItemSelector: b => b.GoodsReturnOrderItemId == goodsReturnOrderItemId,
             batchSet: _context.GoodsReturnOrderBatches
@@ -147,7 +157,6 @@ public class GoodsReturnOrderBatchRepository : BaseRepository<GoodsReturnOrderBa
         return GeneralResponse<GoodsReturnOrderBatchDTO>.SuccessResponse(result);
     }
 
-
     public async Task<GeneralResponse<GoodsReturnOrderBatchDTO>> DeleteGoodsReturnOrderBatchAsync(int goodsReturnOrderBatchId)
     {
         var res = await baseProcesses.DeleteOrderBatchAsync<GoodsReturnOrderItem, GoodsReturnOrderBatch>(
@@ -182,7 +191,7 @@ public class GoodsReturnOrderBatchRepository : BaseRepository<GoodsReturnOrderBa
         return GeneralResponse<GoodsReturnOrderBatchDTO>.SuccessResponse(result);
     }
 
-
+  
     //public async Task<GeneralResponse<GoodsReturnOrderBatchDTO>> AddByGoodsReturnOrderItemIdAsync(int goodsReturnOrderItemId, AddGoodsReturnOrderBatchDTO dto)
     //{
     //    if (goodsReturnOrderItemId != dto.GoodsReturnOrderItemId)

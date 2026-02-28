@@ -18,6 +18,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static DataWarehouse.SAP.Models.Actors.ItemSapModel;
 
+
 namespace DataWarehouse.SAP.Repositories.Based
 {
     public class BaseSap<T> : IBaseSap<T> where T : class
@@ -246,12 +247,14 @@ namespace DataWarehouse.SAP.Repositories.Based
 
             response.EnsureSuccessStatusCode();
         }
-
-
-  
-        public async Task<string> GetAllSap(int sapId,string entityType)
+        public async Task<string> GetAllSap(int sapId, string entityType)
         {
             var client = await clientFactory.Create(sapId);
+
+            // بناء URL النهائي
+            var baseUrl = client.BaseAddress?.ToString() ?? throw new Exception("SAP BaseAddress is null");
+            if (!baseUrl.EndsWith("/")) baseUrl += "/";
+            var fullUrl = new Uri(baseUrl + entityType.TrimStart('/'));
 
             HttpResponseMessage? response = null;
 
@@ -259,47 +262,90 @@ namespace DataWarehouse.SAP.Repositories.Based
             {
                 var sapSession = await _sapAuth.GetSessionIdAsync(sapId);
 
-                // مهم جدًا: شيل أي Cookie قديمة
-                client.DefaultRequestHeaders.Remove("Cookie");
+                using var req = new HttpRequestMessage(HttpMethod.Get, fullUrl);
+                req.Headers.Add("Cookie", $"B1SESSION={sapSession.SessionId}");
 
-                client.DefaultRequestHeaders.Add(
-                    "Cookie",
-                    $"B1SESSION={sapSession.SessionId};ROUTEID=.node1"
-                );
+                var sw = System.Diagnostics.Stopwatch.StartNew();
 
-                try
+                response = await client.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
+                sw.Stop();
+                _logger.LogInformation("SAP headers in {ms} ms. Status={status}", sw.ElapsedMilliseconds, (int)response.StatusCode);
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized && attempt == 1)
                 {
-                    response = await client.GetAsync(entityType);
+                    _logger.LogWarning("SAP returned 401. Forcing re-login and retrying...");
+                    await _sapAuth.ForceReLoginAsync(sapId);
+                    continue;
+                }
 
-                    // Unauthorized في أول محاولة → ReLogin
-                    if (response.StatusCode == HttpStatusCode.Unauthorized && attempt == 1)
-                    {
-                        _logger.LogWarning("SAP returned 401. Forcing re-login and retrying...");
-                        await _sapAuth.ForceReLoginAsync(sapId);
-                        continue;
-                    }
-
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("SAP Error {status}. Url={url}. Body={body}", (int)response.StatusCode, fullUrl, err);
                     response.EnsureSuccessStatusCode();
-                    break; // ✅ نجاح
                 }
-                catch (HttpRequestException ex)
-                {
-                    _logger.LogError(ex, "HTTP request to SAP failed!");
-                    throw;
-                }
+
+                sw.Restart();
+                var body = await response.Content.ReadAsStringAsync();
+                sw.Stop();
+                _logger.LogInformation("SAP body read in {ms} ms. Length={len}", sw.ElapsedMilliseconds, body?.Length ?? 0);
+
+                if (string.IsNullOrWhiteSpace(body))
+                    throw new Exception("SAP returned empty response body");
+
+                return body;
             }
 
-            // ✅ حماية إضافية
-            if (response == null)
-                throw new Exception("SAP request failed: no response received");
-
-            var body = await response.Content.ReadAsStringAsync();
-
-            if (string.IsNullOrWhiteSpace(body))
-                throw new Exception("SAP returned empty response body");
-
-            return body;
+            throw new Exception("SAP request failed after retries");
         }
+
+        //public async Task<string> GetAllSap(int sapId, string entityType)
+        //{
+        //    var client = await clientFactory.Create(sapId);
+
+        //    HttpResponseMessage? response = null;
+
+        //    for (int attempt = 1; attempt <= 2; attempt++)
+        //    {
+        //        var sapSession = await _sapAuth.GetSessionIdAsync(sapId);
+
+        //         مهم جدًا: شيل أي Cookie قديمة
+        //        client.DefaultRequestHeaders.Remove("Cookie");
+        //        client.DefaultRequestHeaders.Add("Cookie", $"B1SESSION={sapSession.SessionId}");
+
+        //        try
+        //        {
+        //            response = await client.GetAsync(entityType);
+
+        //             Unauthorized في أول محاولة → ReLogin
+        //            if (response.StatusCode == HttpStatusCode.Unauthorized && attempt == 1)
+        //            {
+        //                _logger.LogWarning("SAP returned 401. Forcing re-login and retrying...");
+        //                await _sapAuth.ForceReLoginAsync(sapId);
+        //                continue;
+        //            }
+
+        //            response.EnsureSuccessStatusCode();
+        //            break; // ✅ نجاح
+        //        }
+        //        catch (HttpRequestException ex)
+        //        {
+        //            _logger.LogError(ex, "HTTP request to SAP failed!");
+        //            throw;
+        //        }
+        //    }
+
+        //     ✅ حماية إضافية
+        //    if (response == null)
+        //        throw new Exception("SAP request failed: no response received");
+
+        //    var body = await response.Content.ReadAsStringAsync();
+
+        //    if (string.IsNullOrWhiteSpace(body))
+        //        throw new Exception("SAP returned empty response body");
+
+        //    return body;
+        //}
 
         public Task<int> GetByIdSap(int sapId,string entityType, string id)
         {

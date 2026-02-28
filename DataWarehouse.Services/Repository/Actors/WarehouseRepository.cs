@@ -233,7 +233,6 @@ public class WarehouseRepository : BaseRepository<Warehouse>, IWarehouseReposito
         // 🔹 Filtering
         if (!string.IsNullOrWhiteSpace(itemCode))
         {
-           
             query = query.Where(iw =>
                 iw.Item.ItemCode.Contains(itemCode));
         }

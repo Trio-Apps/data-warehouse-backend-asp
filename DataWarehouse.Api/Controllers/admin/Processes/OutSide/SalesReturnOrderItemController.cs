@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Services.Repository.Permissions;
@@ -51,6 +52,9 @@ public class SalesReturnOrderItemController : ControllerBase
     public async Task<ActionResult<IEnumerable<SalesReturnOrderItem>>> GetBySalesReturnOrderId(int salesReturnOrderId)
     {
         var salesReturnOrderItems = await _repository.GetBySalesReturnOrderIdAsync(salesReturnOrderId);
+        if (!salesReturnOrderItems.Success)
+            return BadRequest(salesReturnOrderItems);
+
         return Ok(salesReturnOrderItems);
     }
 
@@ -60,6 +64,9 @@ public class SalesReturnOrderItemController : ControllerBase
     public async Task<ActionResult<IEnumerable<SalesReturnOrderItem>>> GetBySalesReturnOrderIdWithPagination(int salesReturnOrderId, int skip, int pageSize)
     {
         var res = await _repository.GetBySalesReturnOrderIdWithPaginationAsync(salesReturnOrderId, skip, pageSize);
+        if (!res.Success)
+            return BadRequest(res);
+
         return Ok(res);
     }
 
@@ -88,6 +95,42 @@ public class SalesReturnOrderItemController : ControllerBase
             return BadRequest(ModelState);
 
         var res = await _repository.UpdateSalesReturnOrderItemAsync(id, dto);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpPost("witout-reference/sales-return-order/{salesReturnOrderId}/add-barcode-or-no/{isBarcode:bool}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Create}")]
+    public async Task<ActionResult<SalesReturnOrderItem>> CreateWithoutReference(
+        int salesReturnOrderId,
+        bool isBarcode,
+        AddGeneralItemByManualOrBarcodeDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var created = await _repository.AddSalesReturnItemBySalesReturnOrderIdWithoutRefAsync(
+            salesReturnOrderId,
+            isBarcode,
+            dto.Barcode,
+            dto.Item);
+
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
+
+    [HttpPut("witout-reference/{id}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Edit}")]
+    public async Task<IActionResult> UpdateWithoutReference(int id, UpdateGeneralItemDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var res = await _repository.UpdateSalesReturnItemWithoutRefAsync(id, dto);
         if (!res.Success)
             return BadRequest(res);
 

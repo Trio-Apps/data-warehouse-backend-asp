@@ -1,14 +1,16 @@
 ﻿using DataWarehouse.Domain.Entities.Actors;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DataWarehouse.Domain.Entities.Processes.OutSide
 {
-    public class SalesReturnOrderItem
+    public class SalesReturnOrderItem : IOrderItem
     {
         public int SalesReturnOrderItemId { get; set; } 
         public decimal Quantity { get; set; }
@@ -18,6 +20,13 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public GeneralItemStatus Status { get; set; }
         public decimal? UnitPrice { get; set; }
         public string? ErrorMessage { get; set; }
+
+        [NotMapped]
+        public int OrderId
+        {
+            get => SalesReturnOrderId;
+            set => SalesReturnOrderId = value;
+        }
 
         // Navigation
         public int SalesReturnOrderId { get; set; }

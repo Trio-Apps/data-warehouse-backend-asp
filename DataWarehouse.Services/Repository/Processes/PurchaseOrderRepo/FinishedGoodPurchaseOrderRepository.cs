@@ -1,6 +1,7 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
@@ -17,29 +18,69 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo
 {
     public class FinishedGoodPurchaseOrderRepository : BaseRepository<WarehouseItem>, IFinishedGoodPurchaseOrderRepository
     {
-        public FinishedGoodPurchaseOrderRepository(DataWarehouseDbContext context) : base(context)
+        private readonly ISapCache sapCache;
+
+        public FinishedGoodPurchaseOrderRepository(ISapCache sapCache, DataWarehouseDbContext context) : base(context)
         {
+            this.sapCache = sapCache;
         }
 
+        //public async Task<GeneralResponse<IEnumerable<WarehouseItemDto>>> GetByWarehouseIdAsync(int warehouseId)
+        //{
+        //    return GeneralResponse<IEnumerable<WarehouseItemDto>>.SuccessResponse(await Query()
+        //        .Where(iw => iw.FinishedGood && !iw.HasActiveBOM && iw.WarehouseId == warehouseId)
+        //        .Select(wi => new WarehouseItemDto
+        //        {
+        //            WarehouseItemId = wi.WarehouseItemId,
+        //            ItemId = wi.ItemId,
+        //            WarehouseId = wi.WarehouseId,
+        //            ItemName = wi.Item.ItemName,
+        //            ItemCode = wi.Item.ItemCode,
+        //            WarehouseCode = wi.Warehouse.WarehouseCode,
+        //            InStock = wi.InStock,
+        //            MinStock = wi.MinStock
+        //        })
+        //        .ToListAsync());
+        //}
         public async Task<GeneralResponse<IEnumerable<WarehouseItemDto>>> GetByWarehouseIdAsync(int warehouseId)
         {
-            return GeneralResponse<IEnumerable<WarehouseItemDto>>.SuccessResponse(await Query()
-                .Where(iw => iw.FinishedGood && !iw.HasActiveBOM && iw.WarehouseId == warehouseId)
-                .Select(wi => new WarehouseItemDto
+            var sapId = await sapCache.Get();
+            // 1) هات بيانات المستودع مرة واحدة
+            var warehouse = await _context.Warehouses
+                .AsNoTracking()
+                .Where(w => w.WarehouseId == warehouseId)
+                .Select(w => new { w.WarehouseId, w.WarehouseCode })
+                .SingleOrDefaultAsync();
+
+            if (warehouse == null)
+                return GeneralResponse<IEnumerable<WarehouseItemDto>>.SuccessResponse(Enumerable.Empty<WarehouseItemDto>());
+
+            // 2) Left join Items مع WarehouseItems (لنفس المستودع فقط)
+            var query =
+                from i in _context.Items.AsNoTracking().Where(it=>it.SapId == sapId)
+                join wi in _context.WarehouseItems.AsNoTracking()
+                        .Where(x => x.WarehouseId == warehouseId )
+                    on i.ItemId equals wi.ItemId into wiGroup
+                from wi in wiGroup.DefaultIfEmpty()
+                where wi == null && i.ProcurementType == "bom_Buy"
+                select new WarehouseItemDto
                 {
-                    WarehouseItemId = wi.WarehouseItemId,
-                    ItemId = wi.ItemId,
-                    WarehouseId = wi.WarehouseId,
-                    ItemName = wi.Item.ItemName,
-                    ItemCode = wi.Item.ItemCode,
-                    WarehouseCode = wi.Warehouse.WarehouseCode,
-                    InStock = wi.InStock,
-                    MinStock = wi.MinStock
-                })
-                .ToListAsync());
+                    WarehouseItemId = 0,              // مفيش row
+                    ItemId = i.ItemId,
+                    WarehouseId = warehouse.WarehouseId,
+
+                    ItemName = i.ItemName,
+                    ItemCode = i.ItemCode,
+
+                    WarehouseCode = warehouse.WarehouseCode,
+
+                    InStock = 0,
+                    MinStock = 0
+                };
+
+            var result = await query.ToListAsync();
+            return GeneralResponse<IEnumerable<WarehouseItemDto>>.SuccessResponse(result);
         }
-
-
         public async Task<IEnumerable<WarehouseItem>> GetByItemIdAsync(int itemId)
         {
             return await Query().Where(fgi => fgi.ItemId == itemId).ToListAsync();

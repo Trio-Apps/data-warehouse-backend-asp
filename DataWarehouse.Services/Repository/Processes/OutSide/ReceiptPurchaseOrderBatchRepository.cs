@@ -65,6 +65,7 @@ public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchas
         return res;
     }
 
+
     public async Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderBatchDTO>>> GetByReceiptPurchaseOrderItemIdWithPaginationAsync(int receiptPurchaseOrderItemId, int pageNumber, int pageSize)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
@@ -100,7 +101,6 @@ public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchas
             });
     }
 
- 
     public async Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> AddByReceiptPurchaseOrderItemIdAsync(int receiptPurchaseOrderItemId, GeneralBatchDto dto)
     {
         var res = await baseProcesses.AddOrderBatchAsync<ReceiptPurchaseOrderItem, ReceiptPurchaseOrderBatch>(
@@ -148,6 +148,43 @@ public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchas
             batchIdSelector: x => x.ReceiptPurchaseOrderBatchId,
             orderItemIdSelector: x => x.ReceiptPurchaseOrderItemId,
             orderItemIdForItemSelector: x => x.ReceiptPurchaseOrderItemId
+        );
+
+        if (!res.Success)
+            return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.FailResponse(res.Message);
+
+        var entity = res.Data;
+
+        var result = new ReceiptPurchaseOrderBatchDTO
+        {
+            ReceiptPurchaseOrderBatchId = entity.ReceiptPurchaseOrderBatchId,
+            ReceiptPurchaseOrderItemId = entity.ReceiptPurchaseOrderItemId,
+            Quantity = entity.Quantity,
+            Comment = entity.Comment,
+            BatchNumber = entity.BatchNumber,
+            ExpiryDate = entity.ExpiryDate
+        };
+
+        return GeneralResponse<ReceiptPurchaseOrderBatchDTO>.SuccessResponse(result);
+    }
+
+
+    public async Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> DeleteReceiptPurchaseOrderBatchAsync(
+  int receiptPurchaseOrderBatchId)
+    {
+        var res = await baseProcesses.DeleteOrderBatchAsync<
+            ReceiptPurchaseOrderItem,
+            ReceiptPurchaseOrderBatch>(
+            batchIdFromRoute: receiptPurchaseOrderBatchId,
+            processType: ProcessType.Receipt,
+
+            batchSet: _context.ReceiptPurchaseOrderBatches,
+            orderItemSet: _context.ReceiptPurchaseOrderItems,
+
+            batchIdSelector: b => b.ReceiptPurchaseOrderBatchId,
+            batchOrderItemIdSelector: b => b.ReceiptPurchaseOrderItemId, // FK الحقيقي
+            orderItemPkSelector: i => i.ReceiptPurchaseOrderItemId,      // PK الحقيقي للـ item
+            orderIdSelector: i => i.ReceiptPurchaseOrderId               // OrderId الحقيقي
         );
 
         if (!res.Success)

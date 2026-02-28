@@ -50,8 +50,11 @@ public class SalesOrderItemController : ControllerBase
 
     public async Task<ActionResult<IEnumerable<SalesOrderItem>>> GetBySalesOrderId(int SalesOrderId)
     {
-        var SalesOrderItems = await _repository.GetBySalesItemBySalesOrderIdAsync(SalesOrderId);
-        return Ok(SalesOrderItems);
+        var res = await _repository.GetBySalesItemBySalesOrderIdAsync(SalesOrderId);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
     }
 
     [HttpGet("status/sales-order/{SalesOrderId}/{skip}/{pageSize}")]
@@ -61,6 +64,9 @@ public class SalesOrderItemController : ControllerBase
         GetBySalesOrderIdWithPagination(int SalesOrderId, string? status, int skip, int pageSize)
     {
         var res = await _repository.GetBySalesItemBySalesOrderIdWithPaginationAsync(SalesOrderId, status, skip, pageSize);
+        if (!res.Success)
+            return BadRequest(res);
+
         return Ok(res);
     }
 

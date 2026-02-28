@@ -27,20 +27,25 @@ namespace DataWarehouse.SAP
 
 
             services.AddHttpClient("SAP")
-                  .ConfigurePrimaryHttpMessageHandler(() =>
-                      new HttpClientHandler
-                      {
-                          UseCookies = true,
-                          CookieContainer = new CookieContainer(),
-                          ServerCertificateCustomValidationCallback =
-                              HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                      })
-                  .AddPolicyHandler(
-                      HttpPolicyExtensions
-                          .HandleTransientHttpError()
-                          .WaitAndRetryAsync(3, retry =>
-                              TimeSpan.FromSeconds(2 * retry)));
+       .ConfigurePrimaryHttpMessageHandler(() =>
+           new HttpClientHandler
+           {
+               UseCookies = true,
+               CookieContainer = new CookieContainer(),
 
+               // ✅ مهم جدًا لتحسين الأداء مع JSON كبير
+               AutomaticDecompression =
+                   System.Net.DecompressionMethods.GZip |
+                   System.Net.DecompressionMethods.Deflate,
+
+               ServerCertificateCustomValidationCallback =
+                   HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+           })
+       .AddPolicyHandler(
+           HttpPolicyExtensions
+               .HandleTransientHttpError()
+               .WaitAndRetryAsync(3, retry =>
+                   TimeSpan.FromSeconds(2 * retry)));
 
 
 

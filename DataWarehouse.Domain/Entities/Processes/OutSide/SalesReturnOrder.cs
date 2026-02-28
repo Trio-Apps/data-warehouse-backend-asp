@@ -1,15 +1,17 @@
 ﻿using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Auth;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DataWarehouse.Domain.Entities.Processes.OutSide
 {
-    public class SalesReturnOrder
+    public class SalesReturnOrder : IOrder
     {
         public int SalesReturnOrderId { get; set; }
 
@@ -17,7 +19,15 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         //public SalesOrderStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public GeneralStatus Status { get; set; }
+        public DateTime PostingDate { get; set; }
+        public DateTime DueDate { get; set; }
         public string? Comment { get; set; }
+        [NotMapped]
+        public int Id
+        {
+            get => SalesReturnOrderId;
+            set => SalesReturnOrderId = value;
+        }
 
         // Navigation
         public string UserId { get; set; }

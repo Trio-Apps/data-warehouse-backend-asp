@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -12,7 +13,8 @@ public interface ISalesReturnOrderBatchRepository : IBaseRepository<SalesReturnO
 {
     Task<GeneralResponse<IEnumerable<SalesReturnOrderBatchDTO>>> GetBySalesReturnOrderItemIdAsync(int salesReturnOrderItemId);
     Task<GeneralResponse<PagedResult<SalesReturnOrderBatchDTO>>> GetBySalesReturnOrderItemIdWithPaginationAsync(int salesReturnOrderItemId, int pageNumber, int pageSize);
-    Task<GeneralResponse<SalesReturnOrderBatchDTO>> AddBySalesReturnOrderItemIdAsync(int salesReturnOrderItemId, AddSalesReturnOrderBatchDTO dto);
-    Task<GeneralResponse<SalesReturnOrderBatchDTO>> UpdateSalesReturnOrderBatchAsync(int salesReturnOrderBatchId, UpdateSalesReturnOrderBatchDTO dto);
+    Task<GeneralResponse<SalesReturnOrderBatchDTO>> AddBySalesReturnOrderItemIdAsync(int salesReturnOrderItemId, GeneralBatchDto dto);
+    Task<GeneralResponse<SalesReturnOrderBatchDTO>> UpdateSalesReturnOrderBatchAsync(int salesReturnOrderBatchId, UpdateGeneralBatchDto dto);
+    Task<GeneralResponse<SalesReturnOrderBatchDTO>> DeleteSalesReturnOrderBatchAsync(int salesReturnOrderBatchId);
 }
 
