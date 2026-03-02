@@ -29,6 +29,19 @@ public class WarehouseController : ControllerBase
         _logger = logger;
     }
 
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] AddWarehouseDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var res = await _warehouseRepository.AddWarehouseAsync(dto);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
     [HttpGet]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Warehouses_Get}")]
     public async Task<IActionResult> GetAll()

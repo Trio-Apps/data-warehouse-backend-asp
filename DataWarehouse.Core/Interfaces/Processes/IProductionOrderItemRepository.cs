@@ -10,12 +10,9 @@ namespace DataWarehouse.Core.Interfaces.Processes;
 
 public interface IProductionOrderItemRepository : IBaseRepository<ProductionOrderItem>
 {
-    Task<IEnumerable<ProductionOrderItemDTO>> GetByProductionItemByProductionOrderIdAsync(int productionOrderId);
-    Task<GeneralResponse<PagedResult<ProductionOrderItemDTO>>> GetByProductionItemByProductionOrderIdWithPaginationAsync(int productionOrderId, string? status, int pageNumber, int pageSize);
-    Task<GeneralResponse<ProductionOrderItemDTO>> AddProductionItemByProductionOrderIdAsync(int productionOrderid,
-           AddProductionOrderItemDTO dto);
-   
-    Task<GeneralResponse<ProductionOrderItemDTO>> UpdateProductionItemAsync( int productionItemId,bool? isRecevied, UpdateProductionOrderItemDTO dto);
-
-
+    Task<GeneralResponse<PagedResult<ProductionOrderItemDTO>>> GetListAsync(string userId, int productionOrderId, int pageNumber, int pageSize);
+    Task<GeneralResponse<ProductionOrderItemDTO>> GetByIdDetailsAsync(string userId, int productionOrderItemId);
+    Task<GeneralResponse<ProductionOrderItemDTO>> CreateAsync(string userId, AddProductionOrderItemDTO dto);
+    Task<GeneralResponse<ProductionOrderItemDTO>> UpdateProductionItemAsync(string userId, int productionItemId, UpdateProductionOrderItemDTO dto);
+    Task<GeneralResponse<ProductionOrderItemDTO>> DeleteProductionItemAsync(string userId, int productionItemId);
 }

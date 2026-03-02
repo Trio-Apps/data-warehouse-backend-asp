@@ -1,16 +1,13 @@
-﻿using DataWarehouse.Core.DTOs;
-using DataWarehouse.Core.DTOs.BarCode;
+using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
-using DataWarehouse.Core.Interfaces.ISap;
+using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
-using DataWarehouse.Domain.Entities.Actors;
-using DataWarehouse.Domain.Entities.AllinAll;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
-using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -21,271 +18,377 @@ namespace DataWarehouse.Services.Repository.Processes.BulkProductions;
 
 public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProductionOrderRepository
 {
-    private readonly ISapCache sapCache;
-    private readonly IProcessesTypesDateRepository processes;
+    private readonly IApprovalRepository _approval;
 
-    public ProductionOrderRepository(ISapCache sapCache,IProcessesTypesDateRepository processes,  DataWarehouseDbContext context) : base(context)
+    public ProductionOrderRepository(
+        IApprovalRepository approval,
+        DataWarehouseDbContext context) : base(context)
     {
-        this.sapCache = sapCache;
-        this.processes = processes;
+        _approval = approval;
     }
 
-    public async Task<IEnumerable<ProductionOrder>> GetByWarehouseIdAsync(int warehouseId)
-    {
-        return await Query().Where(po => po.WarehouseId == warehouseId).ToListAsync();
-    }
-    public async Task<GeneralResponse<PagedResult<ProductionOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId,int pageNumber, int pageSize)
-
+    public async Task<GeneralResponse<PagedResult<ProductionOrderDTO>>> GetListAsync(string userId, int pageNumber, int pageSize)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
 
-        var query = _context.Warehouses.Where(e => e.WarehouseId == warehouseId)
+        var userWarehouseIds = _context.UserWarehouses
+            .Where(x => x.UserId == userId)
+            .Select(x => x.WarehouseId);
+
+        var query = _context.ProductionOrders
             .AsNoTracking()
-            .SelectMany(e => e.ProductionOrders)
-            .Include(e=>e.ProductionOrderItems);
-
-        // 🔹 Filtering
-
-
-       
+            .Include(x => x.ProductionOrderItems)
+            .Where(x => userWarehouseIds.Contains(x.WarehouseId));
 
         var totalRecords = await query.CountAsync();
-        
-        var data = await query
 
+        var data = await query
+            .OrderByDescending(x => x.ProductionOrderId)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(iw => new ProductionOrderDTO
+            .Select(x => new ProductionOrderDTO
             {
-                DueDate = iw.DueDate,
-                PostingDate = iw.PostingDate,
-                ProductionOrderId = iw.ProductionOrderId,
-                Remarks = iw.Remarks,
-                Status = iw.Status.ToString(),
-                // string = enum
-                UserId = iw.UserId,
-                WarehouseId = warehouseId,
-                NumberOfProductionItem = iw.ProductionOrderItems.Count(),
-
+                ProductionOrderId = x.ProductionOrderId,
+                PostingDate = x.PostingDate,
+                DueDate = x.DueDate,
+                Remarks = x.Remarks,
+                Status = x.Status.ToString(),
+                WarehouseId = x.WarehouseId,
+                UserId = x.UserId,
+                NumberOfProductionItem = x.ProductionOrderItems.Count
             })
             .ToListAsync();
 
-        return GeneralResponse<PagedResult<ProductionOrderDTO>>.SuccessResponse(
-            new PagedResult<ProductionOrderDTO>
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords,
-                Data = data
-            });
-    }
-
-    public async Task<GeneralResponse<List<NameStatus>>> GetProductionOrderStatus()
-    {
-        var statuses = Enum.GetValues(typeof(GeneralStatus))
-            .Cast<GeneralStatus>()
-            .Select(s => new NameStatus
-            {
-                Id = (int)s,
-                Name = s.ToString()
-            })
-            .ToList();
-
-        return await Task.FromResult(new GeneralResponse<List<NameStatus>>
+        return GeneralResponse<PagedResult<ProductionOrderDTO>>.SuccessResponse(new PagedResult<ProductionOrderDTO>
         {
-            Success = true,
-            Message = "Purchase statuses retrieved successfully",
-            Data = statuses
+            Data = data,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalRecords = totalRecords
         });
     }
 
-
-    // create
-    public async Task<GeneralResponse<ProductionOrderDTO>> AddProductionOrderByWarehouseIdAsync(string userId,
-           AddProductionOrderDTO dto)
+    public async Task<GeneralResponse<ProductionOrderDTO>> GetDetailsAsync(string userId, int productionOrderId)
     {
-       // var sapId = await sapCache.Get();
+        var entity = await _context.ProductionOrders
+            .AsNoTracking()
+            .Include(x => x.ProductionOrderItems)
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == productionOrderId);
 
-      //  var checkValidDate = await ValidateBusinessDatesAsync(dto.PostingDate,dto.DueDate);
-
-        //if (!checkValidDate.IsValid)
-        //    return GeneralResponse<ProductionOrderDTO>.FailResponse($"{checkValidDate.Message}");
-
-       
-        var mapping = new ProductionOrder
-        {
-           Status = GeneralStatus.Processing,
-            PostingDate = dto.PostingDate,
-            
-             DueDate = dto.DueDate,
-              CreatedAt = DateTime.UtcNow,
-               UserId = userId, 
-                WarehouseId =dto.WarehouseId,
-                 Remarks = dto.Remarks,     
-        };
-
-        var res = await AddAsync(mapping);
-        await SaveChangesAsync();
-
-        var model = new ProductionOrderDTO
-        {
-             ProductionOrderId = res.ProductionOrderId,
-            DueDate = res.DueDate,
-             PostingDate = res.PostingDate, 
-            Status = res.Status.ToString() // <-- هنا بنحول الـ enum ل string
-            
-        };
-
-        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(model);
-    }
-    private async Task<(bool IsValid, string Message)> ValidateBusinessDatesAsync(
-      DateTime postingDate,
-      DateTime dueDate)
-    {
-        // 1️⃣ جيب الـ valid business dates
-        var validBusinessDates = await processes.GetByProcessesTypeForProductionAsync();
-
-        if (!validBusinessDates.Any())
-        {
-            return (false, "No valid business dates found");
-        }
-
-        // 2️⃣ حول لـ DateOnly
-        var postingDateOnly = DateOnly.FromDateTime(postingDate);
-        var dueDateOnly = DateOnly.FromDateTime(dueDate);
-
-        // 3️⃣ تشيك PostingDate
-        var isPostingDateValid = validBusinessDates.Any(d => d.PostingDate == postingDateOnly);
-
-        // 4️⃣ تشيك DueDate
-        var isDueDateValid = validBusinessDates.Any(d => d.DueDate == dueDateOnly);
-
-        // 5️⃣ رجع النتيجة مع رسالة واضحة
-        if (!isPostingDateValid && !isDueDateValid)
-        {
-            return (false, "Both PostingDate and DueDate are not valid business dates");
-        }
-
-        if (!isPostingDateValid)
-        {
-            return (false, $"PostingDate {postingDate:yyyy-MM-dd} is not a valid business date");
-        }
-
-        if (!isDueDateValid)
-        {
-            return (false, $"DueDate {dueDate:yyyy-MM-dd} is not a valid business date");
-        }
-
-        return (true, "Both dates are valid");
-    }
-    // update
-    public async Task<GeneralResponse<ProductionOrderDTO>> UpdateProductionOrderAsync(string userId,int productionId, UpdateProductionOrderDTO dto)
-    {
-
-        // 1️⃣ Get existing Company auth (record الوحيد)
-        var entity = await _context.ProductionOrders.FirstOrDefaultAsync(e => e.ProductionOrderId == dto.ProductionOrderId);
-
-        if (entity.ProductionOrderId != productionId )
-        {
-            return GeneralResponse<ProductionOrderDTO>.FailResponse("id not equal production order id!");
-        }
         if (entity == null)
-        {
-            return GeneralResponse<ProductionOrderDTO>.FailResponse("not found");
-        }
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Production order not found.");
 
-        var checkValidDate = await ValidateBusinessDatesAsync(dto.PostingDate, dto.DueDate);
+        if (!await UserHasWarehouseAccessAsync(userId, entity.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
 
-        if (!checkValidDate.IsValid)
-            return GeneralResponse<ProductionOrderDTO>.FailResponse($"{checkValidDate.Message}");
+        var progress = await _approval.GetProcessItem(entity.ProductionOrderId, ProcessType.Production);
 
-
-        // 2️⃣ Update fields
-
-
-        entity.DueDate = dto.DueDate;
-         entity.PostingDate = dto.PostingDate;
-        entity.UserId  = userId;
-        
-       // Company.IsActive = dto.IsActive;
-
-        // 3️⃣ Save changes
-        await _context.SaveChangesAsync();
-
-        // 4️⃣ Map to DTO
-        var result = new ProductionOrderDTO
+        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(new ProductionOrderDTO
         {
             ProductionOrderId = entity.ProductionOrderId,
-            DueDate = entity.DueDate,
             PostingDate = entity.PostingDate,
-            Status = entity.Status.ToString() // <-- هنا بنحول الـ enum ل string
+            DueDate = entity.DueDate,
+            Remarks = entity.Remarks,
+            Status = entity.Status.ToString(),
+            UserId = entity.UserId,
+            WarehouseId = entity.WarehouseId,
+            NumberOfProductionItem = entity.ProductionOrderItems.Count,
+            Approval = progress != null,
+            ApprovalStatus = progress?.Status.ToString(),
+            CanSubmit = entity.Status == GeneralStatus.Draft
+        });
+    }
+
+    public async Task<GeneralResponse<ProductionOrderDTO>> CreateAsync(string userId, AddProductionOrderDTO dto)
+    {
+        var validation = await ValidateOrderDataAsync(userId, dto.WarehouseId, dto.PostingDate, dto.DueDate);
+        if (!validation.Success)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse(validation.Message);
+
+        var entity = new ProductionOrder
+        {
+            Status = GeneralStatus.Draft,
+            PostingDate = dto.PostingDate,
+            DueDate = dto.DueDate,
+            CreatedAt = DateTime.UtcNow,
+            Remarks = dto.Remarks?.Trim(),
+            WarehouseId = dto.WarehouseId,
+            UserId = userId
         };
 
-        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(result);
-    }
+        await AddAsync(entity);
+        await SaveChangesAsync();
 
-    public async Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId)
-    {
-        return await QueryIncluding(false, po => po.ProductionOrderItems)
-            .Where(po => po.ProductionOrderItems.Any(poi => poi.ItemId == itemId))
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<ProductionOrder>> GetByStatusAsync(string status)
-    {
-        if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
+        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(new ProductionOrderDTO
         {
-            return await Query().Where(po => po.Status == statusEnum).ToListAsync();
-        }
-        return new List<ProductionOrder>();
+            ProductionOrderId = entity.ProductionOrderId,
+            PostingDate = entity.PostingDate,
+            DueDate = entity.DueDate,
+            Remarks = entity.Remarks,
+            Status = entity.Status.ToString(),
+            UserId = entity.UserId,
+            WarehouseId = entity.WarehouseId,
+            NumberOfProductionItem = 0,
+            CanSubmit = true
+        }, "Production order added successfully.");
     }
 
-    public async Task<IEnumerable<ProductionOrder>> GetByUserIdAsync(string userId)
+    public async Task<GeneralResponse<ProductionOrderDTO>> UpdateAsync(string userId, int productionOrderId, UpdateProductionOrderDTO dto)
     {
-        return await Query().Where(po => po.UserId == userId).ToListAsync();
-    }
+        var entity = await _context.ProductionOrders
+            .Include(x => x.ProductionOrderItems)
+            .Include(x => x.ProductionComponentLines)
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == productionOrderId);
 
-    public async Task<ProductionOrder?> GetWithItemsAsync(int productionOrderId)
-    {
-        return await QueryIncluding(false, po => po.ProductionOrderItems)
-            .FirstOrDefaultAsync(po => po.ProductionOrderId == productionOrderId);
-    }
+        if (entity == null)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Production order not found.");
 
-    public async Task<ProductionOrder?> GetWithWarehouseAsync(int productionOrderId)
-    {
-        return await QueryIncluding(false, po => po.Warehouse)
-            .FirstOrDefaultAsync(po => po.ProductionOrderId == productionOrderId);
-    }
+        if (!await UserHasWarehouseAccessAsync(userId, entity.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
 
-    public async Task<IEnumerable<ProductionOrder>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
-    {
-        return await Query().Where(po => po.CreatedAt >= startDate && po.CreatedAt <= endDate).ToListAsync();
-    }
+        if (entity.Status == GeneralStatus.Processing || entity.ProductionOrderItems.Any(i => i.Status == GeneralItemStatus.Released))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Cannot update order after it reached processing/released stage.");
 
-    public async Task<IEnumerable<ProductionOrder>> GetPendingOrdersAsync()
-    {
-        return await Query().Where(po => po.Status == GeneralStatus.Processing).ToListAsync();
-    }
+        var targetWarehouseId = dto.WarehouseId ?? entity.WarehouseId;
+        var validation = await ValidateOrderDataAsync(userId, targetWarehouseId, dto.PostingDate, dto.DueDate);
+        if (!validation.Success)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse(validation.Message);
 
-
-
-
-    private string GetEnumString(GeneralStatus status)
-    {
-        switch (status)
+        if (targetWarehouseId != entity.WarehouseId)
         {
-            case GeneralStatus.Draft:
-                return "Draft";
-            case GeneralStatus.Processing:
-                return "Processing";
-            case GeneralStatus.Completed:
-                return "Completed";
-            case GeneralStatus.PartiallyFailed:
-                return "Partially Failed";
-            default:
-                return "Unknown";
+            foreach (var orderItem in entity.ProductionOrderItems)
+            {
+                var itemExistsInWarehouse = await _context.WarehouseItems
+                    .AsNoTracking()
+                    .AnyAsync(x => x.WarehouseId == targetWarehouseId && x.ItemId == orderItem.ItemId);
+
+                if (!itemExistsInWarehouse)
+                    return GeneralResponse<ProductionOrderDTO>.FailResponse($"Item {orderItem.ItemId} is not available in the selected warehouse.");
+            }
+
+            foreach (var componentLine in entity.ProductionComponentLines)
+            {
+                var warehouseItem = await _context.WarehouseItems
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.WarehouseId == targetWarehouseId && x.ItemId == componentLine.ItemId);
+
+                if (warehouseItem == null)
+                    return GeneralResponse<ProductionOrderDTO>.FailResponse($"Component item {componentLine.ItemId} is not available in the selected warehouse.");
+
+                componentLine.WarehouseId = targetWarehouseId;
+                componentLine.InWhsQuantity = Convert.ToDecimal(warehouseItem.InStock ?? 0);
+            }
         }
+
+        entity.PostingDate = dto.PostingDate;
+        entity.DueDate = dto.DueDate;
+        entity.Remarks = dto.Remarks?.Trim();
+        entity.WarehouseId = targetWarehouseId;
+        entity.UserId = userId;
+
+        await _context.SaveChangesAsync();
+
+        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(new ProductionOrderDTO
+        {
+            ProductionOrderId = entity.ProductionOrderId,
+            PostingDate = entity.PostingDate,
+            DueDate = entity.DueDate,
+            Remarks = entity.Remarks,
+            Status = entity.Status.ToString(),
+            UserId = entity.UserId,
+            WarehouseId = entity.WarehouseId,
+            NumberOfProductionItem = entity.ProductionOrderItems.Count,
+            CanSubmit = entity.Status == GeneralStatus.Draft
+        }, "Production order updated successfully.");
+    }
+
+    public async Task<GeneralResponse<ProductionOrderDTO>> DeleteProductionOrderAsync(string userId, int productionOrderId)
+    {
+        var entity = await _context.ProductionOrders
+            .Include(x => x.ProductionOrderItems)
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == productionOrderId);
+
+        if (entity == null)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Production order not found.");
+
+        if (!await UserHasWarehouseAccessAsync(userId, entity.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
+
+        var progress = await _approval.GetProcessItem(entity.ProductionOrderId, ProcessType.Production);
+        if (progress != null && progress.Status == ProcessStatus.Approved)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Cannot delete approved order.");
+
+        var alreadySynced = entity.ProductionOrderItems.Any(i => i.AbsoluteEntry.HasValue);
+        if (alreadySynced)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Cannot delete order that is already synced to SAP.");
+
+        var snapshot = new ProductionOrderDTO
+        {
+            ProductionOrderId = entity.ProductionOrderId,
+            PostingDate = entity.PostingDate,
+            DueDate = entity.DueDate,
+            Remarks = entity.Remarks,
+            Status = entity.Status.ToString(),
+            UserId = entity.UserId,
+            WarehouseId = entity.WarehouseId,
+            NumberOfProductionItem = entity.ProductionOrderItems.Count
+        };
+
+        _context.ProductionOrders.Remove(entity);
+        await _context.SaveChangesAsync();
+
+        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(
+            snapshot,
+            "Production order deleted successfully.");
+    }
+
+    public async Task<GeneralResponse<ProductionOrderDTO>> SubmitAsync(string userId, int productionOrderId, SubmitProductionOrderDTO? dto = null)
+    {
+        var entity = await _context.ProductionOrders
+            .Include(x => x.ProductionOrderItems)
+            .Include(x => x.ProductionHeaderBatches)
+            .Include(x => x.ProductionComponentLines)
+                .ThenInclude(x => x.ProductionComponentBatches)
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == productionOrderId);
+
+        if (entity == null)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Production order not found.");
+
+        if (!await UserHasWarehouseAccessAsync(userId, entity.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
+
+        if (entity.Status != GeneralStatus.Draft)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Only draft orders can be submitted.");
+
+        if (!entity.ProductionOrderItems.Any())
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Cannot submit production order without items.");
+
+        foreach (var item in entity.ProductionOrderItems)
+        {
+            var warehouseItem = await _context.WarehouseItems
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.WarehouseId == entity.WarehouseId && x.ItemId == item.ItemId);
+
+            if (warehouseItem == null)
+                return GeneralResponse<ProductionOrderDTO>.FailResponse($"Item {item.ItemId} is not available in warehouse.");
+
+            if (!warehouseItem.IsActive || !warehouseItem.FinishedGood || !warehouseItem.HasActiveBOM)
+                return GeneralResponse<ProductionOrderDTO>.FailResponse(BuildProductionEligibilityMessage(warehouseItem.ItemId, warehouseItem.IsActive, warehouseItem.FinishedGood, warehouseItem.HasActiveBOM));
+        }
+
+        var hasBatchManagedItem = await _context.WarehouseItems
+            .AsNoTracking()
+            .AnyAsync(x => x.WarehouseId == entity.WarehouseId
+                        && entity.ProductionOrderItems.Select(i => i.ItemId).Contains(x.ItemId)
+                        && x.IsBatchManaged);
+
+        if (hasBatchManagedItem)
+        {
+            if (!entity.ProductionHeaderBatches.Any())
+                return GeneralResponse<ProductionOrderDTO>.FailResponse("Batch-managed item requires header batches before submit.");
+
+            var plannedQty = entity.ProductionOrderItems.Sum(x => x.PlannedQuantity);
+            var batchQty = entity.ProductionHeaderBatches.Sum(x => x.Quantity);
+            if (plannedQty != batchQty)
+                return GeneralResponse<ProductionOrderDTO>.FailResponse("Header batches quantity must equal planned quantity.");
+        }
+
+        foreach (var componentLine in entity.ProductionComponentLines.Where(x =>
+                     string.Equals(x.IssueType, "Manual", StringComparison.OrdinalIgnoreCase)))
+        {
+            var componentIsBatchManaged = await _context.WarehouseItems
+                .AsNoTracking()
+                .AnyAsync(x => x.WarehouseId == componentLine.WarehouseId
+                            && x.ItemId == componentLine.ItemId
+                            && x.IsBatchManaged);
+
+            if (!componentIsBatchManaged)
+                continue;
+
+            var totalBatchesQty = componentLine.ProductionComponentBatches.Sum(x => x.Quantity);
+            if (totalBatchesQty != componentLine.RequiredQuantity)
+            {
+                return GeneralResponse<ProductionOrderDTO>.FailResponse(
+                    $"Component line {componentLine.ProductionComponentLineId} batch quantities must equal required quantity.");
+            }
+        }
+
+        entity.Status = GeneralStatus.Processing;
+        entity.Remarks = string.IsNullOrWhiteSpace(dto?.Note) ? entity.Remarks : dto!.Note!.Trim();
+        entity.UserId = userId;
+
+        try
+        {
+            await _approval.StartProcessAsync(
+                processType: ProcessType.Production,
+                referenceId: entity.ProductionOrderId,
+                warehouseId: entity.WarehouseId,
+                userId: userId);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<ProductionOrderDTO>.FailResponse(ex.Message);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(new ProductionOrderDTO
+        {
+            ProductionOrderId = entity.ProductionOrderId,
+            PostingDate = entity.PostingDate,
+            DueDate = entity.DueDate,
+            Remarks = entity.Remarks,
+            Status = entity.Status.ToString(),
+            UserId = entity.UserId,
+            WarehouseId = entity.WarehouseId,
+            NumberOfProductionItem = entity.ProductionOrderItems.Count,
+            Approval = true,
+            ApprovalStatus = ProcessStatus.InProgress.ToString(),
+            CanSubmit = false
+        });
+    }
+
+    private async Task<(bool Success, string Message)> ValidateOrderDataAsync(string userId, int warehouseId, DateTime postingDate, DateTime dueDate)
+    {
+        if (postingDate == default || dueDate == default)
+            return (false, "PostingDate and DueDate are required.");
+
+        if (dueDate.Date < postingDate.Date)
+            return (false, "DueDate must be greater than or equal to PostingDate.");
+
+        var warehouseExists = await _context.Warehouses.AsNoTracking().AnyAsync(x => x.WarehouseId == warehouseId);
+        if (!warehouseExists)
+            return (false, "Warehouse not found.");
+
+        if (!await UserHasWarehouseAccessAsync(userId, warehouseId))
+            return (false, "You don't have access to this warehouse.");
+
+        return (true, string.Empty);
+    }
+
+    private static string BuildProductionEligibilityMessage(int itemId, bool isActive, bool finishedGood, bool hasActiveBOM)
+    {
+        var reasons = new List<string>();
+
+        if (!isActive)
+            reasons.Add("inactive");
+
+        if (!finishedGood)
+            reasons.Add("not marked as finished good");
+
+        if (!hasActiveBOM)
+            reasons.Add("no active BOM");
+
+        return reasons.Count == 0
+            ? $"Item {itemId} must be active finished good with active BOM."
+            : $"Item {itemId} is not eligible for production: {string.Join(", ", reasons)}.";
+    }
+
+    private Task<bool> UserHasWarehouseAccessAsync(string userId, int warehouseId)
+    {
+        return _context.UserWarehouses
+            .AsNoTracking()
+            .AnyAsync(x => x.UserId == userId && x.WarehouseId == warehouseId);
     }
 }
-

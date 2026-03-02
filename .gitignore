@@ -1,0 +1,6 @@
+# Visual Studio / build artifacts
+.vs/
+**/bin/
+**/obj/
+**/artifacts/
+artifacts/

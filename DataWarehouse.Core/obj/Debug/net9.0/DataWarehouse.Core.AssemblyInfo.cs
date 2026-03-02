@@ -14,7 +14,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DataWarehouse.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< HEAD
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b6359df8cdb126884d7bb8ce6df5b1614fc04f7b")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4c8401fff4249a950a3487c98154932e1ffa310b")]
+>>>>>>> 00c616c (add production)
 [assembly: System.Reflection.AssemblyProductAttribute("DataWarehouse.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DataWarehouse.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

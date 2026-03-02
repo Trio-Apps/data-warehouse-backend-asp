@@ -1,121 +1,93 @@
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
 using DataWarehouse.Core.Interfaces.Processes;
-using DataWarehouse.Domain.Entities.Processes.BulkProductions;
-using DataWarehouse.Domain.Enums;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace DataWarehouse.Api.Controllers.admin.Processes.BulkProductions;
 
-[Route("api/[controller]")]
+[Route("api/production-order-items")]
 [ApiController]
 [Authorize]
 public class ProductionOrderItemController : ControllerBase
 {
     private readonly IProductionOrderItemRepository _repository;
-    private readonly ILogger<ProductionOrderItemController> _logger;
 
-    public ProductionOrderItemController(
-        IProductionOrderItemRepository repository,
-        ILogger<ProductionOrderItemController> logger)
+    public ProductionOrderItemController(IProductionOrderItemRepository repository)
     {
         _repository = repository;
-        _logger = logger;
+    }
+
+    [HttpPost]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Create}")]
+    public async Task<IActionResult> Create([FromBody] AddProductionOrderItemDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await _repository.CreateAsync(userId!, dto);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Get}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await _repository.GetByIdDetailsAsync(userId!, id);
+        if (!result.Success)
+            return NotFound(result);
+
+        return Ok(result);
     }
 
     [HttpGet]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Get}")]
-    public async Task<ActionResult<IEnumerable<ProductionOrderItem>>> GetAll()
+    public async Task<IActionResult> GetList(
+        [FromQuery] int productionOrderId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20)
     {
-        var productionOrderItems = await _repository.GetAllAsync();
-        return Ok(productionOrderItems);
+        if (productionOrderId <= 0)
+            return BadRequest("productionOrderId is required.");
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await _repository.GetListAsync(userId!, productionOrderId, pageNumber, pageSize);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
     }
 
-    [HttpGet("{id}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Get}")]
-    public async Task<ActionResult<ProductionOrderItem>> GetById(int id)
-    {
-        var productionOrderItem = await _repository.GetByIdAsync(id);
-        if (productionOrderItem == null)
-            return NotFound($"ProductionOrderItem with ID {id} not found.");
-
-        return Ok(productionOrderItem);
-    }
-
-    [HttpGet("production-order/{productionOrderId}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Get}")]
-    public async Task<ActionResult<IEnumerable<ProductionOrderItem>>> GetByProductionOrderId(int productionOrderId)
-    {
-        var productionOrderItems =
-            await _repository.GetByProductionItemByProductionOrderIdAsync(productionOrderId);
-
-        return Ok(productionOrderItems);
-    }
-
-    [HttpGet("status/production-order/{productionOrderId}/{skip}/{pageSize}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Get}")]
-    public async Task<ActionResult<IEnumerable<ProductionOrderItem>>>
-        GetByProductionOrderIdWithPagination(
-            int productionOrderId,
-            string? status,
-            int skip,
-            int pageSize)
-    {
-        var res =
-            await _repository.GetByProductionItemByProductionOrderIdWithPaginationAsync(
-                productionOrderId, status, skip, pageSize);
-
-        return Ok(res);
-    }
-
-    [HttpPost("production-order/{productionOrderId}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Create}")]
-    public async Task<ActionResult<ProductionOrderItem>> Create(
-        int productionOrderId,
-        AddProductionOrderItemDTO dto)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var created =
-            await _repository.AddProductionItemByProductionOrderIdAsync(productionOrderId, dto);
-
-        return Ok(created);
-    }
-
-    [HttpPut("production-item-order/{id}")]
+    [HttpPut("{id:int}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Edit}")]
-    public async Task<IActionResult> Update(
-        int id,
-        bool? isRecevied,
-        UpdateProductionOrderItemDTO dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateProductionOrderItemDTO dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var res = await _repository.UpdateProductionItemAsync(id, isRecevied, dto);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await _repository.UpdateProductionItemAsync(userId!, id, dto);
+        if (!result.Success)
+            return BadRequest(result);
 
-        if (!res.Success)
-            return BadRequest(res);
-
-        return Ok(res);
+        return Ok(result);
     }
 
-    [HttpDelete("production-item-order/{id}")]
+    [HttpDelete("{id:int}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Delete}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var productionOrderItem = await _repository.GetByIdAsync(id);
-        if (productionOrderItem == null)
-            return NotFound($"ProductionOrderItem with ID {id} not found.");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await _repository.DeleteProductionItemAsync(userId!, id);
+        if (!result.Success)
+            return BadRequest(result);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
-
-        return Ok("delete");
+        return Ok(result);
     }
 }

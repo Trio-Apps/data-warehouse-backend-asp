@@ -83,6 +83,7 @@ namespace DataWarehouse.Domain.Entities.Actors
         public ICollection<ReceiptPurchaseOrderItem> ReceiptPurchaseOrderItems { get; set; } = new List<ReceiptPurchaseOrderItem>();
         //ProductionOrderItem
         public ICollection<ProductionOrderItem> ProductionOrderItems { get; set; } = new List<ProductionOrderItem>();
+        public ICollection<ProductionComponentLine> ProductionComponentLines { get; set; } = new List<ProductionComponentLine>();
 
         public ICollection<GoodsReturnOrderItem> GoodsReturnOrderItems { get; set; } = new List<GoodsReturnOrderItem>();
 

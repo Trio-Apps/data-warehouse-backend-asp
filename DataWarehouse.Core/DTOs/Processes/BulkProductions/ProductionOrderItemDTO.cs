@@ -19,7 +19,7 @@ public class ProductionOrderItemDTO
     public int? AbsoluteEntry { get; set; } // SAP Production Order AbsoluteEntry
 
     [Required(ErrorMessage = "Status is required")]
-    public string Status { get; set; } // ProductionItemStatus enum
+    public string Status { get; set; } = string.Empty;
 
     [StringLength(500, ErrorMessage = "Error Message cannot exceed 500 characters")]
     public string? ErrorMessage { get; set; }
@@ -40,15 +40,13 @@ public class ProductionOrderItemDTO
 
 public class AddProductionOrderItemDTO
 {
-   
+    [Required(ErrorMessage = "Production Order ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Production Order ID must be greater than 0")]
+    public int ProductionOrderId { get; set; }
 
     [Required(ErrorMessage = "Planned Quantity is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
     public decimal PlannedQuantity { get; set; }
-
-    [Required(ErrorMessage = "Production Order ID is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "Production Order ID must be greater than 0")]
-    public int ProductionOrderId { get; set; }
 
     [Required(ErrorMessage = "Item ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
@@ -58,9 +56,6 @@ public class AddProductionOrderItemDTO
 
 public class UpdateProductionOrderItemDTO
 {
-    [Required(ErrorMessage = "ProductionOrderItemId is required")]
-    public int ProductionOrderItemId { get; set; }
-
     [Required(ErrorMessage = "Planned Quantity is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
     public decimal PlannedQuantity { get; set; }
@@ -69,4 +64,3 @@ public class UpdateProductionOrderItemDTO
     public decimal? ProducedQuantity { get; set; }
 
 }
-

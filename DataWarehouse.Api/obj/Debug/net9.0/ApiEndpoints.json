@@ -5231,55 +5231,51 @@
     ]
   },
   {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
-    "Method": "GetAll",
-    "RelativePath": "api/ProductionOrder",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
     "Method": "Create",
-    "RelativePath": "api/ProductionOrder",
+    "RelativePath": "api/production-component-batches",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionOrderDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionComponentBatchDTO",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "GetList",
+    "RelativePath": "api/production-component-batches",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productionComponentLineId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
     "Method": "GetById",
-    "RelativePath": "api/ProductionOrder/{id}",
+    "RelativePath": "api/production-component-batches/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -5290,22 +5286,403 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "Update",
+    "RelativePath": "api/production-component-batches/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
       {
-        "Type": "DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionComponentBatchDTO",
+        "IsRequired": true
       }
-    ]
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "Delete",
+    "RelativePath": "api/production-component-batches/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "GetAvailableBatches",
+    "RelativePath": "api/production-component-batches/available/{productionComponentLineId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productionComponentLineId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "Create",
+    "RelativePath": "api/production-component-lines",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionComponentLineDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "GetList",
+    "RelativePath": "api/production-component-lines",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productionOrderId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "GetById",
+    "RelativePath": "api/production-component-lines/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "Update",
+    "RelativePath": "api/production-component-lines/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionComponentLineDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "Delete",
+    "RelativePath": "api/production-component-lines/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "Create",
+    "RelativePath": "api/production-header-batches",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionHeaderBatchDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "GetList",
+    "RelativePath": "api/production-header-batches",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productionOrderId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "GetById",
+    "RelativePath": "api/production-header-batches/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "Update",
+    "RelativePath": "api/production-header-batches/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionHeaderBatchDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "Delete",
+    "RelativePath": "api/production-header-batches/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
+    "Method": "Create",
+    "RelativePath": "api/production-order-items",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionOrderItemDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
+    "Method": "GetList",
+    "RelativePath": "api/production-order-items",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productionOrderId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
+    "Method": "GetById",
+    "RelativePath": "api/production-order-items/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
+    "Method": "Update",
+    "RelativePath": "api/production-order-items/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionOrderItemDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
+    "Method": "Delete",
+    "RelativePath": "api/production-order-items/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
+    "Method": "Create",
+    "RelativePath": "api/production-orders",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionOrderDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
+    "Method": "GetList",
+    "RelativePath": "api/production-orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
+    "Method": "GetById",
+    "RelativePath": "api/production-orders/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
     "Method": "Update",
-    "RelativePath": "api/ProductionOrder/{id}",
+    "RelativePath": "api/production-orders/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -5326,7 +5703,7 @@
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
     "Method": "Delete",
-    "RelativePath": "api/ProductionOrder/{id}",
+    "RelativePath": "api/production-orders/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
@@ -5341,271 +5718,24 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
-    "Method": "GetPendingOrders",
-    "RelativePath": "api/ProductionOrder/processing",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
-    "Method": "Status",
-    "RelativePath": "api/ProductionOrder/status",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
-    "Method": "GetByWarehouseId",
-    "RelativePath": "api/ProductionOrder/warehouse/{warehouseId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "warehouseId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
-    "Method": "GetByWarehouseIdWithPagination",
-    "RelativePath": "api/ProductionOrder/warehouse/{warehouseId}/{skip}/{pageSize}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "warehouseId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "skip",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
-    "Method": "GetAll",
-    "RelativePath": "api/ProductionOrderItem",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrderItem, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
-    "Method": "GetById",
-    "RelativePath": "api/ProductionOrderItem/{id}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrderItem",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
-    "Method": "Update",
-    "RelativePath": "api/ProductionOrderItem/production-item-order/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "isRecevied",
-        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "IsRequired": false
-      },
-      {
-        "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionOrderItemDTO",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
-    "Method": "Delete",
-    "RelativePath": "api/ProductionOrderItem/production-item-order/{id}",
-    "HttpMethod": "DELETE",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
-    "Method": "GetByProductionOrderId",
-    "RelativePath": "api/ProductionOrderItem/production-order/{productionOrderId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "productionOrderId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrderItem, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
-    "Method": "Create",
-    "RelativePath": "api/ProductionOrderItem/production-order/{productionOrderId}",
+    "Method": "Submit",
+    "RelativePath": "api/production-orders/{id}/submit",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "productionOrderId",
+        "Name": "id",
         "Type": "System.Int32",
         "IsRequired": true
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionOrderItemDTO",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrderItem",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderItemController",
-    "Method": "GetByProductionOrderIdWithPagination",
-    "RelativePath": "api/ProductionOrderItem/status/production-order/{productionOrderId}/{skip}/{pageSize}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "productionOrderId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "status",
-        "Type": "System.String",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.SubmitProductionOrderDTO",
         "IsRequired": false
-      },
-      {
-        "Name": "skip",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrderItem, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionReceiptController",
@@ -11433,6 +11563,22 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.WarehouseController",
+    "Method": "Create",
+    "RelativePath": "api/Warehouse",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Actors.AddWarehouseDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.WarehouseController",

@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.SAP\\DataWarehouse.SAP.csproj": {}
+    "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.SAP\\DataWarehouse.SAP.csproj": {}
   },
   "projects": {
-    "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj": {
+    "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj",
+        "projectUniqueName": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj",
         "projectName": "DataWarehouse.Core",
-        "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj",
-        "packagesPath": "C:\\Users\\AL-Motahida\\.nuget\\packages\\",
-        "outputPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\obj\\",
+        "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj",
+        "packagesPath": "C:\\Users\\master\\.nuget\\packages\\",
+        "outputPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\AL-Motahida\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\master\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,14 +26,15 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj": {
-                "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj"
+              "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj": {
+                "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj"
               }
             }
           }
@@ -99,24 +100,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj": {
+    "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj",
+        "projectUniqueName": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj",
         "projectName": "DataWarehouse.Domain",
-        "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj",
-        "packagesPath": "C:\\Users\\AL-Motahida\\.nuget\\packages\\",
-        "outputPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\obj\\",
+        "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj",
+        "packagesPath": "C:\\Users\\master\\.nuget\\packages\\",
+        "outputPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\AL-Motahida\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\master\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -125,6 +126,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -192,24 +194,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.SAP\\DataWarehouse.SAP.csproj": {
+    "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.SAP\\DataWarehouse.SAP.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.SAP\\DataWarehouse.SAP.csproj",
+        "projectUniqueName": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.SAP\\DataWarehouse.SAP.csproj",
         "projectName": "DataWarehouse.SAP",
-        "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.SAP\\DataWarehouse.SAP.csproj",
-        "packagesPath": "C:\\Users\\AL-Motahida\\.nuget\\packages\\",
-        "outputPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.SAP\\obj\\",
+        "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.SAP\\DataWarehouse.SAP.csproj",
+        "packagesPath": "C:\\Users\\master\\.nuget\\packages\\",
+        "outputPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.SAP\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\AL-Motahida\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\master\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -218,20 +220,21 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj": {
-                "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj"
+              "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj": {
+                "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj"
               },
-              "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj": {
-                "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj"
+              "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj": {
+                "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj"
               },
-              "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj": {
-                "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj"
+              "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj": {
+                "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj"
               }
             }
           }
@@ -277,24 +280,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj": {
+    "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj",
+        "projectUniqueName": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj",
         "projectName": "DataWarehouse.Services",
-        "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj",
-        "packagesPath": "C:\\Users\\AL-Motahida\\.nuget\\packages\\",
-        "outputPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Services\\obj\\",
+        "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Services\\DataWarehouse.Services.csproj",
+        "packagesPath": "C:\\Users\\master\\.nuget\\packages\\",
+        "outputPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Services\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\AL-Motahida\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\master\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -303,17 +306,18 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj": {
-                "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj"
+              "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj": {
+                "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Core\\DataWarehouse.Core.csproj"
               },
-              "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj": {
-                "projectPath": "D:\\Files\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj"
+              "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj": {
+                "projectPath": "D:\\trioapps\\warehouse\\data-warehouse-backend-asp\\DataWarehouse.Domain\\DataWarehouse.Domain.csproj"
               }
             }
           }
@@ -371,7 +375,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

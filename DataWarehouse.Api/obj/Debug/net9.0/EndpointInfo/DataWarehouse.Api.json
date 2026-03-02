@@ -8356,43 +8356,489 @@
         }
       }
     },
-    "/api/ProductionOrder": {
-      "get": {
+    "/api/production-component-batches": {
+      "post": {
         "tags": [
-          "ProductionOrder"
+          "ProductionComponentBatch"
         ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrder"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrder"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrder"
-                  }
-                }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentBatchDTO"
               }
             }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
         }
       },
+      "get": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "productionComponentLineId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-component-batches/{id}": {
+      "get": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentBatchDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-component-batches/available/{productionComponentLineId}": {
+      "get": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "productionComponentLineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-component-lines": {
+      "post": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentLineDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentLineDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentLineDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "parameters": [
+          {
+            "name": "productionOrderId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-component-lines/{id}": {
+      "get": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentLineDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentLineDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentLineDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-header-batches": {
+      "post": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionHeaderBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionHeaderBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionHeaderBatchDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "parameters": [
+          {
+            "name": "productionOrderId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-header-batches/{id}": {
+      "get": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionHeaderBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionHeaderBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionHeaderBatchDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-orders": {
       "post": {
         "tags": [
           "ProductionOrder"
@@ -8418,108 +8864,31 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrder"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrder"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrder"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
-      }
-    },
-    "/api/ProductionOrder/warehouse/{warehouseId}": {
+      },
       "get": {
         "tags": [
           "ProductionOrder"
         ],
         "parameters": [
           {
-            "name": "warehouseId",
-            "in": "path",
-            "required": true,
+            "name": "pageNumber",
+            "in": "query",
             "schema": {
               "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrder"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrder"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrder"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ProductionOrder/warehouse/{warehouseId}/{skip}/{pageSize}": {
-      "get": {
-        "tags": [
-          "ProductionOrder"
-        ],
-        "parameters": [
-          {
-            "name": "warehouseId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "skip",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
+              "format": "int32",
+              "default": 1
             }
           },
           {
             "name": "pageSize",
-            "in": "path",
-            "required": true,
+            "in": "query",
             "schema": {
               "type": "integer",
-              "format": "int32"
+              "format": "int32",
+              "default": 20
             }
           }
         ],
@@ -8530,7 +8899,7 @@
         }
       }
     },
-    "/api/ProductionOrder/{id}": {
+    "/api/production-orders/{id}": {
       "get": {
         "tags": [
           "ProductionOrder"
@@ -8548,24 +8917,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrder"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrder"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrder"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       },
@@ -8631,98 +8983,10 @@
         }
       }
     },
-    "/api/ProductionOrder/status": {
-      "get": {
+    "/api/production-orders/{id}/submit": {
+      "post": {
         "tags": [
           "ProductionOrder"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/ProductionOrder/processing": {
-      "get": {
-        "tags": [
-          "ProductionOrder"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrder"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrder"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrder"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ProductionOrderItem": {
-      "get": {
-        "tags": [
-          "ProductionOrderItem"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrderItem"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrderItem"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrderItem"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ProductionOrderItem/{id}": {
-      "get": {
-        "tags": [
-          "ProductionOrderItem"
         ],
         "parameters": [
           {
@@ -8735,92 +8999,36 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrderItem"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrderItem"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrderItem"
-                }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitProductionOrderDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitProductionOrderDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitProductionOrderDTO"
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
     },
-    "/api/ProductionOrderItem/production-order/{productionOrderId}": {
-      "get": {
-        "tags": [
-          "ProductionOrderItem"
-        ],
-        "parameters": [
-          {
-            "name": "productionOrderId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrderItem"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrderItem"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrderItem"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
+    "/api/production-order-items": {
       "post": {
         "tags": [
           "ProductionOrderItem"
-        ],
-        "parameters": [
-          {
-            "name": "productionOrderId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
         ],
         "requestBody": {
           "content": {
@@ -8843,29 +9051,10 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrderItem"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrderItem"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductionOrderItem"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
-      }
-    },
-    "/api/ProductionOrderItem/status/production-order/{productionOrderId}/{skip}/{pageSize}": {
+      },
       "get": {
         "tags": [
           "ProductionOrderItem"
@@ -8873,74 +9062,40 @@
         "parameters": [
           {
             "name": "productionOrderId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "status",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
             }
           },
           {
-            "name": "skip",
-            "in": "path",
-            "required": true,
+            "name": "pageNumber",
+            "in": "query",
             "schema": {
               "type": "integer",
-              "format": "int32"
+              "format": "int32",
+              "default": 1
             }
           },
           {
             "name": "pageSize",
-            "in": "path",
-            "required": true,
+            "in": "query",
             "schema": {
               "type": "integer",
-              "format": "int32"
+              "format": "int32",
+              "default": 20
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrderItem"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrderItem"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProductionOrderItem"
-                  }
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
     },
-    "/api/ProductionOrderItem/production-item-order/{id}": {
-      "put": {
+    "/api/production-order-items/{id}": {
+      "get": {
         "tags": [
           "ProductionOrderItem"
         ],
@@ -8953,12 +9108,26 @@
               "type": "integer",
               "format": "int32"
             }
-          },
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ProductionOrderItem"
+        ],
+        "parameters": [
           {
-            "name": "isRecevied",
-            "in": "query",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "boolean"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -19216,6 +19385,35 @@
       }
     },
     "/api/Warehouse": {
+      "post": {
+        "tags": [
+          "Warehouse"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddWarehouseDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddWarehouseDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddWarehouseDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
       "get": {
         "tags": [
           "Warehouse"
@@ -20071,6 +20269,111 @@
         },
         "additionalProperties": false
       },
+      "AddProductionComponentBatchDTO": {
+        "required": [
+          "batchNumber",
+          "productionComponentLineId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "productionComponentLineId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddProductionComponentLineDTO": {
+        "required": [
+          "itemId",
+          "productionOrderId",
+          "requiredQuantity",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "productionOrderId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "requiredQuantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "issueType": {
+            "maxLength": 20,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddProductionHeaderBatchDTO": {
+        "required": [
+          "batchNumber",
+          "productionOrderId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "productionOrderId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AddProductionOrderDTO": {
         "required": [
           "dueDate",
@@ -20110,16 +20413,16 @@
         ],
         "type": "object",
         "properties": {
-          "plannedQuantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
           "productionOrderId": {
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
             "format": "int32"
+          },
+          "plannedQuantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
           },
           "itemId": {
             "maximum": 2147483647,
@@ -20748,6 +21051,33 @@
               "format": "int32"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddWarehouseDTO": {
+        "required": [
+          "sapId",
+          "warehouseCode",
+          "warehouseName"
+        ],
+        "type": "object",
+        "properties": {
+          "warehouseCode": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string"
+          },
+          "warehouseName": {
+            "maxLength": 200,
+            "minLength": 2,
+            "type": "string"
+          },
+          "sapId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -22558,6 +22888,13 @@
             },
             "nullable": true
           },
+          "productionComponentLines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductionComponentLine"
+            },
+            "nullable": true
+          },
           "goodsReturnOrderItems": {
             "type": "array",
             "items": {
@@ -22996,6 +23333,134 @@
         },
         "additionalProperties": false
       },
+      "ProductionComponentBatch": {
+        "type": "object",
+        "properties": {
+          "productionComponentBatchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "productionComponentLineId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productionComponentLine": {
+            "$ref": "#/components/schemas/ProductionComponentLine"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductionComponentLine": {
+        "type": "object",
+        "properties": {
+          "productionComponentLineId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "requiredQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "issuedQuantity": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "inWhsQuantity": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "issueType": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "productionOrderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productionOrder": {
+            "$ref": "#/components/schemas/ProductionOrder"
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Item"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouse": {
+            "$ref": "#/components/schemas/Warehouse"
+          },
+          "productionComponentBatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductionComponentBatch"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductionHeaderBatch": {
+        "type": "object",
+        "properties": {
+          "productionHeaderBatchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "productionOrderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productionOrder": {
+            "$ref": "#/components/schemas/ProductionOrder"
+          }
+        },
+        "additionalProperties": false
+      },
       "ProductionOrder": {
         "type": "object",
         "properties": {
@@ -23040,6 +23505,20 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductionOrderItem"
+            },
+            "nullable": true
+          },
+          "productionHeaderBatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductionHeaderBatch"
+            },
+            "nullable": true
+          },
+          "productionComponentLines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductionComponentLine"
             },
             "nullable": true
           }
@@ -24849,6 +25328,18 @@
         },
         "additionalProperties": false
       },
+      "SubmitProductionOrderDTO": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Supplier": {
         "type": "object",
         "properties": {
@@ -25769,6 +26260,89 @@
         },
         "additionalProperties": false
       },
+      "UpdateProductionComponentBatchDTO": {
+        "required": [
+          "batchNumber",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateProductionComponentLineDTO": {
+        "required": [
+          "requiredQuantity",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "requiredQuantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "issuedQuantity": {
+            "minimum": 0,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "issueType": {
+            "maxLength": 20,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateProductionHeaderBatchDTO": {
+        "required": [
+          "batchNumber",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateProductionOrderDTO": {
         "required": [
           "dueDate",
@@ -25776,10 +26350,6 @@
         ],
         "type": "object",
         "properties": {
-          "productionOrderId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "postingDate": {
             "type": "string",
             "format": "date-time"
@@ -25793,21 +26363,23 @@
             "minLength": 0,
             "type": "string",
             "nullable": true
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
       },
       "UpdateProductionOrderItemDTO": {
         "required": [
-          "plannedQuantity",
-          "productionOrderItemId"
+          "plannedQuantity"
         ],
         "type": "object",
         "properties": {
-          "productionOrderItemId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "plannedQuantity": {
             "minimum": 0.01,
             "type": "number",
@@ -26493,6 +27065,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductionOrder"
+            },
+            "nullable": true
+          },
+          "productionComponentLines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductionComponentLine"
             },
             "nullable": true
           },
