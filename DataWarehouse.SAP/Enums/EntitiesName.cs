@@ -8,6 +8,6 @@ namespace DataWarehouse.SAP.Enums
 {
     public enum  EntitiesName
     {
-        item=1,warehouse=2, purchase=3,count=4, businessPartners = 5,
+        item=1,warehouse=2, purchase=3,count=4, businessPartners = 5, itemUomGroup=6,sales=7,
     }
 }

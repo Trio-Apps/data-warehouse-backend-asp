@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -299,6 +300,121 @@ namespace DataWarehouse.SAP.Repositories.Based
             throw new Exception("SAP request failed after retries");
         }
 
+        public async Task<string> GetAllSapPrivate(int sapId, string entityType)
+        {
+            var client = await clientFactory.Create(sapId);
+
+            var baseUrl = client.BaseAddress?.ToString() ?? throw new Exception("SAP BaseAddress is null");
+            if (!baseUrl.EndsWith("/")) baseUrl += "/";
+            var fullUrl = new Uri(baseUrl + entityType.TrimStart('/'));
+
+            HttpResponseMessage? response = null;
+
+            for (int attempt = 1; attempt <= 2; attempt++)
+            {
+                var sapSession = await _sapAuth.GetSessionIdAsync(sapId);
+
+                using var req = new HttpRequestMessage(HttpMethod.Get, fullUrl);
+                req.Headers.Add("Cookie", $"B1SESSION={sapSession.SessionId}");
+
+                req.Headers.Accept.Clear();
+                req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                req.Headers.AcceptCharset.Clear();
+                req.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
+                req.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("windows-1256"));
+
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                response = await client.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
+                sw.Stop();
+
+                _logger.LogInformation("SAP headers in {ms} ms. Status={status}", sw.ElapsedMilliseconds, (int)response.StatusCode);
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized && attempt == 1)
+                {
+                    _logger.LogWarning("SAP returned 401. Forcing re-login and retrying...");
+                    await _sapAuth.ForceReLoginAsync(sapId);
+                    continue;
+                }
+
+                var bytes = await response.Content.ReadAsByteArrayAsync();
+                var contentType = response.Content.Headers.ContentType?.ToString() ?? "<null>";
+                _logger.LogInformation("SAP Content-Type: {ct}", contentType);
+
+                // Decode with best encoding (THIS is the key fix)
+                var body = DecodeSmart(bytes, response.Content.Headers.ContentType?.CharSet);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("SAP Error {status}. Url={url}. Body={body}", (int)response.StatusCode, fullUrl, body);
+                    response.EnsureSuccessStatusCode();
+                }
+
+                if (string.IsNullOrWhiteSpace(body))
+                    throw new Exception("SAP returned empty response body");
+
+                return body;
+            }
+
+            throw new Exception("SAP request failed after retries");
+        }
+
+        private static string DecodeSmart(byte[] bytes, string? charsetFromHeader)
+        {
+            if (bytes is null || bytes.Length == 0) return string.Empty;
+
+            // 1) If server specified charset, trust it first
+            if (!string.IsNullOrWhiteSpace(charsetFromHeader))
+            {
+                try
+                {
+                    var enc = Encoding.GetEncoding(charsetFromHeader.Trim().Trim('"'));
+                    return enc.GetString(bytes).TrimStart('\uFEFF');
+                }
+                catch
+                {
+                    // ignore and fallback to heuristics
+                }
+            }
+
+            // 2) Try UTF-8 strictly
+            string utf8;
+            try
+            {
+                utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true)
+                    .GetString(bytes)
+                    .TrimStart('\uFEFF');
+            }
+            catch
+            {
+                utf8 = string.Empty;
+            }
+
+            // 3) Try Windows-1256 (Arabic)
+            var cp1256 = Encoding.GetEncoding(1256).GetString(bytes).TrimStart('\uFEFF');
+
+            // 4) Choose the one that "looks" most Arabic
+            return ArabicScore(cp1256) >= ArabicScore(utf8) ? cp1256 : utf8;
+        }
+
+        private static int ArabicScore(string? s)
+        {
+            if (string.IsNullOrEmpty(s)) return -1;
+
+            // Count Arabic letters range + Arabic presentation forms (broad)
+            int score = 0;
+            foreach (var ch in s)
+            {
+                if ((ch >= '\u0600' && ch <= '\u06FF') || (ch >= '\u0750' && ch <= '\u077F') ||
+                    (ch >= '\u08A0' && ch <= '\u08FF') || (ch >= '\uFB50' && ch <= '\uFDFF') ||
+                    (ch >= '\uFE70' && ch <= '\uFEFF'))
+                    score++;
+            }
+
+            // Penalize obvious mojibake patterns a bit
+            if (s.Contains('�')) score -= 10;
+
+            return score;
+        }
         //public async Task<string> GetAllSap(int sapId, string entityType)
         //{
         //    var client = await clientFactory.Create(sapId);

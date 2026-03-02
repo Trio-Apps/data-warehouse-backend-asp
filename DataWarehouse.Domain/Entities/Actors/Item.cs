@@ -42,6 +42,7 @@ namespace DataWarehouse.Domain.Entities.Actors
 
         //
         public ICollection<SalesOrderItem> SalesOrderItems { get; set; } = new List<SalesOrderItem>();
+        public ICollection<DeliveryNoteItem> DeliveryNoteItems { get; set; } = new List<DeliveryNoteItem>();
         public ICollection<SalesReturnOrderItem> SalesReturnOrderItems { get; set; } = new List<SalesReturnOrderItem>();
 
         // BinLocations

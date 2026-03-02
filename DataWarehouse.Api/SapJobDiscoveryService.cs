@@ -78,6 +78,12 @@ namespace DataWarehouse.Api
                  j => j.SyncPurchaseAsync(sapId),
                  "*/2 * * * *"
              );
+
+                RecurringJob.AddOrUpdate<SapJobsExecutor>(
+              $"sap:{sapId}:sales-orders-sync",
+              j => j.SyncSalesAsync(sapId),
+              "*/4 * * * *"
+          );
                 // 👇 نعلّم إن الـ Jobs اتخلقت
                 sap.IsActive = true;
             }

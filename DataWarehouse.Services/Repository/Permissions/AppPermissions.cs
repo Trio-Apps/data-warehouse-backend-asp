@@ -113,6 +113,12 @@ namespace DataWarehouse.Services.Repository.Permissions
         public const string Sales_Get = "Sales.Get";
         #endregion
 
+        #region DeliveryNote
+        public const string DeliveryNote_Create = "DeliveryNote.Create";
+        public const string DeliveryNote_Edit = "DeliveryNote.Edit";
+        public const string DeliveryNote_Delete = "DeliveryNote.Delete";
+        public const string DeliveryNote_Get = "DeliveryNote.Get";
+        #endregion
         #region SalesReturn
         public const string SalesReturn_Create = "SalesReturn.Create";
         public const string SalesReturn_Edit = "SalesReturn.Edit";
@@ -280,6 +286,13 @@ namespace DataWarehouse.Services.Repository.Permissions
     new(AppPermissions.Sales_Edit,   "Edit Sale",   "Sales"),
     new(AppPermissions.Sales_Delete, "Delete Sale", "Sales"),
     new(AppPermissions.Sales_Get,    "Get Sales",   "Sales"),
+    #endregion
+
+      #region DeliveryNote
+    new(AppPermissions.DeliveryNote_Create, "Create DeliveryNote", "DeliveryNote"),
+    new(AppPermissions.DeliveryNote_Edit,   "Edit DeliveryNote",   "DeliveryNote"),
+    new(AppPermissions.DeliveryNote_Delete, "Delete DeliveryNote", "DeliveryNote"),
+    new(AppPermissions.DeliveryNote_Get,    "Get DeliveryNote",   "DeliveryNote"),
     #endregion
 
     #region SalesReturn

@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
+using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Actors;
 using DataWarehouse.Core.Interfaces.Company;
@@ -27,28 +28,97 @@ public class CustomerRepository : BaseRepository<Customer>, ICustomerRepository
         this.companyCache = companyCache;
     }
 
-    public async Task<GeneralResponse<IEnumerable<Customer>>> GetAllCustomersAsync()
-    {
+    //public async Task<GeneralResponse<IEnumerable<Customer>>> GetustomersAsync()
+    //{
 
+    //    var sapId = await sapCache.Get();
+
+    //    if (sapId == null)
+    //    {
+    //        var companyId = await companyCache.Get();
+    //        var sap = await _context.Saps.Where(c => c.CompanyId == companyId).FirstOrDefaultAsync();
+    //        if (sap == null)
+    //            return GeneralResponse<IEnumerable<Customer>>.FailResponse("Not Found Any Customers In This Company");
+
+    //        await sapCache.UpdateSapUserClaimAsync(sap.SapId.ToString());
+    //        sapId = sap.SapId;
+    //    }
+
+
+
+    //    var customers = await _context.Customers.Where(s => s.SapId == sapId).ToListAsync();
+       
+    //    return GeneralResponse<IEnumerable<Customer>>.SuccessResponse(customers, "Customers retrieved successfully");
+    //}
+
+    public async Task<GeneralResponse<PagedResult<Customer>>> GetCustomersAsync(
+       string? customerCode,
+       string? customerName,
+       int pageNumber = 1,
+       int pageSize = 20)
+    {
+        // Guard for pagination
+        pageNumber = pageNumber < 1 ? 1 : pageNumber;
+        pageSize = pageSize < 1 ? 20 : pageSize;
+        pageSize = pageSize > 200 ? 200 : pageSize; // optional cap
+
+        // 1) Resolve sapId (same logic you had)
         var sapId = await sapCache.Get();
 
         if (sapId == null)
         {
             var companyId = await companyCache.Get();
             var sap = await _context.Saps.Where(c => c.CompanyId == companyId).FirstOrDefaultAsync();
+
             if (sap == null)
-                return GeneralResponse<IEnumerable<Customer>>.FailResponse("Not Found Any Customers In This Company");
+                return GeneralResponse<PagedResult<Customer>>.FailResponse("Not Found Any Customers In This Company");
 
             await sapCache.UpdateSapUserClaimAsync(sap.SapId.ToString());
             sapId = sap.SapId;
         }
 
+        // 2) Build query
+        IQueryable<Customer> query = _context.Customers
+            .AsNoTracking()
+            .Where(c => c.SapId == sapId);
 
+        if (!string.IsNullOrWhiteSpace(customerCode))
+        {
+            var code = customerCode.Trim();
+            query = query.Where(c => c.CustomerCode != null && c.CustomerCode.Contains(code));
+            // ·Ê ⁄«Ì“Â« exact match »œ· contains:
+            // query = query.Where(c => c.CustomerCode == code);
+        }
 
-        var customers = await _context.Customers.Where(s => s.SapId == sapId).ToListAsync();
-       
-        return GeneralResponse<IEnumerable<Customer>>.SuccessResponse(customers, "Customers retrieved successfully");
+        if (!string.IsNullOrWhiteSpace(customerName))
+        {
+            var name = customerName.Trim();
+            query = query.Where(c => c.CustomerName != null && c.CustomerName.Contains(name));
+        }
+
+        // 3) Pagination
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(c => c.CustomerId) // ⁄œ¯·Â« Õ”» «·‹ key ⁄‰œﬂ („À·« CustomerCode)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var result = new PagedResult<Customer>
+        {
+            Data = items,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalRecords = totalCount
+        };
+
+        return GeneralResponse<PagedResult<Customer>>.SuccessResponse(result, "Customers retrieved successfully");
     }
+
+    // »”Ìÿ… ÊŒ›Ì›… ··‹ pagination response
+
+
 
     public async Task<GeneralResponse<Customer>> GetCustomerByIdAsync(int id)
     {
@@ -165,4 +235,6 @@ public class CustomerRepository : BaseRepository<Customer>, ICustomerRepository
 
         return GeneralResponse<bool>.SuccessResponse(true, "Customer deleted successfully");
     }
+
+   
 }

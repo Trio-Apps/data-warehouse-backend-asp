@@ -17,6 +17,7 @@ namespace DataWarehouse.Domain.Enums.Approval
         Transferred = 7,
         Received = 8,
         Counting = 9,
+        DeliveryNote=10,
 
 
     }

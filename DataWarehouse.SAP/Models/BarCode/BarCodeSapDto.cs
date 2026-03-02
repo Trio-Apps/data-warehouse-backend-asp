@@ -53,6 +53,7 @@ namespace DataWarehouse.SAP.Models.BarCode
         public float BaseQty { get; set; }
 
         public string UomCode { get; set; }
+
         public int UomEntry { get; set; }
 
     }

@@ -84,6 +84,12 @@ namespace DataWarehouse.Api
                 j => j.SyncPurchaseAsync(sapId),
                 "*/2 * * * *");
 
+                RecurringJob.AddOrUpdate<SapJobsExecutor>(
+            $"sap:{sapId}:sales-orders-sync",
+            j => j.SyncSalesAsync(sapId),
+            "*/4 * * * *"
+        );
+
                 //   RecurringJob.AddOrUpdate<SapWarehouseService>(
                 //       $"sap:{sapId}:warehouses-sync",
                 //       job => job.SyncWarehouseAsync(sapId),

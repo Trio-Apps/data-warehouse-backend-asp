@@ -20,6 +20,7 @@ namespace DataWarehouse.Api
         private readonly ISapDynamicBarCodeService _dynamicBarCodeService;
         private readonly IBusinessPartnersSupplierService businessPartnersService;
         private readonly ISapPurchaseService purchaseService;
+        private readonly ISapSalesService salesService;
 
         public SapJobsExecutor(
             ISapWarehouseService warehouseService,
@@ -27,7 +28,8 @@ namespace DataWarehouse.Api
             ISapBarCodeService barCodeService,
             ISapDynamicBarCodeService dynamicBarCodeService,
             IBusinessPartnersSupplierService businessPartnersService,
-            ISapPurchaseService purchaseService)
+            ISapPurchaseService purchaseService,
+            ISapSalesService salesService)
         {
             _warehouseService = warehouseService;
             _itemService = itemService;
@@ -35,6 +37,7 @@ namespace DataWarehouse.Api
             _dynamicBarCodeService = dynamicBarCodeService;
             this.businessPartnersService = businessPartnersService;
             this.purchaseService = purchaseService;
+            this.salesService = salesService;
         }
 
         // =========================
@@ -103,6 +106,14 @@ namespace DataWarehouse.Api
         public async Task SyncPurchaseAsync(int sapId)
         {
             await purchaseService.SyncPurchaseAsync(sapId);
+        }
+
+        // purchase
+        [DisableConcurrentExecution(1800)]
+        [AutomaticRetry(Attempts = 0)]
+        public async Task SyncSalesAsync(int sapId)
+        {
+            await salesService.SyncSalesOrdersAsync(sapId);
         }
     }
 

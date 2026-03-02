@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
+using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.Interfaces.Actors;
 using DataWarehouse.Domain.Entities.Actors;
 using Microsoft.AspNetCore.Authorization;
@@ -21,14 +22,21 @@ public class CustomerController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<GeneralResponse<IEnumerable<Customer>>>> GetAll()
+    [HttpGet("{skip}/{pageSize}")]
+    public async Task<ActionResult<GeneralResponse<PagedResult<Customer>>>> GetAll(
+    string? customerCode,
+    string? customerName,
+    int skip,
+    int pageSize)
     {
-        var res = await _repository.GetAllCustomersAsync();
+        var res = await _repository.GetCustomersAsync(customerCode, customerName, skip, pageSize);
+
         if (!res.Success)
             return BadRequest(res);
+
         return Ok(res);
     }
+
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GeneralResponse<Customer>>> GetById(int id)

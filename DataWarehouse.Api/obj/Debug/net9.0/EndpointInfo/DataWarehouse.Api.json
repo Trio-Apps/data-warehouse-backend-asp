@@ -2561,74 +2561,62 @@
         }
       }
     },
-    "/api/Customer": {
+    "/api/Customer/{skip}/{pageSize}": {
       "get": {
         "tags": [
           "Customer"
         ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerIEnumerableGeneralResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerIEnumerableGeneralResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerIEnumerableGeneralResponse"
-                }
-              }
+        "parameters": [
+          {
+            "name": "customerCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
-        }
-      },
-      "post": {
-        "tags": [
-          "Customer"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CustomerDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CustomerDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CustomerDTO"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerGeneralResponse"
+                  "$ref": "#/components/schemas/CustomerPagedResultGeneralResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerGeneralResponse"
+                  "$ref": "#/components/schemas/CustomerPagedResultGeneralResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CustomerGeneralResponse"
+                  "$ref": "#/components/schemas/CustomerPagedResultGeneralResponse"
                 }
               }
             }
@@ -2911,6 +2899,1417 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomerGeneralResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Customer": {
+      "post": {
+        "tags": [
+          "Customer"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerGeneralResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteBatch": {
+      "get": {
+        "tags": [
+          "DeliveryNoteBatch"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteBatch"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteBatch"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteBatch"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteBatch/{id}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteBatch"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteBatch"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteBatch"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DeliveryNoteBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DeliveryNoteBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteBatch/delivery-note-item/{deliveryNoteItemId}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteBatch"
+        ],
+        "parameters": [
+          {
+            "name": "deliveryNoteItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "DeliveryNoteBatch"
+        ],
+        "parameters": [
+          {
+            "name": "deliveryNoteItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneralBatchDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneralBatchDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneralBatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteBatch/delivery-note-item/{deliveryNoteItemId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteBatch"
+        ],
+        "parameters": [
+          {
+            "name": "deliveryNoteItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem": {
+      "get": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem/{id}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeliveryNoteOrderItemDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeliveryNoteOrderItemDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeliveryNoteOrderItemDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem/delivery-note-order/{deliveryNoteOrderId}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "deliveryNoteOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem/delivery-note-order/{deliveryNoteOrderId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "deliveryNoteOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem/sales-order/{deliveryNoteOrderId}": {
+      "post": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "deliveryNoteOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderItemDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderItemDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderItemDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem/witout-reference/delivery-note-order/{deliveryNoteOrderId}/add-barcode-or-no/{isBarcode}": {
+      "post": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "deliveryNoteOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "isBarcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem/without-reference/{id}": {
+      "put": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem/{id}/with-batches": {
+      "get": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem/{id}/with-sales-order-item": {
+      "get": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteItem/{id}/with-item": {
+      "get": {
+        "tags": [
+          "DeliveryNoteItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteOrder"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteOrder"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteOrder"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/warehouse/{warehouseId}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteOrder"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteOrder"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteOrder"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/warehouse/{warehouseId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postingDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dueDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/{id}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeliveryNoteOrderDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeliveryNoteOrderDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeliveryNoteOrderDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/sales-order/{salesOrderId}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "salesOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/by-delivery-note-order/{deliveryNoteOrderId}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "deliveryNoteOrderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/user/{userId}": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteOrder"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteOrder"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeliveryNoteOrder"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/{id}/with-items": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/{id}/with-items-batches": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/{id}/with-sales-order": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/{id}/with-warehouse": {
+      "get": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/without-reference": {
+      "post": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderWithoutRefDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderWithoutRefDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderWithoutRefDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/DeliveryNoteOrder/with-default-items": {
+      "post": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeliveryNoteOrderDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryNoteOrder"
                 }
               }
             }
@@ -13021,14 +14420,14 @@
         }
       }
     },
-    "/api/SalesReturnOrder/sales-order/{salesOrderId}": {
+    "/api/SalesReturnOrder/delivery-note-order/{deliveryNoteOrderId}": {
       "get": {
         "tags": [
           "SalesReturnOrder"
         ],
         "parameters": [
           {
-            "name": "salesOrderId",
+            "name": "deliveryNoteOrderId",
             "in": "path",
             "required": true,
             "schema": {
@@ -13044,14 +14443,14 @@
         }
       }
     },
-    "/api/SalesReturnOrder/by-sales-order/{salesOrderId}": {
+    "/api/SalesReturnOrder/by-delivery-note-order/{deliveryNoteOrderId}": {
       "get": {
         "tags": [
           "SalesReturnOrder"
         ],
         "parameters": [
           {
-            "name": "salesOrderId",
+            "name": "deliveryNoteOrderId",
             "in": "path",
             "required": true,
             "schema": {
@@ -13178,7 +14577,7 @@
         }
       }
     },
-    "/api/SalesReturnOrder/{id}/with-sales-order": {
+    "/api/SalesReturnOrder/{id}/with-delivery-note-order": {
       "get": {
         "tags": [
           "SalesReturnOrder"
@@ -14463,74 +15862,62 @@
         }
       }
     },
-    "/api/Supplier": {
+    "/api/Supplier/{skip}/{pageSize}": {
       "get": {
         "tags": [
           "Supplier"
         ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SupplierIEnumerableGeneralResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SupplierIEnumerableGeneralResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SupplierIEnumerableGeneralResponse"
-                }
-              }
+        "parameters": [
+          {
+            "name": "supplierCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "supplierName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
-        }
-      },
-      "post": {
-        "tags": [
-          "Supplier"
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SupplierDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SupplierDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SupplierDTO"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/SupplierGeneralResponse"
+                  "$ref": "#/components/schemas/SupplierPagedResultGeneralResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SupplierGeneralResponse"
+                  "$ref": "#/components/schemas/SupplierPagedResultGeneralResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SupplierGeneralResponse"
+                  "$ref": "#/components/schemas/SupplierPagedResultGeneralResponse"
                 }
               }
             }
@@ -14875,6 +16262,54 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierGeneralResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Supplier": {
+      "post": {
+        "tags": [
+          "Supplier"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierDTO"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -18385,6 +19820,103 @@
         },
         "additionalProperties": false
       },
+      "AddDeliveryNoteOrderDTO": {
+        "required": [
+          "dueDate",
+          "postingDate",
+          "salesOrderId"
+        ],
+        "type": "object",
+        "properties": {
+          "salesOrderId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddDeliveryNoteOrderItemDTO": {
+        "required": [
+          "quantity",
+          "salesOrderItemId"
+        ],
+        "type": "object",
+        "properties": {
+          "salesOrderItemId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddDeliveryNoteOrderWithoutRefDTO": {
+        "required": [
+          "customerId",
+          "dueDate",
+          "isDraft",
+          "postingDate",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isDraft": {
+            "type": "boolean"
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "AddDynamicBarCodeDto": {
         "type": "object",
         "properties": {
@@ -18907,13 +20439,13 @@
       },
       "AddSalesReturnOrderDTO": {
         "required": [
+          "deliveryNoteOrderId",
           "dueDate",
-          "postingDate",
-          "salesOrderId"
+          "postingDate"
         ],
         "type": "object",
         "properties": {
-          "salesOrderId": {
+          "deliveryNoteOrderId": {
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
@@ -18939,12 +20471,12 @@
       },
       "AddSalesReturnOrderItemDTO": {
         "required": [
-          "quantity",
-          "salesOrderItemId"
+          "deliveryNoteItemId",
+          "quantity"
         ],
         "type": "object",
         "properties": {
-          "salesOrderItemId": {
+          "deliveryNoteItemId": {
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
@@ -19364,6 +20896,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SalesOrder"
+            },
+            "nullable": true
+          },
+          "deliveryNoteOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryNoteOrder"
             },
             "nullable": true
           },
@@ -20031,6 +21570,13 @@
             },
             "nullable": true
           },
+          "deliveryNoteOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryNoteOrder"
+            },
+            "nullable": true
+          },
           "salesReturnOrders": {
             "type": "array",
             "items": {
@@ -20134,6 +21680,262 @@
             "type": "array",
             "items": {
               "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomerPagedResult": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Customer"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "hasPrevious": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNext": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomerPagedResultGeneralResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/CustomerPagedResult"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeliveryNoteBatch": {
+        "type": "object",
+        "properties": {
+          "deliveryNoteBatchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "salesOrderBatchId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "salesOrderBatch": {
+            "$ref": "#/components/schemas/SalesOrderBatch"
+          },
+          "salesReturnOrderBatch": {
+            "$ref": "#/components/schemas/SalesReturnOrderBatch"
+          },
+          "deliveryNoteItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deliveryNoteItem": {
+            "$ref": "#/components/schemas/DeliveryNoteItem"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeliveryNoteItem": {
+        "type": "object",
+        "properties": {
+          "deliveryNoteItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "barCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/GeneralItemStatus"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryNoteOrderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deliveryNoteOrder": {
+            "$ref": "#/components/schemas/DeliveryNoteOrder"
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Item"
+          },
+          "salesOrderItemId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "salesOrderItem": {
+            "$ref": "#/components/schemas/SalesOrderItem"
+          },
+          "salesReturnOrderItem": {
+            "$ref": "#/components/schemas/SalesReturnOrderItem"
+          },
+          "deliveryNoteBatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryNoteBatch"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeliveryNoteOrder": {
+        "type": "object",
+        "properties": {
+          "deliveryNoteOrderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GeneralStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/ApplicationUser"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouse": {
+            "$ref": "#/components/schemas/Warehouse"
+          },
+          "salesOrderId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "salesOrder": {
+            "$ref": "#/components/schemas/SalesOrder"
+          },
+          "customerId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          },
+          "salesReturnOrder": {
+            "$ref": "#/components/schemas/SalesReturnOrder"
+          },
+          "deliveryNoteItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryNoteItem"
             },
             "nullable": true
           }
@@ -20679,6 +22481,13 @@
             },
             "nullable": true
           },
+          "deliveryNoteItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryNoteItem"
+            },
+            "nullable": true
+          },
           "salesReturnOrderItems": {
             "type": "array",
             "items": {
@@ -21072,7 +22881,8 @@
           6,
           7,
           8,
-          9
+          9,
+          10
         ],
         "type": "integer",
         "format": "int32"
@@ -22232,6 +24042,20 @@
             "type": "integer",
             "format": "int32"
           },
+          "docEntry": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "docNum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "docType": {
+            "type": "string",
+            "nullable": true
+          },
           "userId": {
             "type": "string",
             "nullable": true
@@ -22253,13 +24077,24 @@
           "customer": {
             "$ref": "#/components/schemas/Customer"
           },
-          "salesReturnOrder": {
-            "$ref": "#/components/schemas/SalesReturnOrder"
+          "sapId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sap": {
+            "$ref": "#/components/schemas/Sap"
           },
           "salesOrderItems": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SalesOrderItem"
+            },
+            "nullable": true
+          },
+          "deliveryNoteOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryNoteOrder"
             },
             "nullable": true
           }
@@ -22298,15 +24133,19 @@
             "type": "string",
             "format": "date-time"
           },
-          "salesReturnOrderBatch": {
-            "$ref": "#/components/schemas/SalesReturnOrderBatch"
-          },
           "salesOrderItemId": {
             "type": "integer",
             "format": "int32"
           },
           "salesOrderItem": {
             "$ref": "#/components/schemas/SalesOrderItem"
+          },
+          "deliveryNoteBatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryNoteBatch"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -22474,13 +24313,17 @@
           "item": {
             "$ref": "#/components/schemas/Item"
           },
-          "salesReturnOrderItem": {
-            "$ref": "#/components/schemas/SalesReturnOrderItem"
-          },
           "salesOrderBatches": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SalesOrderBatch"
+            },
+            "nullable": true
+          },
+          "deliveryNoteItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryNoteItem"
             },
             "nullable": true
           }
@@ -22603,12 +24446,13 @@
           "customer": {
             "$ref": "#/components/schemas/Customer"
           },
-          "salesOrderId": {
+          "deliveryNoteOrderId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
-          "salesOrder": {
-            "$ref": "#/components/schemas/SalesOrder"
+          "deliveryNoteOrder": {
+            "$ref": "#/components/schemas/DeliveryNoteOrder"
           },
           "salesReturnOrderItems": {
             "type": "array",
@@ -22652,12 +24496,13 @@
             "type": "integer",
             "format": "int32"
           },
-          "salesOrderBatchId": {
+          "deliveryNoteBatchId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
-          "salesOrderBatch": {
-            "$ref": "#/components/schemas/SalesOrderBatch"
+          "deliveryNoteBatch": {
+            "$ref": "#/components/schemas/DeliveryNoteBatch"
           },
           "salesReturnOrderItemId": {
             "type": "integer",
@@ -22718,12 +24563,13 @@
           "item": {
             "$ref": "#/components/schemas/Item"
           },
-          "salesOrderItemId": {
+          "deliveryNoteItemId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
-          "salesOrderItem": {
-            "$ref": "#/components/schemas/SalesOrderItem"
+          "deliveryNoteItem": {
+            "$ref": "#/components/schemas/DeliveryNoteItem"
           },
           "salesReturnOrderBatches": {
             "type": "array",
@@ -22867,6 +24713,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DocumentAttachment"
+            },
+            "nullable": true
+          },
+          "salesOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SalesOrder"
             },
             "nullable": true
           }
@@ -23255,6 +25108,67 @@
         },
         "additionalProperties": false
       },
+      "SupplierPagedResult": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Supplier"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "hasPrevious": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNext": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SupplierPagedResultGeneralResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/SupplierPagedResult"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "TransferredItem": {
         "type": "object",
         "properties": {
@@ -23622,6 +25536,77 @@
             "nullable": true
           },
           "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateDeliveryNoteOrderDTO": {
+        "required": [
+          "deliveryNoteOrderId"
+        ],
+        "type": "object",
+        "properties": {
+          "deliveryNoteOrderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateDeliveryNoteOrderItemDTO": {
+        "required": [
+          "deliveryNoteItemId",
+          "uoMEntry"
+        ],
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "comment": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "unitPrice": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deliveryNoteItemId": {
             "type": "integer",
             "format": "int32"
           }
@@ -24459,6 +26444,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SalesOrder"
+            },
+            "nullable": true
+          },
+          "deliveryNoteOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryNoteOrder"
             },
             "nullable": true
           },

@@ -4,6 +4,7 @@ using DataWarehouse.Domain.Entities.Actors.IncrementalSync;
 using DataWarehouse.Domain.Entities.Auth;
 using DataWarehouse.Domain.Entities.BarCode;
 using DataWarehouse.Domain.Entities.Processes;
+using DataWarehouse.Domain.Entities.Processes.OutSide;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -39,5 +40,8 @@ namespace DataWarehouse.Domain.Entities.AllinAll
         public ICollection<WmsSyncStatus> WmsSyncStatuses { get; set; } = new List<WmsSyncStatus>();
         public ICollection<DynamicBarCode> DynamicBarCodes { get; set; } = new List<DynamicBarCode>();
         public ICollection<DocumentAttachment> DocumentAttachments { get; set; } = new List<DocumentAttachment>();
+
+        // orders
+        public ICollection<SalesOrder> SalesOrders { get; set; } = new List<SalesOrder>();
     }
 }

@@ -189,6 +189,13 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
         // Sales Order with items and warehouse and customer
         #region Sales Order
+
+        builder.Entity<Sap>()
+    .HasMany(o => o.SalesOrders).WithOne(a => a.Sap)
+    .HasForeignKey(o => o.SapId)
+    .HasPrincipalKey(e => e.SapId)
+    .OnDelete(DeleteBehavior.NoAction);
+
         //  Warehouse  with Sales Order
         builder.Entity<Warehouse>()
        .HasMany(o => o.SalesOrders).WithOne(a => a.Warehouse)
@@ -237,14 +244,92 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
         #endregion
 
+
+        // Delivery Note Order with items and warehouse and customer
+        #region Delivery Note
+        //  Warehouse  with Delivery Note Order
+        builder.Entity<Warehouse>()
+       .HasMany(o => o.DeliveryNoteOrders).WithOne(a => a.Warehouse)
+       .HasForeignKey(o => o.WarehouseId)
+       .HasPrincipalKey(e => e.WarehouseId)
+       .OnDelete(DeleteBehavior.NoAction);
+
+
+        //  Delivery Note order with item
+
+        builder.Entity<DeliveryNoteOrder>()
+     .HasMany(o => o.DeliveryNoteItems).WithOne(a => a.DeliveryNoteOrder)
+     .HasForeignKey(o => o.DeliveryNoteOrderId)
+     .HasPrincipalKey(e => e.DeliveryNoteOrderId)
+     .OnDelete(DeleteBehavior.Cascade);
+
+        //  Delivery Note order with Sales order
+
+        builder.Entity<SalesOrder>()
+   .HasMany(o => o.DeliveryNoteOrders).WithOne(a => a.SalesOrder)
+   .HasForeignKey(o => o.SalesOrderId)
+   .HasPrincipalKey(e => e.SalesOrderId)
+   .OnDelete(DeleteBehavior.NoAction);
+
+        //  Delivery Note Item with Sales Item
+
+        builder.Entity<SalesOrderItem>()
+   .HasMany(o => o.DeliveryNoteItems).WithOne(a => a.SalesOrderItem)
+   .HasForeignKey(o => o.SalesOrderItemId)
+   .HasPrincipalKey(e => e.SalesOrderItemId)
+   .OnDelete(DeleteBehavior.NoAction);
+
+
+        //
+        builder.Entity<DeliveryNoteItem>()
+       .HasMany(o => o.DeliveryNoteBatches).WithOne(a => a.DeliveryNoteItem)
+       .HasForeignKey(o => o.DeliveryNoteItemId)
+       .HasPrincipalKey(e => e.DeliveryNoteItemId)
+       .OnDelete(DeleteBehavior.Cascade);
+
+
+     //  Delivery Note Batch with Sales Batch
+
+    builder.Entity<SalesOrderBatch>()
+     .HasMany(o => o.DeliveryNoteBatches).WithOne(a => a.SalesOrderBatch)
+     .HasForeignKey(o => o.SalesOrderBatchId)
+     .HasPrincipalKey(e => e.SalesOrderBatchId)
+     .OnDelete(DeleteBehavior.NoAction);
+
+
+    builder.Entity<Item>()
+     .HasMany(o => o.DeliveryNoteItems).WithOne(a => a.Item)
+     .HasForeignKey(o => o.ItemId)
+     .HasPrincipalKey(e => e.ItemId)
+     .OnDelete(DeleteBehavior.NoAction);
+
+
+     // Customer with Delivery Note order
+
+    builder.Entity<Customer>()
+      .HasMany(o => o.DeliveryNoteOrders).WithOne(a => a.Customer)
+      .HasForeignKey(o => o.CustomerId)
+      .HasPrincipalKey(e => e.CustomerId)
+      .OnDelete(DeleteBehavior.NoAction);
+
+
+    builder.Entity<ApplicationUser>()
+      .HasMany(w => w.DeliveryNoteOrders)
+      .WithOne(po => po.User)
+      .HasForeignKey(po => po.UserId)
+      .HasPrincipalKey(w => w.Id)
+      .OnDelete(DeleteBehavior.NoAction);
+
+        #endregion
+
         // Sales return 
         #region Sales Return 
 
-        builder.Entity<SalesOrder>()
+        builder.Entity<DeliveryNoteOrder>()
         .HasOne(ps => ps.SalesReturnOrder)
-        .WithOne(rpo => rpo.SalesOrder)
-        .HasForeignKey<SalesReturnOrder>(rpo => rpo.SalesOrderId)
-        .HasPrincipalKey<SalesOrder>(ps => ps.SalesOrderId)
+        .WithOne(rpo => rpo.DeliveryNoteOrder)
+        .HasForeignKey<SalesReturnOrder>(rpo => rpo.DeliveryNoteOrderId)
+        .HasPrincipalKey<DeliveryNoteOrder>(ps => ps.DeliveryNoteOrderId)
         .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
 
         builder.Entity<SalesReturnOrder>()
@@ -255,12 +340,13 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         .OnDelete(DeleteBehavior.Cascade);
 
 
-        builder.Entity<SalesOrderItem>()
+        builder.Entity<DeliveryNoteItem>()
        .HasOne(ps => ps.SalesReturnOrderItem)
-       .WithOne(rpo => rpo.SalesOrderItem)
-       .HasForeignKey<SalesReturnOrderItem>(rpo => rpo.SalesOrderItemId)
-       .HasPrincipalKey<SalesOrderItem>(ps => ps.SalesOrderItemId)
+       .WithOne(rpo => rpo.DeliveryNoteItem)
+       .HasForeignKey<SalesReturnOrderItem>(rpo => rpo.DeliveryNoteItemId)
+       .HasPrincipalKey<DeliveryNoteItem>(ps => ps.DeliveryNoteItemId)
        .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
+
 
         builder.Entity<SalesReturnOrderItem>()
         .HasMany(s => s.SalesReturnOrderBatches)
@@ -270,14 +356,16 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         .OnDelete(DeleteBehavior.Cascade);
 
 
-        builder.Entity<SalesOrderBatch>()
+        builder.Entity<DeliveryNoteBatch>()
        .HasOne(ps => ps.SalesReturnOrderBatch)
-       .WithOne(rpo => rpo.SalesOrderBatch)
-       .HasForeignKey<SalesReturnOrderBatch>(rpo => rpo.SalesOrderBatchId)
-       .HasPrincipalKey<SalesOrderBatch>(ps => ps.SalesOrderBatchId)
+       .WithOne(rpo => rpo.DeliveryNoteBatch)
+       .HasForeignKey<SalesReturnOrderBatch>(rpo => rpo.DeliveryNoteBatchId)
+       .HasPrincipalKey<DeliveryNoteBatch>(ps => ps.DeliveryNoteBatchId)
        .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
 
-
+        //////////
+        ///
+      
         builder.Entity<ApplicationUser>()
         .HasMany(w => w.SalesReturnOrders)
         .WithOne(po => po.User)
@@ -300,8 +388,7 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
      .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
-     
-        
+      
         // Production Stock with items and warehouse
         #region Production Order
 
@@ -549,11 +636,11 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         .HasDatabaseName("IX_ProcessesType_ProcessesName");
 
         builder.Entity<Sap>()
-      .HasMany(t => t.DocumentAttachments)
-    .WithOne(i => i.Sap)
-   .HasForeignKey(i => i.SapId)
-    .HasPrincipalKey(t => t.SapId)
-    .OnDelete(DeleteBehavior.Cascade);
+       .HasMany(t => t.DocumentAttachments)
+       .WithOne(i => i.Sap)
+       .HasForeignKey(i => i.SapId)
+       .HasPrincipalKey(t => t.SapId)
+       .OnDelete(DeleteBehavior.Cascade);
 
         #endregion
 
@@ -710,6 +797,13 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
        .HasForeignKey(o => o.SupplierId)
        .HasPrincipalKey(e => e.SupplierId)
        .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Supplier>()
+           .HasIndex(x => x.SupplierCode);
+
+        builder.Entity<Supplier>()
+       .HasIndex(x => new { x.SupplierCode, x.SapId }).IsUnique();
+
         #endregion
 
         // Customer
@@ -720,6 +814,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     .HasForeignKey(o => o.SapId)
     .HasPrincipalKey(e => e.SapId)
     .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Customer>()
+         .HasIndex(x => x.CustomerCode);
+
+        builder.Entity<Customer>()
+        .HasIndex(x => new { x.CustomerCode, x.SapId }).IsUnique();
 
         #endregion
 
@@ -781,7 +881,7 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
         #endregion
 
-        #region Sap
+         #region Sap
         builder.Entity<Sap>()
        .HasMany(i => i.Warehouses)
        .WithOne(s => s.Sap)
@@ -906,6 +1006,16 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         builder.Entity<CompanyUser>()
             .HasIndex(us => us.UserId)
             .IsUnique();
+
+        #endregion
+
+        #region warehouse
+
+        builder.Entity<Warehouse>()
+       .HasIndex(x => x.WarehouseCode);
+
+        builder.Entity<Warehouse>()
+        .HasIndex(x => new { x.WarehouseCode, x.SapId }).IsUnique();
 
         #endregion
 
@@ -1036,6 +1146,11 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     public DbSet<SalesOrder> SalesOrders { get; set; }
     public DbSet<SalesOrderItem> SalesOrderItems { get; set; }
     public DbSet<SalesOrderBatch>  SalesOrderBatches { get; set; }
+
+    // Sales Order
+    public DbSet<DeliveryNoteOrder> DeliveryNoteOrders { get; set; }
+    public DbSet<DeliveryNoteItem> DeliveryNoteItems { get; set; }
+    public DbSet<DeliveryNoteBatch> DeliveryNoteBatches { get; set; }
 
     // Sales Return Order
     public DbSet<SalesReturnOrder>  SalesReturnOrders { get; set; }

@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
+using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.Actors;
 using DataWarehouse.Core.Interfaces.Company;
@@ -27,27 +28,72 @@ public class SupplierRepository : BaseRepository<Supplier>, ISupplierRepository
         this.sapCache = sapCache;
     }
 
-    public async Task<GeneralResponse<IEnumerable<Supplier>>> GetAllSuppliersAsync()
+    public async Task<GeneralResponse<PagedResult<Supplier>>> GetSuppliersAsync(
+       string? supplierCode,
+       string? supplierName,
+       int pageNumber = 1,
+       int pageSize = 20)
     {
+        // Guard for pagination
+        pageNumber = pageNumber < 1 ? 1 : pageNumber;
+        pageSize = pageSize < 1 ? 20 : pageSize;
+        pageSize = pageSize > 200 ? 200 : pageSize; // optional cap
+
+        // 1) Resolve sapId (same logic)
         var sapId = await sapCache.Get();
 
-        if(sapId == null)
+        if (sapId == null)
         {
             var companyId = await companyCache.Get();
             var sap = await _context.Saps.Where(c => c.CompanyId == companyId).FirstOrDefaultAsync();
+
             if (sap == null)
-                return GeneralResponse<IEnumerable<Supplier>>.FailResponse("Not Found Any Suppliers In This Company");
+                return GeneralResponse<PagedResult<Supplier>>.FailResponse("Not Found Any Suppliers In This Company");
 
             await sapCache.UpdateSapUserClaimAsync(sap.SapId.ToString());
             sapId = sap.SapId;
         }
 
+        // 2) Build query
+        IQueryable<Supplier> query = _context.Suppliers
+            .AsNoTracking()
+            .Where(s => s.SapId == sapId);
 
+        if (!string.IsNullOrWhiteSpace(supplierCode))
+        {
+            var code = supplierCode.Trim();
+            query = query.Where(s => s.SupplierCode != null && s.SupplierCode.Contains(code));
+            // exact match alternative:
+            // query = query.Where(s => s.SupplierCode == code);
+        }
 
-        var suppliers = await _context.Suppliers.Where(s => s.SapId == sapId).ToListAsync();
-        return GeneralResponse<IEnumerable<Supplier>>.SuccessResponse(suppliers, "Suppliers retrieved successfully");
+        if (!string.IsNullOrWhiteSpace(supplierName))
+        {
+            var name = supplierName.Trim();
+            query = query.Where(s => s.SupplierName != null && s.SupplierName.Contains(name));
+        }
+
+        // 3) Pagination
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(s => s.SupplierId) // ⁄œ¯·Â« Õ”» «·‹ key ⁄‰œﬂ
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var result = new PagedResult<Supplier>
+        {
+            Data = items,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalRecords = totalCount,
+        };
+
+        return GeneralResponse<PagedResult<Supplier>>.SuccessResponse(result, "Suppliers retrieved successfully");
     }
 
+  
     public async Task<GeneralResponse<Supplier>> GetSupplierByIdAsync(int id)
     {
         var supplier = await GetByIdAsync(id);

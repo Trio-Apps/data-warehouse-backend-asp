@@ -54,7 +54,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
                 UserId = sro.UserId,
                 WarehouseId = warehouseId,
                 CustomerId = sro.CustomerId,
-                SalesOrderId = sro.SalesOrderId,
+                DeliveryNoteOrderId = sro.DeliveryNoteOrderId,
                 WarehouseCode = sro.Warehouse.WarehouseCode,
                 CustomerName = sro.Customer.CustomerName
             })
@@ -81,7 +81,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             .AsNoTracking()
             .Include(e => e.SalesReturnOrderItems)
             .Include(e => e.Customer)
-            // .Include(e => e.SalesOrder) // اختياري: سيبه لو محتاجه في DTO أو فلترة، لكن مش هنستخدمه للتواريخ بعد التعديل
+            // .Include(e => e.DeliveryNoteOrder) // اختياري: سيبه لو محتاجه في DTO أو فلترة، لكن مش هنستخدمه للتواريخ بعد التعديل
             .Where(sro => sro.WarehouseId == warehouseId);
 
         // 🔹 Customer Filter
@@ -174,7 +174,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
     {
         var res = await _context.SalesReturnOrders
             .Include(s => s.Customer)
-            .Include(s => s.SalesOrder)
+            .Include(s => s.DeliveryNoteOrder)
             .FirstOrDefaultAsync(sro => sro.SalesReturnOrderId == salesReturnOrderId, cancellationToken);
 
         if (res == null)
@@ -185,15 +185,15 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         var mapping = new SalesReturnOrderDTO
         {
             SalesReturnOrderId = res.SalesReturnOrderId,
-            SalesOrderId = res.SalesOrderId,
+            DeliveryNoteOrderId = res.DeliveryNoteOrderId,
             Status = res.Status.ToString(),
             Comment = res.Comment,
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             CustomerId = res.CustomerId,
             CustomerName = res.Customer.CustomerName,
-            DueDate = res.SalesOrder.DueDate,
-            PostingDate = res.SalesOrder.PostingDate,
+            DueDate = res.DueDate,
+            PostingDate = res.PostingDate,
             CreatedAt = res.CreatedAt,
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
@@ -259,7 +259,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             Status = res.Status.ToString(),
 
             // WithoutRef
-            SalesOrderId = res.SalesOrderId
+            DeliveryNoteOrderId = res.DeliveryNoteOrderId
         };
 
         return GeneralResponse<SalesReturnOrderDTO>.SuccessResponse(model);
@@ -269,18 +269,18 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
       string userId,
       AddSalesReturnOrderDTO dto)
     {
-        var salesOrder = await _context.SalesOrders
+        var DeliveryNoteOrder = await _context.DeliveryNoteOrders
             .Include(so => so.SalesReturnOrder) // عشان نتحقق هل فيه Return قبل كده
-            .FirstOrDefaultAsync(so => so.SalesOrderId == dto.SalesOrderId);
+            .FirstOrDefaultAsync(so => so.DeliveryNoteOrderId == dto.DeliveryNoteOrderId);
 
-        if (salesOrder == null)
+        if (DeliveryNoteOrder == null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order is not found");
 
         // نفس فكرة GoodsReturn: لازم يكون Processing
-        if (salesOrder.Status != GeneralStatus.Processing)
+        if (DeliveryNoteOrder.Status != GeneralStatus.Processing)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("You can add Sales Return, if sales order status is completed only");
 
-        if (salesOrder.SalesReturnOrder != null)
+        if (DeliveryNoteOrder.SalesReturnOrder != null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order has sales return order already!");
 
         var salesReturnOrder = new SalesReturnOrder
@@ -290,10 +290,10 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             DueDate = dto.DueDate,
             CreatedAt = DateTime.UtcNow,
             UserId = userId,
-            WarehouseId = salesOrder.WarehouseId,
+            WarehouseId = DeliveryNoteOrder.WarehouseId,
             Comment = dto.Comment,
-            CustomerId = salesOrder.CustomerId,
-            SalesOrderId = dto.SalesOrderId
+            CustomerId = DeliveryNoteOrder.CustomerId,
+            DeliveryNoteOrderId = dto.DeliveryNoteOrderId
         };
 
         var res = await AddAsync(salesReturnOrder);
@@ -316,31 +316,31 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             CustomerId = res.CustomerId,
-            SalesOrderId = res.SalesOrderId
+            DeliveryNoteOrderId = res.DeliveryNoteOrderId
         };
 
         return GeneralResponse<SalesReturnOrderDTO>.SuccessResponse(model);
     }
 
-    public async Task<GeneralResponse<SalesReturnOrderDTO>> AddSalesReturnOrderAndItemsBySalesOrderIdAsync(
+    public async Task<GeneralResponse<SalesReturnOrderDTO>> AddSalesReturnOrderAndItemsByDeliveryNoteOrderIdAsync(
        string userId,
        AddSalesReturnOrderDTO dto)
     {
-        var salesOrder = await _context.SalesOrders
+        var DeliveryNoteOrder = await _context.DeliveryNoteOrders
             .Include(so => so.SalesReturnOrder)
-            .Include(so => so.SalesOrderItems) // ✅ هات items
-            .FirstOrDefaultAsync(so => so.SalesOrderId == dto.SalesOrderId);
+            .Include(so => so.DeliveryNoteItems) // ✅ هات items
+            .FirstOrDefaultAsync(so => so.DeliveryNoteOrderId == dto.DeliveryNoteOrderId);
 
-        if (salesOrder == null)
+        if (DeliveryNoteOrder == null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order is not found");
 
-        if (salesOrder.Status != GeneralStatus.Processing)
+        if (DeliveryNoteOrder.Status != GeneralStatus.Processing)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("You can add Sales Return, if sales order status is completed only");
 
-        if (salesOrder.SalesReturnOrder != null)
+        if (DeliveryNoteOrder.SalesReturnOrder != null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order already has a Sales Return Order!");
 
-        if (salesOrder.SalesOrderItems == null || !salesOrder.SalesOrderItems.Any())
+        if (DeliveryNoteOrder.DeliveryNoteItems == null || !DeliveryNoteOrder.DeliveryNoteItems.Any())
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order has no items to return");
 
         var returnOrder = new SalesReturnOrder
@@ -352,15 +352,15 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
             CreatedAt = DateTime.UtcNow,
             UserId = userId,
-            WarehouseId = salesOrder.WarehouseId,
+            WarehouseId = DeliveryNoteOrder.WarehouseId,
             Comment = dto.Comment,
-            CustomerId = salesOrder.CustomerId,
-            SalesOrderId = dto.SalesOrderId,
+            CustomerId = DeliveryNoteOrder.CustomerId,
+            DeliveryNoteOrderId = dto.DeliveryNoteOrderId,
 
-            // ✅ Copy SalesOrderItems -> SalesReturnOrderItems
-            SalesReturnOrderItems = salesOrder.SalesOrderItems.Select(soi => new SalesReturnOrderItem
+            // ✅ Copy DeliveryNoteItems -> SalesReturnOrderItems
+            SalesReturnOrderItems = DeliveryNoteOrder.DeliveryNoteItems.Select(soi => new SalesReturnOrderItem
             {
-                SalesOrderItemId = soi.SalesOrderItemId,
+                DeliveryNoteItemId = soi.DeliveryNoteItemId,
                 ItemId = soi.ItemId,
                 Quantity = soi.Quantity,
                 UoMEntry = soi.UoMEntry,
@@ -391,7 +391,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
         var model = new SalesReturnOrderDTO
         {
-            SalesOrderId = returnOrder.SalesOrderId,
+            DeliveryNoteOrderId = returnOrder.DeliveryNoteOrderId,
             DueDate = returnOrder.DueDate,
             PostingDate = returnOrder.PostingDate,
             Status = returnOrder.Status.ToString(),
@@ -419,8 +419,8 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         if (entity.SalesReturnOrderId != salesReturnOrderId)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("ID mismatch");
 
-        // ✅ منع تعديل Customer لو الـ SalesReturn مبني على SalesOrder (زي ReceiptPurchaseOrderId في GoodsReturn)
-        if (entity.SalesOrderId != null)
+        // ✅ منع تعديل Customer لو الـ SalesReturn مبني على DeliveryNoteOrder (زي ReceiptPurchaseOrderId في GoodsReturn)
+        if (entity.DeliveryNoteOrderId != null)
         {
             if (dto.CustomerId.HasValue && dto.CustomerId.Value != entity.CustomerId)
             {
@@ -445,7 +445,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         if (dto.DueDate.HasValue)
             entity.DueDate = dto.DueDate.Value;
 
-        if (dto.CustomerId.HasValue && entity.SalesOrderId == null)
+        if (dto.CustomerId.HasValue && entity.DeliveryNoteOrderId == null)
             entity.CustomerId = dto.CustomerId.Value;
 
         entity.Comment = dto.Comment ?? entity.Comment;
@@ -474,7 +474,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             CustomerId = entity.CustomerId,
-            SalesOrderId = entity.SalesOrderId,
+            DeliveryNoteOrderId = entity.DeliveryNoteOrderId,
             Comment = entity.Comment,
             Status = entity.Status.ToString(),
             PostingDate = entity.PostingDate,
@@ -512,7 +512,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             CustomerId = entity.CustomerId,
-            SalesOrderId = entity.SalesOrderId,
+            DeliveryNoteOrderId = entity.DeliveryNoteOrderId,
             Comment = entity.Comment
         };
 
@@ -528,14 +528,14 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
     /// ///////////////////////////////////////////////////////////////////////////////
      // not used
     /// <returns></returns>
-    public async Task<GeneralResponse<SalesReturnOrderDTO>> GetWithCustomerAsync(int salesOrderId, string userId, CancellationToken cancellationToken = default)
+    public async Task<GeneralResponse<SalesReturnOrderDTO>> GetWithCustomerAsync(int deliveryNoteOrderId, string userId, CancellationToken cancellationToken = default)
     {
         var res = await _context.SalesReturnOrders.Include(so => so.Customer)
-            .Include(s => s.SalesOrder)
-            .FirstOrDefaultAsync(so => so.SalesOrderId == salesOrderId);
+            .Include(s => s.DeliveryNoteOrder)
+            .FirstOrDefaultAsync(so => so.DeliveryNoteOrderId == deliveryNoteOrderId);
 
         if (res == null)
-            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("this SalesOrderId is not found");
+            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("this DeliveryNoteOrderId is not found");
 
 
         var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.SalesReturn, res.SalesReturnOrderId);
@@ -549,9 +549,9 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
         var mapping = new SalesReturnOrderDTO
         {
-            DueDate = res.SalesOrder.DueDate,
-            PostingDate = res.SalesOrder.PostingDate,
-            SalesOrderId = res.SalesOrderId,
+            DueDate = res.DeliveryNoteOrder.DueDate,
+            PostingDate = res.DeliveryNoteOrder.PostingDate,
+            DeliveryNoteOrderId = res.DeliveryNoteOrderId,
             Status = res.Status.ToString(),
             Comment = res.Comment,
             UserId = res.UserId,
@@ -573,18 +573,18 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
     }
 
  
-    public async Task<GeneralResponse<SalesReturnOrderDTO>> GetBySalesOrderIdAsync(int salesOrderId)
+    public async Task<GeneralResponse<SalesReturnOrderDTO>> GetByDeliveryNoteOrderIdAsync(int deliveryNoteOrderId)
     {
 
         var res = await _context.SalesReturnOrders.AsNoTracking()
-            .Include(e=>e.SalesOrder)
+            .Include(e=>e.DeliveryNoteOrder)
             .Include(e => e.Customer)
             .Include(e => e.SalesReturnOrderItems)
                 .ThenInclude(i => i.Item)
                 .ThenInclude(i => i.ItemUomGroups)
             .Include(e => e.SalesReturnOrderItems)
                 .ThenInclude(i => i.SalesReturnOrderBatches)
-            .FirstOrDefaultAsync(gro => gro.SalesOrderId == salesOrderId);
+            .FirstOrDefaultAsync(gro => gro.DeliveryNoteOrderId == deliveryNoteOrderId);
 
         if (res == null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Not Found");
@@ -596,9 +596,9 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             WarehouseId = res.WarehouseId,
             CustomerId = res.CustomerId,
             CustomerName = res.Customer?.CustomerName,
-            SalesOrderId = res.SalesOrderId,
-            DueDate = res.SalesOrder.DueDate,
-            PostingDate = res.SalesOrder.PostingDate,
+            DeliveryNoteOrderId = res.DeliveryNoteOrderId,
+            DueDate = res.DeliveryNoteOrder.DueDate,
+            PostingDate = res.DeliveryNoteOrder.PostingDate,
             Status = res.Status.ToString(),
 
 
@@ -616,7 +616,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
 
                 SalesReturnOrderId = e.SalesReturnOrderId,
-                SalesOrderItemId = e.SalesOrderItemId,
+                DeliveryNoteItemId = e.DeliveryNoteItemId,
                 UnitPrice = e.UnitPrice,
                 UoMEntry = e.UoMEntry,
                 UnitName = e.Item.ItemUomGroups
@@ -630,7 +630,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
                     Quantity = b.Quantity,
                     SalesReturnOrderItemId = b.SalesReturnOrderItemId,
                     SalesReturnOrderBatchId = b.SalesReturnOrderBatchId,
-                    //SalesOrderBatchId = b.SalesOrderBatch.SalesOrderBatchId,
+                    //DeliveryNoteOrderBatchId = b.DeliveryNoteOrderBatch.DeliveryNoteOrderBatchId,
                     Comment = b.Comment,
                     BatchNumber = b.BatchNumber,
                 }).ToList(),
@@ -666,7 +666,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
                 UserId = s.UserId,
                 WarehouseId = s.WarehouseId,
                 CustomerId = s.CustomerId,
-                SalesOrderId = s.SalesOrderId,
+                DeliveryNoteOrderId = s.DeliveryNoteOrderId,
                 WarehouseCode = s.Warehouse.WarehouseCode,
                 CustomerName = s.Customer.CustomerName,
                 Items = s.SalesReturnOrderItems.Select(i => new SalesReturnOrderItemDTO
@@ -679,7 +679,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
                     ErrorMessage = i.ErrorMessage,
                     Status = i.Status.ToString(),
                     SalesReturnOrderId = i.SalesReturnOrderId,
-                    SalesOrderItemId = i.SalesOrderItemId,
+                    DeliveryNoteItemId = i.DeliveryNoteItemId,
                     ItemId = i.ItemId,
                     ItemCode = i.Item.ItemCode,
                     ItemName = i.Item.ItemName,
@@ -691,7 +691,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
                     {
                         SalesReturnOrderBatchId = b.SalesReturnOrderBatchId,
                         SalesReturnOrderItemId = b.SalesReturnOrderItemId,
-                        SalesOrderBatchId = b.SalesOrderBatchId,
+                        DeliveryNoteBatchId = b.DeliveryNoteBatchId,
                         Quantity = b.Quantity,
                         Comment = b.Comment,
                         BatchNumber = b.BatchNumber,
@@ -707,9 +707,9 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         return GeneralResponse<SalesReturnOrderDTO>.SuccessResponse(result);
     }
 
-    public async Task<SalesReturnOrder?> GetWithSalesOrderAsync(int salesReturnOrderId)
+    public async Task<SalesReturnOrder?> GetWithDeliveryNoteOrderAsync(int salesReturnOrderId)
     {
-        return await QueryIncluding(false, sro => sro.SalesOrder)
+        return await QueryIncluding(false, sro => sro.DeliveryNoteOrder)
             .FirstOrDefaultAsync(sro => sro.SalesReturnOrderId == salesReturnOrderId);
     }
 
@@ -718,5 +718,10 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         return await QueryIncluding(false, sro => sro.Warehouse)
             .FirstOrDefaultAsync(sro => sro.SalesReturnOrderId == salesReturnOrderId);
     }
+
+ 
+
+ 
+  
 }
 

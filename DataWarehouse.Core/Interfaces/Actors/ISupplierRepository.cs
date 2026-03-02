@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
+using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Domain.Entities.Actors;
 using System.Collections.Generic;
@@ -9,7 +10,11 @@ namespace DataWarehouse.Core.Interfaces.Actors;
 
 public interface ISupplierRepository : IBaseRepository<Supplier>
 {
-    Task<GeneralResponse<IEnumerable<Supplier>>> GetAllSuppliersAsync();
+    Task<GeneralResponse<PagedResult<Supplier>>> GetSuppliersAsync(
+          string? supplierCode,
+          string? supplierName,
+          int pageNumber = 1,
+          int pageSize = 20);
     Task<GeneralResponse<Supplier>> GetSupplierByIdAsync(int id);
     Task<GeneralResponse<Supplier>> GetBySupplierCodeAsync(string supplierCode);
     Task<GeneralResponse<Supplier>> GetByNameAsync(string supplierName);

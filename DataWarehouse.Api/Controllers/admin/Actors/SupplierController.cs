@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
+using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.Interfaces.Actors;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Services.Repository.Permissions;
@@ -22,12 +23,25 @@ public class SupplierController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<GeneralResponse<IEnumerable<Supplier>>>> GetAll()
+    [HttpGet("{skip}/{pageSize}")]
+    public async Task<ActionResult<GeneralResponse<PagedResult<Supplier>>>> GetAll(
+        string? supplierCode,
+        string? supplierName,
+        int skip,
+        int pageSize)
     {
-        var res = await _repository.GetAllSuppliersAsync();
+     
+
+        var res = await _repository.GetSuppliersAsync(
+            supplierCode,
+            supplierName,
+             skip,
+            pageSize);
+
         if (!res.Success)
             return BadRequest(res);
+
+
         return Ok(res);
     }
 

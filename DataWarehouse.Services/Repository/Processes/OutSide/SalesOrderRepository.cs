@@ -94,10 +94,11 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
           CustomerName = x.Order.Customer.CustomerName,
           ItemCount = x.Order.SalesOrderItems.Count(),
           Customer = x.Order.Customer,
-          IsReturn = x.Order.SalesReturnOrder != null,
-          ReturnOrderId = x.Order.SalesReturnOrder != null ? x.Order.SalesReturnOrder.SalesReturnOrderId : null,
-          Approval = x.HasProgress,
-          ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
+         // IsReturn = x.Order.SalesReturnOrder != null,
+         // ReturnOrderId = x.Order.SalesReturnOrder != null ? x.Order.SalesReturnOrder.SalesReturnOrderId : null,
+       
+                 Approval = x.HasProgress,
+             ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
       })
              .ToListAsync(cancellationToken);
 
@@ -156,19 +157,19 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         }
 
         // 🔹 Live Status Filter (matching Purchase logic as much as Sales model allows)
-        if (!string.IsNullOrEmpty(liveStatus))
-        {
-            // In Sales code we only have SalesReturnOrder.
-            // So any liveStatus means show orders that have return record.
-            query = query.Where(e => e.SalesReturnOrder != null);
+        //if (!string.IsNullOrEmpty(liveStatus))
+        //{
+        //    // In Sales code we only have SalesReturnOrder.
+        //    // So any liveStatus means show orders that have return record.
+        //    query = query.Where(e => e.SalesReturnOrder != null);
 
-            // If you later add another branching (e.g., receipt vs return),
-            // we can mirror Purchase logic exactly.
-            if (liveStatus == "return")
-            {
-                query = query.Where(e => e.SalesReturnOrder != null);
-            }
-        }
+        //    // If you later add another branching (e.g., receipt vs return),
+        //    // we can mirror Purchase logic exactly.
+        //    if (liveStatus == "return")
+        //    {
+        //        query = query.Where(e => e.SalesReturnOrder != null);
+        //    }
+        //}
 
         query = query.OrderByDescending(e => e.CreatedAt);
 
@@ -212,10 +213,10 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
                 ItemCount = x.Order.SalesOrderItems.Count(),
 
                 // ✅ Special fields (Return)
-                IsReturn = x.Order.SalesReturnOrder != null,
-                ReturnOrderId = x.Order.SalesReturnOrder != null
-                    ? x.Order.SalesReturnOrder.SalesReturnOrderId
-                    : null,
+             //   IsReturn = x.Order.SalesReturnOrder != null,
+                //ReturnOrderId = x.Order.SalesReturnOrder != null
+                //    ? x.Order.SalesReturnOrder.SalesReturnOrderId
+                //    : null,
 
                 // ✅ وجود progress
                 Approval = x.HasProgress,
@@ -238,7 +239,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
     public async Task<GeneralResponse<SalesOrderDTO>> GetWithCustomerAsync(int salesOrderId, string userId, CancellationToken cancellationToken = default)
     {
         var res = await _context.SalesOrders.Include(so => so.Customer)
-            .Include(s=>s.SalesReturnOrder)                    
+          //  .Include(s=>s.SalesReturnOrder)                    
             .FirstOrDefaultAsync(so => so.SalesOrderId == salesOrderId);
 
         if (res == null)
@@ -266,8 +267,8 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             Approval = approvalModel.hasProgress,
             ApprovalStatus = approvalModel.ApprovalStatus,
             Reason = approvalModel.Reason,
-            IsReturn = res.SalesReturnOrder != null ,
-            ReturnOrderId = res.SalesReturnOrder != null ? res.SalesReturnOrder.SalesReturnOrderId : null,
+          //  IsReturn = res.SalesReturnOrder != null ,
+         //   ReturnOrderId = res.SalesReturnOrder != null ? res.SalesReturnOrder.SalesReturnOrderId : null,
            
         };
 

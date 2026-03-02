@@ -35,8 +35,8 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public Item Item { get; set; }
 
 
-        public int SalesOrderItemId { get; set; }
-        public SalesOrderItem SalesOrderItem { get; set; }
+        public int? DeliveryNoteItemId { get; set; }
+        public DeliveryNoteItem? DeliveryNoteItem { get; set; }
         public ICollection<SalesReturnOrderBatch> SalesReturnOrderBatches { get; set; } = new List<SalesReturnOrderBatch>();
     }
 }

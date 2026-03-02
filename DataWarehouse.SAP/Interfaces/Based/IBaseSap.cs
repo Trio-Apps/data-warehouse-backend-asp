@@ -20,7 +20,7 @@ namespace DataWarehouse.SAP.Interfaces.Based
         Task<bool> AddPatchSapAsync(int sapId, string entityType, T entity);
         Task<string> GetAllSap(int sapId, string entityType);
 
-
+        Task<string> GetAllSapPrivate(int sapId, string entityType);
 
     }
 }

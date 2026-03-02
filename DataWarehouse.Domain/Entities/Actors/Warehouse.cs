@@ -53,6 +53,7 @@ namespace DataWarehouse.Domain.Entities.Actors
 
         // 
         public ICollection<SalesOrder> SalesOrders { get; set; } = new List<SalesOrder>();
+        public ICollection<DeliveryNoteOrder> DeliveryNoteOrders { get; set; } = new List<DeliveryNoteOrder>();
 
         // TransferredStock
         public ICollection<TransferredStock> TransferredStocks { get; set; } = new List<TransferredStock>();

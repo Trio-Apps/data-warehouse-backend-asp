@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <Folder Include="DTOs\Actors\" />
-    <Folder Include="DTOs\Processes\OutSide\" />
     <Folder Include="IServices\Actors\" />
     <Folder Include="IServices\Processes\OutSide\" />
   </ItemGroup>

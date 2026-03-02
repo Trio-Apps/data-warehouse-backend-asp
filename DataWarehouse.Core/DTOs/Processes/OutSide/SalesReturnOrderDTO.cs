@@ -13,9 +13,9 @@ public class SalesReturnOrderDTO : GeneralOrderDto
 
     public string? CustomerName { get; set; }
 
-    [Required(ErrorMessage = "Sales Order ID is required")]
+   // [Required(ErrorMessage = "Sales Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order ID must be greater than 0")]
-    public int SalesOrderId { get; set; }
+    public int? DeliveryNoteOrderId { get; set; }
 
  
 
@@ -25,9 +25,9 @@ public class SalesReturnOrderDTO : GeneralOrderDto
 
 public class AddSalesReturnOrderDTO
 {
-    [Required(ErrorMessage = "Sales Order ID is required")]
+    [Required(ErrorMessage = "Delivery Note Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order ID must be greater than 0")]
-    public int SalesOrderId { get; set; }
+    public int DeliveryNoteOrderId { get; set; }
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }
     [Required(ErrorMessage = "Due Date is required")]
@@ -78,20 +78,21 @@ public class SalesReturnOrderItemDTO : GeneralItemDto
     [Required(ErrorMessage = "SalesReturnOrderId is required")]
     public int SalesReturnOrderId { get; set; }
 
-    [Required(ErrorMessage = "SalesOrderItemId is required")]
-    public int SalesOrderItemId { get; set; }
+   // [Required(ErrorMessage = "SalesOrderItemId is required")]
+    public int? DeliveryNoteItemId { get; set; }
 
     public List<SalesReturnOrderBatchDTO>? Batches { get; set; }
 }
 public class AddSalesReturnOrderItemDTO
 {
-    [Required(ErrorMessage = "Sales Order Item ID is required")]
+    [Required(ErrorMessage = "Delivery Note Item ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order Item ID must be greater than 0")]
-    public int SalesOrderItemId { get; set; }
+    public int DeliveryNoteItemId { get; set; }
 
     [Required(ErrorMessage = "Quantity is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
     public decimal Quantity { get; set; }
+
 
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
@@ -101,8 +102,6 @@ public class UpdateSalesReturnOrderItemDTO : UpdateGeneralItemDto
 {
     [Required(ErrorMessage = "SalesReturnOrderItemId is required")]
     public int SalesReturnOrderItemId { get; set; }
-
-
 }
 
 public class SalesReturnOrderBatchDTO : GeneralBatchDto
@@ -113,9 +112,8 @@ public class SalesReturnOrderBatchDTO : GeneralBatchDto
     [Range(1, int.MaxValue, ErrorMessage = "Sales Return Order Item ID must be greater than 0")]
     public int SalesReturnOrderItemId { get; set; }
 
-    [Required(ErrorMessage = "Sales Order Batch ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order Batch ID must be greater than 0")]
-    public int SalesOrderBatchId { get; set; }
+    public int? DeliveryNoteBatchId { get; set; }
 
 }
 
@@ -125,9 +123,9 @@ public class AddSalesReturnOrderBatchDTO : AddGeneralBatchDto
     [Range(1, int.MaxValue, ErrorMessage = "Sales Return Order Item ID must be greater than 0")]
     public int SalesReturnOrderItemId { get; set; }
 
-    [Required(ErrorMessage = "Sales Order Batch ID is required")]
+   // [Required(ErrorMessage = "Sales Order Batch ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order Batch ID must be greater than 0")]
-    public int SalesOrderBatchId { get; set; }
+    public int? DeliveryNoteBatchId { get; set; }
 
 }
 

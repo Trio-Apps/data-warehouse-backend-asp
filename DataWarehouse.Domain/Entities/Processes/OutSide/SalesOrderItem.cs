@@ -33,10 +33,14 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         // Navigation
         public int SalesOrderId { get; set; } // FK to SalesOrder
         public SalesOrder SalesOrder { get; set; }
+
         public int ItemId { get; set; } // FK to Item
         public Item Item { get; set; }
 
-        public SalesReturnOrderItem SalesReturnOrderItem { get; set; }
+
+     // public SalesReturnOrderItem SalesReturnOrderItem { get; set; }
         public ICollection<SalesOrderBatch> SalesOrderBatches { get; set; } = new List<SalesOrderBatch>();
+       
+        public ICollection<DeliveryNoteItem> DeliveryNoteItems { get; set; } = new List<DeliveryNoteItem>();
     }
 }

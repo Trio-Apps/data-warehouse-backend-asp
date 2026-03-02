@@ -24,9 +24,9 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
             get => SalesReturnOrderItemId;
             set => SalesReturnOrderItemId = value;
         }
-        public int SalesOrderBatchId { get; set; }
+        public int? DeliveryNoteBatchId { get; set; }
 
-        public SalesOrderBatch SalesOrderBatch { get; set; }
+        public DeliveryNoteBatch? DeliveryNoteBatch { get; set; }
 
         public int SalesReturnOrderItemId { get; set; }
         public SalesReturnOrderItem SalesReturnOrderItem { get; set; }

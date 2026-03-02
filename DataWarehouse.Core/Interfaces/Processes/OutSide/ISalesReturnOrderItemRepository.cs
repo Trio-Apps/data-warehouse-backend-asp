@@ -19,16 +19,17 @@ public interface ISalesReturnOrderItemRepository : IBaseRepository<SalesReturnOr
      bool isBarcode,
      DynamicBarcodesDto? barcodeDto,
      AddGeneralItemDto? dto);
+  
     Task<GeneralResponse<SalesReturnOrderItemDTO>> UpdateSalesReturnItemWithoutRefAsync(
    int salesReturnOrderItemId,
    UpdateGeneralItemDto dto);
 
-    Task<GeneralResponse<SalesReturnOrderItemDTO>> AddSalesReturnOrderItemBySalesOrderItemIdAsync(string userId,int salesReturnOrderId, AddSalesReturnOrderItemDTO dto);
+    Task<GeneralResponse<SalesReturnOrderItemDTO>> AddSalesReturnOrderItemByDeliveryNoteItemIdAsync(string userId,int salesReturnOrderId, AddSalesReturnOrderItemDTO dto);
     Task<GeneralResponse<SalesReturnOrderItemDTO>> UpdateSalesReturnOrderItemAsync(int salesReturnOrderItemId, UpdateSalesReturnOrderItemDTO dto);
     Task<IEnumerable<SalesReturnOrderItem>> GetBySalesReturnOrderIdEntitiesAsync(int salesReturnOrderId);
     Task<IEnumerable<SalesReturnOrderItem>> GetByItemIdAsync(int itemId);
     Task<SalesReturnOrderItem?> GetWithSalesReturnOrderAsync(int salesReturnOrderItemId);
-    Task<SalesReturnOrderItem?> GetWithSalesOrderItemAsync(int salesReturnOrderItemId);
+    Task<SalesReturnOrderItem?> GetWithDeliveryNoteItemAsync(int salesReturnOrderItemId);
     Task<SalesReturnOrderItem?> GetWithItemAsync(int salesReturnOrderItemId);
     Task<SalesReturnOrderItem?> GetWithBatchesAsync(int salesReturnOrderItemId);
 }

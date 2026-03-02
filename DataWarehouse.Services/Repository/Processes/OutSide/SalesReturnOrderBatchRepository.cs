@@ -34,7 +34,7 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
             {
                 SalesReturnOrderBatchId = b.SalesReturnOrderBatchId,
                 SalesReturnOrderItemId = b.SalesReturnOrderItemId,
-                SalesOrderBatchId = b.SalesOrderBatchId,
+                DeliveryNoteBatchId = b.DeliveryNoteBatchId,
                 Quantity = b.Quantity,
                 Comment = b.Comment,
                 BatchNumber = b.BatchNumber,
@@ -60,7 +60,7 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
             {
                 SalesReturnOrderBatchId = b.SalesReturnOrderBatchId,
                 SalesReturnOrderItemId = b.SalesReturnOrderItemId,
-                SalesOrderBatchId = b.SalesOrderBatchId,
+                DeliveryNoteBatchId = b.DeliveryNoteBatchId,
                 Quantity = b.Quantity,
                 Comment = b.Comment,
                 BatchNumber = b.BatchNumber,
@@ -104,7 +104,7 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
         {
             SalesReturnOrderBatchId = saved.SalesReturnOrderBatchId,
             SalesReturnOrderItemId = saved.SalesReturnOrderItemId,
-            SalesOrderBatchId = saved.SalesOrderBatchId,
+            DeliveryNoteBatchId = saved.DeliveryNoteBatchId,
             Quantity = saved.Quantity,
             Comment = saved.Comment,
             BatchNumber = saved.BatchNumber,
@@ -139,7 +139,7 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
         {
             SalesReturnOrderBatchId = entity.SalesReturnOrderBatchId,
             SalesReturnOrderItemId = entity.SalesReturnOrderItemId,
-            SalesOrderBatchId = entity.SalesOrderBatchId,
+            DeliveryNoteBatchId = entity.DeliveryNoteBatchId,
             Quantity = entity.Quantity,
             Comment = entity.Comment,
             BatchNumber = entity.BatchNumber,
@@ -174,7 +174,7 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
         {
             SalesReturnOrderBatchId = entity.SalesReturnOrderBatchId,
             SalesReturnOrderItemId = entity.SalesReturnOrderItemId,
-            SalesOrderBatchId = entity.SalesOrderBatchId,
+            DeliveryNoteBatchId = entity.DeliveryNoteBatchId,
             Quantity = entity.Quantity,
             Comment = entity.Comment,
             BatchNumber = entity.BatchNumber,

@@ -23,14 +23,17 @@ namespace DataWarehouse.SAP.Repositories.BarCode
 {
     public class SapBarCodeService : ISapBarCodeService
     {
+        private readonly ISapSyncStatusRepository syncRepo;
         private readonly IBaseSap<ICollection<BarCodeFromWmsDto>> sap;
         private readonly ILogger<SapBarCodeService> logger;
         private readonly DataWarehouseDbContext _context;
 
-        public SapBarCodeService(IBaseSap<ICollection<BarCodeFromWmsDto>> sap,
+        public SapBarCodeService(ISapSyncStatusRepository syncRepo,
+            IBaseSap<ICollection<BarCodeFromWmsDto>> sap,
             DataWarehouseDbContext context,
             ILogger<SapBarCodeService> logger)
         {
+            this.syncRepo = syncRepo;
             this.sap = sap;
             this.logger = logger;
             _context = context;
@@ -132,63 +135,81 @@ namespace DataWarehouse.SAP.Repositories.BarCode
 
         public async Task<string> SyncItemUomGroupAsync(int sapId)
         {
-            var itemCodes = await GetItemCodeWithoutUomGroupAsync(sapId);
+            // ✅ زي SyncItemsAsync: ابدأ من آخر skip محفوظ
+            var state = await syncRepo.GetLastSyncPaginationSkipAsync(sapId, EntitiesName.itemUomGroup.ToString());
+            int skip = state;
 
-
-            if (!itemCodes.Any())
-            {
-                logger.LogInformation("Uom is not found: {itemCodes}", itemCodes.Count);
-                return "No barcodes to sync";
-
-            }
-
+            int totalProcessed = 0;
             int successCount = 0;
             int failCount = 0;
-            var uomGroupList = new List<SapUomGroupDto>();
 
+            const int top = 20;
 
-            foreach (var itemCode in itemCodes)
+            while (true)
             {
-                var url = $"SQLQueries('GetUOM')/List?ItemCode='{itemCode}'";
-                var json = await sap.GetAllSap(sapId, url);
-                SapUomGroupDto? uomGroup;
+                // ✅ Paging صحيح + ترتيب ثابت
+                var itemCodes = await GetItemCodeWithoutUomGroupAsync(sapId, skip, top);
 
-                try
+                logger.LogInformation("UOM Group Sync. sapId={sapId}, skip={skip}, top={top}, batchCount={count}",
+                    sapId, skip, top, itemCodes.Count);
+
+                if (itemCodes.Count == 0)
                 {
-                    uomGroup = JsonSerializer.Deserialize<SapUomGroupDto>(json,
-                    new JsonSerializerOptions
+                    // ✅ خلصنا: صفّر skip
+                  //  await syncRepo.UpdateLastSyncPaginationSkipAsync(sapId, EntitiesName.itemUomGroup.ToString(), 0);
+
+                    //logger.LogInformation("UOM Group sync finished. TotalProcessed={total}, Success={success}, Failed={failed}",
+                    //    totalProcessed, successCount, failCount);
+
+                    return totalProcessed == 0
+                        ? "No items without UOM group to sync"
+                        : $"Sync completed. TotalProcessed={totalProcessed}, Success={successCount}, Failed={failCount}";
+                }
+
+                var uomGroupList = new List<SapUomGroupDto>(capacity: itemCodes.Count);
+
+                foreach (var itemCode in itemCodes)
+                {
+                    var url = $"SQLQueries('GetUOM')/List?ItemCode='{itemCode}'";
+
+                    try
                     {
-                        PropertyNameCaseInsensitive = true
-                    });
+                        var json = await sap.GetAllSap(sapId, url);
 
-                    if (uomGroup?.Value != null && uomGroup.Value.Any())
-                    {
-                        uomGroup.ItemCode = itemCode;
-                        uomGroupList.Add(uomGroup); // ضيف العناصر اللي رجع
-                                                    //  logger.LogInformation("Fetched {count} items. Total so far: {total}", items.Value.Count, itemList.Count);
+                        var uomGroup = JsonSerializer.Deserialize<SapUomGroupDto>(
+                            json,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                        );
 
-                        logger.LogInformation("Url is: {url}", url);
-
-                        logger.LogInformation("Mapping uomGroup: {uomGroup}", JsonSerializer.Serialize(uomGroup.Value, new JsonSerializerOptions { WriteIndented = true }));
-
-
-
+                        if (uomGroup?.Value != null && uomGroup.Value.Any())
+                        {
+                            uomGroup.ItemCode = itemCode;
+                            uomGroupList.Add(uomGroup);
+                            successCount++;
+                        }
+                        else
+                        {
+                            failCount++;
+                        }
                     }
-
-
+                    catch (Exception ex)
+                    {
+                        failCount++;
+                        logger.LogError(ex, "Failed to fetch/deserialize UOM Group. sapId={sapId}, itemCode={itemCode}", sapId, itemCode);
+                    }
                 }
-                catch (JsonException ex)
-                {
-                    throw new Exception("Failed to deserialize SAP items response", ex);
-                }
 
+                // ✅ Upsert للدفعة فقط (مش لازم تجمع كل الداتا)
+                if (uomGroupList.Count > 0)
+                    await UpsertUomGroup(sapId, uomGroupList);
+
+                // ✅ حدّث skip بعد ما خلصت الدفعة
+                skip += itemCodes.Count;
+                totalProcessed += itemCodes.Count;
+
+                await syncRepo.UpdateLastSyncPaginationSkipAsync(sapId, EntitiesName.itemUomGroup.ToString(), skip);
             }
-
-            await UpsertUomGroup(sapId, uomGroupList);
-
-            return $"Sync completed. Success: {successCount}, Failed: {failCount}";
         }
-
 
         private async Task<string> BarCodeDone(int id)
         {
@@ -247,14 +268,23 @@ namespace DataWarehouse.SAP.Repositories.BarCode
 
         }
         // uom helper
-
-        private async Task<IReadOnlyList<string>> GetItemCodeWithoutUomGroupAsync(int sapId)
+        private async Task<IReadOnlyList<string>> GetItemCodeWithoutUomGroupAsync(
+            int sapId,
+            int pageNumber = 1,
+            int pageSize = 20)
         {
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize < 1 ? 20 : pageSize;
+            pageSize = pageSize > 500 ? 500 : pageSize;
+
             return await _context.Items
-    .AsNoTracking()
-    .Where(item => !item.ItemUomGroups.Any() && item.SapId == sapId)
-    .Select(item => item.ItemCode).Distinct()
-    .ToListAsync();
+     .AsNoTracking()
+     .Where(i => i.SapId == sapId && !i.ItemUomGroups.Any())
+     .OrderBy(i => i.ItemId)              // ✅ Index-friendly
+     .Skip(pageNumber)
+     .Take(pageSize)
+     .Select(i => i.ItemCode)
+     .ToListAsync();
         }
 
         private async Task UpsertUomGroup(int sapId, List<SapUomGroupDto> dto)

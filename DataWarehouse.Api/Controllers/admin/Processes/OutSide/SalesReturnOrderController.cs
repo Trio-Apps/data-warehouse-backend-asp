@@ -82,27 +82,27 @@ public class SalesReturnOrderController : ControllerBase
         return Ok(res);
     }
 
-    [HttpGet("sales-order/{salesOrderId}")]
+    [HttpGet("delivery-note-order/{deliveryNoteOrderId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
 
-    public async Task<IActionResult> GetBySalesOrderId(int salesOrderId)
+    public async Task<IActionResult> GetBydeliveryNoteOrderId(int deliveryNoteOrderId)
     {
-        var salesReturnOrder = await _repository.GetBySalesOrderIdAsync(salesOrderId);
+        var salesReturnOrder = await _repository.GetByDeliveryNoteOrderIdAsync(deliveryNoteOrderId);
         if (!salesReturnOrder.Success)
-            return NotFound($"SalesReturnOrder for SalesOrder ID {salesOrderId} not found.");
+            return NotFound($"SalesReturnOrder for SalesOrder ID {deliveryNoteOrderId} not found.");
 
         return Ok(salesReturnOrder);
     }
-    [HttpGet("by-sales-order/{salesOrderId}")]
+    [HttpGet("by-delivery-note-order/{deliveryNoteOrderId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
 
-    public async Task<IActionResult> GetWithCustomerBySalesOrderId(int salesOrderId)
+    public async Task<IActionResult> GetWithCustomerBydeliveryNoteOrderId(int deliveryNoteOrderId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var salesReturnOrder = await _repository.GetWithCustomerAsync(salesOrderId,userId);
+        var salesReturnOrder = await _repository.GetWithCustomerAsync(deliveryNoteOrderId,userId);
         if (!salesReturnOrder.Success)
-            return NotFound($"SalesReturnOrder for SalesOrder ID {salesOrderId} not found.");
+            return NotFound($"SalesReturnOrder for SalesOrder ID {deliveryNoteOrderId} not found.");
 
         return Ok(salesReturnOrder);
     }
@@ -140,12 +140,12 @@ public class SalesReturnOrderController : ControllerBase
         return Ok(res);
     }
 
-    [HttpGet("{id}/with-sales-order")]
+    [HttpGet("{id}/with-delivery-note-order")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
 
     public async Task<ActionResult<SalesReturnOrder>> GetWithSalesOrder(int id)
     {
-        var salesReturnOrder = await _repository.GetWithSalesOrderAsync(id);
+        var salesReturnOrder = await _repository.GetWithDeliveryNoteOrderAsync(id);
         if (salesReturnOrder == null)
             return NotFound($"SalesReturnOrder with ID {id} not found.");
 
@@ -205,7 +205,7 @@ public class SalesReturnOrderController : ControllerBase
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var created = await _repository.AddSalesReturnOrderAndItemsBySalesOrderIdAsync(userId, dto);
+        var created = await _repository.AddSalesReturnOrderAndItemsByDeliveryNoteOrderIdAsync(userId, dto);
         if (!created.Success)
             return BadRequest(created);
 

@@ -1848,26 +1848,6 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.CustomerController",
-    "Method": "GetAll",
-    "RelativePath": "api/Customer",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Core.DTOs.GeneralResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Actors.Customer, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.CustomerController",
     "Method": "Create",
     "RelativePath": "api/Customer",
     "HttpMethod": "POST",
@@ -2003,6 +1983,47 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.CustomerController",
+    "Method": "GetAll",
+    "RelativePath": "api/Customer/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "customerCode",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "customerName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Core.DTOs.GeneralResponse\u00601[[DataWarehouse.Core.DTOs.Based.PagedResult\u00601[[DataWarehouse.Domain.Entities.Actors.Customer, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], DataWarehouse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.CustomerController",
     "Method": "GetActiveCustomers",
     "RelativePath": "api/Customer/active",
     "HttpMethod": "GET",
@@ -2064,6 +2085,824 @@
     "ReturnTypes": [
       {
         "Type": "DataWarehouse.Core.DTOs.GeneralResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Actors.Customer, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteBatchController",
+    "Method": "GetAll",
+    "RelativePath": "api/DeliveryNoteBatch",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteBatch, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteBatchController",
+    "Method": "GetById",
+    "RelativePath": "api/DeliveryNoteBatch/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteBatch",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteBatchController",
+    "Method": "Update",
+    "RelativePath": "api/DeliveryNoteBatch/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralBatchDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteBatchController",
+    "Method": "Delete",
+    "RelativePath": "api/DeliveryNoteBatch/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteBatchController",
+    "Method": "GetByDeliveryNoteItemId",
+    "RelativePath": "api/DeliveryNoteBatch/delivery-note-item/{deliveryNoteItemId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "deliveryNoteItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteBatchController",
+    "Method": "Create",
+    "RelativePath": "api/DeliveryNoteBatch/delivery-note-item/{deliveryNoteItemId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "deliveryNoteItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.GeneralBatchDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteBatchController",
+    "Method": "GetByDeliveryNoteItemIdWithPagination",
+    "RelativePath": "api/DeliveryNoteBatch/delivery-note-item/{deliveryNoteItemId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "deliveryNoteItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "GetAll",
+    "RelativePath": "api/DeliveryNoteItem",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "GetById",
+    "RelativePath": "api/DeliveryNoteItem/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "Update",
+    "RelativePath": "api/DeliveryNoteItem/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.UpdateDeliveryNoteOrderItemDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "Delete",
+    "RelativePath": "api/DeliveryNoteItem/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "GetWithBatches",
+    "RelativePath": "api/DeliveryNoteItem/{id}/with-batches",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "GetWithItem",
+    "RelativePath": "api/DeliveryNoteItem/{id}/with-item",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "GetWithSalesOrderItem",
+    "RelativePath": "api/DeliveryNoteItem/{id}/with-sales-order-item",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "GetByDeliveryNoteOrderId",
+    "RelativePath": "api/DeliveryNoteItem/delivery-note-order/{deliveryNoteOrderId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "deliveryNoteOrderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "GetByDeliveryNoteOrderIdWithPagination",
+    "RelativePath": "api/DeliveryNoteItem/delivery-note-order/{deliveryNoteOrderId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "deliveryNoteOrderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "Create",
+    "RelativePath": "api/DeliveryNoteItem/sales-order/{deliveryNoteOrderId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "deliveryNoteOrderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddDeliveryNoteOrderItemDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "UpdateWithoutReference",
+    "RelativePath": "api/DeliveryNoteItem/without-reference/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralItemDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteItemController",
+    "Method": "CreateWithoutReference",
+    "RelativePath": "api/DeliveryNoteItem/witout-reference/delivery-note-order/{deliveryNoteOrderId}/add-barcode-or-no/{isBarcode}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "deliveryNoteOrderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "isBarcode",
+        "Type": "System.Boolean",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddGeneralItemByManualOrBarcodeDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetAll",
+    "RelativePath": "api/DeliveryNoteOrder",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "Create",
+    "RelativePath": "api/DeliveryNoteOrder",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddDeliveryNoteOrderDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetDeliveryNoteById",
+    "RelativePath": "api/DeliveryNoteOrder/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "Update",
+    "RelativePath": "api/DeliveryNoteOrder/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.UpdateDeliveryNoteOrderDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "Delete",
+    "RelativePath": "api/DeliveryNoteOrder/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetWithItems",
+    "RelativePath": "api/DeliveryNoteOrder/{id}/with-items",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetWithItemsAndBatches",
+    "RelativePath": "api/DeliveryNoteOrder/{id}/with-items-batches",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetWithSalesOrder",
+    "RelativePath": "api/DeliveryNoteOrder/{id}/with-sales-order",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetWithWarehouse",
+    "RelativePath": "api/DeliveryNoteOrder/{id}/with-warehouse",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetWithCustomer",
+    "RelativePath": "api/DeliveryNoteOrder/by-delivery-note-order/{deliveryNoteOrderId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "deliveryNoteOrderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetByWarehouseIdForDashboard",
+    "RelativePath": "api/DeliveryNoteOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "customerId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "postingDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "dueDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetBySalesOrderId",
+    "RelativePath": "api/DeliveryNoteOrder/sales-order/{salesOrderId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "salesOrderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetByUserId",
+    "RelativePath": "api/DeliveryNoteOrder/user/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetByWarehouseId",
+    "RelativePath": "api/DeliveryNoteOrder/warehouse/{warehouseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "GetByWarehouseIdWithPagination",
+    "RelativePath": "api/DeliveryNoteOrder/warehouse/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "CreateWithDefaultItems",
+    "RelativePath": "api/DeliveryNoteOrder/with-default-items",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddDeliveryNoteOrderDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
+    "Method": "CreateWithoutReference",
+    "RelativePath": "api/DeliveryNoteOrder/without-reference",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.OutSide.AddDeliveryNoteOrderWithoutRefDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -7838,6 +8677,32 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesReturnOrderController",
+    "Method": "GetWithSalesOrder",
+    "RelativePath": "api/SalesReturnOrder/{id}/with-delivery-note-order",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrder",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesReturnOrderController",
     "Method": "GetWithItems",
     "RelativePath": "api/SalesReturnOrder/{id}/with-items",
     "HttpMethod": "GET",
@@ -7880,32 +8745,6 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesReturnOrderController",
-    "Method": "GetWithSalesOrder",
-    "RelativePath": "api/SalesReturnOrder/{id}/with-sales-order",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrder",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesReturnOrderController",
     "Method": "GetWithWarehouse",
     "RelativePath": "api/SalesReturnOrder/{id}/with-warehouse",
     "HttpMethod": "GET",
@@ -7932,14 +8771,14 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesReturnOrderController",
-    "Method": "GetWithCustomerBySalesOrderId",
-    "RelativePath": "api/SalesReturnOrder/by-sales-order/{salesOrderId}",
+    "Method": "GetWithCustomerBydeliveryNoteOrderId",
+    "RelativePath": "api/SalesReturnOrder/by-delivery-note-order/{deliveryNoteOrderId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "salesOrderId",
+        "Name": "deliveryNoteOrderId",
         "Type": "System.Int32",
         "IsRequired": true
       }
@@ -7994,14 +8833,14 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesReturnOrderController",
-    "Method": "GetBySalesOrderId",
-    "RelativePath": "api/SalesReturnOrder/sales-order/{salesOrderId}",
+    "Method": "GetBydeliveryNoteOrderId",
+    "RelativePath": "api/SalesReturnOrder/delivery-note-order/{deliveryNoteOrderId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "salesOrderId",
+        "Name": "deliveryNoteOrderId",
         "Type": "System.Int32",
         "IsRequired": true
       }
@@ -8799,26 +9638,6 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.SupplierController",
-    "Method": "GetAll",
-    "RelativePath": "api/Supplier",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Core.DTOs.GeneralResponse\u00601[[System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Actors.Supplier, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.SupplierController",
     "Method": "Create",
     "RelativePath": "api/Supplier",
     "HttpMethod": "POST",
@@ -8969,6 +9788,47 @@
     "ReturnTypes": [
       {
         "Type": "DataWarehouse.Core.DTOs.GeneralResponse\u00601[[DataWarehouse.Domain.Entities.Actors.Supplier, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.SupplierController",
+    "Method": "GetAll",
+    "RelativePath": "api/Supplier/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "supplierCode",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "supplierName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Core.DTOs.GeneralResponse\u00601[[DataWarehouse.Core.DTOs.Based.PagedResult\u00601[[DataWarehouse.Domain.Entities.Actors.Supplier, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], DataWarehouse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",

@@ -75,7 +75,10 @@ namespace DataWarehouse.Services
             services.AddScoped<ISalesReturnOrderRepository, SalesReturnOrderRepository>();
             services.AddScoped<ISalesOrderBatchRepository, SalesOrderBatchRepository>();
 
-            
+
+            services.AddScoped<IDeliveryNoteOrderRepository, DeliveryNoteOrderRepository>();
+            services.AddScoped<IDeliveryNoteItemRepository, DeliveryNoteItemRepository>();
+            services.AddScoped<IDeliveryNoteBatchRepository, DeliveryNoteBatchRepository>();
             #endregion
 
             #region Process Items Repositories

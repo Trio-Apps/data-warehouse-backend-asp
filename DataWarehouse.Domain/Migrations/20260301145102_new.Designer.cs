@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataWarehouse.Domain.Migrations
 {
     [DbContext(typeof(DataWarehouseDbContext))]
-    [Migration("20260219150558_new")]
+    [Migration("20260301145102_new")]
     partial class @new
     {
         /// <inheritdoc />
@@ -127,7 +127,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasKey("CustomerId");
 
+                    b.HasIndex("CustomerCode");
+
                     b.HasIndex("SapId");
+
+                    b.HasIndex("CustomerCode", "SapId")
+                        .IsUnique();
 
                     b.ToTable("Customers");
                 });
@@ -331,6 +336,11 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SapId");
 
+                    b.HasIndex("SupplierCode");
+
+                    b.HasIndex("SupplierCode", "SapId")
+                        .IsUnique();
+
                     b.ToTable("Suppliers");
                 });
 
@@ -409,7 +419,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<string>("WarehouseCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("WarehouseName")
                         .IsRequired()
@@ -418,6 +428,11 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("WarehouseId");
 
                     b.HasIndex("SapId");
+
+                    b.HasIndex("WarehouseCode");
+
+                    b.HasIndex("WarehouseCode", "SapId")
+                        .IsUnique();
 
                     b.ToTable("Warehouses");
                 });
@@ -1309,6 +1324,139 @@ namespace DataWarehouse.Domain.Migrations
                     b.ToTable("DocumentAttachments");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteBatch", b =>
+                {
+                    b.Property<int>("DeliveryNoteBatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DeliveryNoteBatchId"));
+
+                    b.Property<string>("BatchNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DeliveryNoteItemId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("SalesOrderBatchId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DeliveryNoteBatchId");
+
+                    b.HasIndex("DeliveryNoteItemId");
+
+                    b.HasIndex("SalesOrderBatchId");
+
+                    b.ToTable("DeliveryNoteBatches");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem", b =>
+                {
+                    b.Property<int>("DeliveryNoteItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DeliveryNoteItemId"));
+
+                    b.Property<string>("BarCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DeliveryNoteOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("SalesOrderItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UoMEntry")
+                        .HasColumnType("int");
+
+                    b.HasKey("DeliveryNoteItemId");
+
+                    b.HasIndex("DeliveryNoteOrderId");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("SalesOrderItemId");
+
+                    b.ToTable("DeliveryNoteItems");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder", b =>
+                {
+                    b.Property<int>("DeliveryNoteOrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DeliveryNoteOrderId"));
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PostingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("SalesOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DeliveryNoteOrderId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("SalesOrderId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("DeliveryNoteOrders");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrder", b =>
                 {
                     b.Property<int>("GoodsReturnOrderId")
@@ -1468,6 +1616,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
                     b.Property<int>("PurchaseOrderId")
                         .HasColumnType("int");
 
@@ -1596,6 +1747,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PurchaseOrderItemId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -1614,6 +1771,10 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("ReceiptPurchaseOrderItemId");
 
                     b.HasIndex("ItemId");
+
+                    b.HasIndex("PurchaseOrderItemId")
+                        .IsUnique()
+                        .HasFilter("[PurchaseOrderItemId] IS NOT NULL");
 
                     b.HasIndex("ReceiptPurchaseOrderId");
 
@@ -1637,17 +1798,28 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("SapId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("WarehouseId")
@@ -1656,6 +1828,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("SalesOrderId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("SapId");
 
                     b.HasIndex("UserId");
 
@@ -1755,8 +1929,14 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SalesOrderId")
+                    b.Property<int?>("DeliveryNoteOrderId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PostingDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -1772,8 +1952,9 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("SalesOrderId")
-                        .IsUnique();
+                    b.HasIndex("DeliveryNoteOrderId")
+                        .IsUnique()
+                        .HasFilter("[DeliveryNoteOrderId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -1799,22 +1980,23 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("DeliveryNoteBatchId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("SalesOrderBatchId")
-                        .HasColumnType("int");
-
                     b.Property<int>("SalesReturnOrderItemId")
                         .HasColumnType("int");
 
                     b.HasKey("SalesReturnOrderBatchId");
 
-                    b.HasIndex("SalesOrderBatchId")
-                        .IsUnique();
+                    b.HasIndex("DeliveryNoteBatchId")
+                        .IsUnique()
+                        .HasFilter("[DeliveryNoteBatchId] IS NOT NULL");
 
                     b.HasIndex("SalesReturnOrderItemId");
 
@@ -1832,6 +2014,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<string>("BarCode")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("DeliveryNoteItemId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
 
@@ -1840,9 +2025,6 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("SalesOrderItemId")
-                        .HasColumnType("int");
 
                     b.Property<int>("SalesReturnOrderId")
                         .HasColumnType("int");
@@ -1858,10 +2040,11 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasKey("SalesReturnOrderItemId");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("DeliveryNoteItemId")
+                        .IsUnique()
+                        .HasFilter("[DeliveryNoteItemId] IS NOT NULL");
 
-                    b.HasIndex("SalesOrderItemId")
-                        .IsUnique();
+                    b.HasIndex("ItemId");
 
                     b.HasIndex("SalesReturnOrderId");
 
@@ -2810,6 +2993,84 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("Sap");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteBatch", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem", "DeliveryNoteItem")
+                        .WithMany("DeliveryNoteBatches")
+                        .HasForeignKey("DeliveryNoteItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrderBatch", "SalesOrderBatch")
+                        .WithMany("DeliveryNoteBatches")
+                        .HasForeignKey("SalesOrderBatchId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("DeliveryNoteItem");
+
+                    b.Navigation("SalesOrderBatch");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder", "DeliveryNoteOrder")
+                        .WithMany("DeliveryNoteItems")
+                        .HasForeignKey("DeliveryNoteOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
+                        .WithMany("DeliveryNoteItems")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrderItem", "SalesOrderItem")
+                        .WithMany("DeliveryNoteItems")
+                        .HasForeignKey("SalesOrderItemId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("DeliveryNoteOrder");
+
+                    b.Navigation("Item");
+
+                    b.Navigation("SalesOrderItem");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Customer", "Customer")
+                        .WithMany("DeliveryNoteOrders")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrder", "SalesOrder")
+                        .WithMany("DeliveryNoteOrders")
+                        .HasForeignKey("SalesOrderId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
+                        .WithMany("DeliveryNoteOrders")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Warehouse", "Warehouse")
+                        .WithMany("DeliveryNoteOrders")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("SalesOrder");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Warehouse");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrder", b =>
                 {
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", "ReceiptPurchaseOrder")
@@ -2960,6 +3221,11 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.PurchaseOrderItem", "PurchaseOrderItem")
+                        .WithOne("ReceiptPurchaseOrderItem")
+                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrderItem", "PurchaseOrderItemId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", "ReceiptPurchaseOrder")
                         .WithMany("ReceiptPurchaseOrderItems")
                         .HasForeignKey("ReceiptPurchaseOrderId")
@@ -2967,6 +3233,8 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Item");
+
+                    b.Navigation("PurchaseOrderItem");
 
                     b.Navigation("ReceiptPurchaseOrder");
                 });
@@ -2979,11 +3247,16 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.AllinAll.Sap", "Sap")
+                        .WithMany("SalesOrders")
+                        .HasForeignKey("SapId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("SalesOrders")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Warehouse", "Warehouse")
                         .WithMany("SalesOrders")
@@ -2992,6 +3265,8 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
+
+                    b.Navigation("Sap");
 
                     b.Navigation("User");
 
@@ -3036,11 +3311,10 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrder", "SalesOrder")
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder", "DeliveryNoteOrder")
                         .WithOne("SalesReturnOrder")
-                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrder", "SalesOrderId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrder", "DeliveryNoteOrderId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("SalesReturnOrders")
@@ -3056,7 +3330,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("Customer");
 
-                    b.Navigation("SalesOrder");
+                    b.Navigation("DeliveryNoteOrder");
 
                     b.Navigation("User");
 
@@ -3065,11 +3339,10 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderBatch", b =>
                 {
-                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrderBatch", "SalesOrderBatch")
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteBatch", "DeliveryNoteBatch")
                         .WithOne("SalesReturnOrderBatch")
-                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderBatch", "SalesOrderBatchId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderBatch", "DeliveryNoteBatchId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderItem", "SalesReturnOrderItem")
                         .WithMany("SalesReturnOrderBatches")
@@ -3077,22 +3350,21 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("SalesOrderBatch");
+                    b.Navigation("DeliveryNoteBatch");
 
                     b.Navigation("SalesReturnOrderItem");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderItem", b =>
                 {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem", "DeliveryNoteItem")
+                        .WithOne("SalesReturnOrderItem")
+                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderItem", "DeliveryNoteItemId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
                         .WithMany("SalesReturnOrderItems")
                         .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrderItem", "SalesOrderItem")
-                        .WithOne("SalesReturnOrderItem")
-                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderItem", "SalesOrderItemId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -3102,9 +3374,9 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Item");
+                    b.Navigation("DeliveryNoteItem");
 
-                    b.Navigation("SalesOrderItem");
+                    b.Navigation("Item");
 
                     b.Navigation("SalesReturnOrder");
                 });
@@ -3349,6 +3621,8 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Customer", b =>
                 {
+                    b.Navigation("DeliveryNoteOrders");
+
                     b.Navigation("SalesOrders");
 
                     b.Navigation("SalesReturnOrders");
@@ -3359,6 +3633,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("BinLocations");
 
                     b.Navigation("CountStockItems");
+
+                    b.Navigation("DeliveryNoteItems");
 
                     b.Navigation("GoodsReturnOrderItems");
 
@@ -3399,6 +3675,8 @@ namespace DataWarehouse.Domain.Migrations
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Warehouse", b =>
                 {
                     b.Navigation("CountStocks");
+
+                    b.Navigation("DeliveryNoteOrders");
 
                     b.Navigation("DistinationTransferredStocks");
 
@@ -3456,6 +3734,8 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("Items");
 
+                    b.Navigation("SalesOrders");
+
                     b.Navigation("SapEmployees");
 
                     b.Navigation("SapSyncPaginations");
@@ -3481,6 +3761,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("CompanyUser");
 
                     b.Navigation("CountStocks");
+
+                    b.Navigation("DeliveryNoteOrders");
 
                     b.Navigation("GoodsReturnOrders");
 
@@ -3547,6 +3829,26 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("CountStockBatches");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteBatch", b =>
+                {
+                    b.Navigation("SalesReturnOrderBatch");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem", b =>
+                {
+                    b.Navigation("DeliveryNoteBatches");
+
+                    b.Navigation("SalesReturnOrderItem");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder", b =>
+                {
+                    b.Navigation("DeliveryNoteItems");
+
+                    b.Navigation("SalesReturnOrder")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrder", b =>
                 {
                     b.Navigation("GoodsReturnOrderItems");
@@ -3555,6 +3857,11 @@ namespace DataWarehouse.Domain.Migrations
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrderItem", b =>
                 {
                     b.Navigation("GoodsReturnOrderBatches");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.PurchaseOrderItem", b =>
+                {
+                    b.Navigation("ReceiptPurchaseOrderItem");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", b =>
@@ -3578,24 +3885,21 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrder", b =>
                 {
-                    b.Navigation("SalesOrderItems");
+                    b.Navigation("DeliveryNoteOrders");
 
-                    b.Navigation("SalesReturnOrder")
-                        .IsRequired();
+                    b.Navigation("SalesOrderItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrderBatch", b =>
                 {
-                    b.Navigation("SalesReturnOrderBatch")
-                        .IsRequired();
+                    b.Navigation("DeliveryNoteBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrderItem", b =>
                 {
-                    b.Navigation("SalesOrderBatches");
+                    b.Navigation("DeliveryNoteItems");
 
-                    b.Navigation("SalesReturnOrderItem")
-                        .IsRequired();
+                    b.Navigation("SalesOrderBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrder", b =>

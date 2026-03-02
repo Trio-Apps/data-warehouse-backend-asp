@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
 using System.Net;
+using System.Text;
 
 namespace DataWarehouse.SAP
 {
@@ -24,7 +25,7 @@ namespace DataWarehouse.SAP
     {
         public static IServiceCollection AddSapService(this IServiceCollection services, IConfiguration configuration)
         {
-
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             services.AddHttpClient("SAP")
        .ConfigurePrimaryHttpMessageHandler(() =>
@@ -69,6 +70,7 @@ namespace DataWarehouse.SAP
             services.AddScoped<ISapDynamicBarCodeService, SapDynamicBarCodeService>();
             services.AddScoped<IBusinessPartnersSupplierService, BusinessPartnersSupplierService>();
             services.AddScoped<ISapPurchaseService, SapPurchaseService>();
+            services.AddScoped<ISapSalesService, SapSalesService>();
 
 
             //  services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));

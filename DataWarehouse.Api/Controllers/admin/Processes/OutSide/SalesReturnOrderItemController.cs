@@ -79,7 +79,7 @@ public class SalesReturnOrderItemController : ControllerBase
             return BadRequest(ModelState);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var created = await _repository.AddSalesReturnOrderItemBySalesOrderItemIdAsync(userId, salesReturnOrderId, dto);
+        var created = await _repository.AddSalesReturnOrderItemByDeliveryNoteItemIdAsync(userId, salesReturnOrderId, dto);
         if (!created.Success)
             return BadRequest(created);
 
@@ -169,7 +169,7 @@ public class SalesReturnOrderItemController : ControllerBase
 
     public async Task<ActionResult<SalesReturnOrderItem>> GetWithSalesOrderItem(int id)
     {
-        var salesReturnOrderItem = await _repository.GetWithSalesOrderItemAsync(id);
+        var salesReturnOrderItem = await _repository.GetWithDeliveryNoteItemAsync(id);
         if (salesReturnOrderItem == null)
             return NotFound($"SalesReturnOrderItem with ID {id} not found.");
 

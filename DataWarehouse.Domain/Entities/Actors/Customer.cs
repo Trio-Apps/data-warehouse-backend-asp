@@ -39,6 +39,7 @@ namespace DataWarehouse.Domain.Entities.Actors
 
         // Navigation: Customer ↔ SalesOrders (CreatedBy)
         public ICollection<SalesOrder> SalesOrders { get; set; } = new List<SalesOrder>();
+        public ICollection<DeliveryNoteOrder> DeliveryNoteOrders { get; set; } = new List<DeliveryNoteOrder>();
         public ICollection<SalesReturnOrder> SalesReturnOrders { get; set; } = new List<SalesReturnOrder>();
     }
 }

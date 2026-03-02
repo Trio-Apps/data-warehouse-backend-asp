@@ -23,10 +23,11 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public string? BatchNumber { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public DateTime CreatedAt { get; set; }
-
-        public SalesReturnOrderBatch SalesReturnOrderBatch { get; set; }
+       // public SalesReturnOrderBatch SalesReturnOrderBatch { get; set; }
         public int SalesOrderItemId { get; set; }
         public SalesOrderItem SalesOrderItem { get; set; }
 
+        public ICollection<DeliveryNoteBatch> DeliveryNoteBatches { get; set; } = new List<DeliveryNoteBatch>();
+   
     }
 }
