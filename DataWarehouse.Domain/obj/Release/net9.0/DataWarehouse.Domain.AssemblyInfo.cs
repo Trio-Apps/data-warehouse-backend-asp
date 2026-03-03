@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DataWarehouse.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dd720acd7de1c8103155aeed2deae06beed2258e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+490bc09967355bb592d14b044925a2b5994ebf7b")]
 [assembly: System.Reflection.AssemblyProductAttribute("DataWarehouse.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DataWarehouse.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

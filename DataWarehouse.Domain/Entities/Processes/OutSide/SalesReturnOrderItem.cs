@@ -20,6 +20,8 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public GeneralItemStatus Status { get; set; }
         public decimal? UnitPrice { get; set; }
         public string? ErrorMessage { get; set; }
+        public int? LineNum { get; set; }
+
 
         [NotMapped]
         public int OrderId

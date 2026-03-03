@@ -10,7 +10,6 @@ namespace DataWarehouse.Core.Interfaces.Actors;
 
 public interface IWarehouseRepository : IBaseRepository<Warehouse>
 {
-    Task<GeneralResponse<WarehouseDTO>> AddWarehouseAsync(AddWarehouseDTO dto);
     Task<GeneralResponse<IEnumerable<WarehouseDTO>>> GetAllWarehouses(string userId,IList<string> roles);
     Task<GeneralResponse<IEnumerable<WarehouseDTO>>> GetAllWarehousesForEmployeeAsync(string userId);
     Task<int?> GetSap();

@@ -12,6 +12,7 @@ namespace DataWarehouse.Core.Interfaces.Processes.OutSide;
 public interface ISalesOrderRepository : IBaseRepository<SalesOrder>
 {
     Task<IEnumerable<SalesOrder>> GetByWarehouseIdAsync(int warehouseId);
+    Task<GeneralResponse<IEnumerable<WarehouseItemDto>>> GetItemForSalesByWarehouseIdAsync(int warehouseId);
     Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<GeneralResponse<SalesOrderDTO>> AddSalesOrderByWarehouseIdAsync(string userId, AddSalesOrderDTO dto, CancellationToken cancellationToken = default);
 

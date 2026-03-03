@@ -56,7 +56,8 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
                 CustomerId = sro.CustomerId,
                 DeliveryNoteOrderId = sro.DeliveryNoteOrderId,
                 WarehouseCode = sro.Warehouse.WarehouseCode,
-                CustomerName = sro.Customer.CustomerName
+                CustomerName = sro.Customer.CustomerName,
+                ErrorMessage = sro.ErrorMessage,
             })
             .ToListAsync();
 
@@ -152,6 +153,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
                 CustomerId = x.Order.CustomerId,
                 CustomerName = x.Order.Customer.CustomerName,
+                ErrorMessage = x.Order.ErrorMessage,
 
                 ItemCount = x.Order.SalesReturnOrderItems.Count(),
 

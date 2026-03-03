@@ -44,6 +44,44 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
     {
         return await Query().Where(so => so.WarehouseId == warehouseId).ToListAsync();
     }
+    public async Task<GeneralResponse<IEnumerable<WarehouseItemDto>>> GetItemForSalesByWarehouseIdAsync(int warehouseId)
+    {
+        var sapId = await sapCache.Get();
+        // 1) هات بيانات المستودع مرة واحدة
+        var warehouse = await _context.Warehouses
+            .AsNoTracking()
+            .Where(w => w.WarehouseId == warehouseId)
+            .Select(w => new { w.WarehouseId, w.WarehouseCode })
+            .SingleOrDefaultAsync();
+
+        if (warehouse == null)
+            return GeneralResponse<IEnumerable<WarehouseItemDto>>.SuccessResponse(Enumerable.Empty<WarehouseItemDto>());
+
+        // 2) Left join Items مع WarehouseItems (لنفس المستودع فقط)
+        var query =
+            from i in _context.Items.AsNoTracking().Where(it => it.SapId == sapId)
+            join wi in _context.WarehouseItems.AsNoTracking()
+                    .Where(x => x.WarehouseId == warehouseId)
+                on i.ItemId equals wi.ItemId into wiGroup
+            from wi in wiGroup.DefaultIfEmpty()
+            where wi == null && i.SalesItem && i.Valid
+            select new WarehouseItemDto
+            {
+                WarehouseItemId = 0,              // مفيش row
+                ItemId = i.ItemId,
+                WarehouseId = warehouse.WarehouseId,
+                ItemName = i.ItemName,
+                ItemCode = i.ItemCode,
+
+                WarehouseCode = warehouse.WarehouseCode,
+
+                InStock = 0,
+                MinStock = 0
+            };
+
+        var result = await query.ToListAsync();
+        return GeneralResponse<IEnumerable<WarehouseItemDto>>.SuccessResponse(result);
+    }
 
     public async Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {

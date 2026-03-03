@@ -62,13 +62,12 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo
                         .Where(x => x.WarehouseId == warehouseId )
                     on i.ItemId equals wi.ItemId into wiGroup
                 from wi in wiGroup.DefaultIfEmpty()
-                where wi == null && i.ProcurementType == "bom_Buy"
+                where wi == null && i.ProcurementType == "bom_Buy" && i.PurchaseItem && i.Valid
                 select new WarehouseItemDto
                 {
                     WarehouseItemId = 0,              // مفيش row
                     ItemId = i.ItemId,
                     WarehouseId = warehouse.WarehouseId,
-
                     ItemName = i.ItemName,
                     ItemCode = i.ItemCode,
 
@@ -142,10 +141,6 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo
                     Data = data
                 });
         }
-
-
-
-
 
 
         public async Task<WarehouseItem?> GetWithItemAsync(int finishedGoodItemId)

@@ -32,6 +32,13 @@ public class SalesOrderController : ControllerBase
         return Ok(salesOrders);
     }
 
+    [HttpGet("item-for-sales/warehouse/{warehouseId}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
+    public async Task<IActionResult> GetItemForSalesByWarehouseId(int warehouseId)
+    {
+        var finishedGoodItems = await _repository.GetItemForSalesByWarehouseIdAsync(warehouseId);
+        return Ok(finishedGoodItems);
+    }
     [HttpGet("warehouse/{warehouseId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
     public async Task<ActionResult<IEnumerable<SalesOrder>>> GetByWarehouseId(int warehouseId)

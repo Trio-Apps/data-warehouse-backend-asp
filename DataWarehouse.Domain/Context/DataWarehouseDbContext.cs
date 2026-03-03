@@ -444,41 +444,6 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
            .HasPrincipalKey(i => i.ProductionOrderItemId)
            .OnDelete(DeleteBehavior.NoAction);
 
-        builder.Entity<ProductionOrder>()
-            .HasMany(po => po.ProductionHeaderBatches)
-            .WithOne(hb => hb.ProductionOrder)
-            .HasForeignKey(hb => hb.ProductionOrderId)
-            .HasPrincipalKey(po => po.ProductionOrderId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<ProductionOrder>()
-            .HasMany(po => po.ProductionComponentLines)
-            .WithOne(cl => cl.ProductionOrder)
-            .HasForeignKey(cl => cl.ProductionOrderId)
-            .HasPrincipalKey(po => po.ProductionOrderId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<ProductionComponentLine>()
-            .HasMany(cl => cl.ProductionComponentBatches)
-            .WithOne(cb => cb.ProductionComponentLine)
-            .HasForeignKey(cb => cb.ProductionComponentLineId)
-            .HasPrincipalKey(cl => cl.ProductionComponentLineId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<Item>()
-            .HasMany(i => i.ProductionComponentLines)
-            .WithOne(cl => cl.Item)
-            .HasForeignKey(cl => cl.ItemId)
-            .HasPrincipalKey(i => i.ItemId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<Warehouse>()
-            .HasMany(w => w.ProductionComponentLines)
-            .WithOne(cl => cl.Warehouse)
-            .HasForeignKey(cl => cl.WarehouseId)
-            .HasPrincipalKey(w => w.WarehouseId)
-            .OnDelete(DeleteBehavior.NoAction);
-
 
         // indexex
         // في الـ Migration
@@ -1145,10 +1110,7 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     // Purchase Order
     public DbSet<ProductionOrder> ProductionOrders { get; set; }
     public DbSet<ProductionOrderItem> ProductionOrderItems { get; set; }
-    public DbSet<ProductionHeaderBatch> ProductionHeaderBatches { get; set; }
-    public DbSet<ProductionComponentLine> ProductionComponentLines { get; set; }
-    public DbSet<ProductionComponentBatch> ProductionComponentBatches { get; set; }
-    // public DbSet<FinishedGoodItem> FinishedGoodItems { get; set; }
+   // public DbSet<FinishedGoodItem> FinishedGoodItems { get; set; }
     public DbSet<ProductionReceipt> ProductionReceipts { get; set; }
 
     // Purchase Order
@@ -1232,3 +1194,4 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
 
 }
+

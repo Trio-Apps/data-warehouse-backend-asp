@@ -29,7 +29,15 @@ namespace DataWarehouse.Domain.Entities.Actors
         public int SapId { get; set; }
         public Sap Sap { get; set; }
         public string ProcurementType { get; set; }
+        public bool PurchaseItem { get; set; }
+        public bool SalesItem { get; set; }
+        public bool InventoryItem { get; set; }
+        public bool Valid { get; set; }
+        public bool Frozen { get; set; }
+
         // last updated 
+
+
 
         // Navigation property
 
@@ -83,7 +91,6 @@ namespace DataWarehouse.Domain.Entities.Actors
         public ICollection<ReceiptPurchaseOrderItem> ReceiptPurchaseOrderItems { get; set; } = new List<ReceiptPurchaseOrderItem>();
         //ProductionOrderItem
         public ICollection<ProductionOrderItem> ProductionOrderItems { get; set; } = new List<ProductionOrderItem>();
-        public ICollection<ProductionComponentLine> ProductionComponentLines { get; set; } = new List<ProductionComponentLine>();
 
         public ICollection<GoodsReturnOrderItem> GoodsReturnOrderItems { get; set; } = new List<GoodsReturnOrderItem>();
 

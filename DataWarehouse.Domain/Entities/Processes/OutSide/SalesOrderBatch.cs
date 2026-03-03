@@ -11,6 +11,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
     public class SalesOrderBatch : IOrderBatch
     {
         public int SalesOrderBatchId {  get; set; }
+
         [NotMapped]
         public int OrderItemId
         {

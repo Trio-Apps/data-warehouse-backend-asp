@@ -108,9 +108,6 @@ namespace DataWarehouse.Services
             #region BulkProductions Repositories
             services.AddScoped<IProductionOrderRepository, ProductionOrderRepository>();
             services.AddScoped<IProductionOrderItemRepository, ProductionOrderItemRepository>();
-            services.AddScoped<IProductionHeaderBatchRepository, ProductionHeaderBatchRepository>();
-            services.AddScoped<IProductionComponentLineRepository, ProductionComponentLineRepository>();
-            services.AddScoped<IProductionComponentBatchRepository, ProductionComponentBatchRepository>();
             services.AddScoped<IFinishedGoodItemRepository, FinishedGoodItemRepository>();
             services.AddScoped<IProductionReceiptRepository, ProductionReceiptRepository>();
             #endregion

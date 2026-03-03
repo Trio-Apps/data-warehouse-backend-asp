@@ -67,7 +67,7 @@ namespace Dataitem.SAP.Repositories.Actors
                 //    $"ItemPrices,ItemWarehouseInfoCollection,ItemBarCodeCollection";
 
                 var url =
-                $"Items?$filter=UpdateDate ge '{filterDate}'&$skip={skip}&$top={top}&$select=ItemCode,ItemName,ManageBatchNumbers,ItemsGroupCode,ItemPrices,ItemWarehouseInfoCollection,ItemBarCodeCollection,ProcurementMethod";
+                $"Items?$filter=UpdateDate ge '{filterDate}'&$skip={skip}&$top={top}&$select=ItemCode,ItemName,ManageBatchNumbers,ItemsGroupCode,PurchaseItem,SalesItem,InventoryItem,Valid,Frozen,ItemPrices,ItemWarehouseInfoCollection,ItemBarCodeCollection,ProcurementMethod";
 
                 logger.LogInformation("SAP Items Sync. sapId={sapId}, skip={skip}, top={top}", sapId, skip, top);
 
@@ -161,6 +161,11 @@ namespace Dataitem.SAP.Repositories.Actors
                         existingItem.UpdateDate = DateTime.UtcNow;
                         existingItem.BatchNumbers = sap.ManageBatchNumbers == "tYES";
                         existingItem.ProcurementType = sap.ProcurementMethod;
+                        existingItem.PurchaseItem = sap.PurchaseItem == "tYES";
+                        existingItem.SalesItem = sap.SalesItem == "tYES";
+                        existingItem.InventoryItem = sap.InventoryItem == "tYES";
+                        existingItem.Valid = sap.Valid == "tYES";
+                        existingItem.Frozen = sap.Frozen == "tYES";
                     }
                     else
                     {
@@ -175,7 +180,13 @@ namespace Dataitem.SAP.Repositories.Actors
                             UoM = "type",
                             SapId = sapId,
                             BatchNumbers = sap.ManageBatchNumbers == "tYES",
-                            ProcurementType = sap.ProcurementMethod
+                            ProcurementType = sap.ProcurementMethod,
+                            Frozen = sap.Frozen == "tYES",
+                            Valid = sap.Valid == "tYES",
+                            InventoryItem = sap.InventoryItem == "tYES",
+                            SalesItem = sap.SalesItem == "tYES",
+                            PurchaseItem = sap.PurchaseItem == "tYES",
+
                         });
                     }
 

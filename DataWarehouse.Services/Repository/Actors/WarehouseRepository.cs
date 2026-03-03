@@ -37,51 +37,6 @@ public class WarehouseRepository : BaseRepository<Warehouse>, IWarehouseReposito
         this.sapCache = sapCache;
     }
 
-    public async Task<GeneralResponse<WarehouseDTO>> AddWarehouseAsync(AddWarehouseDTO dto)
-    {
-        var warehouseCode = dto.WarehouseCode.Trim();
-        var warehouseName = dto.WarehouseName.Trim();
-
-        var sapExists = await _context.Saps
-            .AsNoTracking()
-            .AnyAsync(x => x.SapId == dto.SapId && x.IsActive);
-
-        if (!sapExists)
-            return GeneralResponse<WarehouseDTO>.FailResponse("Sap not found or inactive.");
-
-        var duplicateCode = await _context.Warehouses
-            .AsNoTracking()
-            .AnyAsync(x => x.SapId == dto.SapId && x.WarehouseCode == warehouseCode);
-
-        if (duplicateCode)
-            return GeneralResponse<WarehouseDTO>.FailResponse("Warehouse code already exists in this SAP.");
-
-        var duplicateName = await _context.Warehouses
-            .AsNoTracking()
-            .AnyAsync(x => x.SapId == dto.SapId && x.WarehouseName == warehouseName);
-
-        if (duplicateName)
-            return GeneralResponse<WarehouseDTO>.FailResponse("Warehouse name already exists in this SAP.");
-
-        var entity = new Warehouse
-        {
-            WarehouseCode = warehouseCode,
-            WarehouseName = warehouseName,
-            SapId = dto.SapId,
-            UpdateDate = DateTime.UtcNow
-        };
-
-        await AddAsync(entity);
-        await SaveChangesAsync();
-
-        return GeneralResponse<WarehouseDTO>.SuccessResponse(new WarehouseDTO
-        {
-            WarehouseId = entity.WarehouseId,
-            WarehouseName = entity.WarehouseName,
-            SapId = entity.SapId
-        });
-    }
-
     public async Task<GeneralResponse<IEnumerable<WarehouseDTO>>> GetAllWarehouses(string userId, IList<string> roleNames)
     {
 

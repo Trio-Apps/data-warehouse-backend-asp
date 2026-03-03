@@ -97,6 +97,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 Comment = x.Order.Comment,
                 UserId = x.Order.UserId,
                 WarehouseId = x.Order.WarehouseId,
+                ErrorMessage = x.Order.ErrorMessage,
 
                 SupplierName = x.Order.Supplier.SupplierName,
                 SupplierCode = x.Order.Supplier.SupplierCode,
@@ -120,6 +121,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 Data = data
             });
     }
+    
     public async Task<GeneralResponse<GoodsReturnOrderDTO>> GetGoodsReturnOrderByIdAsync(string userId, int goodsReturnOrderId)
     {
         var res = await _context.GoodsReturnOrders
@@ -145,21 +147,24 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             Comment = res.Comment,
             SupplierName = res.Supplier.SupplierName,
             SupplierCode = res.Supplier.SupplierCode,
+            ErrorMessage = res.ErrorMessage,
             CreatedAt = res.CreatedAt,
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
             ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
             Approval = approvalModel.hasProgress,
             ApprovalStatus = approvalModel.ApprovalStatus,
+
+
+
         };
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(mapping);
     }
 
-
     // without reference
     public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderWithoutRefAsync(string userId, AddGoodsReturnOrderWithoutRefDTO dto)
     {
-
+       
         var suppler = await _context.Suppliers.FirstOrDefaultAsync(p => p.SupplierId == dto.SupplierId);
 
         if (suppler == null)
@@ -453,7 +458,6 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(result);
     }
- 
     
     public async Task<GeneralResponse<GoodsReturnOrderDTO>> GetByReceiptPurchaseOrderIdAsync(int receiptPurchaseOrderId)
     {

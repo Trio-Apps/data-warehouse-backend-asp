@@ -44,12 +44,13 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             int totalAlreadyExists = 0;
             int totalFailed = 0;
 
-            int top = 2;
+            int top = 20;
 
             while (true)
             {
                 // SAP B1 Service Layer style: Orders?$skip=..&$top=..&$select=..&$expand=DocumentLines
                 // ✅ بنسحب أهم الحقول + lines + batchnumbers داخل lines
+               
                 var url =
                     $"Orders?$skip={skip}&$top={top}" +
                     $"&$select=DocEntry,DocNum,DocType,DocDate,DocDueDate,CardCode,Comments,DocumentLines";
@@ -309,7 +310,9 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                             UnitPrice = (decimal?)(line.UnitPrice ?? line.Price),
                             BarCode = line.BarCode,
                             Status = GeneralItemStatus.Closed,
-                            UoMEntry = 0 // لو SAP بيرجّع UoMEntry ابعتلي الحقل ونربطه
+                            UoMEntry = line.UoMEntry, // لو SAP بيرجّع UoMEntry ابعتلي الحقل ونربطه
+                            LineNum = line.LineNum??0,
+
                         };
 
                         // ✅ batches
@@ -322,7 +325,8 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                                 BatchNumber = b.BatchNumber,
                                 ExpiryDate = b.ExpiryDate,
                                 CreatedAt = DateTime.UtcNow,
-                                Comment = null
+                                Comment = null,
+                                 
                             });
                         }
 
@@ -389,6 +393,8 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
         public string? WarehouseCode { get; set; }
         public string? BarCode { get; set; }
         public double? UnitPrice { get; set; }
+        public int UoMEntry { get; set; }
+
 
         public List<SapBatchNumberDto>? BatchNumbers { get; set; }
     }

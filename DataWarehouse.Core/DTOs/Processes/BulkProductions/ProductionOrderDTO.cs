@@ -10,7 +10,7 @@ public class ProductionOrderDTO
     public int ProductionOrderId { get; set; }
 
     [Required(ErrorMessage = "Status is required")]
-    public string Status { get; set; } = string.Empty;
+    public string Status { get; set; } // ProductionStatus enum
 
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }
@@ -22,26 +22,22 @@ public class ProductionOrderDTO
     public string? Remarks { get; set; }
 
     [Required(ErrorMessage = "User ID is required")]
-    public string UserId { get; set; } = string.Empty;
+    public  string UserId { get; set; }
 
-    public ApplicationUser? User { get; set; }
+    public ApplicationUser User { get; set; }
 
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
 
-    public int NumberOfProductionItem { get; set; }
-    public bool Approval { get; set; }
-    public string? ApprovalStatus { get; set; }
-    public bool CanSubmit { get; set; }
+    public int NumberOfProductionItem {  get; set; }
     public List<ProductionOrderItemDTO>? ProductionOrderItems { get; set; }
 }
-
 public class AddProductionOrderDTO
 {
+
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }
-
     [Required(ErrorMessage = "Due Date is required")]
     public DateTime DueDate { get; set; }
 
@@ -56,6 +52,8 @@ public class AddProductionOrderDTO
 
 public class UpdateProductionOrderDTO
 {
+    public int ProductionOrderId { get; set; }
+
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }
 
@@ -65,12 +63,6 @@ public class UpdateProductionOrderDTO
     [StringLength(500, ErrorMessage = "Remarks cannot exceed 500 characters")]
     public string? Remarks { get; set; }
 
-    [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
-    public int? WarehouseId { get; set; }
-}
+ 
 
-public class SubmitProductionOrderDTO
-{
-    [StringLength(500, ErrorMessage = "Submit note cannot exceed 500 characters")]
-    public string? Note { get; set; }
 }

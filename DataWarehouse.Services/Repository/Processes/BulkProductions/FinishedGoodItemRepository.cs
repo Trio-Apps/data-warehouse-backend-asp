@@ -23,7 +23,7 @@ public class FinishedGoodItemRepository : BaseRepository<WarehouseItem>, IFinish
     public async Task<GeneralResponse<IEnumerable<WarehouseItemDto>>> GetByWarehouseIdAsync(int warehouseId)
     {
         return GeneralResponse< IEnumerable < WarehouseItemDto >>.SuccessResponse( await Query()
-            .Where(iw => iw.IsActive && iw.FinishedGood && iw.HasActiveBOM && iw.WarehouseId == warehouseId)
+            .Where(iw => iw.FinishedGood && iw.HasActiveBOM && iw.WarehouseId == warehouseId)
             .Select(wi => new WarehouseItemDto
             {
                 WarehouseItemId = wi.WarehouseItemId,
@@ -61,7 +61,7 @@ public class FinishedGoodItemRepository : BaseRepository<WarehouseItem>, IFinish
 
         var query = _context.WarehouseItems
             .AsNoTracking()
-            .Where(iw => iw.IsActive && iw.FinishedGood && iw.HasActiveBOM && iw.WarehouseId == warehouseId);
+            .Where(iw => iw.FinishedGood && iw.HasActiveBOM && iw.WarehouseId == warehouseId);
 
         // 🔹 Filtering
      
@@ -123,3 +123,4 @@ public class FinishedGoodItemRepository : BaseRepository<WarehouseItem>, IFinish
         return await Query().Where(fgi => fgi.IsActive).ToListAsync();
     }
 }
+

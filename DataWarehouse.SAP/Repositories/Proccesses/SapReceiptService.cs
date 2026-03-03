@@ -7,6 +7,7 @@ using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.SAP.Interfaces.Based;
 using DataWarehouse.SAP.Interfaces.Proccesses;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,92 +17,109 @@ using System.Threading.Tasks;
 
 namespace DataWarehouse.SAP.Repositories.Proccesses
 {
+   
     public class SapReceiptService : ISapReceiptService
     {
-        private readonly IBaseSap<SapPurchaseOrderDto> sap;
-        private readonly IDynamicBarCodeRepository dynamicBarCodeRepository;
-        private readonly ISapSyncStatusRepository _syncRepo;
-        private readonly ILogger<SapPurchaseService> logger;
+        private readonly IBaseSap<SapReceiptOrderDto> _sap;
+        private readonly ILogger<SapReceiptService> _logger;
         private readonly DataWarehouseDbContext _context;
 
-        public SapReceiptService(IBaseSap<SapPurchaseOrderDto> sap, IDynamicBarCodeRepository dynamicBarCodeRepository,
-            ISapSyncStatusRepository syncRepo, DataWarehouseDbContext context, ILogger<SapPurchaseService> logger)
+        public SapReceiptService(
+            IBaseSap<SapReceiptOrderDto> sap,
+            DataWarehouseDbContext context,
+            ILogger<SapReceiptService> logger)
         {
-            this.sap = sap;
-            this.dynamicBarCodeRepository = dynamicBarCodeRepository;
-            _syncRepo = syncRepo;
-            this.logger = logger;
+            _sap = sap;
+            _logger = logger;
             _context = context;
         }
 
         public async Task<string> SyncReceiptAsync(int sapId)
         {
-            const int batchSize = 200;     // PO أقل من production items غالباً
-                                           //   const int parallelism = 1;     // عدد الـ tasks في نفس الوقت
+            const int batchSize = 200;
 
             int totalSuccess = 0;
             int totalFail = 0;
 
             while (true)
             {
-                // ✅ IDs للأوامر Approved من جدول الـ Process
+                // ✅ Approved IDs من جدول الـ Process
                 var approvedIdsQuery = _context.ProcessItemIsProgresses
                     .AsNoTracking()
-                    .Where(p => p.ProcessType == ProcessType.Purchase && p.Status == ProcessStatus.Approved)
+                    .Where(p => p.ProcessType == ProcessType.Receipt && p.Status == ProcessStatus.Approved)
                     .Select(p => p.ReferenceId)
                     .Distinct();
 
-
-                // ✅ أهم تعديل: مفيش Skip
-                // كل مرة هجيب "أول batch" من اللي لسه Processing
+                // ✅ هات أول دفعة من اللي لسه Processing
                 var batch = await _context.ReceiptPurchaseOrders
                     .AsTracking()
-                    .Include(po => po.Warehouse)
-                    .Include(po => po.Supplier)
-                    .Include(po => po.PurchaseOrder)
-                    .Include(po => po.ReceiptPurchaseOrderItems)
+                    .Include(o => o.Warehouse)
+                    .Include(o => o.Supplier)
+                    .Include(o => o.PurchaseOrder)
+                    .Include(o => o.ReceiptPurchaseOrderItems)
                         .ThenInclude(i => i.Item)
-                    .Where(po => po.Status == GeneralStatus.Processing
-                                 && po.Warehouse.SapId == sapId
-                                 && approvedIdsQuery.Contains(po.ReceiptPurchaseOrderId))
-                    .OrderBy(po => po.ReceiptPurchaseOrderId)
+                    .Include(o => o.ReceiptPurchaseOrderItems)
+                        .ThenInclude(i => i.ReceiptPurchaseOrderBatches) // ✅ مهم جدًا للباتش
+                    .Where(o =>
+                        o.Status == GeneralStatus.Processing &&
+                        o.Warehouse.SapId == sapId &&
+                        approvedIdsQuery.Contains(o.ReceiptPurchaseOrderId))
+                    .OrderBy(o => o.ReceiptPurchaseOrderId)
                     .Take(batchSize)
                     .ToListAsync();
 
                 if (!batch.Any())
                     break;
 
-                // ✅ Parallel processing
-                //  using var semaphore = new SemaphoreSlim(parallelism);
+                int taskSuccess = 0;
+                int taskFail = 0;
 
-                //   var tasks = batch.Select(order =>
-
-                var taskSuccess = 0;
-                var taskFail = 0;
                 foreach (var order in batch)
                 {
-                    var (_, success, error) = await ProcessPurchaseOrderAsync(sapId, order);
+                    var (_, success, body, error) = await ProcessReceiptOrderAsync(sapId, order);
 
                     if (success)
                     {
                         order.Status = GeneralStatus.Completed;
+                        var res = JsonSerializer.Deserialize<PurchaseAsBasedOn>(body,
+                      new JsonSerializerOptions
+                      {
+                          PropertyNameCaseInsensitive = true
+                      });
+
+                        order.DocEntry = res.DocEntry;
+                        order.DocNum = res.DocNum;
+                        order.DocType = res.DocType;
+                        var sapLinesByItem = res.DocumentLines
+                        .Where(x => !string.IsNullOrWhiteSpace(x.ItemCode))
+                        .ToDictionary(x => x.ItemCode!, x => x.LineNum);
 
                         foreach (var it in order.ReceiptPurchaseOrderItems)
                         {
                             it.Status = GeneralItemStatus.Received;
                             it.ErrorMessage = null;
+                            // لو عندك ItemCode في it.Item.ItemCode
+                            var itemCode = it.Item?.ItemCode;
+                            if (itemCode != null && sapLinesByItem.TryGetValue(itemCode, out var lineNum))
+                                it.LineNum = lineNum;
 
                             _context.Entry(it).Property(x => x.Status).IsModified = true;
                             _context.Entry(it).Property(x => x.ErrorMessage).IsModified = true;
+                            _context.Entry(it).Property(x => x.LineNum).IsModified = true;
+
                         }
 
-
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
+                        _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
+                        _context.Entry(order).Property(x => x.DocEntry).IsModified = true;
+                        _context.Entry(order).Property(x => x.DocNum).IsModified = true;
+                        _context.Entry(order).Property(x => x.DocType).IsModified = true;
                         taskSuccess++;
                     }
                     else
                     {
                         order.Status = GeneralStatus.PartiallyFailed;
+                        order.ErrorMessage = error;
 
                         foreach (var it in order.ReceiptPurchaseOrderItems)
                         {
@@ -113,140 +131,141 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         }
 
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
+                        _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
+
                         taskFail++;
                     }
                 }
 
-
-
-                // ✅ Save batch once
                 try
                 {
-                    // مهم جدًا لو AutoDetectChanges مقفول في أي مكان
                     _context.ChangeTracker.DetectChanges();
-
                     var affected = await _context.SaveChangesAsync();
-                    logger.LogInformation("SaveChanges affected rows={Affected}", affected);
+                    _logger.LogInformation("Receipt batch SaveChanges affected rows={Affected}", affected);
 
                     _context.ChangeTracker.Clear();
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    logger.LogError(ex, "Concurrency issue while saving purchase orders batch for sapId={SapId}", sapId);
+                    _logger.LogError(ex, "Concurrency issue while saving receipt batch for sapId={SapId}", sapId);
                     throw;
                 }
                 catch (DbUpdateException ex)
                 {
-                    logger.LogError(ex, "DB update issue while saving purchase orders batch for sapId={SapId}", sapId);
+                    _logger.LogError(ex, "DB update issue while saving receipt batch for sapId={SapId}", sapId);
                     throw;
                 }
 
                 totalSuccess += taskSuccess;
                 totalFail += taskFail;
 
-                logger.LogInformation(
-                    "PO Batch processed for sapId={SapId}: {Success} succeeded, {Failed} failed. Total so far: {TotalSuccess}/{TotalFail}",
-                    sapId,
-                   taskSuccess,
-                    taskFail,
-                    totalSuccess,
-                    totalFail
+                _logger.LogInformation(
+                    "Receipt batch processed for sapId={SapId}: {Success} succeeded, {Failed} failed. Total so far: {TotalSuccess}/{TotalFail}",
+                    sapId, taskSuccess, taskFail, totalSuccess, totalFail
                 );
-
-                // مفيش skip هنا
             }
 
             if (totalSuccess == 0 && totalFail == 0)
-                return "No approved purchase orders to sync";
+                return "No approved receipt orders to sync";
+
 
             return $"Sync completed. Success: {totalSuccess}, Failed: {totalFail}";
         }
-        private async Task<(ReceiptPurchaseOrder order, bool success, string? error)>
-            ProcessPurchaseOrderAsync(int sapId, ReceiptPurchaseOrder order)
+
+        private async Task<(ReceiptPurchaseOrder order, bool success, string res, string? error)>
+            ProcessReceiptOrderAsync(int sapId, ReceiptPurchaseOrder order)
         {
             try
             {
                 // ✅ Validate minimum
                 if (order.Supplier == null || string.IsNullOrWhiteSpace(order.Supplier.SupplierCode))
-                    throw new InvalidOperationException($"PO#{order.PurchaseOrderId}: SupplierCode is missing.");
+                    throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: SupplierCode is missing.");
+
 
                 if (order.Warehouse == null || string.IsNullOrWhiteSpace(order.Warehouse.WarehouseCode))
-                    throw new InvalidOperationException($"PO#{order.PurchaseOrderId}: WarehouseCode is missing.");
+                    throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: WarehouseCode is missing.");
+
 
                 if (order.ReceiptPurchaseOrderItems == null || order.ReceiptPurchaseOrderItems.Count == 0)
-                    throw new InvalidOperationException($"PO#{order.PurchaseOrderId}: No items.");
+                    throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: No items.");
 
-                // ✅ Build DTO
-                var sapDto = new SapPurchaseOrderDto
+                // ✅ Build SAP Receipt DTO (PurchaseDeliveryNotes = GRPO)
+                var sapDto = new SapReceiptOrderDto
                 {
                     CardCode = order.Supplier.SupplierCode,
-                    CardName = order.Supplier.SupplierName, // optional
-                    DocDate = ConvertToSapDateFormat(order.DueDate == default ? order.CreatedAt : order.DueDate),
-                    NumAtCard = $"PO-{order.PurchaseOrderId}",
+                    DocDate = ConvertToSapDateFormat(order.PostingDate == default ? order.CreatedAt : order.PostingDate),
+                    NumAtCard = $"ro-{order.ReceiptPurchaseOrderId}",
                     BPL_IDAssignedToInvoice = TryResolveBplId(order)
                 };
 
-
-                foreach (var line in order.ReceiptPurchaseOrderItems)
+                foreach (var line in order.ReceiptPurchaseOrderItems.OrderBy(x => x.ReceiptPurchaseOrderItemId))
                 {
                     if (line.Item == null)
-                        throw new InvalidOperationException($"PO#{order.PurchaseOrderId}: Item missing on line {line.ReceiptPurchaseOrderItemId}.");
+                        throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: Item missing on line {line.ReceiptPurchaseOrderItemId}.");
 
-                    // افترض إن عندك ItemCode على الـ Item
                     var itemCode = line.Item.ItemCode;
                     if (string.IsNullOrWhiteSpace(itemCode))
-                        throw new InvalidOperationException($"PO#{order.PurchaseOrderId}: ItemCode is missing for item {line.ItemId}.");
+                        throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: ItemCode missing for itemId={line.ItemId}.");
 
-                    sapDto.DocumentLines.Add(new SapPurchaseOrderLineDto
+                    if (line.Quantity <= 0)
+                        throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: Quantity must be > 0 for ItemCode={itemCode}.");
+
+                    var sapLine = new SapReceiptOrderLineDto
                     {
                         ItemCode = itemCode,
-                        ItemDescription = line.Item.ItemName, // لو عندك
                         Quantity = line.Quantity,
                         WarehouseCode = order.Warehouse.WarehouseCode,
                         UoMEntry = line.UoMEntry > 0 ? line.UoMEntry : null,
                         BarCode = line.BarCode,
-                        UnitPrice = line.UnitPrice
-                    });
+                        UnitPrice = line.UnitPrice,
+                        BatchNumbers = new List<SapBatchNumberDto>()
+                    };
+
+                    // ✅ Map batches (لو مفيش batches: ابعتها [] أو null حسب إعدادات SAP عندك)
+                    var batches = line.ReceiptPurchaseOrderBatches ?? new List<ReceiptPurchaseOrderBatch>();
+                    foreach (var b in batches)
+                    {
+                        if (string.IsNullOrWhiteSpace(b.BatchNumber))
+                            throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: Missing BatchNumber for ItemCode={itemCode}.");
+
+                        if (b.Quantity <= 0)
+                            throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: Batch quantity must be > 0 for ItemCode={itemCode}, Batch={b.BatchNumber}.");
+
+                        sapLine.BatchNumbers.Add(new SapBatchNumberDto
+                        {
+                            BatchNumber = b.BatchNumber!,
+                            Quantity = b.Quantity,
+                            ExpiryDate = b.ExpiryDate.HasValue ? ConvertToSapDateFormat(b.ExpiryDate.Value) : null
+                        });
+                    }
+
+                    // ✅ Optional: validate sum batches == line quantity (لو عندك batch-managed لازم)
+                    if (sapLine.BatchNumbers.Count > 0)
+                    {
+                        var sum = sapLine.BatchNumbers.Sum(x => x.Quantity);
+                        if (sum != line.Quantity)
+                            throw new InvalidOperationException(
+                                $"Receipt#{order.ReceiptPurchaseOrderId}: Sum(BatchNumbers.Quantity)={sum} != Line.Quantity={line.Quantity} for ItemCode={itemCode}.");
+                    }
+
+                    sapDto.DocumentLines.Add(sapLine);
                 }
 
-                var url = "PurchaseOrders";
+                var url = "PurchaseDeliveryNotes";
 
-                // ✅ إرسال لـ SAP
-                // ملاحظة: لو عندك AddPostSapAsync استخدمه هنا
-                var response = await sap.AddSapAsync(sapId, url, sapDto);
+                // ✅ POST to SAP
+                var responseJson = await _sap.AddSapAsync(sapId, url, sapDto);
 
+                _logger.LogInformation("Receipt synced successfully. ReceiptId={Id}, sapResponse={Resp}",
+                    order.ReceiptPurchaseOrderId, responseJson);
 
-                logger.LogInformation("Purchase order synced: {Id}", order.PurchaseOrderId);
-
-                //var orderFetch = await _context.PurchaseOrders.FirstOrDefaultAsync(e => e.PurchaseOrderId == order.PurchaseOrderId);
-
-                //orderFetch.Status = GeneralStatus.Completed;
-
-                //await _context.SaveChangesAsync();
-
-                return (order, true, null);
+                return (order, true,responseJson, null);
             }
             catch (Exception ex)
             {
-                //order.Status = GeneralStatus.PartiallyFailed;
-                //await _context.SaveChangesAsync();
-
-                logger.LogError(ex, "Failed to sync purchase order: {Id}", order.PurchaseOrderId);
-                //await _syncRepo.MarkFailedAsync(ProcessType.Purchase, order.PurchaseOrderId, ex.Message);
-                return (order, false, ex.Message);
+                _logger.LogError(ex, "Failed to sync receipt order: ReceiptId={Id}", order.ReceiptPurchaseOrderId);
+                return (order, false,"", ex.Message);
             }
-
-        }
-
-        private async Task MarkProcessCompletedAsync(int purchaseOrderId)
-        {
-            var process = await _context.ProcessItemIsProgresses
-                .Where(p => p.ProcessType == ProcessType.Purchase && p.ReferenceId == purchaseOrderId)
-                .OrderByDescending(p => p.ProcessItemIsProgressId)
-                .FirstOrDefaultAsync();
-
-            if (process != null)
-                process.CompletedDate = DateTime.UtcNow;
         }
 
         private static string ConvertToSapDateFormat(DateTime date)
@@ -254,8 +273,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
         private int? TryResolveBplId(ReceiptPurchaseOrder order)
         {
-            // لو عندك BPL مربوط بالـ Warehouse
-            // عدّل حسب Warehouse entity عندك
+            // لو عندك BPLId على الـ Warehouse
             var prop = order.Warehouse?.GetType().GetProperty("BplId");
             if (prop?.GetValue(order.Warehouse) is int bpl && bpl > 0)
                 return bpl;
@@ -263,37 +281,55 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             return null;
         }
 
+        // =========================
+        // SAP DTOs (Receipt / GRPO)
+        // =========================
 
-        public class SapReceiptOrderDto
+        public sealed class SapReceiptOrderDto
         {
             public string CardCode { get; set; } = string.Empty;
-            public string? CardName { get; set; }
             public string DocDate { get; set; } = string.Empty;
             public string? NumAtCard { get; set; }
             public int? BPL_IDAssignedToInvoice { get; set; }
-            public List<SapPurchaseOrderLineDto> DocumentLines { get; set; } = new();
+            public List<SapReceiptOrderLineDto> DocumentLines { get; set; } = new();
         }
 
-        public class SapReceiptOrderLineWithoutRefDto
+        public sealed class SapReceiptOrderLineDto
         {
             public string ItemCode { get; set; } = string.Empty;
-            public string? ItemDescription { get; set; }
             public decimal Quantity { get; set; }
             public string WarehouseCode { get; set; } = string.Empty;
             public int? UoMEntry { get; set; }
             public string? BarCode { get; set; }
             public decimal? UnitPrice { get; set; }
+
+            public List<SapBatchNumberDto>? BatchNumbers { get; set; } // ✅
         }
 
-        public class SapReceiptOrderLineDto
+        public sealed class SapBatchNumberDto
         {
-            public string ItemCode { get; set; } = string.Empty;
-            public string? ItemDescription { get; set; }
+            public string BatchNumber { get; set; } = string.Empty;
             public decimal Quantity { get; set; }
-            public string WarehouseCode { get; set; } = string.Empty;
-            public int? UoMEntry { get; set; }
-            public string? BarCode { get; set; }
-            public decimal? UnitPrice { get; set; }
+            public string? ExpiryDate { get; set; } // yyyy-MM-dd
+        }
+
+        public class ReceiptAsBasedOn
+        {
+
+            public int? DocEntry { get; set; }
+            public int? DocNum { set; get; }
+            public string? DocType { get; set; }
+
+            public List<PurchaseItemAsBasedOn> DocumentLines { get; set; } = new();
+
+
+        }
+        public class ReceiptItemAsBasedOn
+        {
+            public int LineNum { get; set; }
+            public string ItemCode { set; get; } = string.Empty;
+
         }
     }
+
 }

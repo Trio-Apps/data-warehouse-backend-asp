@@ -2,6 +2,7 @@
 using DataWarehouse.Core.DTOs.Auth;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Domain.Entities.AllinAll;
+using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,8 @@ namespace DataWarehouse.Api.Controllers.admin.Sap
         }
 
         [HttpPost("select-sap/{sapId}")]
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Saps_Get}")]
+
         public async Task<IActionResult> SelectSap(int sapId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -38,6 +41,8 @@ namespace DataWarehouse.Api.Controllers.admin.Sap
             return Ok(new { message = "SAP selected successfully" });
         }
         [HttpGet("sap-selected")]
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Saps_Get}")]
+
         public async Task<IActionResult> GetSelectedCompany()
         {
             var result = await sap.GetCurruntCompany();
@@ -46,6 +51,8 @@ namespace DataWarehouse.Api.Controllers.admin.Sap
 
 
         [HttpPost]
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Saps_Create}")]
+
         public async Task<IActionResult> AddSap([FromBody] AddSapDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -61,6 +68,8 @@ namespace DataWarehouse.Api.Controllers.admin.Sap
       
 
         [HttpPut]
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Saps_Edit}")]
+
         public async Task<IActionResult> UpdateSap([FromBody] UpdateSapDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -72,6 +81,8 @@ namespace DataWarehouse.Api.Controllers.admin.Sap
       
 
         [HttpGet]
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Saps_Get}")]
+
         public async Task<IActionResult> GetAll()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -84,6 +95,8 @@ namespace DataWarehouse.Api.Controllers.admin.Sap
             return Ok(result);
         }
         [HttpGet("{Skip}/{pageSize}")]
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Saps_Get}")]
+
         public async Task<IActionResult> GetSaps(int skip,int pageSize,int? companyId,
       string? sapName,
      string? userName)
@@ -100,14 +113,15 @@ namespace DataWarehouse.Api.Controllers.admin.Sap
 
 
         [HttpGet("sap-setting")]
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Saps_Get}")]
+
         public async Task<IActionResult> GetSapSetting()
         {
             var result = await sap.GetSapSettingAsync();
             return Ok(result);
         }
 
-
-
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Saps_Get}")]
         [HttpGet("saps-by-company-id/{companyId:int}")]
         public async Task<IActionResult> GetSapsByCompanyId(int companyId)
         {
@@ -118,6 +132,8 @@ namespace DataWarehouse.Api.Controllers.admin.Sap
 
 
         [HttpDelete("{sapId:int}")]
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Saps_Delete}")]
+
         public async Task<IActionResult> Delete(int sapId)
         {
             var result = await sap.ChangeActiveCompanyAuthasync(sapId);

@@ -32,6 +32,11 @@ namespace DataWarehouse.SAP.Models.Actors
             public string ProcurementMethod { get; set; }
             public string ManageBatchNumbers { get; set; }
             public DateTime UpdateDate { get; set; }
+            public string PurchaseItem { get; set; }
+            public string SalesItem { get; set; }
+            public string InventoryItem { get; set; }
+            public string Valid { get; set; }
+            public string Frozen { get; set; }
             public ICollection<ItemPrice> ItemPrices { get; set; }
             public ICollection<SapItemWarehouseDto> ItemWarehouseInfoCollection { get; set; }
             public ICollection<ItemBarCodesDto> ItemBarCodeCollection { get; set; }

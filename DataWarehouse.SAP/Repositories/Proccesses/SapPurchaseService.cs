@@ -98,8 +98,8 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         order.DocNum = res.DocNum;
                         order.DocType = res.DocType;
                         var sapLinesByItem = res.DocumentLines
-                       .Where(x => !string.IsNullOrWhiteSpace(x.ItemCode))
-                         .ToDictionary(x => x.ItemCode!, x => x.LineNum);
+                        .Where(x => !string.IsNullOrWhiteSpace(x.ItemCode))
+                        .ToDictionary(x => x.ItemCode!, x => x.LineNum);
 
 
                         foreach (var it in order.PurchaseOrderItems)
@@ -121,7 +121,6 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
 
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
-
                         _context.Entry(order).Property(x => x.DocEntry).IsModified = true;
                         _context.Entry(order).Property(x => x.DocNum).IsModified = true;
                         _context.Entry(order).Property(x => x.DocType).IsModified = true;
@@ -130,6 +129,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     else
                     {
                         order.Status = GeneralStatus.PartiallyFailed;
+                        order.ErrorMessage = error;
 
                         foreach (var it in order.PurchaseOrderItems)
                         {
@@ -141,6 +141,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         }
 
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
+                        _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
                         taskFail++;
                     }
                 }

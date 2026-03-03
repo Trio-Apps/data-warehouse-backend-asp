@@ -60,7 +60,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
                 UserId = iw.UserId,
                 WarehouseId = warehouseId,
                 PurchaseOrderId = iw.PurchaseOrderId,
-                SupplierId = iw.SupplierId
+                SupplierId = iw.SupplierId,
+                ErrorMessage= iw.ErrorMessage,
             })
             .ToListAsync();
 
@@ -173,6 +174,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
            
              CreatedAt = x.Order.CreatedAt,
              SupplierId = x.Order.SupplierId,
+             ErrorMessage = x.Order.ErrorMessage,
            
              IsReturn = x.Order.GoodsReturnOrder != null,
              ReturnOrderId = x.Order.GoodsReturnOrder != null ? x.Order.GoodsReturnOrder.GoodsReturnOrderId : null,
@@ -215,6 +217,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             SupplierId = res.SupplierId,
             SupplierName =res.Supplier.SupplierName,
            SupplierCode = res.Supplier.SupplierCode,
+            ErrorMessage = res.ErrorMessage,
+
             Comment = res.Comment,
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
@@ -372,7 +376,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             ReceiptPurchaseOrderItems = purchaseOrder.PurchaseOrderItems.Select(poi => new ReceiptPurchaseOrderItem
             {
                 ItemId = poi.ItemId,
-                Quantity = 0,
+                Quantity = poi.Quantity,
                 UoMEntry = poi.UoMEntry,
                 BarCode = poi.BarCode,
                 UnitPrice = poi.UnitPrice,

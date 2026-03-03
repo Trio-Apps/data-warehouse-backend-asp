@@ -23,11 +23,14 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
             get => DeliveryNoteOrderId;
             set => DeliveryNoteOrderId = value;
         }
+
         public string? BarCode { get; set; }
         // Pending, Planned, Released, Received, Closed, Failed
         public GeneralItemStatus Status { get; set; }
         public decimal? UnitPrice { get; set; }
         public string? ErrorMessage { get; set; }
+        public int? LineNum { get; set; }
+
 
         // Navigation
         public int DeliveryNoteOrderId { get; set; } // FK to DeliveryNoteOrder

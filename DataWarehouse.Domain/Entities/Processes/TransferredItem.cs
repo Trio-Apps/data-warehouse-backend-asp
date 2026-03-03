@@ -20,6 +20,8 @@ namespace DataWarehouse.Domain.Entities.Processes
         public decimal? UnitPrice { get; set; }
         public string? ErrorMessage { get; set; }
         public string? Comment { get; set; }
+        public int? LineNum { get; set; }
+
 
         // Navigation
         public ReceivedItem ReceivedItem { get; set; }

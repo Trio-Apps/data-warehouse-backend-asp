@@ -246,6 +246,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<bool>("BatchNumbers")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("Frozen")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("InventoryItem")
+                        .HasColumnType("bit");
+
                     b.Property<string>("ItemCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -262,8 +268,14 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("PurchaseItem")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("PurchasePrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("SalesItem")
+                        .HasColumnType("bit");
 
                     b.Property<decimal>("SalesPrice")
                         .HasColumnType("decimal(18,2)");
@@ -277,6 +289,9 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<DateTime>("UpdateDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("Valid")
+                        .HasColumnType("bit");
 
                     b.HasKey("ItemId");
 
@@ -1030,110 +1045,6 @@ namespace DataWarehouse.Domain.Migrations
                     b.ToTable("ProcessItemIsProgresses");
                 });
 
-            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentBatch", b =>
-                {
-                    b.Property<int>("ProductionComponentBatchId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductionComponentBatchId"));
-
-                    b.Property<string>("BatchNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ProductionComponentLineId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("ProductionComponentBatchId");
-
-                    b.HasIndex("ProductionComponentLineId");
-
-                    b.ToTable("ProductionComponentBatches");
-                });
-
-            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentLine", b =>
-                {
-                    b.Property<int>("ProductionComponentLineId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductionComponentLineId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("InWhsQuantity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("IssueType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("IssuedQuantity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductionOrderId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("RequiredQuantity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("WarehouseId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ProductionComponentLineId");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("ProductionOrderId");
-
-                    b.HasIndex("WarehouseId");
-
-                    b.ToTable("ProductionComponentLines");
-                });
-
-            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
-                {
-                    b.Property<int>("ProductionHeaderBatchId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductionHeaderBatchId"));
-
-                    b.Property<string>("BatchNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ProductionOrderId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("ProductionHeaderBatchId");
-
-                    b.HasIndex("ProductionOrderId");
-
-                    b.ToTable("ProductionHeaderBatches");
-                });
-
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", b =>
                 {
                     b.Property<int>("ProductionOrderId")
@@ -1266,6 +1177,15 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
@@ -1342,6 +1262,9 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Quantity")
@@ -1483,6 +1406,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -1526,8 +1452,20 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
@@ -1572,8 +1510,20 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
@@ -1672,6 +1622,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -1758,8 +1711,20 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
@@ -1911,6 +1876,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
@@ -1989,6 +1957,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -2033,8 +2004,20 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("DeliveryNoteOrderId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
@@ -2122,6 +2105,9 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Quantity")
@@ -2227,6 +2213,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
@@ -2274,6 +2263,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -2317,6 +2309,15 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
@@ -2410,6 +2411,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -2450,6 +2454,15 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("DistinationWarehouseId")
                         .HasColumnType("int");
+
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
@@ -2983,55 +2996,6 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("User");
 
                     b.Navigation("Warehouse");
-                });
-
-            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentBatch", b =>
-                {
-                    b.HasOne("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentLine", "ProductionComponentLine")
-                        .WithMany("ProductionComponentBatches")
-                        .HasForeignKey("ProductionComponentLineId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProductionComponentLine");
-                });
-
-            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentLine", b =>
-                {
-                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
-                        .WithMany("ProductionComponentLines")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", "ProductionOrder")
-                        .WithMany("ProductionComponentLines")
-                        .HasForeignKey("ProductionOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Warehouse", "Warehouse")
-                        .WithMany("ProductionComponentLines")
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Item");
-
-                    b.Navigation("ProductionOrder");
-
-                    b.Navigation("Warehouse");
-                });
-
-            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
-                {
-                    b.HasOne("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", "ProductionOrder")
-                        .WithMany("ProductionHeaderBatches")
-                        .HasForeignKey("ProductionOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProductionOrder");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", b =>
@@ -3792,8 +3756,6 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("ItemUomGroups");
 
-                    b.Navigation("ProductionComponentLines");
-
                     b.Navigation("ProductionOrderItems");
 
                     b.Navigation("PurchaseOrderItems");
@@ -3835,8 +3797,6 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("GoodsReturnOrders");
 
                     b.Navigation("ProcessApprovals");
-
-                    b.Navigation("ProductionComponentLines");
 
                     b.Navigation("ProductionOrders");
 
@@ -3963,17 +3923,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("ProcessApprovals");
                 });
 
-            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentLine", b =>
-                {
-                    b.Navigation("ProductionComponentBatches");
-                });
-
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", b =>
                 {
-                    b.Navigation("ProductionComponentLines");
-
-                    b.Navigation("ProductionHeaderBatches");
-
                     b.Navigation("ProductionOrderItems");
                 });
 

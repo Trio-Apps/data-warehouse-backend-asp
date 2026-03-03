@@ -22,6 +22,9 @@ namespace DataWarehouse.Core.DTOs.Processes
         public string? Comment { get; set; }
         public string? WarehouseCode { get; set; }
 
+        public string? ErrorMessage { get; set; }
+
+
         [Required(ErrorMessage = "Status is required")]
         public string Status { get; set; } // PurchaseStatus enum
         public int? ItemCount { get; set; }

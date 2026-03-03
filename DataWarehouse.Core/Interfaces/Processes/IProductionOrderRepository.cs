@@ -10,10 +10,17 @@ namespace DataWarehouse.Core.Interfaces.Processes;
 
 public interface IProductionOrderRepository : IBaseRepository<ProductionOrder>
 {
-    Task<GeneralResponse<PagedResult<ProductionOrderDTO>>> GetListAsync(string userId, int pageNumber, int pageSize);
-    Task<GeneralResponse<ProductionOrderDTO>> GetDetailsAsync(string userId, int productionOrderId);
-    Task<GeneralResponse<ProductionOrderDTO>> CreateAsync(string userId, AddProductionOrderDTO dto);
-    Task<GeneralResponse<ProductionOrderDTO>> UpdateAsync(string userId, int productionOrderId, UpdateProductionOrderDTO dto);
-    Task<GeneralResponse<ProductionOrderDTO>> DeleteProductionOrderAsync(string userId, int productionOrderId);
-    Task<GeneralResponse<ProductionOrderDTO>> SubmitAsync(string userId, int productionOrderId, SubmitProductionOrderDTO? dto = null);
+    Task<IEnumerable<ProductionOrder>> GetByWarehouseIdAsync(int warehouseId);
+    Task<GeneralResponse<PagedResult<ProductionOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize);
+    Task<GeneralResponse<ProductionOrderDTO>> AddProductionOrderByWarehouseIdAsync(string userId,
+           AddProductionOrderDTO dto);
+    Task<GeneralResponse<ProductionOrderDTO>> UpdateProductionOrderAsync(string userId, int productionId, UpdateProductionOrderDTO dto);
+    Task<GeneralResponse<List<NameStatus>>> GetProductionOrderStatus();
+    Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId);
+    Task<IEnumerable<ProductionOrder>> GetByStatusAsync(string status);
+    Task<IEnumerable<ProductionOrder>> GetByUserIdAsync(string userId);
+    Task<ProductionOrder?> GetWithItemsAsync(int productionOrderId);
+    Task<ProductionOrder?> GetWithWarehouseAsync(int productionOrderId);
+    Task<IEnumerable<ProductionOrder>> GetByDateRangeAsync(System.DateTime startDate, System.DateTime endDate);
+    Task<IEnumerable<ProductionOrder>> GetPendingOrdersAsync();
 }

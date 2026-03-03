@@ -70,6 +70,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 Status = iw.Status.ToString(),
                  Comment = iw.Comment,
                 CreatedAt = iw.CreatedAt,
+                ErrorMessage = iw.ErrorMessage,
+
                 // string = enum
                 UserId = iw.UserId,
                 WarehouseId = warehouseId,
@@ -177,6 +179,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
              WarehouseId = x.Order.WarehouseId,
              SupplierName = x.Order.Supplier.SupplierName,
              Supplier = x.Order.Supplier,
+             ErrorMessage = x.Order.ErrorMessage,
+
              ItemCount = x.Order.PurchaseOrderItems.Count(),
              // ✅ وجود progress
              Approval = x.HasProgress,
@@ -235,6 +239,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             CreatedAt = res.CreatedAt,
+            ErrorMessage = res.ErrorMessage,
 
 
             SupplierName = res.Supplier.SupplierName,
@@ -499,6 +504,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             SupplierId = entity.SupplierId,
+
             Comment = entity.Comment
         };
 
@@ -528,8 +534,10 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 DueDate = p.DueDate,
                 PostingDate = p.PostingDate,
                 PurchaseOrderId = p.PurchaseOrderId,
+                    ErrorMessage = p.ErrorMessage,
 
-                Status = p.Status.ToString(),
+
+                    Status = p.Status.ToString(),
                 // string = enum
                 UserId = p.UserId,
 

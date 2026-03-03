@@ -70,6 +70,10 @@ namespace DataWarehouse.SAP
             services.AddScoped<ISapDynamicBarCodeService, SapDynamicBarCodeService>();
             services.AddScoped<IBusinessPartnersSupplierService, BusinessPartnersSupplierService>();
             services.AddScoped<ISapPurchaseService, SapPurchaseService>();
+            services.AddScoped<ISapReceiptService, SapReceiptService>();
+            services.AddScoped<ISapGoodsReturnService, SapGoodsReturnService>();
+            services.AddScoped<ISapDeliveryNoteService, SapDeliveryNoteService>();
+            services.AddScoped<ISapSalesReturnService, SapSalesReturnService>();
             services.AddScoped<ISapSalesService, SapSalesService>();
 
 

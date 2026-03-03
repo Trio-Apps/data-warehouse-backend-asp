@@ -16,6 +16,11 @@ namespace DataWarehouse.Domain.Entities.Processes
         public DateTime PostingDate { get; set; }
         public GeneralStatus Status { get; set; }
 
+        public int? DocEntry { get; set; }
+        public int? DocNum { set; get; }
+        public string? DocType { get; set; }
+
+
         public string? Comment { get; set; }
 
         public string UserId { get; set; }

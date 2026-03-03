@@ -22,6 +22,11 @@ namespace DataWarehouse.Domain.Entities.Processes
         public GeneralStatus Status { get; set; }
 
 
+        public int? DocEntry { get; set; }
+        public int? DocNum { set; get; }
+        public string? DocType { get; set; }
+
+
         // Navigation
         public int TransferredStockId { get; set; }
         public TransferredStock TransferredStock { get; set; } 

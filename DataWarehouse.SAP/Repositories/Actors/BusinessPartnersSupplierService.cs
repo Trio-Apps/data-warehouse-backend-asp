@@ -44,7 +44,7 @@ public class BusinessPartnersSupplierService : IBusinessPartnersSupplierService
         {
             var url =
                 $"BusinessPartners?$skip={skip}" +
-                $"&$select=CardCode,CardName,CardType,Address,Phone1,EmailAddress" +
+                $"&$select=CardCode,CardName,CardType,Address,Phone1,EmailAddress,Valid,Frozen" +
                 $"&$orderby=CardCode";
 
             _logger.LogInformation("Fetching BusinessPartners batch. Url: {url}", url);
@@ -70,9 +70,27 @@ public class BusinessPartnersSupplierService : IBusinessPartnersSupplierService
                 break;
             }
 
+
+            // ✅ فلترة: نشتغل على الـ Valid بس
+            var activeBatch = batch
+                .Where(IsValidBp)              // Valid = tYES فقط                                               //.Where(IsNotFrozen)          // (اختياري) استبعد frozen لو تحب
+                .ToList();
+
+            //if (!activeBatch.Any())
+            //{
+            //    // مفيش ولا BP فعال في الصفحة دي، كمّل paging عادي
+            //    skip += batch.Count; // أو حسب منطق الـ pagination عندك
+            //                         // Save pagination state once per batch
+            //    await _syncRepo.UpdateLastSyncPaginationSkipAsync(
+            //        sapId,
+            //        EntitiesName.businessPartners.ToString(),
+            //        skip);
+
+            //    continue;
+            //}
             // Split batch
-            var batchSuppliers = batch.Where(p => IsSupplier(p.CardType)).ToList();
-            var batchCustomers = batch.Where(p => IsCustomer(p.CardType)).ToList();
+            var batchSuppliers = activeBatch.Where(p => IsSupplier(p.CardType)).ToList();
+            var batchCustomers = activeBatch.Where(p => IsCustomer(p.CardType)).ToList();
 
             suppliersList.AddRange(batchSuppliers);
             customersList.AddRange(batchCustomers);
@@ -100,6 +118,11 @@ public class BusinessPartnersSupplierService : IBusinessPartnersSupplierService
         return $"Synced BusinessPartners: Suppliers={suppliersList.Count} (Inserted New={insertedSuppliersTotal}), " +
                $"Customers={customersList.Count} (Inserted New={insertedCustomersTotal}).";
     }
+    private static bool IsValidBp(BusinessPartnerDto p)
+    => string.Equals(p.Valid, "tYES", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsNotFrozen(BusinessPartnerDto p)
+        => !string.Equals(p.Frozen, "tYES", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsSupplier(string? cardType)
     {
@@ -224,4 +247,7 @@ public class BusinessPartnerDto
     public string Address { get; set; } = "";
     public string Phone1 { get; set; } = "";
     public string EmailAddress { get; set; } = "";
+    public string Valid { get; set; } = "";
+    public string Frozen { get; set; } = "";
+
 }

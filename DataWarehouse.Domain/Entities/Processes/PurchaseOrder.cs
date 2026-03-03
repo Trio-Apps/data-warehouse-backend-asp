@@ -22,6 +22,8 @@ namespace DataWarehouse.Domain.Entities.Processes
         public DateTime PostingDate { get; set; }
         public DateTime DueDate { get; set; }
         public string? Comment { get; set; }
+        public string? ErrorMessage { get; set; }
+
         [NotMapped]
         public int Id
         {

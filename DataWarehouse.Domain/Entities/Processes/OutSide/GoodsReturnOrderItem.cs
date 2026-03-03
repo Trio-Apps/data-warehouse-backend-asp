@@ -24,6 +24,8 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public decimal? UnitPrice { get; set; }
         public string? ErrorMessage { get; set; }
         public string? Comment { get; set; }
+        public int? LineNum { get; set; }
+
         [NotMapped]
         public int OrderId
         {
