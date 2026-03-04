@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataWarehouse.Domain.Migrations
 {
     /// <inheritdoc />
-    public partial class generalTables : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -474,7 +474,12 @@ namespace DataWarehouse.Domain.Migrations
                     UpdateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     BatchNumbers = table.Column<bool>(type: "bit", nullable: false),
                     SapId = table.Column<int>(type: "int", nullable: false),
-                    ProcurementType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ProcurementType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PurchaseItem = table.Column<bool>(type: "bit", nullable: false),
+                    SalesItem = table.Column<bool>(type: "bit", nullable: false),
+                    InventoryItem = table.Column<bool>(type: "bit", nullable: false),
+                    Valid = table.Column<bool>(type: "bit", nullable: false),
+                    Frozen = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -761,6 +766,9 @@ namespace DataWarehouse.Domain.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
+                    DocEntry = table.Column<int>(type: "int", nullable: true),
+                    DocNum = table.Column<int>(type: "int", nullable: true),
+                    DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false)
@@ -860,6 +868,7 @@ namespace DataWarehouse.Domain.Migrations
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -898,10 +907,11 @@ namespace DataWarehouse.Domain.Migrations
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
                     SapId = table.Column<int>(type: "int", nullable: false)
@@ -941,6 +951,9 @@ namespace DataWarehouse.Domain.Migrations
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DocEntry = table.Column<int>(type: "int", nullable: true),
+                    DocNum = table.Column<int>(type: "int", nullable: true),
+                    DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     DistinationWarehouseId = table.Column<int>(type: "int", nullable: false)
@@ -1064,6 +1077,7 @@ namespace DataWarehouse.Domain.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LineNum = table.Column<int>(type: "int", nullable: true),
                     CountStockId = table.Column<int>(type: "int", nullable: false),
                     ItemId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1081,6 +1095,65 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.ItemId,
                         principalTable: "Items",
                         principalColumn: "ItemId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductionComponentLines",
+                columns: table => new
+                {
+                    ProductionComponentLineId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RequiredQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IssuedQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    InWhsQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    IssueType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ProductionOrderId = table.Column<int>(type: "int", nullable: false),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    WarehouseId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductionComponentLines", x => x.ProductionComponentLineId);
+                    table.ForeignKey(
+                        name: "FK_ProductionComponentLines_Items_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "Items",
+                        principalColumn: "ItemId");
+                    table.ForeignKey(
+                        name: "FK_ProductionComponentLines_ProductionOrders_ProductionOrderId",
+                        column: x => x.ProductionOrderId,
+                        principalTable: "ProductionOrders",
+                        principalColumn: "ProductionOrderId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductionComponentLines_Warehouses_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "Warehouses",
+                        principalColumn: "WarehouseId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductionHeaderBatches",
+                columns: table => new
+                {
+                    ProductionHeaderBatchId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    BatchNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ProductionOrderId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductionHeaderBatches", x => x.ProductionHeaderBatchId);
+                    table.ForeignKey(
+                        name: "FK_ProductionHeaderBatches_ProductionOrders_ProductionOrderId",
+                        column: x => x.ProductionOrderId,
+                        principalTable: "ProductionOrders",
+                        principalColumn: "ProductionOrderId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1158,6 +1231,10 @@ namespace DataWarehouse.Domain.Migrations
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DocEntry = table.Column<int>(type: "int", nullable: true),
+                    DocNum = table.Column<int>(type: "int", nullable: true),
+                    DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     SupplierId = table.Column<int>(type: "int", nullable: false),
@@ -1199,7 +1276,11 @@ namespace DataWarehouse.Domain.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DocEntry = table.Column<int>(type: "int", nullable: true),
+                    DocNum = table.Column<int>(type: "int", nullable: true),
+                    DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     SalesOrderId = table.Column<int>(type: "int", nullable: true),
@@ -1242,6 +1323,7 @@ namespace DataWarehouse.Domain.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LineNum = table.Column<int>(type: "int", nullable: true),
                     SalesOrderId = table.Column<int>(type: "int", nullable: false),
                     ItemId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1271,6 +1353,9 @@ namespace DataWarehouse.Domain.Migrations
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
+                    DocEntry = table.Column<int>(type: "int", nullable: true),
+                    DocNum = table.Column<int>(type: "int", nullable: true),
+                    DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TransferredStockId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
@@ -1314,6 +1399,7 @@ namespace DataWarehouse.Domain.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LineNum = table.Column<int>(type: "int", nullable: true),
                     TransferredStockId = table.Column<int>(type: "int", nullable: false),
                     ItemId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1358,6 +1444,29 @@ namespace DataWarehouse.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProductionComponentBatches",
+                columns: table => new
+                {
+                    ProductionComponentBatchId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    BatchNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ProductionComponentLineId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductionComponentBatches", x => x.ProductionComponentBatchId);
+                    table.ForeignKey(
+                        name: "FK_ProductionComponentBatches_ProductionComponentLines_ProductionComponentLineId",
+                        column: x => x.ProductionComponentLineId,
+                        principalTable: "ProductionComponentLines",
+                        principalColumn: "ProductionComponentLineId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductionReceipts",
                 columns: table => new
                 {
@@ -1391,6 +1500,10 @@ namespace DataWarehouse.Domain.Migrations
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DocEntry = table.Column<int>(type: "int", nullable: true),
+                    DocNum = table.Column<int>(type: "int", nullable: true),
+                    DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     SupplierId = table.Column<int>(type: "int", nullable: false),
@@ -1472,6 +1585,10 @@ namespace DataWarehouse.Domain.Migrations
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DocEntry = table.Column<int>(type: "int", nullable: true),
+                    DocNum = table.Column<int>(type: "int", nullable: true),
+                    DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
@@ -1515,6 +1632,7 @@ namespace DataWarehouse.Domain.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LineNum = table.Column<int>(type: "int", nullable: true),
                     DeliveryNoteOrderId = table.Column<int>(type: "int", nullable: false),
                     ItemId = table.Column<int>(type: "int", nullable: false),
                     SalesOrderItemId = table.Column<int>(type: "int", nullable: true)
@@ -1577,6 +1695,7 @@ namespace DataWarehouse.Domain.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LineNum = table.Column<int>(type: "int", nullable: true),
                     TransferredItemId = table.Column<int>(type: "int", nullable: false),
                     ReceivedStockId = table.Column<int>(type: "int", nullable: false),
                     ItemId = table.Column<int>(type: "int", nullable: false)
@@ -1639,6 +1758,7 @@ namespace DataWarehouse.Domain.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LineNum = table.Column<int>(type: "int", nullable: true),
                     GoodsReturnOrderId = table.Column<int>(type: "int", nullable: false),
                     ReceiptPurchaseOrderItemId = table.Column<int>(type: "int", nullable: true),
                     ItemId = table.Column<int>(type: "int", nullable: false)
@@ -1700,6 +1820,7 @@ namespace DataWarehouse.Domain.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LineNum = table.Column<int>(type: "int", nullable: true),
                     SalesReturnOrderId = table.Column<int>(type: "int", nullable: false),
                     ItemId = table.Column<int>(type: "int", nullable: false),
                     DeliveryNoteItemId = table.Column<int>(type: "int", nullable: true)
@@ -2160,6 +2281,31 @@ namespace DataWarehouse.Domain.Migrations
                 columns: new[] { "ReferenceId", "ProcessType", "Status" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductionComponentBatches_ProductionComponentLineId",
+                table: "ProductionComponentBatches",
+                column: "ProductionComponentLineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductionComponentLines_ItemId",
+                table: "ProductionComponentLines",
+                column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductionComponentLines_ProductionOrderId",
+                table: "ProductionComponentLines",
+                column: "ProductionOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductionComponentLines_WarehouseId",
+                table: "ProductionComponentLines",
+                column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductionHeaderBatches_ProductionOrderId",
+                table: "ProductionHeaderBatches",
+                column: "ProductionOrderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductionOrderItems_ItemId",
                 table: "ProductionOrderItems",
                 column: "ItemId");
@@ -2595,6 +2741,12 @@ namespace DataWarehouse.Domain.Migrations
                 name: "ProcessesTypesDates");
 
             migrationBuilder.DropTable(
+                name: "ProductionComponentBatches");
+
+            migrationBuilder.DropTable(
+                name: "ProductionHeaderBatches");
+
+            migrationBuilder.DropTable(
                 name: "ProductionReceipts");
 
             migrationBuilder.DropTable(
@@ -2653,6 +2805,9 @@ namespace DataWarehouse.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProcessesTypes");
+
+            migrationBuilder.DropTable(
+                name: "ProductionComponentLines");
 
             migrationBuilder.DropTable(
                 name: "ProductionOrderItems");

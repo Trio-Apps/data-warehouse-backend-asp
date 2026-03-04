@@ -26,6 +26,16 @@ public class UserController : ControllerBase
         _logger = logger;
     }
 
+    private static bool RequiresSapWarehouseAssignments(string? roleName)
+    {
+        if (string.IsNullOrWhiteSpace(roleName))
+            return true;
+
+        return !string.Equals(roleName, "admin", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(roleName, "manager", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(roleName, "super-admin", StringComparison.OrdinalIgnoreCase);
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetAllUsers()
     {
@@ -84,13 +94,12 @@ public class UserController : ControllerBase
 
 
         }
-        else
+        else if (RequiresSapWarehouseAssignments(user.RoleName))
         {
-
-            if (user.SapIds == null)
+            if (user.SapIds == null || !user.SapIds.Any())
                 return BadRequest("select the sap for add new user");
 
-            if (user.WarehouseIds == null)
+            if (user.WarehouseIds == null || !user.WarehouseIds.Any())
                 return BadRequest("select the warehouse for add new user");
         }
 
@@ -128,13 +137,12 @@ public class UserController : ControllerBase
             //  if (user.RoleName !="admin")
             //    return BadRequest("you must add admins only");
         }
-        else
+        else if (RequiresSapWarehouseAssignments(user.RoleName))
         {
-
-            if (user.SapIds == null)
+            if (user.SapIds == null || !user.SapIds.Any())
                 return BadRequest("select the sap for add new user");
 
-            if (user.WarehouseIds == null)
+            if (user.WarehouseIds == null || !user.WarehouseIds.Any())
                 return BadRequest("select the warehouse for add new user");
         }
 
@@ -252,4 +260,3 @@ public class UserController : ControllerBase
     }
 
 }
-

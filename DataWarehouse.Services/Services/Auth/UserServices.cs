@@ -133,33 +133,41 @@ public class UserServices : IUserServices
             var sap = await context.CompanyUsers.AddAsync(sapModel);
            }
           
-           else
-           {
+        else
+        {
             var companyId = checkTypeUser;
             var sapModel = new CompanyUser
             {
                 CompanyId = companyId ?? 0,
                 UserId = user.Id
             };
-            var sap = await context.CompanyUsers.AddAsync(sapModel);
+            await context.CompanyUsers.AddAsync(sapModel);
 
-            var sapModels = userDto.SapIds.Select(e => new SapUser
-             {
-                SapId = e,
-                UserId = user.Id
-
-             });
-
-            await context.SapUsers.AddRangeAsync(sapModels);
-
-            var warehouseModels = userDto.WarehouseIds.Select(e => new UserWarehouses
+            var sapIds = userDto.SapIds?.Distinct().ToList() ?? new List<int>();
+            if (sapIds.Count > 0)
             {
-                WarehouseId = e,
-                UserId = user.Id
+                var sapModels = sapIds.Select(e => new SapUser
+                {
+                    SapId = e,
+                    UserId = user.Id
 
-            });
+                });
 
-            await context.UserWarehouses.AddRangeAsync(warehouseModels);
+                await context.SapUsers.AddRangeAsync(sapModels);
+            }
+
+            var warehouseIds = userDto.WarehouseIds?.Distinct().ToList() ?? new List<int>();
+            if (warehouseIds.Count > 0)
+            {
+                var warehouseModels = warehouseIds.Select(e => new UserWarehouses
+                {
+                    WarehouseId = e,
+                    UserId = user.Id
+
+                });
+
+                await context.UserWarehouses.AddRangeAsync(warehouseModels);
+            }
            }
        
       
@@ -259,23 +267,31 @@ public class UserServices : IUserServices
        
         else
         {
-            var sapModels = userDto.SapIds.Select(e => new SapUser
+            var sapIds = userDto.SapIds?.Distinct().ToList() ?? new List<int>();
+            if (sapIds.Count > 0)
             {
-                SapId = e,
-                UserId = user.Id
+                var sapModels = sapIds.Select(e => new SapUser
+                {
+                    SapId = e,
+                    UserId = user.Id
 
-            });
+                });
 
-            await context.SapUsers.AddRangeAsync(sapModels);
+                await context.SapUsers.AddRangeAsync(sapModels);
+            }
 
-            var warehouseModels = userDto.WarehouseIds.Select(e => new UserWarehouses
+            var warehouseIds = userDto.WarehouseIds?.Distinct().ToList() ?? new List<int>();
+            if (warehouseIds.Count > 0)
             {
-                WarehouseId = e,
-                UserId = user.Id
+                var warehouseModels = warehouseIds.Select(e => new UserWarehouses
+                {
+                    WarehouseId = e,
+                    UserId = user.Id
 
-            });
+                });
 
-            await context.UserWarehouses.AddRangeAsync(warehouseModels);
+                await context.UserWarehouses.AddRangeAsync(warehouseModels);
+            }
         }
 
         await context.SaveChangesAsync();

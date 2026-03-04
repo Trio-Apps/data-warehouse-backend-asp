@@ -104,6 +104,18 @@ public class ProductionOrderController : ControllerBase
         return Ok(res);
     }
 
+    [HttpPost("{id}/submit")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Edit}")]
+    public async Task<IActionResult> Submit(int id, [FromBody] SubmitProductionOrderRequest? request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var res = await _repository.SubmitProductionOrderAsync(userId, id, request?.Note);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
     [HttpDelete("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Delete}")]
     public async Task<IActionResult> Delete(int id)
@@ -129,3 +141,7 @@ public class ProductionOrderController : ControllerBase
     // commented endpoints left as-is
 }
 
+public sealed class SubmitProductionOrderRequest
+{
+    public string? Note { get; set; }
+}

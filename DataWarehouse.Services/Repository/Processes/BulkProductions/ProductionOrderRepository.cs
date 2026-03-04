@@ -112,10 +112,12 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         //if (!checkValidDate.IsValid)
         //    return GeneralResponse<ProductionOrderDTO>.FailResponse($"{checkValidDate.Message}");
 
-       
+        if (!await UserHasWarehouseAccessAsync(userId, dto.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
+
         var mapping = new ProductionOrder
         {
-           Status = GeneralStatus.Processing,
+           Status = GeneralStatus.Draft,
             PostingDate = dto.PostingDate,
             
              DueDate = dto.DueDate,
@@ -146,9 +148,11 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         // 1️⃣ جيب الـ valid business dates
         var validBusinessDates = await processes.GetByProcessesTypeForProductionAsync();
 
+        // If business dates are not configured yet, do not block editing/saving.
+        // This keeps production draft updates usable in fresh environments.
         if (!validBusinessDates.Any())
         {
-            return (false, "No valid business dates found");
+            return (true, "No business dates configured. Validation skipped.");
         }
 
         // 2️⃣ حول لـ DateOnly
@@ -184,16 +188,20 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
     {
 
         // 1️⃣ Get existing Company auth (record الوحيد)
-        var entity = await _context.ProductionOrders.FirstOrDefaultAsync(e => e.ProductionOrderId == dto.ProductionOrderId);
+        var entity = await _context.ProductionOrders.FirstOrDefaultAsync(e => e.ProductionOrderId == productionId);
 
-        if (entity.ProductionOrderId != productionId )
-        {
-            return GeneralResponse<ProductionOrderDTO>.FailResponse("id not equal production order id!");
-        }
         if (entity == null)
         {
             return GeneralResponse<ProductionOrderDTO>.FailResponse("not found");
         }
+
+        if (dto.ProductionOrderId != productionId )
+        {
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("id not equal production order id!");
+        }
+
+        if (!await UserHasWarehouseAccessAsync(userId, entity.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
 
         var checkValidDate = await ValidateBusinessDatesAsync(dto.PostingDate, dto.DueDate);
 
@@ -223,6 +231,112 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         };
 
         return GeneralResponse<ProductionOrderDTO>.SuccessResponse(result);
+    }
+
+    public async Task<GeneralResponse<ProductionOrderDTO>> SubmitProductionOrderAsync(string userId, int productionOrderId, string? note = null)
+    {
+        var order = await _context.ProductionOrders
+            .Include(x => x.ProductionOrderItems)
+            .Include(x => x.ProductionHeaderBatches)
+            .Include(x => x.ProductionComponentLines)
+                .ThenInclude(x => x.ProductionComponentBatches)
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == productionOrderId);
+
+        if (order == null)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Production order not found.");
+
+        if (!await UserHasWarehouseAccessAsync(userId, order.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
+
+        if (order.Status != GeneralStatus.Draft)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Only Draft orders can be submitted.");
+
+        if (order.ProductionOrderItems == null || !order.ProductionOrderItems.Any())
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Production order must contain at least one finished good item.");
+
+        var plannedQty = order.ProductionOrderItems.Sum(x => x.PlannedQuantity);
+        if (plannedQty <= 0)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("Planned quantity must be greater than 0.");
+
+        var finishedGoodItemIds = order.ProductionOrderItems
+            .Select(x => x.ItemId)
+            .Distinct()
+            .ToList();
+
+        var batchManagedFinishedGoods = await _context.WarehouseItems
+            .AsNoTracking()
+            .Where(x => x.WarehouseId == order.WarehouseId
+                        && x.IsBatchManaged
+                        && finishedGoodItemIds.Contains(x.ItemId))
+            .Select(x => x.ItemId)
+            .ToListAsync();
+
+        if (batchManagedFinishedGoods.Count > 0)
+        {
+            if (order.ProductionHeaderBatches == null || !order.ProductionHeaderBatches.Any())
+                return GeneralResponse<ProductionOrderDTO>.FailResponse("Batch-managed finished good requires header batches before submit.");
+
+            var totalHeaderQty = order.ProductionHeaderBatches.Sum(x => x.Quantity);
+            if (!AreEqual(totalHeaderQty, plannedQty))
+                return GeneralResponse<ProductionOrderDTO>.FailResponse("Header batch quantity total must equal finished good quantity.");
+        }
+
+        var componentItemIds = order.ProductionComponentLines
+            .Select(x => x.ItemId)
+            .Distinct()
+            .ToList();
+
+        var batchManagedComponentIds = await _context.WarehouseItems
+            .AsNoTracking()
+            .Where(x => x.WarehouseId == order.WarehouseId
+                        && x.IsBatchManaged
+                        && componentItemIds.Contains(x.ItemId))
+            .Select(x => x.ItemId)
+            .ToListAsync();
+
+        var batchManagedComponentSet = new HashSet<int>(batchManagedComponentIds);
+
+        foreach (var line in order.ProductionComponentLines)
+        {
+            if (!string.Equals(line.IssueType, "Manual", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (!batchManagedComponentSet.Contains(line.ItemId))
+                continue;
+
+            var batches = line.ProductionComponentBatches ?? new List<ProductionComponentBatch>();
+            if (!batches.Any())
+                return GeneralResponse<ProductionOrderDTO>.FailResponse($"Component {line.ItemId} requires at least one batch.");
+
+            var totalComponentBatchQty = batches.Sum(x => x.Quantity);
+            if (!AreEqual(totalComponentBatchQty, line.RequiredQuantity))
+                return GeneralResponse<ProductionOrderDTO>.FailResponse($"Component {line.ItemId} batch total must equal required quantity.");
+        }
+
+        order.Status = GeneralStatus.Processing;
+        order.UserId = userId;
+
+        if (!string.IsNullOrWhiteSpace(note))
+        {
+            var cleanNote = note.Trim();
+            order.Remarks = string.IsNullOrWhiteSpace(order.Remarks)
+                ? cleanNote
+                : $"{order.Remarks}{Environment.NewLine}{cleanNote}";
+        }
+
+        await _context.SaveChangesAsync();
+
+        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(new ProductionOrderDTO
+        {
+            ProductionOrderId = order.ProductionOrderId,
+            DueDate = order.DueDate,
+            PostingDate = order.PostingDate,
+            Status = order.Status.ToString(),
+            Remarks = order.Remarks,
+            UserId = order.UserId,
+            WarehouseId = order.WarehouseId,
+            NumberOfProductionItem = order.ProductionOrderItems.Count
+        });
     }
 
     public async Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId)
@@ -268,6 +382,18 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         return await Query().Where(po => po.Status == GeneralStatus.Processing).ToListAsync();
     }
 
+    private Task<bool> UserHasWarehouseAccessAsync(string userId, int warehouseId)
+    {
+        return _context.UserWarehouses
+            .AsNoTracking()
+            .AnyAsync(x => x.UserId == userId && x.WarehouseId == warehouseId);
+    }
+
+    private static bool AreEqual(decimal left, decimal right)
+    {
+        return Math.Abs(left - right) <= 0.000001m;
+    }
+
 
 
 
@@ -288,4 +414,3 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         }
     }
 }
-
