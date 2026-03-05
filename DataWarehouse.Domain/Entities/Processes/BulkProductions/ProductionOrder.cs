@@ -28,8 +28,6 @@ namespace DataWarehouse.Domain.Entities.Processes.BulkProductions
         public Warehouse Warehouse { get; set; }
         public ICollection<ProductionOrderItem> ProductionOrderItems { get; set; }
             = new List<ProductionOrderItem>();
-        public ICollection<ProductionComponentLine> ProductionComponentLines { get; set; }
-            = new List<ProductionComponentLine>();
         public ICollection<ProductionHeaderBatch> ProductionHeaderBatches { get; set; }
             = new List<ProductionHeaderBatch>();
 

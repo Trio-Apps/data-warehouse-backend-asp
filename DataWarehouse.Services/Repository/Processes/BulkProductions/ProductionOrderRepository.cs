@@ -238,8 +238,6 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         var order = await _context.ProductionOrders
             .Include(x => x.ProductionOrderItems)
             .Include(x => x.ProductionHeaderBatches)
-            .Include(x => x.ProductionComponentLines)
-                .ThenInclude(x => x.ProductionComponentBatches)
             .FirstOrDefaultAsync(x => x.ProductionOrderId == productionOrderId);
 
         if (order == null)
@@ -279,38 +277,6 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             var totalHeaderQty = order.ProductionHeaderBatches.Sum(x => x.Quantity);
             if (!AreEqual(totalHeaderQty, plannedQty))
                 return GeneralResponse<ProductionOrderDTO>.FailResponse("Header batch quantity total must equal finished good quantity.");
-        }
-
-        var componentItemIds = order.ProductionComponentLines
-            .Select(x => x.ItemId)
-            .Distinct()
-            .ToList();
-
-        var batchManagedComponentIds = await _context.WarehouseItems
-            .AsNoTracking()
-            .Where(x => x.WarehouseId == order.WarehouseId
-                        && x.IsBatchManaged
-                        && componentItemIds.Contains(x.ItemId))
-            .Select(x => x.ItemId)
-            .ToListAsync();
-
-        var batchManagedComponentSet = new HashSet<int>(batchManagedComponentIds);
-
-        foreach (var line in order.ProductionComponentLines)
-        {
-            if (!string.Equals(line.IssueType, "Manual", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            if (!batchManagedComponentSet.Contains(line.ItemId))
-                continue;
-
-            var batches = line.ProductionComponentBatches ?? new List<ProductionComponentBatch>();
-            if (!batches.Any())
-                return GeneralResponse<ProductionOrderDTO>.FailResponse($"Component {line.ItemId} requires at least one batch.");
-
-            var totalComponentBatchQty = batches.Sum(x => x.Quantity);
-            if (!AreEqual(totalComponentBatchQty, line.RequiredQuantity))
-                return GeneralResponse<ProductionOrderDTO>.FailResponse($"Component {line.ItemId} batch total must equal required quantity.");
         }
 
         order.Status = GeneralStatus.Processing;

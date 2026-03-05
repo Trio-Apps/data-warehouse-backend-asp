@@ -445,38 +445,10 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
            .OnDelete(DeleteBehavior.NoAction);
 
         builder.Entity<ProductionOrder>()
-            .HasMany(po => po.ProductionComponentLines)
-            .WithOne(pcl => pcl.ProductionOrder)
-            .HasForeignKey(pcl => pcl.ProductionOrderId)
-            .HasPrincipalKey(po => po.ProductionOrderId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<ProductionComponentLine>()
-            .HasOne(pcl => pcl.Item)
-            .WithMany()
-            .HasForeignKey(pcl => pcl.ItemId)
-            .HasPrincipalKey(i => i.ItemId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<ProductionComponentLine>()
-            .HasOne(pcl => pcl.Warehouse)
-            .WithMany()
-            .HasForeignKey(pcl => pcl.WarehouseId)
-            .HasPrincipalKey(w => w.WarehouseId)
-            .OnDelete(DeleteBehavior.NoAction);
-
-        builder.Entity<ProductionOrder>()
             .HasMany(po => po.ProductionHeaderBatches)
             .WithOne(phb => phb.ProductionOrder)
             .HasForeignKey(phb => phb.ProductionOrderId)
             .HasPrincipalKey(po => po.ProductionOrderId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<ProductionComponentLine>()
-            .HasMany(pcl => pcl.ProductionComponentBatches)
-            .WithOne(pcb => pcb.ProductionComponentLine)
-            .HasForeignKey(pcb => pcb.ProductionComponentLineId)
-            .HasPrincipalKey(pcl => pcl.ProductionComponentLineId)
             .OnDelete(DeleteBehavior.Cascade);
 
 
@@ -1145,8 +1117,6 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     // Purchase Order
     public DbSet<ProductionOrder> ProductionOrders { get; set; }
     public DbSet<ProductionOrderItem> ProductionOrderItems { get; set; }
-    public DbSet<ProductionComponentLine> ProductionComponentLines { get; set; }
-    public DbSet<ProductionComponentBatch> ProductionComponentBatches { get; set; }
     public DbSet<ProductionHeaderBatch> ProductionHeaderBatches { get; set; }
     // public DbSet<FinishedGoodItem> FinishedGoodItems { get; set; }
     public DbSet<ProductionReceipt> ProductionReceipts { get; set; }
