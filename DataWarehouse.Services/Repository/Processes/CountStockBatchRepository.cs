@@ -86,6 +86,8 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
             CountStockItemId = dto.CountStockItemId,
             Quantity = dto.Quantity,
             Comment = dto.Comment,
+            BatchNumber = dto.BatchNumber,
+            ExpiryDate = dto.ExpiryDate,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -118,6 +120,8 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
 
         entity.Quantity = dto.Quantity;
         entity.Comment = dto.Comment;
+        entity.BatchNumber = dto.BatchNumber;
+        entity.ExpiryDate = dto.ExpiryDate;
 
         await _context.SaveChangesAsync();
 
@@ -134,4 +138,3 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
         return GeneralResponse<CountStockBatchDTO>.SuccessResponse(result);
     }
 }
-

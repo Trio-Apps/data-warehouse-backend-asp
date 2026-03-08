@@ -1,6 +1,7 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes;
@@ -9,6 +10,7 @@ using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.AllinAll;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
@@ -23,11 +25,17 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
 {
     private readonly ISapCache sapCache;
     private readonly IProcessesTypesDateRepository processes;
+    private readonly IApprovalRepository approval;
 
-    public ProductionOrderRepository(ISapCache sapCache,IProcessesTypesDateRepository processes,  DataWarehouseDbContext context) : base(context)
+    public ProductionOrderRepository(
+        ISapCache sapCache,
+        IProcessesTypesDateRepository processes,
+        IApprovalRepository approval,
+        DataWarehouseDbContext context) : base(context)
     {
         this.sapCache = sapCache;
         this.processes = processes;
+        this.approval = approval;
     }
 
     public async Task<IEnumerable<ProductionOrder>> GetByWarehouseIdAsync(int warehouseId)
@@ -277,6 +285,20 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             var totalHeaderQty = order.ProductionHeaderBatches.Sum(x => x.Quantity);
             if (!AreEqual(totalHeaderQty, plannedQty))
                 return GeneralResponse<ProductionOrderDTO>.FailResponse("Header batch quantity total must equal finished good quantity.");
+        }
+
+        try
+        {
+            await approval.StartProcessAsync(
+                processType: ProcessType.Production,
+                referenceId: order.ProductionOrderId,
+                warehouseId: order.WarehouseId,
+                userId: userId
+            );
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<ProductionOrderDTO>.FailResponse(ex.Message);
         }
 
         order.Status = GeneralStatus.Processing;

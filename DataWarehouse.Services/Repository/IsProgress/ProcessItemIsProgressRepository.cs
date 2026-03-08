@@ -1,4 +1,4 @@
-using DataWarehouse.Core.Interfaces.IsProgress;
+﻿using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.IsProgress;
 using DataWarehouse.Domain.Enums;
@@ -15,13 +15,12 @@ public class ProcessItemIsProgressRepository : BaseRepository<ProcessItemIsProgr
 {
     public ProcessItemIsProgressRepository(DataWarehouseDbContext context) : base(context)
     {
-
-
     }
 
     public async Task<ProcessItemIsProgress?> GetByProcessTypeAndIdAsync(ProcessType processType, int processId)
     {
-        return await Query().FirstOrDefaultAsync(pip => pip.ProcessType == processType && pip.ProcessItemIsProgressId == processId);
+        // processId here is the business reference id (for example ProductionOrderId), not the table PK.
+        return await Query().FirstOrDefaultAsync(pip => pip.ProcessType == processType && pip.ReferenceId == processId);
     }
 
     public async Task<IEnumerable<ProcessItemIsProgress>> GetByProcessTypeAsync(ProcessType processType)

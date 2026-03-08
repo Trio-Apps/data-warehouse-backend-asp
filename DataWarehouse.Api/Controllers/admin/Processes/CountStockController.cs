@@ -115,6 +115,18 @@ public class CountStockController : ControllerBase
         return Ok(res);
     }
 
+    [HttpPost("{id}/submit")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Counting_Edit}")]
+    public async Task<IActionResult> Submit(int id, [FromBody] SubmitCountStockRequest? request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var res = await _repository.SubmitCountStockAsync(userId, id, request?.Note);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
     [HttpDelete("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Counting_Delete}")]
     public async Task<IActionResult> Delete(int id)
@@ -138,3 +150,7 @@ public class CountStockController : ControllerBase
     }
 }
 
+public sealed class SubmitCountStockRequest
+{
+    public string? Note { get; set; }
+}

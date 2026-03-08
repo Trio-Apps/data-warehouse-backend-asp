@@ -21,4 +21,5 @@ public interface ICountStockRepository : IBaseRepository<CountStock>
     Task<CountStock?> GetWithWarehouseAsync(int countStockId);
     Task<IEnumerable<CountStock>> GetPendingCountsAsync();
     Task<IEnumerable<CountStock>> GetByDateRangeAsync(System.DateTime startDate, System.DateTime endDate);
+    Task<GeneralResponse<CountStockDTO>> SubmitCountStockAsync(string userId, int countStockId, string? note = null);
 }
