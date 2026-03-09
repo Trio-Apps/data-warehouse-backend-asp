@@ -48,6 +48,7 @@ namespace DataWarehouse.Services
             services.AddScoped(typeof(IBaseProcessesRepository<>), typeof(BaseProcessesRepository<>));
             #endregion
 
+
             #region Actors Repositories
             services.AddScoped<IWarehouseRepository, WarehouseRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
@@ -59,20 +60,18 @@ namespace DataWarehouse.Services
             services.AddScoped<ISapSyncStatusFrontRepository, SapSyncStatusFrontRepository>();
             #endregion
 
+
             #region Sync Repositories
             services.AddScoped<ISapSyncResetRepository, SapSyncResetRepository>();
             #endregion
 
             #region Processes Repositories
-            services.AddScoped<ICountStockRepository, CountStockRepository>();
             services.AddScoped<IQuantityAdjustmentStockRepository, QuantityAdjustmentStockRepository>();
             services.AddScoped<IReceivedStockRepository, ReceivedStockRepository>();
             services.AddScoped<ITransferredStockRepository, TransferredStockRepository>();
             services.AddScoped<ITransferredRequestOrderRepository, TransferredRequestOrderRepository>();
             services.AddScoped<IProcessesTypesDateRepository, ProcessesTypesDateRepository>();
-            services.AddScoped<IReceiptPurchaseOrderBatchRepository, ReceiptPurchaseOrderBatchRepository>();
-
-            
+            services.AddScoped<IReceiptPurchaseOrderBatchRepository, ReceiptPurchaseOrderBatchRepository>(); 
             #endregion
 
             #region Processes OutSide Repositories
@@ -98,13 +97,13 @@ namespace DataWarehouse.Services
             services.AddScoped<ITransferredStockBatchRepository, TransferredStockBatchRepository>();
             services.AddScoped<ITransferredRequestBatchRepository, TransferredRequestBatchRepository>();
             services.AddScoped<IReceivedStockBatchRepository, ReceivedStockBatchRepository>();
-            services.AddScoped<ICountStockBatchRepository, CountStockBatchRepository>();
             services.AddScoped<IQuantityAdjustmentStockBatchRepository, QuantityAdjustmentStockBatchRepository>();
             services.AddScoped<IDocumentAttachmentRepository, DocumentAttachmentRepository>();
 
             
             #endregion
 
+          
             #region Process Items OutSide Repositories
             services.AddScoped<IPurchaseOrderItemRepository, PurchaseOrderItemRepository>();
             services.AddScoped<IReceiptPurchaseOrderItemRepository, ReceiptPurchaseOrderItemRepository>();

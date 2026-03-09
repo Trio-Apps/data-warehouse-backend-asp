@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.Interfaces.IsProgress;
-=======
-﻿using DataWarehouse.Core.Interfaces.IsProgress;
->>>>>>> a523272dcfa9d2208665ee176cf81c9851798e63
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.IsProgress;
 using DataWarehouse.Domain.Enums;
@@ -13,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 
 namespace DataWarehouse.Services.Repository.IsProgress;
 

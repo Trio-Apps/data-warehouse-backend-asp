@@ -31,15 +31,10 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
     private readonly IApprovalRepository approval;
 
     public ProductionOrderRepository(
-<<<<<<< HEAD
         IBaseProcessesRepository<ProductionOrder> baseProcesses,
         ISapCache sapCache,
         IProcessesTypesDateRepository processes,
-=======
-        ISapCache sapCache,
-        IProcessesTypesDateRepository processes,
         IApprovalRepository approval,
->>>>>>> a523272dcfa9d2208665ee176cf81c9851798e63
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
@@ -47,6 +42,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         this.processes = processes;
         this.approval = approval;
     }
+
 
     public async Task<IEnumerable<ProductionOrder>> GetByWarehouseIdAsync(int warehouseId)
     {

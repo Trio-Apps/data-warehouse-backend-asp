@@ -107,28 +107,6 @@ public class ProductionOrderController : ControllerBase
         return Ok(res);
     }
 
-<<<<<<< HEAD
-    [HttpPatch("{id}/revert-partially-failed")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Edit}")]
-    public async Task<IActionResult> RevertPartiallyFailedStatus(int id)
-    {
-        var res = await _repository.RevertPartiallyFailedStatusToProcessingAsync(id);
-
-        await jobQueuer.DistributionOrders(res.Data);
-
-=======
-    [HttpPost("{id}/submit")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Edit}")]
-    public async Task<IActionResult> Submit(int id, [FromBody] SubmitProductionOrderRequest? request)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var res = await _repository.SubmitProductionOrderAsync(userId, id, request?.Note);
->>>>>>> a523272dcfa9d2208665ee176cf81c9851798e63
-        if (!res.Success)
-            return BadRequest(res);
-
-        return Ok(res);
-    }
 
     [HttpDelete("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Delete}")]

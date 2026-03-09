@@ -1222,10 +1222,8 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     // Purchase Order
     public DbSet<ProductionOrder> ProductionOrders { get; set; }
     public DbSet<ProductionHeaderBatch> ProductionHeaderBatches { get; set; }
-    public DbSet<ProductionComponentLine> ProductionComponentLines { get; set; }
-    public DbSet<ProductionComponentBatch> ProductionComponentBatches { get; set; }
+  
     public DbSet<ProductionOrderItem> ProductionOrderItems { get; set; }
-    public DbSet<ProductionHeaderBatch> ProductionHeaderBatches { get; set; }
     // public DbSet<FinishedGoodItem> FinishedGoodItems { get; set; }
     public DbSet<ProductionReceipt> ProductionReceipts { get; set; }
 
