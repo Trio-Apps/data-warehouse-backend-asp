@@ -1388,6 +1388,27 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.CountStockController",
+    "Method": "Submit",
+    "RelativePath": "api/CountStock/{id}/submit",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "DataWarehouse.Api.Controllers.admin.Processes.SubmitCountStockRequest",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.CountStockController",
     "Method": "GetPendingCounts",
     "RelativePath": "api/CountStock/pending",
     "HttpMethod": "GET",
@@ -5294,212 +5315,6 @@
     ]
   },
   {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
-    "Method": "Create",
-    "RelativePath": "api/production-component-batches",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionComponentBatchDTO",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
-    "Method": "GetList",
-    "RelativePath": "api/production-component-batches",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "productionComponentLineId",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "pageNumber",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
-    "Method": "GetById",
-    "RelativePath": "api/production-component-batches/{id}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
-    "Method": "Update",
-    "RelativePath": "api/production-component-batches/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionComponentBatchDTO",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
-    "Method": "Delete",
-    "RelativePath": "api/production-component-batches/{id}",
-    "HttpMethod": "DELETE",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
-    "Method": "GetAvailableBatches",
-    "RelativePath": "api/production-component-batches/available/{productionComponentLineId}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "productionComponentLineId",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
-    "Method": "Create",
-    "RelativePath": "api/production-component-lines",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionComponentLineDTO",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
-    "Method": "GetList",
-    "RelativePath": "api/production-component-lines",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "productionOrderId",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "pageNumber",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "pageSize",
-        "Type": "System.Int32",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
-    "Method": "GetById",
-    "RelativePath": "api/production-component-lines/{id}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
-    "Method": "Update",
-    "RelativePath": "api/production-component-lines/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionComponentLineDTO",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
-    "Method": "Delete",
-    "RelativePath": "api/production-component-lines/{id}",
-    "HttpMethod": "DELETE",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
     "Method": "Create",
     "RelativePath": "api/production-header-batches",
@@ -5692,22 +5507,6 @@
     "Method": "Delete",
     "RelativePath": "api/ProductionOrder/{id}",
     "HttpMethod": "DELETE",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
-    "Method": "RevertPartiallyFailedStatus",
-    "RelativePath": "api/ProductionOrder/{id}/revert-partially-failed",
-    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
