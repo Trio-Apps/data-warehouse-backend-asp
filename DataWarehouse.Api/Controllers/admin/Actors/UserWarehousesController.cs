@@ -97,6 +97,7 @@ public class UserWarehousesController : ControllerBase
         };
 
         var created = await _userWarehousesService.AddAsync(userWarehouse);
+        await _userWarehousesService.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = created.UserWarehousesId }, created);
     }
 
@@ -114,6 +115,7 @@ public class UserWarehousesController : ControllerBase
         userWarehouse.WarehouseId = dto.WarehouseId;
 
         await _userWarehousesService.UpdateAsync(userWarehouse);
+        await _userWarehousesService.SaveChangesAsync();
         return NoContent();
     }
 
@@ -125,7 +127,7 @@ public class UserWarehousesController : ControllerBase
             return NotFound($"UserWarehouse with ID {id} not found.");
 
         await _userWarehousesService.DeleteAsync(id);
+        await _userWarehousesService.SaveChangesAsync();
         return NoContent();
     }
 }
-

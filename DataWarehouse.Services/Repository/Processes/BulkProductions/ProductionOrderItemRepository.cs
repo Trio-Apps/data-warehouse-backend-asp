@@ -1,74 +1,82 @@
-﻿using DataWarehouse.Core.DTOs;
-using DataWarehouse.Core.DTOs.BarCode;
+using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
-using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
-using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Services.Repository.Based;
-using DataWarehouse.Services.Repository.SapRepo;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DataWarehouse.Services.Repository.Processes.BulkProductions;
 
 public class ProductionOrderItemRepository : BaseRepository<ProductionOrderItem>, IProductionOrderItemRepository
 {
-    private readonly ISapCache sapCache;
-
-    public ProductionOrderItemRepository(ISapCache sapCache, DataWarehouseDbContext context) : base(context)
+    public ProductionOrderItemRepository(DataWarehouseDbContext context) : base(context)
     {
-        this.sapCache = sapCache;
     }
 
     public async Task<IEnumerable<ProductionOrderItemDTO>> GetByProductionItemByProductionOrderIdAsync(int productionOrderId)
     {
+        var res = await Query()
+            .Where(poi => poi.ProductionOrderId == productionOrderId)
+            .ToListAsync();
 
-        var res = await Query().Where(poi => poi.ProductionOrderId == productionOrderId).ToListAsync();
-        
-        return res.Select(e=> new ProductionOrderItemDTO { ItemId = e.ItemId, AbsoluteEntry =e.AbsoluteEntry,Status = GetEnumString(e.Status),  ErrorMessage = e.ErrorMessage
-        ,PlannedQuantity=e.PlannedQuantity, ProducedQuantity = e.ProducedQuantity??0, ProductionOrderItemId =e.ProductionOrderItemId,ProductionOrderId =e.ProductionOrderId, ProcessedAt =e.ProcessedAt});
-    }
-    public async Task<GeneralResponse<PagedResult<ProductionOrderItemDTO>>>
-     GetByProductionItemByProductionOrderIdWithPaginationAsync(int productionOrderId,string? status, int pageNumber, int pageSize)
-    {
-        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-        pageSize = pageSize <= 0 ? 10 : pageSize;
-
-        var query = _context.ProductionOrderItems.AsNoTracking().Where(b => b.ProductionOrderId == productionOrderId);
-
-        // 🔹 Filtering
-
-        if (!string.IsNullOrWhiteSpace(status))
-        {
-            var statusEnum = Enum.Parse<GeneralItemStatus>(status, ignoreCase: true);
-            query = query.Where(iw => iw.Status == statusEnum);
-        }
-
-
-
-        var totalRecords = await query.CountAsync();
-
-        var data = query.Select(e => new ProductionOrderItemDTO
+        return res.Select(e => new ProductionOrderItemDTO
         {
             ItemId = e.ItemId,
             AbsoluteEntry = e.AbsoluteEntry,
-            Status = e.Status.ToString(),
+            Status = GetEnumString(e.Status),
             ErrorMessage = e.ErrorMessage,
             PlannedQuantity = e.PlannedQuantity,
             ProducedQuantity = e.ProducedQuantity ?? 0,
             ProductionOrderItemId = e.ProductionOrderItemId,
             ProductionOrderId = e.ProductionOrderId,
             ProcessedAt = e.ProcessedAt
-        }).ToList();
+        });
+    }
 
+    public async Task<GeneralResponse<PagedResult<ProductionOrderItemDTO>>> GetByProductionItemByProductionOrderIdWithPaginationAsync(
+        int productionOrderId,
+        string? status,
+        int pageNumber,
+        int pageSize)
+    {
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        pageSize = pageSize <= 0 ? 10 : pageSize;
+
+        var query = _context.ProductionOrderItems
+            .AsNoTracking()
+            .Where(b => b.ProductionOrderId == productionOrderId);
+
+        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<GeneralItemStatus>(status, true, out var statusEnum))
+        {
+            query = query.Where(iw => iw.Status == statusEnum);
+        }
+
+        var totalRecords = await query.CountAsync();
+
+        var data = await query
+            .OrderByDescending(x => x.ProductionOrderItemId)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(e => new ProductionOrderItemDTO
+            {
+                ItemId = e.ItemId,
+                AbsoluteEntry = e.AbsoluteEntry,
+                Status = e.Status.ToString(),
+                ErrorMessage = e.ErrorMessage,
+                PlannedQuantity = e.PlannedQuantity,
+                ProducedQuantity = e.ProducedQuantity ?? 0,
+                ProductionOrderItemId = e.ProductionOrderItemId,
+                ProductionOrderId = e.ProductionOrderId,
+                ProcessedAt = e.ProcessedAt
+            })
+            .ToListAsync();
 
         return GeneralResponse<PagedResult<ProductionOrderItemDTO>>.SuccessResponse(new PagedResult<ProductionOrderItemDTO>
         {
@@ -77,96 +85,133 @@ public class ProductionOrderItemRepository : BaseRepository<ProductionOrderItem>
             PageSize = pageSize,
             TotalRecords = totalRecords
         });
-
-
-        
     }
-    // create
-    public async Task<GeneralResponse<ProductionOrderItemDTO>> AddProductionItemByProductionOrderIdAsync(int productionOrderid,
-           AddProductionOrderItemDTO dto)
+
+    public async Task<GeneralResponse<ProductionOrderItemDTO>> AddProductionItemByProductionOrderIdAsync(
+        int productionOrderid,
+        AddProductionOrderItemDTO dto)
     {
-        var sapId = await sapCache.Get();
+        if (productionOrderid != dto.ProductionOrderId)
+            return GeneralResponse<ProductionOrderItemDTO>.FailResponse("Route ProductionOrderId does not match request body.");
 
+        var order = await _context.ProductionOrders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == dto.ProductionOrderId);
 
-        var mapping = new ProductionOrderItem
+        if (order == null)
+            return GeneralResponse<ProductionOrderItemDTO>.FailResponse("Production order not found.");
+
+        if (!await HasActiveBomInWarehouseAsync(order.WarehouseId, dto.ItemId))
         {
-           Status = GeneralItemStatus.Planned,
-           ProductionOrderId = dto.ProductionOrderId,
-           ItemId = dto.ItemId,
-           CreatedAt = DateTime.UtcNow,
-           PlannedQuantity = dto.PlannedQuantity,
-        };
+            return GeneralResponse<ProductionOrderItemDTO>.FailResponse(
+                "Selected finished good does not have an active Production BOM in the selected warehouse.");
+        }
 
-        var res = await AddAsync(mapping);
+        var existingForOrder = await _context.ProductionOrderItems
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == dto.ProductionOrderId);
+
+        ProductionOrderItem mapping;
+        if (existingForOrder != null)
+        {
+            existingForOrder.ItemId = dto.ItemId;
+            existingForOrder.PlannedQuantity = dto.PlannedQuantity;
+            existingForOrder.Status = GeneralItemStatus.Planned;
+            existingForOrder.ErrorMessage = null;
+            existingForOrder.ProducedQuantity = null;
+            existingForOrder.AbsoluteEntry = null;
+            existingForOrder.ProcessedAt = null;
+            mapping = existingForOrder;
+        }
+        else
+        {
+            mapping = new ProductionOrderItem
+            {
+                Status = GeneralItemStatus.Planned,
+                ProductionOrderId = dto.ProductionOrderId,
+                ItemId = dto.ItemId,
+                CreatedAt = DateTime.UtcNow,
+                PlannedQuantity = dto.PlannedQuantity,
+            };
+
+            await AddAsync(mapping);
+        }
+
         await SaveChangesAsync();
 
         var model = new ProductionOrderItemDTO
         {
-            ProductionOrderId = res.ProductionOrderId,
-             PlannedQuantity=res.PlannedQuantity,
-              Status = GetEnumString(res.Status),
-               ItemId = res.ItemId,
-                ProductionOrderItemId=res.ProductionOrderItemId,
-         
+            ProductionOrderId = mapping.ProductionOrderId,
+            PlannedQuantity = mapping.PlannedQuantity,
+            Status = GetEnumString(mapping.Status),
+            ItemId = mapping.ItemId,
+            ProductionOrderItemId = mapping.ProductionOrderItemId,
         };
 
-        return GeneralResponse<ProductionOrderItemDTO>.SuccessResponse(model);
+        return GeneralResponse<ProductionOrderItemDTO>.SuccessResponse(model, "Finished good saved successfully.");
     }
 
-    // update
-    public async Task<GeneralResponse<ProductionOrderItemDTO>> UpdateProductionItemAsync(int productionItemId,bool? isRecevied, UpdateProductionOrderItemDTO dto)
+    public async Task<GeneralResponse<ProductionOrderItemDTO>> UpdateProductionItemAsync(
+        int productionItemId,
+        bool? isRecevied,
+        UpdateProductionOrderItemDTO dto)
     {
+        var entity = await _context.ProductionOrderItems
+            .Include(x => x.ProductionOrder)
+            .FirstOrDefaultAsync(e => e.ProductionOrderItemId == productionItemId);
 
-        // 1️⃣ Get existing Company auth (record الوحيد)
-        var entity = await _context.ProductionOrderItems.FirstOrDefaultAsync(e => e.ProductionOrderItemId == dto.ProductionOrderItemId);
-
-        if (entity.ProductionOrderItemId != productionItemId)
-        {
-            return GeneralResponse<ProductionOrderItemDTO>.FailResponse("id not equal production order id!");
-        }
         if (entity == null)
-        {
             return GeneralResponse<ProductionOrderItemDTO>.FailResponse("not found");
-        }
-        if(entity.Status != GeneralItemStatus.Released)
+
+        if (dto.ProductionOrderItemId != productionItemId)
+            return GeneralResponse<ProductionOrderItemDTO>.FailResponse("id not equal production order id!");
+
+        if (entity.Status == GeneralItemStatus.Closed || entity.Status == GeneralItemStatus.Failed)
+            return GeneralResponse<ProductionOrderItemDTO>.FailResponse("Closed or failed items cannot be edited.");
+
+        if (!await HasActiveBomInWarehouseAsync(entity.ProductionOrder.WarehouseId, entity.ItemId))
         {
-            return GeneralResponse<ProductionOrderItemDTO>.FailResponse("Production must be released to be edited!..");
-
+            return GeneralResponse<ProductionOrderItemDTO>.FailResponse(
+                "Selected finished good does not have an active Production BOM in the selected warehouse.");
         }
 
-        // 2️⃣ Update fields
+        if (isRecevied == true && entity.Status != GeneralItemStatus.Released)
+            return GeneralResponse<ProductionOrderItemDTO>.FailResponse("Production item must be released before marking it as received.");
 
         entity.PlannedQuantity = dto.PlannedQuantity;
         entity.ProducedQuantity = dto.ProducedQuantity;
 
         if (isRecevied == true)
             entity.Status = GeneralItemStatus.Received;
-        // Company.IsActive = dto.IsActive;
 
-        // 3️⃣ Save changes
         await _context.SaveChangesAsync();
 
-        // 4️⃣ Map to DTO
         var result = new ProductionOrderItemDTO
         {
             ItemId = entity.ItemId,
             AbsoluteEntry = entity.AbsoluteEntry,
             Status = GetEnumString(entity.Status),
-            ErrorMessage = entity.ErrorMessage
-        ,
+            ErrorMessage = entity.ErrorMessage,
             PlannedQuantity = entity.PlannedQuantity,
             ProducedQuantity = entity.ProducedQuantity ?? 0,
             ProductionOrderItemId = entity.ProductionOrderItemId,
             ProductionOrderId = entity.ProductionOrderId,
             ProcessedAt = entity.ProcessedAt,
-
         };
 
-        return GeneralResponse<ProductionOrderItemDTO>.SuccessResponse(result);
+        return GeneralResponse<ProductionOrderItemDTO>.SuccessResponse(result, "Finished good updated successfully.");
     }
 
+    private async Task<bool> HasActiveBomInWarehouseAsync(int warehouseId, int itemId)
+    {
+        return await _context.WarehouseItems
+            .AsNoTracking()
+            .AnyAsync(x =>
+                x.WarehouseId == warehouseId &&
+                x.ItemId == itemId &&
+                x.IsActive &&
+                x.HasActiveBOM);
+    }
 
-    
     private string GetEnumString(GeneralItemStatus status)
     {
         switch (status)
@@ -177,6 +222,8 @@ public class ProductionOrderItemRepository : BaseRepository<ProductionOrderItem>
                 return "Planned";
             case GeneralItemStatus.Released:
                 return "Released";
+            case GeneralItemStatus.Received:
+                return "Received";
             case GeneralItemStatus.Closed:
                 return "Closed";
             case GeneralItemStatus.Failed:
@@ -185,8 +232,4 @@ public class ProductionOrderItemRepository : BaseRepository<ProductionOrderItem>
                 return "Unknown";
         }
     }
-
-
-
 }
-

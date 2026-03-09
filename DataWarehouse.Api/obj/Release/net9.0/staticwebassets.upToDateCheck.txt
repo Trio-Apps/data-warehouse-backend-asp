@@ -1,2 +1,0 @@
-wwwroot\.gitkeep
-wwwroot\uploads\.gitkeep

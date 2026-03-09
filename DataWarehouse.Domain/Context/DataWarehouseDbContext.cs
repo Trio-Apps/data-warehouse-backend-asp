@@ -444,6 +444,13 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
            .HasPrincipalKey(i => i.ProductionOrderItemId)
            .OnDelete(DeleteBehavior.NoAction);
 
+        builder.Entity<ProductionOrder>()
+            .HasMany(po => po.ProductionHeaderBatches)
+            .WithOne(phb => phb.ProductionOrder)
+            .HasForeignKey(phb => phb.ProductionOrderId)
+            .HasPrincipalKey(po => po.ProductionOrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
 
         // indexex
         // في الـ Migration
@@ -1218,7 +1225,8 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     public DbSet<ProductionComponentLine> ProductionComponentLines { get; set; }
     public DbSet<ProductionComponentBatch> ProductionComponentBatches { get; set; }
     public DbSet<ProductionOrderItem> ProductionOrderItems { get; set; }
-   // public DbSet<FinishedGoodItem> FinishedGoodItems { get; set; }
+    public DbSet<ProductionHeaderBatch> ProductionHeaderBatches { get; set; }
+    // public DbSet<FinishedGoodItem> FinishedGoodItems { get; set; }
     public DbSet<ProductionReceipt> ProductionReceipts { get; set; }
 
     // Purchase Order
@@ -1310,4 +1318,3 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
 
 }
-

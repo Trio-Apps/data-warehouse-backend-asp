@@ -26,6 +26,9 @@ public class CountStockDTO
 
     public DateTime? DueDate { get; set; }
 
+    [StringLength(20, ErrorMessage = "Mode cannot exceed 20 characters")]
+    public string? Mode { get; set; }
+
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
@@ -42,6 +45,9 @@ public class AddCountStockDTO
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }
 
+    [StringLength(20, ErrorMessage = "Mode cannot exceed 20 characters")]
+    public string? Mode { get; set; } = "Counting";
+
    
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
@@ -56,6 +62,9 @@ public class UpdateCountStockDTO
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }
     public string? Comment { get; set; }
+
+    [StringLength(20, ErrorMessage = "Mode cannot exceed 20 characters")]
+    public string? Mode { get; set; }
 }
 
 public class CountStockItemDTO
@@ -154,6 +163,11 @@ public class AddCountStockBatchDTO
 
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
+
+    [StringLength(100, ErrorMessage = "Batch Number cannot exceed 100 characters")]
+    public string? BatchNumber { get; set; }
+
+    public DateTime? ExpiryDate { get; set; }
 }
 public class UpdateCountStockBatchDTO
 {
@@ -166,6 +180,11 @@ public class UpdateCountStockBatchDTO
 
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
+
+    [StringLength(100, ErrorMessage = "Batch Number cannot exceed 100 characters")]
+    public string? BatchNumber { get; set; }
+
+    public DateTime? ExpiryDate { get; set; }
 }
 public class CountStockResponseDTO
 {
@@ -175,6 +194,7 @@ public class CountStockResponseDTO
     public DateTime? CreatedAt { get; set; }
     public DateTime? PostingDate { get; set; }
     public DateTime? DueDate { get; set; }
+    public string? Mode { get; set; }
     public string UserId { get; set; }
     public string? UserFullName { get; set; }
     public int WarehouseId { get; set; }

@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.Interfaces.IsProgress;
+=======
+﻿using DataWarehouse.Core.Interfaces.IsProgress;
+>>>>>>> a523272dcfa9d2208665ee176cf81c9851798e63
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.IsProgress;
 using DataWarehouse.Domain.Enums;
@@ -20,7 +24,8 @@ public class ProcessItemIsProgressRepository : BaseRepository<ProcessItemIsProgr
 
     public async Task<ProcessItemIsProgress?> GetByProcessTypeAndIdAsync(ProcessType processType, int processId)
     {
-        return await Query().FirstOrDefaultAsync(pip => pip.ProcessType == processType && pip.ProcessItemIsProgressId == processId);
+        // processId here is the business reference id (for example ProductionOrderId), not the table PK.
+        return await Query().FirstOrDefaultAsync(pip => pip.ProcessType == processType && pip.ReferenceId == processId);
     }
     public async Task<ProcessItemIsProgressDto?> GetProcessItemIsProgressAsync(ProcessType processType, int orderId)
     {

@@ -85,7 +85,14 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
         var mappedDto = new GeneralBatchDto
         {
             Quantity = dto.Quantity,
+<<<<<<< HEAD
             Comment = dto.Comment
+=======
+            Comment = dto.Comment,
+            BatchNumber = dto.BatchNumber,
+            ExpiryDate = dto.ExpiryDate,
+            CreatedAt = DateTime.UtcNow
+>>>>>>> a523272dcfa9d2208665ee176cf81c9851798e63
         };
 
         var res = await baseProcesses.AddOrderBatchAsync<CountStockItem, CountStockBatch>(
@@ -102,7 +109,29 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
 
         var entity = res.Data;
 
+<<<<<<< HEAD
         return GeneralResponse<CountStockBatchDTO>.SuccessResponse(new CountStockBatchDTO
+=======
+    public async Task<GeneralResponse<CountStockBatchDTO>> UpdateCountStockBatchAsync(int countStockBatchId, UpdateCountStockBatchDTO dto)
+    {
+        var entity = await _context.CountStockBatches
+            .FirstOrDefaultAsync(e => e.CountStockBatchId == dto.CountStockBatchId);
+
+        if (entity == null)
+            return GeneralResponse<CountStockBatchDTO>.FailResponse("Count Stock Batch not found");
+
+        if (entity.CountStockBatchId != countStockBatchId)
+            return GeneralResponse<CountStockBatchDTO>.FailResponse("ID mismatch");
+
+        entity.Quantity = dto.Quantity;
+        entity.Comment = dto.Comment;
+        entity.BatchNumber = dto.BatchNumber;
+        entity.ExpiryDate = dto.ExpiryDate;
+
+        await _context.SaveChangesAsync();
+
+        var result = new CountStockBatchDTO
+>>>>>>> a523272dcfa9d2208665ee176cf81c9851798e63
         {
             CountStockBatchId = entity.CountStockBatchId,
             CountStockItemId = entity.CountStockItemId,

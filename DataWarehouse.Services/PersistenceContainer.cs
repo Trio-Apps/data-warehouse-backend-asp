@@ -122,6 +122,7 @@ namespace DataWarehouse.Services
             services.AddScoped<IProductionOrderItemRepository, ProductionOrderItemRepository>();
             services.AddScoped<IFinishedGoodItemRepository, FinishedGoodItemRepository>();
             services.AddScoped<IProductionReceiptRepository, ProductionReceiptRepository>();
+            services.AddScoped<IProductionHeaderBatchRepository, ProductionHeaderBatchRepository>();
             #endregion
 
             #region BarCode Repositories

@@ -25,4 +25,5 @@ public interface IProductionOrderRepository : IBaseRepository<ProductionOrder>
     Task<ProductionOrder?> GetWithWarehouseAsync(int productionOrderId);
     Task<IEnumerable<ProductionOrder>> GetByDateRangeAsync(System.DateTime startDate, System.DateTime endDate);
     Task<IEnumerable<ProductionOrder>> GetPendingOrdersAsync();
+    Task<GeneralResponse<ProductionOrderDTO>> SubmitProductionOrderAsync(string userId, int productionOrderId, string? note = null);
 }
