@@ -14,10 +14,25 @@ public interface ITransferredItemRepository : IBaseRepository<TransferredItem>
     Task<IEnumerable<TransferredItemDTO>> GetByTransferredItemByTransferredStockIdAsync(int TransferredStockId);
     Task<GeneralResponse<PagedResult<TransferredItemDTO>>>
       GetByTransferredItemByTransferredStockIdWithPaginationAsync(int TransferredStockId, string? status, int pageNumber, int pageSize);
-    Task<GeneralResponse<TransferredItemDTO>> AddTransferredItemByTransferredStockIdAsync(int TransferredStockid, bool isBarcode,
-          DynamicBarcodesDto? dynamicDto,
-          AddTransferredItemDTO? dto);
+    Task<GeneralResponse<TransferredItemDTO>> AddTransferredItemByTransferredStockIdWithoutRefAsync(
+        int transferredStockId,
+        bool isBarcode,
+        DynamicBarcodesDto? barcodeDto,
+        AddGeneralItemDto? dto);
 
-    Task<GeneralResponse<TransferredItemDTO>> UpdateTransferredItemAsync(int TransferredItemId,
-            UpdateTransferredItemDTO dto);
+    Task<GeneralResponse<TransferredItemDTO>> UpdateTransferredItemWithoutRefAsync(
+           int transferredItemId,
+           UpdateGeneralItemDto dto);
+    Task<GeneralResponse<TransferredItemDTO>> AddTransferredItemByTransferredRequestItemIdAsync(
+           string userId,
+           int transferredStockId,
+           AddTransferredItemDTO dto);
+
+    Task<GeneralResponse<TransferredItemDTO>> DeleteTransferredItemAsync(int transferredItemId);
+    Task<IEnumerable<TransferredItem>> GetByTransferredStockIdEntitiesAsync(int transferredStockId);
+    Task<IEnumerable<TransferredItem>> GetByItemIdAsync(int itemId);
+    Task<TransferredItem?> GetWithTransferredStockAsync(int transferredItemId);
+    Task<TransferredItem?> GetWithTransferredRequestItemAsync(int transferredItemId);
+    Task<TransferredItem?> GetWithItemAsync(int transferredItemId);
+    Task<TransferredItem?> GetWithBatchesAsync(int transferredItemId);
 }

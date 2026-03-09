@@ -13,22 +13,22 @@ namespace DataWarehouse.Api.Controllers.admin.Processes;
 [Authorize]
 public class ReceivedItemController : ControllerBase
 {
-    private readonly IReceivedItemRepository _repository;
-    private readonly ILogger<ReceivedItemController> _logger;
+    private readonly IReceivedItemRepository repository;
+    private readonly ILogger<ReceivedItemController> logger;
 
     public ReceivedItemController(
         IReceivedItemRepository repository,
         ILogger<ReceivedItemController> logger)
     {
-        _repository = repository;
-        _logger = logger;
+        this.repository = repository;
+        this.logger = logger;
     }
 
     [HttpGet]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
     public async Task<ActionResult<IEnumerable<ReceivedItem>>> GetAll()
     {
-        var receivedItems = await _repository.GetAllAsync();
+        var receivedItems = await repository.GetAllAsync();
         return Ok(receivedItems);
     }
 
@@ -36,42 +36,70 @@ public class ReceivedItemController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
     public async Task<ActionResult<ReceivedItem>> GetById(int id)
     {
-        var receivedItem = await _repository.GetByIdAsync(id);
+        var receivedItem = await repository.GetByIdAsync(id);
         if (receivedItem == null)
             return NotFound($"ReceivedItem with ID {id} not found.");
 
         return Ok(receivedItem);
     }
 
-    [HttpGet("received-stock/{ReceivedStockId}")]
+    [HttpGet("received-stock/{receivedStockId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
-    public async Task<ActionResult<IEnumerable<ReceivedItemDTO>>> GetByReceivedStockId(int ReceivedStockId)
+    public async Task<IActionResult> GetByReceivedStockId(int receivedStockId)
     {
-        var receivedItems = await _repository.GetByReceivedItemByReceivedStockIdAsync(ReceivedStockId);
-        return Ok(receivedItems);
-    }
-
-    [HttpGet("received-stock/{ReceivedStockId}/{skip}/{pageSize}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
-    public async Task<ActionResult<IEnumerable<ReceivedItemDTO>>> GetByReceivedStockIdWithPagination(
-        int ReceivedStockId, int skip, int pageSize)
-    {
-        var res = await _repository.GetByReceivedItemByReceivedStockIdWithPaginationAsync(
-            ReceivedStockId, skip, pageSize);
+        var res = await repository.GetByReceivedStockIdAsync(receivedStockId);
+        if (!res.Success)
+            return BadRequest(res);
 
         return Ok(res);
     }
 
-    [HttpPost("transferred-stock/{TransferredStockId}")]
+    [HttpGet("received-stock/{receivedStockId}/{skip}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
+    public async Task<IActionResult> GetByReceivedStockIdWithPagination(
+        int receivedStockId,
+        int skip,
+        int pageSize)
+    {
+        var res = await repository.GetByReceivedStockIdWithPaginationAsync(receivedStockId, skip, pageSize);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpPost("transferred-stock/{transferredStockId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Create}")]
-    public async Task<ActionResult<ReceivedItem>> Create(int TransferredStockId, AddReceivedItemDTO dto)
+    public async Task<IActionResult> Create(int transferredStockId, AddReceivedItemDTO dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var created = await _repository.AddReceivedItemByTransferredItemIdAsync(userId, TransferredStockId, dto);
+        var created = await repository.AddReceivedItemByTransferredItemIdAsync(userId!, transferredStockId, dto);
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
+
+    [HttpPost("witout-reference/received-stock/{receivedStockId}/add-barcode-or-no/{isBarcode:bool}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Create}")]
+    public async Task<IActionResult> CreateWithoutReference(
+        int receivedStockId,
+        bool isBarcode,
+        AddGeneralItemByManualOrBarcodeDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var created = await repository.AddReceivedItemByReceivedStockIdWithoutRefAsync(
+            receivedStockId,
+            isBarcode,
+            dto.Barcode,
+            dto.Item);
+
         if (!created.Success)
             return BadRequest(created);
 
@@ -85,7 +113,21 @@ public class ReceivedItemController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var res = await _repository.UpdateReceivedItemAsync(id, dto);
+        var res = await repository.UpdateReceivedItemAsync(id, dto);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpPut("without-reference/{id}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Edit}")]
+    public async Task<IActionResult> UpdateWithoutReference(int id, UpdateGeneralItemDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var res = await repository.UpdateReceivedItemWithoutRefAsync(id, dto);
         if (!res.Success)
             return BadRequest(res);
 
@@ -96,21 +138,18 @@ public class ReceivedItemController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Delete}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var receivedItem = await _repository.GetByIdAsync(id);
-        if (receivedItem == null)
-            return NotFound($"ReceivedItem with ID {id} not found.");
+        var res = await repository.DeleteReceivedItemAsync(id);
+        if (!res.Success)
+            return BadRequest(res);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
-
-        return Ok("deleted");
+        return Ok(res);
     }
 
     [HttpGet("{id}/with-batches")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
     public async Task<ActionResult<ReceivedItem>> GetWithBatches(int id)
     {
-        var receivedItem = await _repository.GetWithBatchesAsync(id);
+        var receivedItem = await repository.GetWithBatchesAsync(id);
         if (receivedItem == null)
             return NotFound($"ReceivedItem with ID {id} not found.");
 
@@ -121,7 +160,18 @@ public class ReceivedItemController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
     public async Task<ActionResult<ReceivedItem>> GetWithTransferredItem(int id)
     {
-        var receivedItem = await _repository.GetWithTransferredItemAsync(id);
+        var receivedItem = await repository.GetWithTransferredItemAsync(id);
+        if (receivedItem == null)
+            return NotFound($"ReceivedItem with ID {id} not found.");
+
+        return Ok(receivedItem);
+    }
+
+    [HttpGet("{id}/with-item")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
+    public async Task<ActionResult<ReceivedItem>> GetWithItem(int id)
+    {
+        var receivedItem = await repository.GetWithItemAsync(id);
         if (receivedItem == null)
             return NotFound($"ReceivedItem with ID {id} not found.");
 

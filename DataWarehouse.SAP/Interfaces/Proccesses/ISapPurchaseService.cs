@@ -9,7 +9,8 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
     public interface ISapPurchaseService
     {
         // go planned if faild return draft
-        Task<string> SyncPurchaseAsync(int sapId);
+        Task<string> SyncPurchaseAsync(int purchaseOrderId);
+      //  Task<string> SyncPurchaseAsync(int sapId);
 
     }
 }

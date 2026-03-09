@@ -14,6 +14,12 @@ namespace DataWarehouse.Core.Interfaces.Processes.OutSide
     public interface IFinishedGoodPurchaseOrderRepository : IBaseRepository<WarehouseItem>
     {
         Task<GeneralResponse<IEnumerable<WarehouseItemDto>>> GetByWarehouseIdAsync(int warehouseId);
+
+        Task<GeneralResponse<PagedResult<WarehouseItemDto>>> GetByWarehouseIdAsync(
+   int warehouseId,
+   string? search = null,
+   int pageNumber = 1,
+   int pageSize = 20);
         Task<IEnumerable<WarehouseItem>> GetByItemIdAsync(int itemId);
 
         Task<GeneralResponse<PagedResult<WarehouseItemDto>>> GetFinishedGoodBomItemsByWarehouseIdAsync(

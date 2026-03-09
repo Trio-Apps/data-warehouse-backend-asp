@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
@@ -23,15 +25,18 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
    
     public class DeliveryNoteOrderRepository : BaseRepository<DeliveryNoteOrder>, IDeliveryNoteOrderRepository
     {
+        private readonly IBaseProcessesRepository<DeliveryNoteOrder> baseProcesses;
         private readonly IProcessItemIsProgressRepository progress;
         private readonly IApprovalRepository approval;
         private readonly DataWarehouseDbContext _context;
 
         public DeliveryNoteOrderRepository(
+            IBaseProcessesRepository<DeliveryNoteOrder> baseProcesses,
             IProcessItemIsProgressRepository progress,
             IApprovalRepository approval,
             DataWarehouseDbContext context) : base(context)
         {
+            this.baseProcesses = baseProcesses;
             this.progress = progress;
             this.approval = approval;
             _context = context;
@@ -576,6 +581,16 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             await _context.SaveChangesAsync(cancellationToken);
 
             return GeneralResponse<DeliveryNoteOrderDTO>.SuccessResponse(result);
+        }
+
+        public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int deliveryNoteOrderId)
+        {
+            return await baseProcesses.RevertPartiallyFailedStatusToProcessingAsync<DeliveryNoteOrder>(
+                deliveryNoteOrderId,
+                ProcessType.DeliveryNote,
+                x => x.DeliveryNoteOrderId == deliveryNoteOrderId,
+                _context.DeliveryNoteOrders
+            );
         }
 
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> GetBySalesOrderIdAsync(int salesOrderId)

@@ -1,7 +1,9 @@
 ﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
@@ -9,6 +11,7 @@ using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.AllinAll;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
@@ -21,11 +24,17 @@ namespace DataWarehouse.Services.Repository.Processes.BulkProductions;
 
 public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProductionOrderRepository
 {
+    private readonly IBaseProcessesRepository<ProductionOrder> baseProcesses;
     private readonly ISapCache sapCache;
     private readonly IProcessesTypesDateRepository processes;
 
-    public ProductionOrderRepository(ISapCache sapCache,IProcessesTypesDateRepository processes,  DataWarehouseDbContext context) : base(context)
+    public ProductionOrderRepository(
+        IBaseProcessesRepository<ProductionOrder> baseProcesses,
+        ISapCache sapCache,
+        IProcessesTypesDateRepository processes,
+        DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
         this.sapCache = sapCache;
         this.processes = processes;
     }
@@ -230,6 +239,16 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         return await QueryIncluding(false, po => po.ProductionOrderItems)
             .Where(po => po.ProductionOrderItems.Any(poi => poi.ItemId == itemId))
             .ToListAsync();
+    }
+
+    public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int productionOrderId)
+    {
+        return await baseProcesses.RevertPartiallyFailedStatusToProcessingAsync<ProductionOrder>(
+            productionOrderId,
+            ProcessType.Production,
+            x => x.ProductionOrderId == productionOrderId,
+            _context.ProductionOrders
+        );
     }
 
     public async Task<IEnumerable<ProductionOrder>> GetByStatusAsync(string status)

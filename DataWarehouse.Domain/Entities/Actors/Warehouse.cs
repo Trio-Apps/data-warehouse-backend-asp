@@ -59,6 +59,8 @@ namespace DataWarehouse.Domain.Entities.Actors
         public ICollection<TransferredStock> TransferredStocks { get; set; } = new List<TransferredStock>();
         // TransferredStock // this Working as a Customer to Warehouse Customer Others
         public ICollection<TransferredStock> DistinationTransferredStocks { get; set; } = new List<TransferredStock>();
+        public ICollection<TransferredRequest> TransferredRequests { get; set; } = new List<TransferredRequest>();
+        public ICollection<TransferredRequest> DistinationTransferredRequests { get; set; } = new List<TransferredRequest>();
 
         // ReceivedStock
         public ICollection<ReceivedStock> ReceivedStocks { get; set; } = new List<ReceivedStock>();
@@ -69,6 +71,7 @@ namespace DataWarehouse.Domain.Entities.Actors
 
         // CountStock
         public ICollection<CountStock> CountStocks { get; set; } = new List<CountStock>();
+        public ICollection<QuantityAdjustmentStock> QuantityAdjustmentStocks { get; set; } = new List<QuantityAdjustmentStock>();
 
       
         // ProductionOrder

@@ -138,3 +138,15 @@ D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWareh
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\refint\DataWarehouse.SAP.dll
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.pdb
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\ref\DataWarehouse.SAP.dll
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.SAP.deps.json
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.SAP.dll
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.SAP.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin_temp\DataWarehouse.SAP.deps.json
+D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin_temp\DataWarehouse.SAP.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin_temp\DataWarehouse.SAP.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin_temp\DataWarehouse.Core.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin_temp\DataWarehouse.Domain.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin_temp\DataWarehouse.Services.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin_temp\DataWarehouse.Core.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin_temp\DataWarehouse.Domain.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin_temp\DataWarehouse.Services.pdb

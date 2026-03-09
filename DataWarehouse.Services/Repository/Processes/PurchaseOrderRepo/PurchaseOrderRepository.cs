@@ -1,8 +1,10 @@
 ﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes;
@@ -24,13 +26,17 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo;
 
 public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseOrderRepository
 {
+    private readonly IBaseProcessesRepository<PurchaseOrder> baseProcesses;
+    private readonly IProcessItemIsProgressRepository progressRepository;
     private readonly IApprovalRepository approval;
     private readonly ISapCache sapCache;
     private readonly ISapSettingsRepository sap;
     private readonly IProcessesTypesDateRepository processes;
 
-    public PurchaseOrderRepository(IApprovalRepository approval, ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, DataWarehouseDbContext context) : base(context)
+    public PurchaseOrderRepository(IBaseProcessesRepository<PurchaseOrder> baseProcesses, IProcessItemIsProgressRepository progressRepository, IApprovalRepository approval, ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
+        this.progressRepository = progressRepository;
         this.approval = approval;
         this.sapCache = sapCache;
         this.sap = sap;
@@ -43,7 +49,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
     }
 
     public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize)
-
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
@@ -53,10 +58,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             .SelectMany(e => e.PurchaseOrders);
 
         // 🔹 Filtering
-
-
-
-
         var totalRecords = await query.CountAsync();
 
         var data = await query
@@ -71,7 +72,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                  Comment = iw.Comment,
                 CreatedAt = iw.CreatedAt,
                 ErrorMessage = iw.ErrorMessage,
-
                 // string = enum
                 UserId = iw.UserId,
                 WarehouseId = warehouseId,
@@ -93,7 +93,6 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
     public async Task<GeneralResponse<PagedResult<PurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
        (int warehouseId, string userId,int? supplierId, DateTime? postingDate, DateTime? DueDate,string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken=default)
-
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
@@ -513,6 +512,39 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         await _context.SaveChangesAsync(cancellationToken);
 
         return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(result);
+    }
+
+    //public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int purchaseOrderId)
+    //{
+    //    var entity = await _context.PurchaseOrders
+    //        .FirstOrDefaultAsync(x => x.PurchaseOrderId == purchaseOrderId);
+
+    //    if (entity == null)
+    //        return GeneralResponse<ProcessItemIsProgressDto>.FailResponse("Purchase order not found.");
+
+
+    //    if (entity.Status != GeneralStatus.PartiallyFailed)
+    //        return GeneralResponse<ProcessItemIsProgressDto>.FailResponse("Purchase order status is not PartiallyFailed.");
+
+
+    //    entity.Status = GeneralStatus.Processing;
+    //    await _context.SaveChangesAsync();
+
+
+    //    var res = await progressRepository.GetProcessItemIsProgressAsync(ProcessType.Purchase,purchaseOrderId);
+
+    //    return GeneralResponse<ProcessItemIsProgressDto>.SuccessResponse(res, "Purchase order status changed to Processing.");
+    //}
+
+
+    public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int purchaseOrderId)
+    {
+       return await baseProcesses.RevertPartiallyFailedStatusToProcessingAsync<PurchaseOrder>(
+       purchaseOrderId,
+       ProcessType.Purchase,
+       x => x.PurchaseOrderId == purchaseOrderId,
+       _context.PurchaseOrders
+      );
     }
 
     public async Task<IEnumerable<PurchaseOrder>> GetByItemIdAsync(int itemId)

@@ -142,3 +142,13 @@ D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\Data
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\refint\DataWarehouse.Services.dll
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.pdb
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\ref\DataWarehouse.Services.dll
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Services.deps.json
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Services.dll
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Services.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin_temp\DataWarehouse.Services.deps.json
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin_temp\DataWarehouse.Services.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin_temp\DataWarehouse.Services.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin_temp\DataWarehouse.Core.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin_temp\DataWarehouse.Domain.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin_temp\DataWarehouse.Core.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin_temp\DataWarehouse.Domain.pdb

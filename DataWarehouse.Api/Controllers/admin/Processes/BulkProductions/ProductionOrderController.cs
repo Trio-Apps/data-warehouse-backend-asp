@@ -18,13 +18,16 @@ namespace DataWarehouse.Api.Controllers.admin.Processes.BulkProductions;
 [Authorize]
 public class ProductionOrderController : ControllerBase
 {
+    private readonly ISapJobQueuer jobQueuer;
     private readonly IProductionOrderRepository _repository;
     private readonly ILogger<ProductionOrderController> _logger;
 
     public ProductionOrderController(
+        ISapJobQueuer jobQueuer,
         IProductionOrderRepository repository,
         ILogger<ProductionOrderController> logger)
     {
+        this.jobQueuer = jobQueuer;
         _repository = repository;
         _logger = logger;
     }
@@ -98,6 +101,20 @@ public class ProductionOrderController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var res = await _repository.UpdateProductionOrderAsync(userId, id, dto);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpPatch("{id}/revert-partially-failed")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Edit}")]
+    public async Task<IActionResult> RevertPartiallyFailedStatus(int id)
+    {
+        var res = await _repository.RevertPartiallyFailedStatusToProcessingAsync(id);
+
+        await jobQueuer.DistributionOrders(res.Data);
+
         if (!res.Success)
             return BadRequest(res);
 

@@ -1,12 +1,13 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,16 +16,23 @@ namespace DataWarehouse.Services.Repository.Processes;
 
 public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICountStockBatchRepository
 {
-    public CountStockBatchRepository(DataWarehouseDbContext context) : base(context)
+    private readonly IBaseProcessesRepository<CountStockBatch> baseProcesses;
+
+    public CountStockBatchRepository(IBaseProcessesRepository<CountStockBatch> baseProcesses, DataWarehouseDbContext context)
+        : base(context)
     {
+        this.baseProcesses = baseProcesses;
     }
 
     public async Task<GeneralResponse<IEnumerable<CountStockBatchDTO>>> GetByCountStockItemIdAsync(int countStockItemId)
     {
-        var res = await Query().Where(b => b.CountStockItemId == countStockItemId).ToListAsync();
-
-        return GeneralResponse<IEnumerable<CountStockBatchDTO>>.SuccessResponse(
-            res.Select(b => new CountStockBatchDTO
+        var res = await baseProcesses.GetOrderBatchesAsync<CountStockItem, CountStockBatch, CountStockBatchDTO>(
+            orderItemId: countStockItemId,
+            orderItemSelector: i => i.CountStockItemId == countStockItemId,
+            orderItemSet: _context.CountStockItems,
+            batchItemSelector: b => b.CountStockItemId == countStockItemId,
+            batchSet: _context.CountStockBatches,
+            map: b => new CountStockBatchDTO
             {
                 CountStockBatchId = b.CountStockBatchId,
                 CountStockItemId = b.CountStockItemId,
@@ -32,7 +40,9 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
                 Comment = b.Comment,
                 BatchNumber = b.BatchNumber,
                 ExpiryDate = b.ExpiryDate
-            }));
+            });
+
+        return res;
     }
 
     public async Task<GeneralResponse<PagedResult<CountStockBatchDTO>>> GetByCountStockItemIdWithPaginationAsync(int countStockItemId, int pageNumber, int pageSize)
@@ -72,56 +82,27 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
 
     public async Task<GeneralResponse<CountStockBatchDTO>> AddByCountStockItemIdAsync(int countStockItemId, AddCountStockBatchDTO dto)
     {
-        if (countStockItemId != dto.CountStockItemId)
-            return GeneralResponse<CountStockBatchDTO>.FailResponse("Count Stock Item ID mismatch");
-
-        var countStockItem = await _context.CountStockItems
-            .FirstOrDefaultAsync(i => i.CountStockItemId == countStockItemId);
-
-        if (countStockItem == null)
-            return GeneralResponse<CountStockBatchDTO>.FailResponse("Count Stock Item not found");
-
-        var mapping = new CountStockBatch
+        var mappedDto = new GeneralBatchDto
         {
-            CountStockItemId = dto.CountStockItemId,
             Quantity = dto.Quantity,
-            Comment = dto.Comment,
-            CreatedAt = DateTime.UtcNow
+            Comment = dto.Comment
         };
 
-        var res = await AddAsync(mapping);
-        await SaveChangesAsync();
+        var res = await baseProcesses.AddOrderBatchAsync<CountStockItem, CountStockBatch>(
+            orderItemId: countStockItemId,
+            processType: ProcessType.Counting,
+            dto: mappedDto,
+            orderItemSelector: i => i.CountStockItemId == countStockItemId,
+            orderItemSet: _context.CountStockItems,
+            batchItemSelector: b => b.CountStockItemId == countStockItemId,
+            batchSet: _context.CountStockBatches);
 
-        var model = new CountStockBatchDTO
-        {
-            CountStockBatchId = res.CountStockBatchId,
-            CountStockItemId = res.CountStockItemId,
-            Quantity = res.Quantity,
-            Comment = res.Comment,
-            BatchNumber = res.BatchNumber,
-            ExpiryDate = res.ExpiryDate
-        };
+        if (!res.Success)
+            return GeneralResponse<CountStockBatchDTO>.FailResponse(res.Message);
 
-        return GeneralResponse<CountStockBatchDTO>.SuccessResponse(model);
-    }
+        var entity = res.Data;
 
-    public async Task<GeneralResponse<CountStockBatchDTO>> UpdateCountStockBatchAsync(int countStockBatchId, UpdateCountStockBatchDTO dto)
-    {
-        var entity = await _context.CountStockBatches
-            .FirstOrDefaultAsync(e => e.CountStockBatchId == dto.CountStockBatchId);
-
-        if (entity == null)
-            return GeneralResponse<CountStockBatchDTO>.FailResponse("Count Stock Batch not found");
-
-        if (entity.CountStockBatchId != countStockBatchId)
-            return GeneralResponse<CountStockBatchDTO>.FailResponse("ID mismatch");
-
-        entity.Quantity = dto.Quantity;
-        entity.Comment = dto.Comment;
-
-        await _context.SaveChangesAsync();
-
-        var result = new CountStockBatchDTO
+        return GeneralResponse<CountStockBatchDTO>.SuccessResponse(new CountStockBatchDTO
         {
             CountStockBatchId = entity.CountStockBatchId,
             CountStockItemId = entity.CountStockItemId,
@@ -129,9 +110,40 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
             Comment = entity.Comment,
             BatchNumber = entity.BatchNumber,
             ExpiryDate = entity.ExpiryDate
+        });
+    }
+
+    public async Task<GeneralResponse<CountStockBatchDTO>> UpdateCountStockBatchAsync(int countStockBatchId, UpdateCountStockBatchDTO dto)
+    {
+        var mappedDto = new UpdateGeneralBatchDto
+        {
+            Quantity = dto.Quantity,
+            Comment = dto.Comment
         };
 
-        return GeneralResponse<CountStockBatchDTO>.SuccessResponse(result);
+        var res = await baseProcesses.UpdateOrderBatchAsync<CountStockItem, CountStockBatch>(
+            batchId: countStockBatchId,
+            processType: ProcessType.Counting,
+            dto: mappedDto,
+            batchSet: _context.CountStockBatches,
+            orderItemSet: _context.CountStockItems,
+            batchIdSelector: x => x.CountStockBatchId,
+            orderItemIdSelector: x => x.CountStockItemId,
+            orderItemIdForItemSelector: x => x.CountStockItemId);
+
+        if (!res.Success)
+            return GeneralResponse<CountStockBatchDTO>.FailResponse(res.Message);
+
+        var entity = res.Data;
+
+        return GeneralResponse<CountStockBatchDTO>.SuccessResponse(new CountStockBatchDTO
+        {
+            CountStockBatchId = entity.CountStockBatchId,
+            CountStockItemId = entity.CountStockItemId,
+            Quantity = entity.Quantity,
+            Comment = entity.Comment,
+            BatchNumber = entity.BatchNumber,
+            ExpiryDate = entity.ExpiryDate
+        });
     }
 }
-

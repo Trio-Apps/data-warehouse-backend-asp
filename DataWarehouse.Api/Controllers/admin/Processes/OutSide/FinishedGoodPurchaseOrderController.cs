@@ -1,6 +1,7 @@
 ﻿using DataWarehouse.Api.Controllers.admin.Processes.BulkProductions;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
+using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +23,23 @@ namespace DataWarehouse.Api.Controllers.admin.Processes.OutSide
             _repository = repository;
             _logger = logger;
         }
+        [HttpGet("search-pagination/warehouse/{warehouseId}")]
+        [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Items_Get}")]
+        public async Task<IActionResult> GetByWarehouseId(
+int warehouseId,
+[FromQuery] string? itemCodeOrItemName,
+[FromQuery] int pageNumber = 1,
+[FromQuery] int pageSize = 20)
+        {
+            var result = await _repository.GetByWarehouseIdAsync(
+                warehouseId,
+                itemCodeOrItemName,
+                pageNumber,
+                pageSize);
+
+            return Ok(result);
+        }
+
 
         [HttpGet]
         [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
@@ -58,6 +76,7 @@ namespace DataWarehouse.Api.Controllers.admin.Processes.OutSide
             var finishedGoodItems = await _repository.GetByWarehouseIdAsync(warehouseId);
             return Ok(finishedGoodItems);
         }
+     
 
         [HttpGet("item/{itemId}")]
         [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]

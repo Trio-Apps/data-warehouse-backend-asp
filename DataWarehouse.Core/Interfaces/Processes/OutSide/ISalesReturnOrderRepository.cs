@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Based;
@@ -21,6 +22,7 @@ public interface ISalesReturnOrderRepository : IBaseRepository<SalesReturnOrder>
     Task<GeneralResponse<SalesReturnOrderDTO>> AddSalesReturnOrderWithoutRefAsync(string userId, AddSalesReturnOrderWithoutRefDTO dto);
     Task<GeneralResponse<SalesReturnOrderDTO>> AddSalesReturnOrderAsync(string userId, AddSalesReturnOrderDTO dto);
     Task<GeneralResponse<SalesReturnOrderDTO>> UpdateSalesReturnOrderAsync(string userId, int salesReturnOrderId, UpdateSalesReturnOrderDTO dto);
+    Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int salesReturnOrderId);
     Task<GeneralResponse<SalesReturnOrderDTO>> DeleteSalesReturnOrderAsync(int salesReturnOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<SalesReturnOrderDTO>> GetByDeliveryNoteOrderIdAsync(int salesOrderId);
     Task<IEnumerable<SalesReturnOrder>> GetByUserIdAsync(string userId);

@@ -142,3 +142,13 @@ D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\refint\D
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\DataWarehouse.Core.pdb
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\DataWarehouse.Core.genruntimeconfig.cache
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\ref\DataWarehouse.Core.dll
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Core.deps.json
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Core.runtimeconfig.json
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Core.dll
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Core.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\bin_temp\DataWarehouse.Core.deps.json
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\bin_temp\DataWarehouse.Core.runtimeconfig.json
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\bin_temp\DataWarehouse.Core.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\bin_temp\DataWarehouse.Core.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\bin_temp\DataWarehouse.Domain.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\bin_temp\DataWarehouse.Domain.pdb

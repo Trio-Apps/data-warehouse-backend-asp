@@ -12,7 +12,8 @@ public interface ITransferredStockBatchRepository : IBaseRepository<TransferredS
 {
     Task<GeneralResponse<IEnumerable<TransferredStockBatchDTO>>> GetByTransferredItemIdAsync(int transferredItemId);
     Task<GeneralResponse<PagedResult<TransferredStockBatchDTO>>> GetByTransferredItemIdWithPaginationAsync(int transferredItemId, int pageNumber, int pageSize);
-    Task<GeneralResponse<TransferredStockBatchDTO>> AddByTransferredItemIdAsync(int transferredItemId, AddTransferredStockBatchDTO dto);
-    Task<GeneralResponse<TransferredStockBatchDTO>> UpdateTransferredStockBatchAsync(int transferredStockBatchId, UpdateTransferredStockBatchDTO dto);
+    Task<GeneralResponse<TransferredStockBatchDTO>> AddByTransferredItemIdAsync(int transferredItemId, GeneralBatchDto dto);
+    Task<GeneralResponse<TransferredStockBatchDTO>> UpdateTransferredStockBatchAsync(int transferredStockBatchId, UpdateGeneralBatchDto dto);
+    Task<GeneralResponse<TransferredStockBatchDTO>> DeleteTransferredStockBatchAsync(int transferredStockBatchId);
 }
 

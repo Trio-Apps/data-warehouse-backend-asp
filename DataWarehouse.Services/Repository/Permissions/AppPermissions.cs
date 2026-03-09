@@ -147,6 +147,13 @@ namespace DataWarehouse.Services.Repository.Permissions
         public const string Transferred_Get = "Transferred.Get";
         #endregion
 
+        #region TransferredRequest
+        public const string TransferredRequest_Create = "TransferredRequest.Create";
+        public const string TransferredRequest_Edit = "TransferredRequest.Edit";
+        public const string TransferredRequest_Delete = "TransferredRequest.Delete";
+        public const string TransferredRequest_Get = "TransferredRequest.Get";
+        #endregion
+
         #region Received
         public const string Received_Create = "Received.Create";
         public const string Received_Edit = "Received.Edit";
@@ -321,6 +328,13 @@ namespace DataWarehouse.Services.Repository.Permissions
     new(AppPermissions.Transferred_Edit,   "Edit Transfer",   "Transferred"),
     new(AppPermissions.Transferred_Delete, "Delete Transfer", "Transferred"),
     new(AppPermissions.Transferred_Get,    "Get Transfers",   "Transferred"),
+    #endregion
+
+     #region TransferredRequest
+    new(AppPermissions.TransferredRequest_Create, "Create Transfer Request", "TransferredRequest"),
+    new(AppPermissions.TransferredRequest_Edit,   "Edit Transfer Request",   "TransferredRequest"),
+    new(AppPermissions.TransferredRequest_Delete, "Delete Transfer Request", "TransferredRequest"),
+    new(AppPermissions.TransferredRequest_Get,    "Get Transfers Request",   "TransferredRequest"),
     #endregion
 
     #region Received

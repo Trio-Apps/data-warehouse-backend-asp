@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 using DataWarehouse.Domain.Entities.Actors;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 
 namespace DataWarehouse.Domain.Entities.Processes
 {
-    public class TransferredItem
+    public class TransferredItem : IOrderItem
     {
         public int TransferredItemId { get; set; }
 
@@ -23,8 +25,18 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int? LineNum { get; set; }
 
 
+        [NotMapped]
+        public int OrderId
+        {
+            get => TransferredStockId;
+            set => TransferredStockId = value;
+        }
+
         // Navigation
-        public ReceivedItem ReceivedItem { get; set; }
+        public int? TransferredRequestItemId { get; set; }
+        public TransferredRequestItem? TransferredRequestItem { get; set; }
+
+        public ReceivedItem? ReceivedItem { get; set; }
         public int TransferredStockId { get; set; }
         public TransferredStock TransferredStock { get; set; }
         public int ItemId { get; set; }

@@ -34,15 +34,9 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             _context = context;
         }
 
-        public async Task<string> SyncReceiptAsync(int sapId)
+        public async Task<string> SyncReceiptAsync(int receiptOrderId)
         {
-            const int batchSize = 200;
-
-            int totalSuccess = 0;
-            int totalFail = 0;
-
-            while (true)
-            {
+          
                 // ✅ Approved IDs من جدول الـ Process
                 var approvedIdsQuery = _context.ProcessItemIsProgresses
                     .AsNoTracking()
@@ -50,33 +44,25 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     .Select(p => p.ReferenceId)
                     .Distinct();
 
-                // ✅ هات أول دفعة من اللي لسه Processing
-                var batch = await _context.ReceiptPurchaseOrders
-                    .AsTracking()
-                    .Include(o => o.Warehouse)
-                    .Include(o => o.Supplier)
-                    .Include(o => o.PurchaseOrder)
-                    .Include(o => o.ReceiptPurchaseOrderItems)
-                        .ThenInclude(i => i.Item)
-                    .Include(o => o.ReceiptPurchaseOrderItems)
-                        .ThenInclude(i => i.ReceiptPurchaseOrderBatches) // ✅ مهم جدًا للباتش
-                    .Where(o =>
-                        o.Status == GeneralStatus.Processing &&
-                        o.Warehouse.SapId == sapId &&
-                        approvedIdsQuery.Contains(o.ReceiptPurchaseOrderId))
-                    .OrderBy(o => o.ReceiptPurchaseOrderId)
-                    .Take(batchSize)
-                    .ToListAsync();
+            // ✅ هات أول دفعة من اللي لسه Processing
+            var order = await _context.ReceiptPurchaseOrders
+                .AsTracking()
+                .Include(o => o.Warehouse)
+                .Include(o => o.Supplier)
+                .Include(o => o.PurchaseOrder)
+                .Include(o => o.ReceiptPurchaseOrderItems)
+                    .ThenInclude(i => i.Item)
+                .Include(o => o.ReceiptPurchaseOrderItems)
+                    .ThenInclude(i => i.ReceiptPurchaseOrderBatches) // ✅ مهم جدًا للباتش
+                .Where(o =>
+                    o.Status == GeneralStatus.Processing &&
+                    approvedIdsQuery.Contains(o.ReceiptPurchaseOrderId))
+              .FirstOrDefaultAsync(ro => ro.ReceiptPurchaseOrderId == receiptOrderId);
 
-                if (!batch.Any())
-                    break;
+            if (order == null)
+                return "This order must be Approval To send it to Sap";
 
-                int taskSuccess = 0;
-                int taskFail = 0;
-
-                foreach (var order in batch)
-                {
-                    var (_, success, body, error) = await ProcessReceiptOrderAsync(sapId, order);
+            var (_, success, body, error) = await ProcessReceiptOrderAsync(order.Warehouse.SapId, order);
 
                     if (success)
                     {
@@ -114,7 +100,6 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         _context.Entry(order).Property(x => x.DocEntry).IsModified = true;
                         _context.Entry(order).Property(x => x.DocNum).IsModified = true;
                         _context.Entry(order).Property(x => x.DocType).IsModified = true;
-                        taskSuccess++;
                     }
                     else
                     {
@@ -133,9 +118,8 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
                         _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
 
-                        taskFail++;
                     }
-                }
+                
 
                 try
                 {
@@ -147,29 +131,17 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    _logger.LogError(ex, "Concurrency issue while saving receipt batch for sapId={SapId}", sapId);
-                    throw;
+                    _logger.LogError(ex, "Concurrency issue while saving receipt batch for sapId={SapId}", order.Warehouse.SapId);
+                throw;
                 }
                 catch (DbUpdateException ex)
                 {
-                    _logger.LogError(ex, "DB update issue while saving receipt batch for sapId={SapId}", sapId);
-                    throw;
+                    _logger.LogError(ex, "DB update issue while saving receipt batch for sapId={SapId}", order.Warehouse.SapId);
+                throw;
                 }
 
-                totalSuccess += taskSuccess;
-                totalFail += taskFail;
-
-                _logger.LogInformation(
-                    "Receipt batch processed for sapId={SapId}: {Success} succeeded, {Failed} failed. Total so far: {TotalSuccess}/{TotalFail}",
-                    sapId, taskSuccess, taskFail, totalSuccess, totalFail
-                );
-            }
-
-            if (totalSuccess == 0 && totalFail == 0)
-                return "No approved receipt orders to sync";
-
-
-            return $"Sync completed. Success: {totalSuccess}, Failed: {totalFail}";
+         
+            return $"Sync completed.";
         }
 
         private async Task<(ReceiptPurchaseOrder order, bool success, string res, string? error)>
@@ -330,6 +302,145 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             public string ItemCode { set; get; } = string.Empty;
 
         }
+
+        //public async Task<string> SyncReceiptAsync(int sapId)
+        //{
+        //    const int batchSize = 200;
+
+        //    int totalSuccess = 0;
+        //    int totalFail = 0;
+
+        //    while (true)
+        //    {
+        //        // ✅ Approved IDs من جدول الـ Process
+        //        var approvedIdsQuery = _context.ProcessItemIsProgresses
+        //            .AsNoTracking()
+        //            .Where(p => p.ProcessType == ProcessType.Receipt && p.Status == ProcessStatus.Approved)
+        //            .Select(p => p.ReferenceId)
+        //            .Distinct();
+
+        //        // ✅ هات أول دفعة من اللي لسه Processing
+        //        var batch = await _context.ReceiptPurchaseOrders
+        //            .AsTracking()
+        //            .Include(o => o.Warehouse)
+        //            .Include(o => o.Supplier)
+        //            .Include(o => o.PurchaseOrder)
+        //            .Include(o => o.ReceiptPurchaseOrderItems)
+        //                .ThenInclude(i => i.Item)
+        //            .Include(o => o.ReceiptPurchaseOrderItems)
+        //                .ThenInclude(i => i.ReceiptPurchaseOrderBatches) // ✅ مهم جدًا للباتش
+        //            .Where(o =>
+        //                o.Status == GeneralStatus.Processing &&
+        //                o.Warehouse.SapId == sapId &&
+        //                approvedIdsQuery.Contains(o.ReceiptPurchaseOrderId))
+        //            .OrderBy(o => o.ReceiptPurchaseOrderId)
+        //            .Take(batchSize)
+        //            .ToListAsync();
+
+        //        if (!batch.Any())
+        //            break;
+
+        //        int taskSuccess = 0;
+        //        int taskFail = 0;
+
+        //        foreach (var order in batch)
+        //        {
+        //            var (_, success, body, error) = await ProcessReceiptOrderAsync(sapId, order);
+
+        //            if (success)
+        //            {
+        //                order.Status = GeneralStatus.Completed;
+        //                var res = JsonSerializer.Deserialize<PurchaseAsBasedOn>(body,
+        //              new JsonSerializerOptions
+        //              {
+        //                  PropertyNameCaseInsensitive = true
+        //              });
+
+        //                order.DocEntry = res.DocEntry;
+        //                order.DocNum = res.DocNum;
+        //                order.DocType = res.DocType;
+        //                var sapLinesByItem = res.DocumentLines
+        //                .Where(x => !string.IsNullOrWhiteSpace(x.ItemCode))
+        //                .ToDictionary(x => x.ItemCode!, x => x.LineNum);
+
+        //                foreach (var it in order.ReceiptPurchaseOrderItems)
+        //                {
+        //                    it.Status = GeneralItemStatus.Received;
+        //                    it.ErrorMessage = null;
+        //                    // لو عندك ItemCode في it.Item.ItemCode
+        //                    var itemCode = it.Item?.ItemCode;
+        //                    if (itemCode != null && sapLinesByItem.TryGetValue(itemCode, out var lineNum))
+        //                        it.LineNum = lineNum;
+
+        //                    _context.Entry(it).Property(x => x.Status).IsModified = true;
+        //                    _context.Entry(it).Property(x => x.ErrorMessage).IsModified = true;
+        //                    _context.Entry(it).Property(x => x.LineNum).IsModified = true;
+
+        //                }
+
+        //                _context.Entry(order).Property(x => x.Status).IsModified = true;
+        //                _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
+        //                _context.Entry(order).Property(x => x.DocEntry).IsModified = true;
+        //                _context.Entry(order).Property(x => x.DocNum).IsModified = true;
+        //                _context.Entry(order).Property(x => x.DocType).IsModified = true;
+        //                taskSuccess++;
+        //            }
+        //            else
+        //            {
+        //                order.Status = GeneralStatus.PartiallyFailed;
+        //                order.ErrorMessage = error;
+
+        //                foreach (var it in order.ReceiptPurchaseOrderItems)
+        //                {
+        //                    it.Status = GeneralItemStatus.Failed;
+        //                    it.ErrorMessage = error;
+
+        //                    _context.Entry(it).Property(x => x.Status).IsModified = true;
+        //                    _context.Entry(it).Property(x => x.ErrorMessage).IsModified = true;
+        //                }
+
+        //                _context.Entry(order).Property(x => x.Status).IsModified = true;
+        //                _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
+
+        //                taskFail++;
+        //            }
+        //        }
+
+        //        try
+        //        {
+        //            _context.ChangeTracker.DetectChanges();
+        //            var affected = await _context.SaveChangesAsync();
+        //            _logger.LogInformation("Receipt batch SaveChanges affected rows={Affected}", affected);
+
+        //            _context.ChangeTracker.Clear();
+        //        }
+        //        catch (DbUpdateConcurrencyException ex)
+        //        {
+        //            _logger.LogError(ex, "Concurrency issue while saving receipt batch for sapId={SapId}", sapId);
+        //            throw;
+        //        }
+        //        catch (DbUpdateException ex)
+        //        {
+        //            _logger.LogError(ex, "DB update issue while saving receipt batch for sapId={SapId}", sapId);
+        //            throw;
+        //        }
+
+        //        totalSuccess += taskSuccess;
+        //        totalFail += taskFail;
+
+        //        _logger.LogInformation(
+        //            "Receipt batch processed for sapId={SapId}: {Success} succeeded, {Failed} failed. Total so far: {TotalSuccess}/{TotalFail}",
+        //            sapId, taskSuccess, taskFail, totalSuccess, totalFail
+        //        );
+        //    }
+
+        //    if (totalSuccess == 0 && totalFail == 0)
+        //        return "No approved receipt orders to sync";
+
+
+        //    return $"Sync completed. Success: {totalSuccess}, Failed: {totalFail}";
+        //}
+
     }
 
 }

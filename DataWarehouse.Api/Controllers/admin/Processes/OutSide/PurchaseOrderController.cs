@@ -19,13 +19,16 @@ namespace DataWarehouse.Api.Controllers.admin.Processes.OutSide;
 [Authorize]
 public class PurchaseOrderController : ControllerBase
 {
+    private readonly ISapJobQueuer jobQueuer;
     private readonly IPurchaseOrderRepository _repository;
     private readonly ILogger<PurchaseOrderController> _logger;
 
     public PurchaseOrderController(
+        ISapJobQueuer jobQueuer,
         IPurchaseOrderRepository repository,
         ILogger<PurchaseOrderController> logger)
     {
+        this.jobQueuer = jobQueuer;
         _repository = repository;
         _logger = logger;
     }
@@ -169,6 +172,20 @@ public class PurchaseOrderController : ControllerBase
         var res = await _repository.UpdatePurchaseOrderAsync(userId, id, dto);
         if (!res.Success) return BadRequest(res);
 
+
+        return Ok(res);
+    }
+
+    [HttpPatch("{id}/revert-partially-failed")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Edit}")]
+    public async Task<IActionResult> RevertPartiallyFailedStatus(int id)
+    {
+        var res = await _repository.RevertPartiallyFailedStatusToProcessingAsync(id);
+
+        await jobQueuer.DistributionOrders(res.Data);
+
+        if (!res.Success)
+            return BadRequest(res);
 
         return Ok(res);
     }

@@ -27,9 +27,20 @@ public class ReceivedStockDTO
     [Range(1, int.MaxValue, ErrorMessage = "Source Warehouse ID must be greater than 0")]
     public int SourceWarehouseId { get; set; }
 
-    [Required(ErrorMessage = "Transferred Stock ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Transferred Stock ID must be greater than 0")]
-    public int TransferredStockId { get; set; }
+    public int? TransferredStockId { get; set; }
+
+    public string? WarehouseCode { get; set; }
+    public string? SourceWarehouseName { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public int? ItemCount { get; set; }
+    public bool? Approval { get; set; }
+    public string? ApprovalStatus { get; set; }
+
+    public bool CanApprove { get; set; }
+    public int? ProcessApprovalId { get; set; }
+    public int? ProcessItemIsProgressId { get; set; }
+    public string? Reason { get; set; }
 
     public List<ReceivedItemDTO>? Items { get; set; }
 }
@@ -44,6 +55,22 @@ public class AddReceivedStockDTO
     public DateTime DueDate { get; set; }
 
     public string? Comment { get; set; }
+
+    public bool IsDraft { get; set; } = true;
+}
+
+public class AddReceivedStockWithoutRefDTO
+{
+    
+    [Required(ErrorMessage = "Due Date is required")]
+    public DateTime DueDate { get; set; }
+    
+    public int WarehouseId { get; set; }
+    public int SourceWarehouseId { get; set; }
+
+    public string? Comment { get; set; }
+
+    public bool IsDraft { get; set; } = true;
 }
 
 public class UpdateReceivedStockDTO
@@ -51,8 +78,12 @@ public class UpdateReceivedStockDTO
     [Required(ErrorMessage = "ReceivedStockId is required")]
     public int ReceivedStockId { get; set; }
 
+    public DateTime? DueDate { get; set; }
+
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
+
+    public bool IsDraft { get; set; } = true;
 }
 
 public class ReceivedItemDTO
@@ -80,11 +111,15 @@ public class ReceivedItemDTO
     [Required(ErrorMessage = "ReceivedStockId is required")]
     public int ReceivedStockId { get; set; }
 
-    [Required(ErrorMessage = "TransferredItemId is required")]
-    public int TransferredItemId { get; set; }
+    public int? TransferredItemId { get; set; }
 
     [Required(ErrorMessage = "ItemId is required")]
     public int ItemId { get; set; }
+
+    public string? ItemCode { get; set; }
+    public string? ItemName { get; set; }
+    public string? UnitName { get; set; }
+    public bool IsBatches { get; set; }
 
     public List<ReceivedStockBatchDTO>? Batches { get; set; }
 }
@@ -123,9 +158,8 @@ public class ReceivedStockBatchDTO
     [Range(1, int.MaxValue, ErrorMessage = "Received Item ID must be greater than 0")]
     public int ReceivedItemId { get; set; }
 
-    [Required(ErrorMessage = "Transferred Stock Batch ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Transferred Stock Batch ID must be greater than 0")]
-    public int TransferredStockBatchId { get; set; }
+    public int? TransferredStockBatchId { get; set; }
 
     [Required(ErrorMessage = "Quantity is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]

@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataWarehouse.Domain.Context;
+﻿using DataWarehouse.Domain.Context;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.SAP.Interfaces.Based;
+using DataWarehouse.SAP.Interfaces.Proccesses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
-using DataWarehouse.SAP.Interfaces.Proccesses;
+using System.Threading.Tasks;
 
 namespace DataWarehouse.SAP.Repositories.Proccesses
 {
@@ -34,15 +35,9 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             _logger = logger;
         }
 
-        public async Task<string> SyncSalesReturnsAsync(int sapId)
+        public async Task<string> SyncSalesReturnsAsync(int salesReturnId)
         {
-            const int batchSize = 200;
-
-            int totalSuccess = 0;
-            int totalFail = 0;
-
-            while (true)
-            {
+          
                 // ✅ Approved IDs من جدول الـ Process
                 // ✳️ غيّر ProcessType.SalesReturn لو enum عندك مختلف
                 var approvedIdsQuery = _context.ProcessItemIsProgresses
@@ -51,34 +46,27 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     .Select(p => p.ReferenceId)
                     .Distinct();
 
-                var batch = await _context.SalesReturnOrders
-                    .AsTracking()
-                    .Include(o => o.Warehouse)
-                    .Include(o => o.Customer)
-                    .Include(o => o.DeliveryNoteOrder)
-                    .Include(o => o.SalesReturnOrderItems)
-                        .ThenInclude(i => i.Item)
-                    .Include(o => o.SalesReturnOrderItems)
-                        .ThenInclude(i => i.DeliveryNoteItem)
-                    .Include(o => o.SalesReturnOrderItems)
-                        .ThenInclude(i => i.SalesReturnOrderBatches)
-                    .Where(o =>
-                        o.Status == GeneralStatus.Processing &&
-                        o.Warehouse.SapId == sapId &&
-                        approvedIdsQuery.Contains(o.SalesReturnOrderId))
-                    .OrderBy(o => o.SalesReturnOrderId)
-                    .Take(batchSize)
-                    .ToListAsync();
+            var order = await _context.SalesReturnOrders
+                .AsTracking()
+                .Include(o => o.Warehouse)
+                .Include(o => o.Customer)
+                .Include(o => o.DeliveryNoteOrder)
+                .Include(o => o.SalesReturnOrderItems)
+                    .ThenInclude(i => i.Item)
+                .Include(o => o.SalesReturnOrderItems)
+                    .ThenInclude(i => i.DeliveryNoteItem)
+                .Include(o => o.SalesReturnOrderItems)
+                    .ThenInclude(i => i.SalesReturnOrderBatches)
+                .Where(o =>
+                    o.Status == GeneralStatus.Processing &&
+                    approvedIdsQuery.Contains(o.SalesReturnOrderId))
+               .FirstOrDefaultAsync(sr => sr.SalesReturnOrderId == salesReturnId);
 
-                if (!batch.Any())
-                    break;
+            if (order == null)
+                return "This order must be Approval To send it to Sap";
 
-                int taskSuccess = 0;
-                int taskFail = 0;
 
-                foreach (var order in batch)
-                {
-                    var (_, success, body, error) = await ProcessSalesReturnAsync(sapId, order);
+            var (_, success, body, error) = await ProcessSalesReturnAsync(order.Warehouse.SapId, order);
 
                     if (success)
                     {
@@ -142,7 +130,6 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         _context.Entry(order).Property(x => x.DocNum).IsModified = true;
                         _context.Entry(order).Property(x => x.DocType).IsModified = true;
 
-                        taskSuccess++;
                     }
                     else
                     {
@@ -161,9 +148,8 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
                         _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
 
-                        taskFail++;
                     }
-                }
+                
 
                 try
                 {
@@ -174,28 +160,18 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    _logger.LogError(ex, "Concurrency issue while saving SalesReturn batch for sapId={SapId}", sapId);
+                    _logger.LogError(ex, "Concurrency issue while saving SalesReturn batch for sapId={SapId}", order.Warehouse.SapId);
                     throw;
                 }
                 catch (DbUpdateException ex)
                 {
-                    _logger.LogError(ex, "DB update issue while saving SalesReturn batch for sapId={SapId}", sapId);
+                    _logger.LogError(ex, "DB update issue while saving SalesReturn batch for sapId={SapId}", order.Warehouse.SapId);
                     throw;
                 }
 
-                totalSuccess += taskSuccess;
-                totalFail += taskFail;
+             
 
-                _logger.LogInformation(
-                    "SalesReturn batch processed for sapId={SapId}: {Success} succeeded, {Failed} failed. Total so far: {TotalSuccess}/{TotalFail}",
-                    sapId, taskSuccess, taskFail, totalSuccess, totalFail
-                );
-            }
-
-            if (totalSuccess == 0 && totalFail == 0)
-                return "No approved sales returns to sync";
-
-            return $"Sync completed. Success: {totalSuccess}, Failed: {totalFail}";
+            return $"Sync completed. ";
         }
 
         private async Task<(SalesReturnOrder order, bool success, string res, string? error)>

@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Actors;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
@@ -11,6 +12,12 @@ namespace DataWarehouse.Core.Interfaces.Processes.OutSide;
 
 public interface ISalesOrderRepository : IBaseRepository<SalesOrder>
 {
+
+   Task<GeneralResponse<PagedResult<WarehouseItemDto>>> GetByWarehouseIdAsync(
+ int warehouseId,
+ string? search = null,
+ int pageNumber = 1,
+ int pageSize = 20);
     Task<IEnumerable<SalesOrder>> GetByWarehouseIdAsync(int warehouseId);
     Task<GeneralResponse<IEnumerable<WarehouseItemDto>>> GetItemForSalesByWarehouseIdAsync(int warehouseId);
     Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
@@ -21,6 +28,7 @@ public interface ISalesOrderRepository : IBaseRepository<SalesOrder>
     Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
       (int warehouseId, string userId, int? customerId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<GeneralResponse<SalesOrderDTO>> UpdateSalesOrderAsync(string userId, int salesOrderId, UpdateSalesOrderDTO dto, CancellationToken cancellationToken = default);
+    Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int salesOrderId);
     Task<GeneralResponse<SalesOrderDTO>> DeleteSalesOrderAsync(int salesOrderId, CancellationToken cancellationToken = default);
 
     Task<GeneralResponse<List<NameStatus>>> GetSalesOrderStatus();

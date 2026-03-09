@@ -69,12 +69,18 @@ namespace DataWarehouse.SAP
             services.AddScoped<ISapConnectorFactory, SapConnectorFactory>();
             services.AddScoped<ISapDynamicBarCodeService, SapDynamicBarCodeService>();
             services.AddScoped<IBusinessPartnersSupplierService, BusinessPartnersSupplierService>();
+
+
             services.AddScoped<ISapPurchaseService, SapPurchaseService>();
             services.AddScoped<ISapReceiptService, SapReceiptService>();
             services.AddScoped<ISapGoodsReturnService, SapGoodsReturnService>();
             services.AddScoped<ISapDeliveryNoteService, SapDeliveryNoteService>();
             services.AddScoped<ISapSalesReturnService, SapSalesReturnService>();
             services.AddScoped<ISapSalesService, SapSalesService>();
+            services.AddScoped<ISapQuantityAdjustmentService, SapQuantityAdjustmentService>();
+            services.AddScoped<ISapTransferredRequestService, SapTransferredRequestService>();
+            services.AddScoped<ISapTransferredStockService, SapTransferredStockService>();
+
 
 
             //  services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));

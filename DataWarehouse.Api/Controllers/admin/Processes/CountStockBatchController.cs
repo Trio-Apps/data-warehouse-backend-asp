@@ -92,6 +92,7 @@ public class CountStockBatchController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        dto.CountStockBatchId = id;
         var res = await _repository.UpdateCountStockBatchAsync(id, dto);
 
         if (!res.Success)

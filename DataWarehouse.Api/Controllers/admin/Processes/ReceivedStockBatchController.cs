@@ -4,8 +4,6 @@ using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace DataWarehouse.Api.Controllers.admin.Processes;
 
@@ -14,22 +12,22 @@ namespace DataWarehouse.Api.Controllers.admin.Processes;
 [Authorize]
 public class ReceivedStockBatchController : ControllerBase
 {
-    private readonly IReceivedStockBatchRepository _repository;
-    private readonly ILogger<ReceivedStockBatchController> _logger;
+    private readonly IReceivedStockBatchRepository repository;
+    private readonly ILogger<ReceivedStockBatchController> logger;
 
     public ReceivedStockBatchController(
         IReceivedStockBatchRepository repository,
         ILogger<ReceivedStockBatchController> logger)
     {
-        _repository = repository;
-        _logger = logger;
+        this.repository = repository;
+        this.logger = logger;
     }
 
     [HttpGet]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
     public async Task<ActionResult<IEnumerable<ReceivedStockBatch>>> GetAll()
     {
-        var batches = await _repository.GetAllAsync();
+        var batches = await repository.GetAllAsync();
         return Ok(batches);
     }
 
@@ -37,7 +35,7 @@ public class ReceivedStockBatchController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
     public async Task<ActionResult<ReceivedStockBatch>> GetById(int id)
     {
-        var batch = await _repository.GetByIdAsync(id);
+        var batch = await repository.GetByIdAsync(id);
         if (batch == null)
             return NotFound($"ReceivedStockBatch with ID {id} not found.");
 
@@ -46,9 +44,9 @@ public class ReceivedStockBatchController : ControllerBase
 
     [HttpGet("received-item/{receivedItemId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
-    public async Task<ActionResult<IEnumerable<ReceivedStockBatch>>> GetByReceivedItemId(int receivedItemId)
+    public async Task<IActionResult> GetByReceivedItemId(int receivedItemId)
     {
-        var res = await _repository.GetByReceivedItemIdAsync(receivedItemId);
+        var res = await repository.GetByReceivedItemIdAsync(receivedItemId);
 
         if (!res.Success)
             return BadRequest(res);
@@ -58,10 +56,12 @@ public class ReceivedStockBatchController : ControllerBase
 
     [HttpGet("received-item/{receivedItemId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Get}")]
-    public async Task<ActionResult<IEnumerable<ReceivedStockBatch>>> GetByReceivedItemIdWithPagination(
-        int receivedItemId, int skip, int pageSize)
+    public async Task<IActionResult> GetByReceivedItemIdWithPagination(
+        int receivedItemId,
+        int skip,
+        int pageSize)
     {
-        var res = await _repository.GetByReceivedItemIdWithPaginationAsync(receivedItemId, skip, pageSize);
+        var res = await repository.GetByReceivedItemIdWithPaginationAsync(receivedItemId, skip, pageSize);
 
         if (!res.Success)
             return BadRequest(res);
@@ -71,12 +71,12 @@ public class ReceivedStockBatchController : ControllerBase
 
     [HttpPost("received-item/{receivedItemId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Create}")]
-    public async Task<ActionResult<ReceivedStockBatch>> Create(int receivedItemId, AddReceivedStockBatchDTO dto)
+    public async Task<IActionResult> Create(int receivedItemId, GeneralBatchDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var created = await _repository.AddByReceivedItemIdAsync(receivedItemId, dto);
+        var created = await repository.AddByReceivedItemIdAsync(receivedItemId, dto);
 
         if (!created.Success)
             return BadRequest(created);
@@ -86,12 +86,12 @@ public class ReceivedStockBatchController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Edit}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateReceivedStockBatchDTO dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateGeneralBatchDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var res = await _repository.UpdateReceivedStockBatchAsync(id, dto);
+        var res = await repository.UpdateReceivedStockBatchAsync(id, dto);
 
         if (!res.Success)
             return BadRequest(res);
@@ -103,13 +103,11 @@ public class ReceivedStockBatchController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Delete}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var batch = await _repository.GetByIdAsync(id);
-        if (batch == null)
-            return NotFound($"ReceivedStockBatch with ID {id} not found.");
+        var res = await repository.DeleteReceivedStockBatchAsync(id);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
+        if (!res.Success)
+            return BadRequest(res);
 
-        return NoContent();
+        return Ok(res);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -44,6 +45,7 @@ namespace DataWarehouse.Core.Interfaces.Processes.OutSide
         Task<GeneralResponse<DeliveryNoteOrderDTO>> AddDeliveryNoteOrderAsync(string userId, AddDeliveryNoteOrderDTO dto);
 
         Task<GeneralResponse<DeliveryNoteOrderDTO>> UpdateDeliveryNoteOrderAsync(string userId, int deliveryNoteOrderId, UpdateDeliveryNoteOrderDTO dto);
+        Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int deliveryNoteOrderId);
 
         Task<GeneralResponse<DeliveryNoteOrderDTO>> DeleteDeliveryNoteOrderAsync(int deliveryNoteOrderId, CancellationToken cancellationToken = default);
 

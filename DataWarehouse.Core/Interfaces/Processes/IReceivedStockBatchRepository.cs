@@ -12,7 +12,8 @@ public interface IReceivedStockBatchRepository : IBaseRepository<ReceivedStockBa
 {
     Task<GeneralResponse<IEnumerable<ReceivedStockBatchDTO>>> GetByReceivedItemIdAsync(int receivedItemId);
     Task<GeneralResponse<PagedResult<ReceivedStockBatchDTO>>> GetByReceivedItemIdWithPaginationAsync(int receivedItemId, int pageNumber, int pageSize);
-    Task<GeneralResponse<ReceivedStockBatchDTO>> AddByReceivedItemIdAsync(int receivedItemId, AddReceivedStockBatchDTO dto);
-    Task<GeneralResponse<ReceivedStockBatchDTO>> UpdateReceivedStockBatchAsync(int receivedStockBatchId, UpdateReceivedStockBatchDTO dto);
+    Task<GeneralResponse<ReceivedStockBatchDTO>> AddByReceivedItemIdAsync(int receivedItemId, GeneralBatchDto dto);
+    Task<GeneralResponse<ReceivedStockBatchDTO>> UpdateReceivedStockBatchAsync(int receivedStockBatchId, UpdateGeneralBatchDto dto);
+    Task<GeneralResponse<ReceivedStockBatchDTO>> DeleteReceivedStockBatchAsync(int receivedStockBatchId);
 }
 

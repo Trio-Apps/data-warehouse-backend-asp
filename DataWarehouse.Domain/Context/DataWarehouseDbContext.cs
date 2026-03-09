@@ -493,7 +493,112 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
-      
+        // Quantity Adjustment Stock with items and warehouse
+        #region Quantity Adjustment Stock
+
+        builder.Entity<QuantityAdjustmentStock>()
+     .HasMany(s => s.QuantityAdjustmentStockItems)
+     .WithOne(i => i.QuantityAdjustmentStock)
+     .HasForeignKey(i => i.QuantityAdjustmentStockId)
+     .HasPrincipalKey(s => s.QuantityAdjustmentStockId)
+     .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<QuantityAdjustmentStockItem>()
+     .HasMany(s => s.QuantityAdjustmentStockBatches)
+     .WithOne(i => i.QuantityAdjustmentStockItem)
+     .HasForeignKey(i => i.QuantityAdjustmentStockItemId)
+     .HasPrincipalKey(s => s.QuantityAdjustmentStockItemId)
+     .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Item>()
+     .HasMany(i => i.QuantityAdjustmentStockItems)
+     .WithOne(sci => sci.Item)
+     .HasForeignKey(sci => sci.ItemId)
+     .HasPrincipalKey(i => i.ItemId)
+     .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Warehouse>()
+      .HasMany(w => w.QuantityAdjustmentStocks)
+      .WithOne(sc => sc.Warehouse)
+      .HasForeignKey(sc => sc.WarehouseId)
+      .HasPrincipalKey(w => w.WarehouseId)
+      .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<ApplicationUser>()
+      .HasMany(w => w.QuantityAdjustmentStocks)
+      .WithOne(po => po.User)
+      .HasForeignKey(po => po.UserId)
+      .HasPrincipalKey(w => w.Id)
+      .OnDelete(DeleteBehavior.NoAction);
+        #endregion
+
+
+        // Transfer Request With items and warehouse
+        #region Transferred Request
+
+        builder.Entity<TransferredRequest>()
+    .HasMany(t => t.TransferredRequestItems)
+    .WithOne(i => i.TransferredRequest)
+    .HasForeignKey(i => i.TransferredRequestId)
+    .HasPrincipalKey(t => t.TransferredRequestId)
+    .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<TransferredRequestItem>()
+ .HasMany(t => t.TransferredRequestBatches)
+ .WithOne(i => i.TransferredRequestItem)
+ .HasForeignKey(i => i.TransferredRequestItemId)
+ .HasPrincipalKey(t => t.TransferredRequestItemId)
+ .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Item>()
+        .HasMany(i => i.TransferredRequestItems)
+        .WithOne(ti => ti.Item)
+        .HasForeignKey(ti => ti.ItemId)
+        .HasPrincipalKey(i => i.ItemId)
+        .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Warehouse>()
+        .HasMany(i => i.TransferredRequests)
+        .WithOne(ti => ti.Warehouse)
+        .HasForeignKey(ti => ti.WarehouseId)
+        .HasPrincipalKey(i => i.WarehouseId)
+        .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Warehouse>()
+      .HasMany(w => w.DistinationTransferredRequests)
+      .WithOne(rs => rs.DistinationWarehouse)
+      .HasForeignKey(rs => rs.DistinationWarehouseId)
+      .HasPrincipalKey(w => w.WarehouseId)
+      .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<ApplicationUser>()
+      .HasMany(w => w.TransferredRequests)
+      .WithOne(po => po.User)
+      .HasForeignKey(po => po.UserId)
+      .HasPrincipalKey(w => w.Id)
+      .OnDelete(DeleteBehavior.NoAction);
+
+        // request with transferred
+        builder.Entity<TransferredRequest>()
+   .HasOne(o => o.TransferredStock).WithOne(a => a.TransferredRequest)
+   .HasForeignKey<TransferredStock>(o => o.TransferredRequestId)
+   .HasPrincipalKey<TransferredRequest>(e => e.TransferredRequestId)
+   .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<TransferredRequestItem>()
+   .HasMany(o => o.TransferredItems).WithOne(a => a.TransferredRequestItem)
+   .HasForeignKey(o => o.TransferredRequestItemId)
+   .HasPrincipalKey(e => e.TransferredRequestItemId)
+   .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<TransferredRequestBatch>()
+    .HasMany(o => o.TransferredStockBatches).WithOne(a => a.TransferredRequestBatch)
+    .HasForeignKey(o => o.TransferredRequestBatchId)
+    .HasPrincipalKey(e => e.TransferredRequestBatchId)
+    .OnDelete(DeleteBehavior.NoAction);
+
+        #endregion
+
 
         /** Need Modeify **/
         // receive with items and warehouse and transfer stock
@@ -1109,6 +1214,9 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
     // Purchase Order
     public DbSet<ProductionOrder> ProductionOrders { get; set; }
+    public DbSet<ProductionHeaderBatch> ProductionHeaderBatches { get; set; }
+    public DbSet<ProductionComponentLine> ProductionComponentLines { get; set; }
+    public DbSet<ProductionComponentBatch> ProductionComponentBatches { get; set; }
     public DbSet<ProductionOrderItem> ProductionOrderItems { get; set; }
    // public DbSet<FinishedGoodItem> FinishedGoodItems { get; set; }
     public DbSet<ProductionReceipt> ProductionReceipts { get; set; }
@@ -1127,6 +1235,9 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     public DbSet<CountStock> CountStocks { get; set; }
     public DbSet<CountStockItem> CountStockItems { get; set; }
     public DbSet<CountStockBatch> CountStockBatches { get; set; }
+    public DbSet<QuantityAdjustmentStock> QuantityAdjustmentStocks { get; set; }
+    public DbSet<QuantityAdjustmentStockItem> QuantityAdjustmentStockItems { get; set; }
+    public DbSet<QuantityAdjustmentStockBatch> QuantityAdjustmentStockBatches { get; set; }
 
     // Good Return
     public DbSet<GoodsReturnOrder> GoodsReturnOrders { get; set; }
@@ -1137,6 +1248,11 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     public DbSet<ReceivedStock> ReceivedStocks { get; set; }
     public DbSet<ReceivedItem> ReceivedItems { get; set; }
     public DbSet<ReceivedStockBatch> ReceivedStockBatches { get; set; }
+
+    // transfer request
+    public DbSet<TransferredRequest> TransferredRequests { get; set; }
+    public DbSet<TransferredRequestItem> TransferredRequestItems { get; set; }
+    public DbSet<TransferredRequestBatch> TransferredRequestBatches { get; set; }
 
     // transfer
     public DbSet<TransferredStock> TransferredStocks { get; set; }

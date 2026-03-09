@@ -75,8 +75,14 @@ builder.Services.AddCors(options =>
             .AllowCredentials(); // خليه بس لو فعلاً بتستخدم Cookies
     });
 });
-builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer(options =>
+{
+    options.Queues = new[] { "sap", "default" }; // sap للـ SAP jobs
+    options.WorkerCount = Math.Max(2, Environment.ProcessorCount); // عدّل حسب احتياجك
+});
 
+
+builder.Services.AddScoped<ISapJobQueuer, SapJobQueuer>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -105,6 +111,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
@@ -119,7 +126,7 @@ app.UseAuthentication();         // 2️⃣
 app.UseAuthorization();          // 3️⃣
 
 // باقي الميدل وير
-app.UseHangfireDashboard();
+app.UseHangfireDashboard("/jobs");
 
 // 🔥 تسجيل الـ Jobs بعد ما الـ DI يبقى جاهز
 using (var scope = app.Services.CreateScope())

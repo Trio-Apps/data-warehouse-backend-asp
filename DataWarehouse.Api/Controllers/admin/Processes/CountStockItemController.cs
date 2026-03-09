@@ -58,6 +58,9 @@ public class CountStockItemController : ControllerBase
         var res = await _repository.GetByCountStockItemByCountStockIdWithPaginationAsync(
             CountStockId, status, skip, pageSize);
 
+        if (!res.Success)
+            return BadRequest(res);
+
         return Ok(res);
     }
 
@@ -84,6 +87,9 @@ public class CountStockItemController : ControllerBase
             dto.Barcode,
             dto.Item);
 
+        if (!created.Success)
+            return BadRequest(created);
+
         return Ok(created);
     }
 
@@ -94,6 +100,7 @@ public class CountStockItemController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        dto.CountStockItemId = id;
         var res = await _repository.UpdateCountStockItemAsync(id, dto);
 
         if (!res.Success)

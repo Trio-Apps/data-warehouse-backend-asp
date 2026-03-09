@@ -4,6 +4,7 @@ using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DataWarehouse.Api.Controllers.admin.Processes;
 
@@ -46,8 +47,8 @@ public class TransferredItemController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Get}")]
     public async Task<ActionResult<IEnumerable<TransferredItemDTO>>> GetByTransferredStockId(int TransferredStockId)
     {
-        var transferredItems = await _repository.GetByTransferredItemByTransferredStockIdAsync(TransferredStockId);
-        return Ok(transferredItems);
+        var res = await _repository.GetByTransferredItemByTransferredStockIdAsync(TransferredStockId);
+        return Ok(res);
     }
 
     [HttpGet("status/transferred-stock/{TransferredStockId}/{skip}/{pageSize}")]
@@ -58,10 +59,13 @@ public class TransferredItemController : ControllerBase
         var res = await _repository.GetByTransferredItemByTransferredStockIdWithPaginationAsync(
             TransferredStockId, status, skip, pageSize);
 
+        if (!res.Success)
+            return BadRequest(res);
+
         return Ok(res);
     }
 
-    [HttpPost("Transferred-stock/{TransferredStockId}/add-barcode-or-no/{isBarcode:bool}")]
+    [HttpPost("transferred-stock/{TransferredStockId}/add-barcode-or-no/{isBarcode:bool}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Create}")]
     public async Task<ActionResult<TransferredItem>> Create(
         int TransferredStockId,
@@ -77,24 +81,87 @@ public class TransferredItemController : ControllerBase
             if (dto.Barcode == null)
                 return BadRequest(" barcode should not be sent with static type");
         }
+        else if (dto.Item == null)
+        {
+            return BadRequest("item should be sent when barcode is false");
+        }
 
-        var created = await _repository.AddTransferredItemByTransferredStockIdAsync(
+        AddGeneralItemDto? itemDto = null;
+        if (!isBarcode && dto.Item != null)
+        {
+            if (!dto.Item.Quantity.HasValue)
+                return BadRequest("quantity should be sent when barcode is false");
+
+            itemDto = new AddGeneralItemDto
+            {
+                ItemId = dto.Item.ItemId,
+                Quantity = dto.Item.Quantity.Value,
+                UoMEntry = dto.Item.UoMEntry,
+                UnitPrice = null
+            };
+        }
+
+        var created = await _repository.AddTransferredItemByTransferredStockIdWithoutRefAsync(
             TransferredStockId,
             isBarcode,
             dto.Barcode,
-            dto.Item);
+            itemDto);
+
+        if (!created.Success)
+            return BadRequest(created);
 
         return Ok(created);
     }
 
-    [HttpPut("Transferred-item-order/{id}")]
+    [HttpPost("transferred-stock/{transferredStockId}/transferred-request-item/{transferredRequestItemId}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Create}")]
+    public async Task<IActionResult> CreateByTransferredRequestItemId(
+        int transferredStockId,
+        int transferredRequestItemId,
+        [FromQuery] decimal? quantity)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
+
+        var dto = new AddTransferredItemDTO
+        {
+            TransferredStockId = transferredStockId,
+            TransferredRequestItemId = transferredRequestItemId,
+            Quantity = quantity,
+            UoMEntry = 1,
+            ItemId = 1
+        };
+
+        var created = await _repository.AddTransferredItemByTransferredRequestItemIdAsync(
+            userId,
+            transferredStockId,
+            dto);
+
+        if (!created.Success)
+            return BadRequest(created);
+
+        return Ok(created);
+    }
+
+    [HttpPut("transferred-item/{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Edit}")]
     public async Task<IActionResult> Update(int id, UpdateTransferredItemDTO dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var res = await _repository.UpdateTransferredItemAsync(id, dto);
+        dto.TransferredItemId = id;
+
+        var mappedDto = new UpdateGeneralItemDto
+        {
+            Quantity = dto.Quantity,
+            UoMEntry = dto.UoMEntry,
+            Comment = null,
+            UnitPrice = null
+        };
+
+        var res = await _repository.UpdateTransferredItemWithoutRefAsync(id, mappedDto);
 
         if (!res.Success)
             return BadRequest(res);
@@ -102,18 +169,15 @@ public class TransferredItemController : ControllerBase
         return Ok(res);
     }
 
-    [HttpDelete("Transferred-item-order/{id}")]
+    [HttpDelete("transferred-item/{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Delete}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var transferredItem = await _repository.GetByIdAsync(id);
-        if (transferredItem == null)
-            return NotFound($"TransferredItem with ID {id} not found.");
+        var res = await _repository.DeleteTransferredItemAsync(id);
+        if (!res.Success)
+            return BadRequest(res);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
-
-        return Ok("delete");
+        return Ok(res);
     }
 }
 

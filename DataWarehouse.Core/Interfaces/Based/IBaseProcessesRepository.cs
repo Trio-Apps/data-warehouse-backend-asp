@@ -1,8 +1,10 @@
 ﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Domain.Entities.Processes.IGenericDto;
+using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -36,17 +38,17 @@ namespace DataWarehouse.Core.Interfaces.Based
    where TOrderItem : class, IOrderItem
    where TStatusEnum : struct, Enum;
 
-    Task<GeneralResponse<IEnumerable<TDto>>> GetOrderItemsByOrderIdAsync<TOrder, TOrderItem, TDto>(
-    int orderId,
-    Expression<Func<TOrder, bool>> orderIdSelector,
-    DbSet<TOrder> orderSet,
-    DbSet<TOrderItem> itemSet,
-    Expression<Func<TOrderItem, bool>> itemFilter,
-    Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include = null,
-    Expression<Func<TOrderItem, TDto>> selector = null!
-)
-    where TOrder : class, IOrder
-    where TOrderItem : class, IOrderItem;
+        Task<GeneralResponse<IEnumerable<TDto>>> GetOrderItemsByOrderIdAsync<TOrder, TOrderItem, TDto>(
+        int orderId,
+        Expression<Func<TOrder, bool>> orderIdSelector,
+        DbSet<TOrder> orderSet,
+        DbSet<TOrderItem> itemSet,
+        Expression<Func<TOrderItem, bool>> itemFilter,
+        Func<IQueryable<TOrderItem>, IQueryable<TOrderItem>>? include = null,
+        Expression<Func<TOrderItem, TDto>> selector = null!
+    )
+        where TOrder : class, IOrder
+        where TOrderItem : class, IOrderItem;
 
         Task<GeneralResponse<TOrderItem>> AddOrderItemAsync<TOrder, TOrderItem>(
         int orderId,
@@ -88,16 +90,16 @@ namespace DataWarehouse.Core.Interfaces.Based
     where TOrderItem : class, IOrderItem
     where TBatch : class, IOrderBatch;
 
-    Task<GeneralResponse<TBatch>> AddOrderBatchAsync<TOrderItem, TBatch>(
-    int orderItemId,
-    ProcessType processType,
-    GeneralBatchDto dto,
-    Expression<Func<TOrderItem, bool>> orderItemSelector,
-    DbSet<TOrderItem> orderItemSet,
-    Expression<Func<TBatch, bool>> batchItemSelector,
-    DbSet<TBatch> batchSet)
-    where TOrderItem : class, IOrderItem
-    where TBatch : class, IOrderBatch, new();
+        Task<GeneralResponse<TBatch>> AddOrderBatchAsync<TOrderItem, TBatch>(
+        int orderItemId,
+        ProcessType processType,
+        GeneralBatchDto dto,
+        Expression<Func<TOrderItem, bool>> orderItemSelector,
+        DbSet<TOrderItem> orderItemSet,
+        Expression<Func<TBatch, bool>> batchItemSelector,
+        DbSet<TBatch> batchSet)
+        where TOrderItem : class, IOrderItem
+        where TBatch : class, IOrderBatch, new();
 
         Task<GeneralResponse<TBatch>> UpdateOrderBatchAsync<TOrderItem, TBatch>(
                  int batchId,
@@ -128,6 +130,11 @@ namespace DataWarehouse.Core.Interfaces.Based
          where TOrderItem : class
          where TBatch : class;
 
+        Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync<TEntity>(
+          int entityId,
+          ProcessType processType,
+          Expression<Func<TEntity, bool>> selector,
+          DbSet<TEntity> dbSet)
+          where TEntity : class, IOrder;
     }
-
 }

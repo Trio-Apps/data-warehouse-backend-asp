@@ -1,8 +1,10 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
@@ -27,17 +29,105 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepository
 {
+    private readonly IBaseProcessesRepository<SalesOrder> baseProcesses;
     private readonly ISapCache sapCache;
     private readonly UserManager<ApplicationUser> userManager;
     private readonly IApprovalRepository approval;
     private readonly ISapSettingsRepository sap;
 
-    public SalesOrderRepository(ISapCache sapCache, UserManager<ApplicationUser> userManager, IApprovalRepository approval, ISapSettingsRepository sap, DataWarehouseDbContext context) : base(context)
+    public SalesOrderRepository(
+        IBaseProcessesRepository<SalesOrder> baseProcesses,
+        ISapCache sapCache,
+        UserManager<ApplicationUser> userManager,
+        IApprovalRepository approval,
+        ISapSettingsRepository sap,
+        DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
         this.sapCache = sapCache;
         this.userManager = userManager;
         this.approval = approval;
         this.sap = sap;
+    }
+    public async Task<GeneralResponse<PagedResult<WarehouseItemDto>>> GetByWarehouseIdAsync(
+   int warehouseId,
+   string? search = null,
+   int pageNumber = 1,
+   int pageSize = 20)
+    {
+        if (pageNumber <= 0)
+            pageNumber = 1;
+
+
+        if (pageSize <= 0)
+            pageSize = 20;
+
+        var sapId = await sapCache.Get();
+
+        // 1) هات بيانات المستودع مرة واحدة
+        var warehouse = await _context.Warehouses
+            .AsNoTracking()
+            .Where(w => w.WarehouseId == warehouseId)
+            .Select(w => new { w.WarehouseId, w.WarehouseCode })
+            .SingleOrDefaultAsync();
+
+        if (warehouse == null)
+        {
+            return GeneralResponse<PagedResult<WarehouseItemDto>>.SuccessResponse(new PagedResult<WarehouseItemDto>
+            {
+                Data = Array.Empty<WarehouseItemDto>(),
+                TotalRecords = 0,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            });
+        }
+
+
+        search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
+
+        // 2) Left join Items مع WarehouseItems (لنفس المستودع فقط)
+        var query =
+    from i in _context.Items.AsNoTracking().Where(it => it.SapId == sapId)
+    join wi in _context.WarehouseItems.AsNoTracking()
+            .Where(x => x.WarehouseId == warehouseId)
+        on i.ItemId equals wi.ItemId
+    where i.SalesItem
+          && i.Valid
+          && (
+                search == null
+                || (i.ItemCode != null && EF.Functions.Like(i.ItemCode, $"%{search}%"))
+                || (i.ItemName != null && EF.Functions.Like(i.ItemName, $"%{search}%"))
+             )
+    select new WarehouseItemDto
+    {
+        WarehouseItemId = wi.WarehouseItemId,
+        ItemId = i.ItemId,
+        WarehouseId = wi.WarehouseId,
+        ItemName = i.ItemName,
+        ItemCode = i.ItemCode,
+        WarehouseCode = warehouse.WarehouseCode,
+        InStock = wi.InStock,
+        MinStock = wi.MinStock
+    };
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderBy(x => x.ItemName)
+            .ThenBy(x => x.ItemCode)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var result = new PagedResult<WarehouseItemDto>
+        {
+            Data = items,
+            TotalRecords = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        return GeneralResponse<PagedResult<WarehouseItemDto>>.SuccessResponse(result);
     }
 
     public async Task<IEnumerable<SalesOrder>> GetByWarehouseIdAsync(int warehouseId)
@@ -83,7 +173,8 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         return GeneralResponse<IEnumerable<WarehouseItemDto>>.SuccessResponse(result);
     }
 
-    public async Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdWithPaginationAsync
+        (int warehouseId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
@@ -490,6 +581,16 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         await _context.SaveChangesAsync(cancellationToken);
 
         return GeneralResponse<SalesOrderDTO>.SuccessResponse(result);
+    }
+
+    public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int salesOrderId)
+    {
+        return await baseProcesses.RevertPartiallyFailedStatusToProcessingAsync<SalesOrder>(
+            salesOrderId,
+            ProcessType.Sales,
+            x => x.SalesOrderId == salesOrderId,
+            _context.SalesOrders
+        );
     }
 
     public async Task<GeneralResponse<IEnumerable<WarehouseItemDto>>>

@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
 using DataWarehouse.Core.Interfaces.Based;
@@ -15,6 +16,7 @@ public interface IProductionOrderRepository : IBaseRepository<ProductionOrder>
     Task<GeneralResponse<ProductionOrderDTO>> AddProductionOrderByWarehouseIdAsync(string userId,
            AddProductionOrderDTO dto);
     Task<GeneralResponse<ProductionOrderDTO>> UpdateProductionOrderAsync(string userId, int productionId, UpdateProductionOrderDTO dto);
+    Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int productionOrderId);
     Task<GeneralResponse<List<NameStatus>>> GetProductionOrderStatus();
     Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId);
     Task<IEnumerable<ProductionOrder>> GetByStatusAsync(string status);

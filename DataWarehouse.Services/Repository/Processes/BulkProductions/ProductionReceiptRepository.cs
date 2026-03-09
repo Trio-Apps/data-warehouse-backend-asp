@@ -38,7 +38,6 @@ public class ProductionReceiptRepository : BaseRepository<ProductionReceipt>, IP
     {
 
         var sapId = await sapCache.Get();
-       
 
         if (productionOrderItemId != pr.ProductionOrderItemId)
             return GeneralResponse<ProductionReceiptDTO>.FailResponse("id doesn't equal ProductionOrderItemId ");

@@ -118,3 +118,11 @@ D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\refint
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.pdb
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.genruntimeconfig.cache
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\ref\DataWarehouse.Domain.dll
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Domain.deps.json
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Domain.runtimeconfig.json
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Domain.dll
+d:\Files\data-warehouse-backend-asp\.tmp_api_build\DataWarehouse.Domain.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin_temp\DataWarehouse.Domain.deps.json
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin_temp\DataWarehouse.Domain.runtimeconfig.json
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin_temp\DataWarehouse.Domain.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin_temp\DataWarehouse.Domain.pdb

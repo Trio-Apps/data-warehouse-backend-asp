@@ -2612,6 +2612,22 @@
   },
   {
     "ContainingType": "DeliveryNoteOrderController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/DeliveryNoteOrder/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DeliveryNoteOrderController",
     "Method": "GetWithItems",
     "RelativePath": "api/DeliveryNoteOrder/{id}/with-items",
     "HttpMethod": "GET",
@@ -3391,6 +3407,37 @@
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.FinishedGoodPurchaseOrderController",
     "Method": "GetByWarehouseId",
+    "RelativePath": "api/FinishedGoodPurchaseOrder/search-pagination/warehouse/{warehouseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "itemCodeOrItemName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.FinishedGoodPurchaseOrderController",
+    "Method": "GetByWarehouseId",
     "RelativePath": "api/FinishedGoodPurchaseOrder/warehouse/{warehouseId}",
     "HttpMethod": "GET",
     "IsController": true,
@@ -3492,6 +3539,22 @@
     "Method": "Delete",
     "RelativePath": "api/GoodsReturnOrder/{id}",
     "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.GoodsReturnOrderController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/GoodsReturnOrder/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -5231,6 +5294,307 @@
     ]
   },
   {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "Create",
+    "RelativePath": "api/production-component-batches",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionComponentBatchDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "GetList",
+    "RelativePath": "api/production-component-batches",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productionComponentLineId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "GetById",
+    "RelativePath": "api/production-component-batches/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "Update",
+    "RelativePath": "api/production-component-batches/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionComponentBatchDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "Delete",
+    "RelativePath": "api/production-component-batches/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentBatchController",
+    "Method": "GetAvailableBatches",
+    "RelativePath": "api/production-component-batches/available/{productionComponentLineId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productionComponentLineId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "Create",
+    "RelativePath": "api/production-component-lines",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionComponentLineDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "GetList",
+    "RelativePath": "api/production-component-lines",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productionOrderId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "GetById",
+    "RelativePath": "api/production-component-lines/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "Update",
+    "RelativePath": "api/production-component-lines/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionComponentLineDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionComponentLineController",
+    "Method": "Delete",
+    "RelativePath": "api/production-component-lines/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "Create",
+    "RelativePath": "api/production-header-batches",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionHeaderBatchDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "GetList",
+    "RelativePath": "api/production-header-batches",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productionOrderId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "GetById",
+    "RelativePath": "api/production-header-batches/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "Update",
+    "RelativePath": "api/production-header-batches/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.BulkProductions.UpdateProductionHeaderBatchDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
+    "Method": "Delete",
+    "RelativePath": "api/production-header-batches/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
     "Method": "GetAll",
     "RelativePath": "api/ProductionOrder",
@@ -5328,6 +5692,22 @@
     "Method": "Delete",
     "RelativePath": "api/ProductionOrder/{id}",
     "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/ProductionOrder/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -5858,6 +6238,22 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.PurchaseOrderController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/PurchaseOrder/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.PurchaseOrderController",
     "Method": "GetByWarehouseIdWithPagination",
     "RelativePath": "api/PurchaseOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}",
     "HttpMethod": "GET",
@@ -6218,6 +6614,628 @@
     ]
   },
   {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "GetAll",
+    "RelativePath": "api/QuantityAdjustmentStock",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "Create",
+    "RelativePath": "api/QuantityAdjustmentStock",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddQuantityAdjustmentStockDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "GetById",
+    "RelativePath": "api/QuantityAdjustmentStock/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "Update",
+    "RelativePath": "api/QuantityAdjustmentStock/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateQuantityAdjustmentStockDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "Delete",
+    "RelativePath": "api/QuantityAdjustmentStock/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/QuantityAdjustmentStock/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "GetByWarehouseIdForDashboard",
+    "RelativePath": "api/QuantityAdjustmentStock/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "postingDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "dueDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "Status",
+    "RelativePath": "api/QuantityAdjustmentStock/status",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "Status",
+    "RelativePath": "api/QuantityAdjustmentStock/status/{status}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "GetByWarehouseId",
+    "RelativePath": "api/QuantityAdjustmentStock/warehouse/{warehouseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "GetByWarehouseIdWithPagination",
+    "RelativePath": "api/QuantityAdjustmentStock/warehouse/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockController",
+    "Method": "GetByIdWithWarehouse",
+    "RelativePath": "api/QuantityAdjustmentStock/with-warehouse/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockBatchController",
+    "Method": "GetAll",
+    "RelativePath": "api/QuantityAdjustmentStockBatch",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockBatch, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockBatchController",
+    "Method": "GetById",
+    "RelativePath": "api/QuantityAdjustmentStockBatch/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockBatch",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockBatchController",
+    "Method": "Update",
+    "RelativePath": "api/QuantityAdjustmentStockBatch/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralBatchDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockBatchController",
+    "Method": "Delete",
+    "RelativePath": "api/QuantityAdjustmentStockBatch/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockBatchController",
+    "Method": "GetByQuantityAdjustmentStockItemId",
+    "RelativePath": "api/QuantityAdjustmentStockBatch/quantity-adjustment-stock-item/{quantityAdjustmentStockItemId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "quantityAdjustmentStockItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Core.DTOs.Processes.QuantityAdjustmentStockBatchDTO, DataWarehouse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockBatchController",
+    "Method": "Create",
+    "RelativePath": "api/QuantityAdjustmentStockBatch/quantity-adjustment-stock-item/{quantityAdjustmentStockItemId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "quantityAdjustmentStockItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.GeneralBatchDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockBatch",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockBatchController",
+    "Method": "GetByQuantityAdjustmentStockItemIdWithPagination",
+    "RelativePath": "api/QuantityAdjustmentStockBatch/quantity-adjustment-stock-item/{quantityAdjustmentStockItemId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "quantityAdjustmentStockItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Core.DTOs.Processes.QuantityAdjustmentStockBatchDTO, DataWarehouse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockItemController",
+    "Method": "GetAll",
+    "RelativePath": "api/QuantityAdjustmentStockItem",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockItem, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockItemController",
+    "Method": "GetById",
+    "RelativePath": "api/QuantityAdjustmentStockItem/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockItem",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockItemController",
+    "Method": "Update",
+    "RelativePath": "api/QuantityAdjustmentStockItem/quantity-adjustment-stock-item/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralItemDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockItemController",
+    "Method": "Delete",
+    "RelativePath": "api/QuantityAdjustmentStockItem/quantity-adjustment-stock-item/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockItemController",
+    "Method": "GetByQuantityAdjustmentStockId",
+    "RelativePath": "api/QuantityAdjustmentStockItem/quantity-adjustment-stock/{quantityAdjustmentStockId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "quantityAdjustmentStockId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Core.DTOs.Processes.QuantityAdjustmentStockItemDTO, DataWarehouse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockItemController",
+    "Method": "Create",
+    "RelativePath": "api/QuantityAdjustmentStockItem/quantity-adjustment-stock/{quantityAdjustmentStockId}/add-barcode-or-no/{isBarcode}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "quantityAdjustmentStockId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "isBarcode",
+        "Type": "System.Boolean",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddQuantityAdjustmentStockItemCreateRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockItem",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.QuantityAdjustmentStockItemController",
+    "Method": "GetByQuantityAdjustmentStockIdWithPagination",
+    "RelativePath": "api/QuantityAdjustmentStockItem/status/quantity-adjustment-stock/{quantityAdjustmentStockId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "quantityAdjustmentStockId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Core.DTOs.Processes.QuantityAdjustmentStockItemDTO, DataWarehouse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.ReceiptPurchaseOrderController",
     "Method": "GetAll",
     "RelativePath": "api/ReceiptPurchaseOrder",
@@ -6315,6 +7333,22 @@
     "Method": "Delete",
     "RelativePath": "api/ReceiptPurchaseOrder/{id}",
     "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.ReceiptPurchaseOrderController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/ReceiptPurchaseOrder/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -7099,6 +8133,32 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedItemController",
+    "Method": "GetWithItem",
+    "RelativePath": "api/ReceivedItem/{id}/with-item",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.ReceivedItem",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedItemController",
     "Method": "GetWithTransferredItem",
     "RelativePath": "api/ReceivedItem/{id}/with-transferred-item",
     "HttpMethod": "GET",
@@ -7126,39 +8186,29 @@
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedItemController",
     "Method": "GetByReceivedStockId",
-    "RelativePath": "api/ReceivedItem/received-stock/{ReceivedStockId}",
+    "RelativePath": "api/ReceivedItem/received-stock/{receivedStockId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "ReceivedStockId",
+        "Name": "receivedStockId",
         "Type": "System.Int32",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Core.DTOs.Processes.ReceivedItemDTO, DataWarehouse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedItemController",
     "Method": "GetByReceivedStockIdWithPagination",
-    "RelativePath": "api/ReceivedItem/received-stock/{ReceivedStockId}/{skip}/{pageSize}",
+    "RelativePath": "api/ReceivedItem/received-stock/{receivedStockId}/{skip}/{pageSize}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "ReceivedStockId",
+        "Name": "receivedStockId",
         "Type": "System.Int32",
         "IsRequired": true
       },
@@ -7173,28 +8223,18 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Core.DTOs.Processes.ReceivedItemDTO, DataWarehouse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedItemController",
     "Method": "Create",
-    "RelativePath": "api/ReceivedItem/transferred-stock/{TransferredStockId}",
+    "RelativePath": "api/ReceivedItem/transferred-stock/{transferredStockId}",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "TransferredStockId",
+        "Name": "transferredStockId",
         "Type": "System.Int32",
         "IsRequired": true
       },
@@ -7204,17 +8244,54 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedItemController",
+    "Method": "UpdateWithoutReference",
+    "RelativePath": "api/ReceivedItem/without-reference/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
       {
-        "Type": "DataWarehouse.Domain.Entities.Processes.ReceivedItem",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralItemDto",
+        "IsRequired": true
       }
-    ]
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedItemController",
+    "Method": "CreateWithoutReference",
+    "RelativePath": "api/ReceivedItem/witout-reference/received-stock/{receivedStockId}/add-barcode-or-no/{isBarcode}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "receivedStockId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "isBarcode",
+        "Type": "System.Boolean",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddGeneralItemByManualOrBarcodeDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
@@ -7264,7 +8341,7 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
-    "Method": "GetById",
+    "Method": "GetReceivedStockById",
     "RelativePath": "api/ReceivedStock/{id}",
     "HttpMethod": "GET",
     "IsController": true,
@@ -7276,17 +8353,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Domain.Entities.Processes.ReceivedStock",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
@@ -7314,6 +8381,22 @@
     "Method": "Delete",
     "RelativePath": "api/ReceivedStock/{id}",
     "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/ReceivedStock/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -7392,6 +8475,94 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
+    "Method": "GetWithWarehouse",
+    "RelativePath": "api/ReceivedStock/{id}/with-warehouse",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.ReceivedStock",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
+    "Method": "GetWithSourceWarehouse",
+    "RelativePath": "api/ReceivedStock/by-received-stock/{receivedStockId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "receivedStockId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
+    "Method": "GetByWarehouseIdForDashboard",
+    "RelativePath": "api/ReceivedStock/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "sourceWarehouseId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "postingDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "dueDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
@@ -7488,6 +8659,58 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
+    "Method": "CreateWithDefaultItems",
+    "RelativePath": "api/ReceivedStock/with-default-items",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddReceivedStockDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.ReceivedStock",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockController",
+    "Method": "CreateWithoutReference",
+    "RelativePath": "api/ReceivedStock/without-reference",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddReceivedStockWithoutRefDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.ReceivedStock",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockBatchController",
     "Method": "GetAll",
     "RelativePath": "api/ReceivedStockBatch",
@@ -7548,7 +8771,7 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateReceivedStockBatchDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateGeneralBatchDto",
         "IsRequired": true
       }
     ],
@@ -7584,17 +8807,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.ReceivedStockBatch, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockBatchController",
@@ -7611,21 +8824,11 @@
       },
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.AddReceivedStockBatchDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.GeneralBatchDto",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Domain.Entities.Processes.ReceivedStockBatch",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.ReceivedStockBatchController",
@@ -7651,17 +8854,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.ReceivedStockBatch, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Auth.RoleController",
@@ -8055,6 +9248,22 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesOrderController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/SalesOrder/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesOrderController",
     "Method": "GetByWarehouseIdWithPagination",
     "RelativePath": "api/SalesOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}",
     "HttpMethod": "GET",
@@ -8145,6 +9354,37 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesOrderController",
+    "Method": "GetByWarehouseId",
+    "RelativePath": "api/SalesOrder/search-pagination/warehouse/{warehouseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "itemCodeOrItemName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesOrderController",
@@ -8680,6 +9920,22 @@
     "Method": "Delete",
     "RelativePath": "api/SalesReturnOrder/{id}",
     "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.SalesReturnOrderController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/SalesReturnOrder/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -9601,6 +10857,134 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Sync.SapSyncResetController",
+    "Method": "GetCompanySyncState",
+    "RelativePath": "api/SapSyncReset/all-sync",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "companyId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Sync.SapSyncResetController",
+    "Method": "ResetBusinessPartnersSync",
+    "RelativePath": "api/SapSyncReset/business-partners/{sapId}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sapId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Sync.SapSyncResetController",
+    "Method": "ResetCountSync",
+    "RelativePath": "api/SapSyncReset/count/{sapId}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sapId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Sync.SapSyncResetController",
+    "Method": "ResetItemUomGroupSync",
+    "RelativePath": "api/SapSyncReset/item-uom-group/{sapId}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sapId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Sync.SapSyncResetController",
+    "Method": "ResetItemSync",
+    "RelativePath": "api/SapSyncReset/item/{sapId}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sapId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Sync.SapSyncResetController",
+    "Method": "ResetPurchaseSync",
+    "RelativePath": "api/SapSyncReset/purchase/{sapId}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sapId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Sync.SapSyncResetController",
+    "Method": "ResetSalesSync",
+    "RelativePath": "api/SapSyncReset/sales/{sapId}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sapId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Sync.SapSyncResetController",
+    "Method": "ResetWarehouseSync",
+    "RelativePath": "api/SapSyncReset/warehouse/{sapId}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "sapId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Actors.SapSyncStatusFrontController",
     "Method": "GetIncrementalByuserIdAndEntityName",
     "RelativePath": "api/SapSyncStatusFront/GetIncrementalByuserIdAndEntityName/{entityName}/{userId}",
@@ -10384,7 +11768,7 @@
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredItemController",
     "Method": "Update",
-    "RelativePath": "api/TransferredItem/Transferred-item-order/{id}",
+    "RelativePath": "api/TransferredItem/transferred-item/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -10405,7 +11789,7 @@
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredItemController",
     "Method": "Delete",
-    "RelativePath": "api/TransferredItem/Transferred-item-order/{id}",
+    "RelativePath": "api/TransferredItem/transferred-item/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
@@ -10447,7 +11831,7 @@
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredItemController",
     "Method": "Create",
-    "RelativePath": "api/TransferredItem/Transferred-stock/{TransferredStockId}/add-barcode-or-no/{isBarcode}",
+    "RelativePath": "api/TransferredItem/transferred-stock/{TransferredStockId}/add-barcode-or-no/{isBarcode}",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -10481,6 +11865,671 @@
     ]
   },
   {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredItemController",
+    "Method": "CreateByTransferredRequestItemId",
+    "RelativePath": "api/TransferredItem/transferred-stock/{transferredStockId}/transferred-request-item/{transferredRequestItemId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transferredStockId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "transferredRequestItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "quantity",
+        "Type": "System.Nullable\u00601[[System.Decimal, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestBatchController",
+    "Method": "GetAll",
+    "RelativePath": "api/TransferredRequestBatch",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.TransferredRequestBatch, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestBatchController",
+    "Method": "GetById",
+    "RelativePath": "api/TransferredRequestBatch/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.TransferredRequestBatch",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestBatchController",
+    "Method": "Update",
+    "RelativePath": "api/TransferredRequestBatch/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateTransferredRequestBatchDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestBatchController",
+    "Method": "Delete",
+    "RelativePath": "api/TransferredRequestBatch/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestBatchController",
+    "Method": "GetByTransferredRequestItemId",
+    "RelativePath": "api/TransferredRequestBatch/transferred-request-item/{transferredRequestItemId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transferredRequestItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestBatchController",
+    "Method": "Create",
+    "RelativePath": "api/TransferredRequestBatch/transferred-request-item/{transferredRequestItemId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transferredRequestItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddTransferredRequestBatchDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestBatchController",
+    "Method": "GetByTransferredRequestItemIdWithPagination",
+    "RelativePath": "api/TransferredRequestBatch/transferred-request-item/{transferredRequestItemId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transferredRequestItemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestItemController",
+    "Method": "GetAll",
+    "RelativePath": "api/TransferredRequestItem",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.TransferredRequestItem, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestItemController",
+    "Method": "GetById",
+    "RelativePath": "api/TransferredRequestItem/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.TransferredRequestItem",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestItemController",
+    "Method": "GetByTransferredRequestIdWithPagination",
+    "RelativePath": "api/TransferredRequestItem/status/transferred-request/{transferredRequestId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transferredRequestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestItemController",
+    "Method": "Update",
+    "RelativePath": "api/TransferredRequestItem/transferred-request-item/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateTransferredRequestItemDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestItemController",
+    "Method": "Delete",
+    "RelativePath": "api/TransferredRequestItem/transferred-request-item/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestItemController",
+    "Method": "GetByTransferredRequestId",
+    "RelativePath": "api/TransferredRequestItem/transferred-request/{transferredRequestId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transferredRequestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestItemController",
+    "Method": "Create",
+    "RelativePath": "api/TransferredRequestItem/transferred-request/{transferredRequestId}/add-barcode-or-no/{isBarcode}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transferredRequestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "isBarcode",
+        "Type": "System.Boolean",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddTransferredRequestItemCreateRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "GetAll",
+    "RelativePath": "api/TransferredRequestOrder",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.TransferredRequest, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "Create",
+    "RelativePath": "api/TransferredRequestOrder",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddTransferredRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.TransferredRequest",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "GetById",
+    "RelativePath": "api/TransferredRequestOrder/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.TransferredRequest",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "Update",
+    "RelativePath": "api/TransferredRequestOrder/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.UpdateTransferredRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "Delete",
+    "RelativePath": "api/TransferredRequestOrder/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/TransferredRequestOrder/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "GetByWarehouseIdForDashboard",
+    "RelativePath": "api/TransferredRequestOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "destinationWarehouseId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "liveStatus",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "postingDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "dueDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "GetItemsByWarehouseId",
+    "RelativePath": "api/TransferredRequestOrder/items-in-warehouse/warehouse/{warehouseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "GetPendingRequests",
+    "RelativePath": "api/TransferredRequestOrder/pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.TransferredRequest, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "GetByWarehouseId",
+    "RelativePath": "api/TransferredRequestOrder/search-pagination/warehouse/{warehouseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "itemCodeOrItemName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "Status",
+    "RelativePath": "api/TransferredRequestOrder/status",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "Status",
+    "RelativePath": "api/TransferredRequestOrder/status/{status}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "GetByWarehouseId",
+    "RelativePath": "api/TransferredRequestOrder/warehouse/{warehouseId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.TransferredRequest, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "GetByWarehouseIdWithPagination",
+    "RelativePath": "api/TransferredRequestOrder/warehouse/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredRequestOrderController",
+    "Method": "GetWithWarehousesAndApproval",
+    "RelativePath": "api/TransferredRequestOrder/with-warehouses/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredStockController",
     "Method": "GetAll",
     "RelativePath": "api/TransferredStock",
@@ -10510,7 +12559,7 @@
     "Parameters": [
       {
         "Name": "dto",
-        "Type": "DataWarehouse.Core.DTOs.Processes.AddTransferredStockDTO",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddTransferredStockWithoutRefDTO",
         "IsRequired": true
       }
     ],
@@ -10540,17 +12589,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "DataWarehouse.Domain.Entities.Processes.TransferredStock",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredStockController",
@@ -10583,6 +12622,125 @@
     "Parameters": [
       {
         "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredStockController",
+    "Method": "RevertPartiallyFailedStatus",
+    "RelativePath": "api/TransferredStock/{id}/revert-partially-failed",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredStockController",
+    "Method": "GetWithItems",
+    "RelativePath": "api/TransferredStock/{id}/with-items",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.TransferredStock",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredStockController",
+    "Method": "GetWithWarehouses",
+    "RelativePath": "api/TransferredStock/{id}/with-warehouses",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.TransferredStock",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredStockController",
+    "Method": "GetByWarehouseIdForDashboard",
+    "RelativePath": "api/TransferredStock/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "destinationWarehouseId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "liveStatus",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "postingDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "dueDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "skip",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
         "Type": "System.Int32",
         "IsRequired": true
       }
@@ -10634,6 +12792,37 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredStockController",
+    "Method": "CreateWithDefaultItems",
+    "RelativePath": "api/TransferredStock/transferred-request/{transferredRequestId}/with-default-items",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transferredRequestId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "DataWarehouse.Core.DTOs.Processes.AddTransferredStockDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.Processes.TransferredStock",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredStockController",
@@ -10784,17 +12973,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.TransferredStockBatch, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.TransferredStockBatchController",
@@ -10851,17 +13030,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.TransferredStockBatch, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Auth.UserController",

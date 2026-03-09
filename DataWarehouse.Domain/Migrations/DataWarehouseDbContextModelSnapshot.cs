@@ -1045,6 +1045,110 @@ namespace DataWarehouse.Domain.Migrations
                     b.ToTable("ProcessItemIsProgresses");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentBatch", b =>
+                {
+                    b.Property<int>("ProductionComponentBatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductionComponentBatchId"));
+
+                    b.Property<string>("BatchNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductionComponentLineId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("ProductionComponentBatchId");
+
+                    b.HasIndex("ProductionComponentLineId");
+
+                    b.ToTable("ProductionComponentBatches");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentLine", b =>
+                {
+                    b.Property<int>("ProductionComponentLineId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductionComponentLineId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("InWhsQuantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("IssueType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("IssuedQuantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductionOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("RequiredQuantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductionComponentLineId");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("ProductionOrderId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("ProductionComponentLines");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
+                {
+                    b.Property<int>("ProductionHeaderBatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductionHeaderBatchId"));
+
+                    b.Property<string>("BatchNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductionOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("ProductionHeaderBatchId");
+
+                    b.HasIndex("ProductionOrderId");
+
+                    b.ToTable("ProductionHeaderBatches");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", b =>
                 {
                     b.Property<int>("ProductionOrderId")
@@ -2243,6 +2347,137 @@ namespace DataWarehouse.Domain.Migrations
                     b.ToTable("PurchaseOrders");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock", b =>
+                {
+                    b.Property<int>("QuantityAdjustmentStockId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuantityAdjustmentStockId"));
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PostingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("QuantityAdjustmentStockId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("QuantityAdjustmentStocks");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockBatch", b =>
+                {
+                    b.Property<int>("QuantityAdjustmentStockBatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuantityAdjustmentStockBatchId"));
+
+                    b.Property<string>("BatchNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("QuantityAdjustmentStockItemId")
+                        .HasColumnType("int");
+
+                    b.HasKey("QuantityAdjustmentStockBatchId");
+
+                    b.HasIndex("QuantityAdjustmentStockItemId");
+
+                    b.ToTable("QuantityAdjustmentStockBatches");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockItem", b =>
+                {
+                    b.Property<int>("QuantityAdjustmentStockItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuantityAdjustmentStockItemId"));
+
+                    b.Property<string>("BarCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("QuantityAdjustmentStockId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UoMEntry")
+                        .HasColumnType("int");
+
+                    b.HasKey("QuantityAdjustmentStockItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("QuantityAdjustmentStockId");
+
+                    b.ToTable("QuantityAdjustmentStockItems");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedItem", b =>
                 {
                     b.Property<int>("ReceivedItemId")
@@ -2275,7 +2510,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("TransferredItemId")
+                    b.Property<int?>("TransferredItemId")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("UnitPrice")
@@ -2291,7 +2526,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("ReceivedStockId");
 
                     b.HasIndex("TransferredItemId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TransferredItemId] IS NOT NULL");
 
                     b.ToTable("ReceivedItems");
                 });
@@ -2328,7 +2564,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("TransferredStockId")
+                    b.Property<int?>("TransferredStockId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -2343,7 +2579,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("SourceWarehouseId");
 
                     b.HasIndex("TransferredStockId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TransferredStockId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -2378,7 +2615,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("ReceivedItemId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TransferredStockBatchId")
+                    b.Property<int?>("TransferredStockBatchId")
                         .HasColumnType("int");
 
                     b.HasKey("ReceivedStockBatchId");
@@ -2386,7 +2623,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("ReceivedItemId");
 
                     b.HasIndex("TransferredStockBatchId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[TransferredStockBatchId] IS NOT NULL");
 
                     b.ToTable("ReceivedStockBatches");
                 });
@@ -2420,6 +2658,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<int?>("TransferredRequestItemId")
+                        .HasColumnType("int");
+
                     b.Property<int>("TransferredStockId")
                         .HasColumnType("int");
 
@@ -2433,9 +2674,147 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ItemId");
 
+                    b.HasIndex("TransferredRequestItemId");
+
                     b.HasIndex("TransferredStockId");
 
                     b.ToTable("TransferredItems");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequest", b =>
+                {
+                    b.Property<int>("TransferredRequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransferredRequestId"));
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DistinationWarehouseId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocEntry")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocNum")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PostingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TransferredRequestId");
+
+                    b.HasIndex("DistinationWarehouseId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("TransferredRequests");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequestBatch", b =>
+                {
+                    b.Property<int>("TransferredRequestBatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransferredRequestBatchId"));
+
+                    b.Property<string>("BatchNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TransferredRequestItemId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TransferredRequestBatchId");
+
+                    b.HasIndex("TransferredRequestItemId");
+
+                    b.ToTable("TransferredRequestBatches");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequestItem", b =>
+                {
+                    b.Property<int>("TransferredRequestItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransferredRequestItemId"));
+
+                    b.Property<string>("BarCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LineNum")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TransferredRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UoMEntry")
+                        .HasColumnType("int");
+
+                    b.HasKey("TransferredRequestItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("TransferredRequestId");
+
+                    b.ToTable("TransferredRequestItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredStock", b =>
@@ -2467,7 +2846,16 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PostingDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TransferredRequestId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -2480,6 +2868,10 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("TransferredStockId");
 
                     b.HasIndex("DistinationWarehouseId");
+
+                    b.HasIndex("TransferredRequestId")
+                        .IsUnique()
+                        .HasFilter("[TransferredRequestId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -2514,9 +2906,14 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("TransferredItemId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("TransferredRequestBatchId")
+                        .HasColumnType("int");
+
                     b.HasKey("TransferredStockBatchId");
 
                     b.HasIndex("TransferredItemId");
+
+                    b.HasIndex("TransferredRequestBatchId");
 
                     b.ToTable("TransferredStockBatches");
                 });
@@ -2996,6 +3393,55 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("User");
 
                     b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentBatch", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentLine", "ProductionComponentLine")
+                        .WithMany("ProductionComponentBatches")
+                        .HasForeignKey("ProductionComponentLineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductionComponentLine");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentLine", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", "ProductionOrder")
+                        .WithMany()
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("ProductionOrder");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", "ProductionOrder")
+                        .WithMany()
+                        .HasForeignKey("ProductionOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductionOrder");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", b =>
@@ -3544,6 +3990,55 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("Warehouse");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
+                        .WithMany("QuantityAdjustmentStocks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Warehouse", "Warehouse")
+                        .WithMany("QuantityAdjustmentStocks")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockBatch", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockItem", "QuantityAdjustmentStockItem")
+                        .WithMany("QuantityAdjustmentStockBatches")
+                        .HasForeignKey("QuantityAdjustmentStockItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuantityAdjustmentStockItem");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockItem", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
+                        .WithMany("QuantityAdjustmentStockItems")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock", "QuantityAdjustmentStock")
+                        .WithMany("QuantityAdjustmentStockItems")
+                        .HasForeignKey("QuantityAdjustmentStockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("QuantityAdjustmentStock");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedItem", b =>
                 {
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
@@ -3561,8 +4056,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredItem", "TransferredItem")
                         .WithOne("ReceivedItem")
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.ReceivedItem", "TransferredItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Item");
 
@@ -3582,8 +4076,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredStock", "TransferredStock")
                         .WithOne("ReceivedStock")
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.ReceivedStock", "TransferredStockId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("ReceivedStocks")
@@ -3617,8 +4110,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredStockBatch", "TransferredStockBatch")
                         .WithOne("ReceivedStockBatch")
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.ReceivedStockBatch", "TransferredStockBatchId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("ReceivedItem");
 
@@ -3633,6 +4125,11 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredRequestItem", "TransferredRequestItem")
+                        .WithMany("TransferredItems")
+                        .HasForeignKey("TransferredRequestItemId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredStock", "TransferredStock")
                         .WithMany("TransferredItems")
                         .HasForeignKey("TransferredStockId")
@@ -3641,7 +4138,66 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("Item");
 
+                    b.Navigation("TransferredRequestItem");
+
                     b.Navigation("TransferredStock");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequest", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Warehouse", "DistinationWarehouse")
+                        .WithMany("DistinationTransferredRequests")
+                        .HasForeignKey("DistinationWarehouseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
+                        .WithMany("TransferredRequests")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Warehouse", "Warehouse")
+                        .WithMany("TransferredRequests")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("DistinationWarehouse");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequestBatch", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredRequestItem", "TransferredRequestItem")
+                        .WithMany("TransferredRequestBatches")
+                        .HasForeignKey("TransferredRequestItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TransferredRequestItem");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequestItem", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
+                        .WithMany("TransferredRequestItems")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredRequest", "TransferredRequest")
+                        .WithMany("TransferredRequestItems")
+                        .HasForeignKey("TransferredRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("TransferredRequest");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredStock", b =>
@@ -3651,6 +4207,11 @@ namespace DataWarehouse.Domain.Migrations
                         .HasForeignKey("DistinationWarehouseId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredRequest", "TransferredRequest")
+                        .WithOne("TransferredStock")
+                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.TransferredStock", "TransferredRequestId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("TransferredStocks")
@@ -3666,6 +4227,8 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("DistinationWarehouse");
 
+                    b.Navigation("TransferredRequest");
+
                     b.Navigation("User");
 
                     b.Navigation("Warehouse");
@@ -3679,7 +4242,14 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredRequestBatch", "TransferredRequestBatch")
+                        .WithMany("TransferredStockBatches")
+                        .HasForeignKey("TransferredRequestBatchId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("TransferredItem");
+
+                    b.Navigation("TransferredRequestBatch");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -3760,6 +4330,8 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("PurchaseOrderItems");
 
+                    b.Navigation("QuantityAdjustmentStockItems");
+
                     b.Navigation("ReceiptPurchaseOrderItems");
 
                     b.Navigation("ReceivedItems");
@@ -3771,6 +4343,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("SupplierItems");
 
                     b.Navigation("TransferredItems");
+
+                    b.Navigation("TransferredRequestItems");
 
                     b.Navigation("WarehouseItems");
                 });
@@ -3792,6 +4366,8 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("DeliveryNoteOrders");
 
+                    b.Navigation("DistinationTransferredRequests");
+
                     b.Navigation("DistinationTransferredStocks");
 
                     b.Navigation("GoodsReturnOrders");
@@ -3802,6 +4378,8 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("PurchaseOrders");
 
+                    b.Navigation("QuantityAdjustmentStocks");
+
                     b.Navigation("ReceiptPurchaseOrders");
 
                     b.Navigation("ReceivedStocks");
@@ -3809,6 +4387,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("SalesOrders");
 
                     b.Navigation("SourceReceivedStocks");
+
+                    b.Navigation("TransferredRequests");
 
                     b.Navigation("TransferredStocks");
 
@@ -3886,6 +4466,8 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("PurchaseOrders");
 
+                    b.Navigation("QuantityAdjustmentStocks");
+
                     b.Navigation("ReceiptPurchaseOrders");
 
                     b.Navigation("ReceivedStocks");
@@ -3895,6 +4477,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("SalesReturnOrders");
 
                     b.Navigation("SapSyncStatusFronts");
+
+                    b.Navigation("TransferredRequests");
 
                     b.Navigation("TransferredStocks");
 
@@ -3921,6 +4505,11 @@ namespace DataWarehouse.Domain.Migrations
             modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ProcessItemIsProgress", b =>
                 {
                     b.Navigation("ProcessApprovals");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionComponentLine", b =>
+                {
+                    b.Navigation("ProductionComponentBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", b =>
@@ -4038,6 +4627,16 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("ReceiptPurchaseOrder");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock", b =>
+                {
+                    b.Navigation("QuantityAdjustmentStockItems");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockItem", b =>
+                {
+                    b.Navigation("QuantityAdjustmentStockBatches");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedItem", b =>
                 {
                     b.Navigation("ReceivedStockBatches");
@@ -4050,24 +4649,40 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredItem", b =>
                 {
-                    b.Navigation("ReceivedItem")
-                        .IsRequired();
+                    b.Navigation("ReceivedItem");
 
                     b.Navigation("TransferredStockBatches");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequest", b =>
+                {
+                    b.Navigation("TransferredRequestItems");
+
+                    b.Navigation("TransferredStock");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequestBatch", b =>
+                {
+                    b.Navigation("TransferredStockBatches");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequestItem", b =>
+                {
+                    b.Navigation("TransferredItems");
+
+                    b.Navigation("TransferredRequestBatches");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredStock", b =>
                 {
-                    b.Navigation("ReceivedStock")
-                        .IsRequired();
+                    b.Navigation("ReceivedStock");
 
                     b.Navigation("TransferredItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredStockBatch", b =>
                 {
-                    b.Navigation("ReceivedStockBatch")
-                        .IsRequired();
+                    b.Navigation("ReceivedStockBatch");
                 });
 #pragma warning restore 612, 618
         }

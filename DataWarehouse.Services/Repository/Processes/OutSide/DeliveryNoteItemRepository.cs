@@ -390,6 +390,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             return GeneralResponse<DeliveryNoteItemDTO>.SuccessResponse(result);
         }
 
+
         public async Task<IEnumerable<DeliveryNoteItem>> GetByDeliveryNoteOrderIdEntitiesAsync(int deliveryNoteOrderId)
         {
             return await Query()

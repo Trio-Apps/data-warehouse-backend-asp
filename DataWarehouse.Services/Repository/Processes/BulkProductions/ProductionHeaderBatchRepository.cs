@@ -34,9 +34,11 @@ public class ProductionHeaderBatchRepository : BaseRepository<ProductionHeaderBa
         if (!await UserHasWarehouseAccessAsync(userId, order.WarehouseId))
             return GeneralResponse<PagedResult<ProductionHeaderBatchDTO>>.FailResponse("You don't have access to this warehouse.");
 
+
         var query = _context.ProductionHeaderBatches
             .AsNoTracking()
             .Where(x => x.ProductionOrderId == productionOrderId);
+
 
         var totalRecords = await query.CountAsync();
         var data = await query
@@ -87,7 +89,7 @@ public class ProductionHeaderBatchRepository : BaseRepository<ProductionHeaderBa
 
         var order = await _context.ProductionOrders
             .Include(x => x.ProductionOrderItems)
-            .Include(x => x.ProductionHeaderBatches)
+          //  .Include(x => x.ProductionHeaderBatches)
             .FirstOrDefaultAsync(x => x.ProductionOrderId == dto.ProductionOrderId);
 
         if (order == null)
@@ -104,9 +106,9 @@ public class ProductionHeaderBatchRepository : BaseRepository<ProductionHeaderBa
             return GeneralResponse<ProductionHeaderBatchDTO>.FailResponse("No batch-managed items found for this production order.");
 
         var plannedQty = order.ProductionOrderItems.Sum(x => x.PlannedQuantity);
-        var currentBatchQty = order.ProductionHeaderBatches.Sum(x => x.Quantity);
-        if (currentBatchQty + dto.Quantity > plannedQty)
-            return GeneralResponse<ProductionHeaderBatchDTO>.FailResponse("Header batches quantity cannot exceed planned quantity.");
+      //  var currentBatchQty = order.ProductionHeaderBatches.Sum(x => x.Quantity);
+        //if (currentBatchQty + dto.Quantity > plannedQty)
+        //    return GeneralResponse<ProductionHeaderBatchDTO>.FailResponse("Header batches quantity cannot exceed planned quantity.");
 
         var entity = new ProductionHeaderBatch
         {
@@ -134,7 +136,7 @@ public class ProductionHeaderBatchRepository : BaseRepository<ProductionHeaderBa
             .Include(x => x.ProductionOrder)
                 .ThenInclude(x => x.ProductionOrderItems)
             .Include(x => x.ProductionOrder)
-                .ThenInclude(x => x.ProductionHeaderBatches)
+               // .ThenInclude(x => x.ProductionHeaderBatches)
             .FirstOrDefaultAsync(x => x.ProductionHeaderBatchId == productionHeaderBatchId);
 
         if (entity == null)
@@ -147,12 +149,12 @@ public class ProductionHeaderBatchRepository : BaseRepository<ProductionHeaderBa
             return GeneralResponse<ProductionHeaderBatchDTO>.FailResponse("Cannot update batches after order enters processing.");
 
         var plannedQty = entity.ProductionOrder.ProductionOrderItems.Sum(x => x.PlannedQuantity);
-        var otherBatchQty = entity.ProductionOrder.ProductionHeaderBatches
-            .Where(x => x.ProductionHeaderBatchId != entity.ProductionHeaderBatchId)
-            .Sum(x => x.Quantity);
+        //var otherBatchQty = entity.ProductionOrder.ProductionHeaderBatches
+        //    .Where(x => x.ProductionHeaderBatchId != entity.ProductionHeaderBatchId)
+        //    .Sum(x => x.Quantity);
 
-        if (otherBatchQty + dto.Quantity > plannedQty)
-            return GeneralResponse<ProductionHeaderBatchDTO>.FailResponse("Header batches quantity cannot exceed planned quantity.");
+        //if (otherBatchQty + dto.Quantity > plannedQty)
+        //    return GeneralResponse<ProductionHeaderBatchDTO>.FailResponse("Header batches quantity cannot exceed planned quantity.");
 
         entity.Quantity = dto.Quantity;
         entity.BatchNumber = dto.BatchNumber.Trim();

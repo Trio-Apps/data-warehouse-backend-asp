@@ -4317,6 +4317,29 @@
         }
       }
     },
+    "/api/DeliveryNoteOrder/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "DeliveryNoteOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Documents/upload": {
       "post": {
         "tags": [
@@ -4908,6 +4931,54 @@
       "get": {
         "tags": [
           "FinishedGoodItem"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/FinishedGoodPurchaseOrder/search-pagination/warehouse/{warehouseId}": {
+      "get": {
+        "tags": [
+          "FinishedGoodPurchaseOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemCodeOrItemName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -5633,6 +5704,29 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/GoodsReturnOrder/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "GoodsReturnOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -8356,6 +8450,488 @@
         }
       }
     },
+    "/api/production-component-batches": {
+      "post": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentBatchDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "productionComponentLineId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-component-batches/{id}": {
+      "get": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentBatchDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-component-batches/available/{productionComponentLineId}": {
+      "get": {
+        "tags": [
+          "ProductionComponentBatch"
+        ],
+        "parameters": [
+          {
+            "name": "productionComponentLineId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-component-lines": {
+      "post": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentLineDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentLineDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionComponentLineDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "parameters": [
+          {
+            "name": "productionOrderId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-component-lines/{id}": {
+      "get": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentLineDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentLineDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionComponentLineDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ProductionComponentLine"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-header-batches": {
+      "post": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionHeaderBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionHeaderBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProductionHeaderBatchDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "parameters": [
+          {
+            "name": "productionOrderId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/production-header-batches/{id}": {
+      "get": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionHeaderBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionHeaderBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductionHeaderBatchDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ProductionHeaderBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/ProductionOrder": {
       "get": {
         "tags": [
@@ -8635,6 +9211,29 @@
       "get": {
         "tags": [
           "ProductionOrder"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ProductionOrder/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "ProductionOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -9682,6 +10281,29 @@
         }
       }
     },
+    "/api/PurchaseOrder/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "PurchaseOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/PurchaseOrder/processing": {
       "get": {
         "tags": [
@@ -10032,6 +10654,1068 @@
       "delete": {
         "tags": [
           "PurchaseOrderItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStock": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddQuantityAdjustmentStockDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddQuantityAdjustmentStockDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddQuantityAdjustmentStockDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStock/warehouse/{warehouseId}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStock/warehouse/{warehouseId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStock/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postingDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dueDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStock/with-warehouse/{id}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStock/{id}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStock"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuantityAdjustmentStockDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuantityAdjustmentStockDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuantityAdjustmentStockDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStock/status": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStock/status/{status}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStock/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "QuantityAdjustmentStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockBatch": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStockBatch"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockBatch/{id}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStockBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "QuantityAdjustmentStockBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "QuantityAdjustmentStockBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockBatch/quantity-adjustment-stock-item/{quantityAdjustmentStockItemId}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStockBatch"
+        ],
+        "parameters": [
+          {
+            "name": "quantityAdjustmentStockItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockBatchDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockBatchDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockBatchDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "QuantityAdjustmentStockBatch"
+        ],
+        "parameters": [
+          {
+            "name": "quantityAdjustmentStockItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneralBatchDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneralBatchDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneralBatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockBatch/quantity-adjustment-stock-item/{quantityAdjustmentStockItemId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStockBatch"
+        ],
+        "parameters": [
+          {
+            "name": "quantityAdjustmentStockItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockBatchDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockBatchDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockBatchDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockItem": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStockItem"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockItem/{id}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStockItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockItem/quantity-adjustment-stock/{quantityAdjustmentStockId}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStockItem"
+        ],
+        "parameters": [
+          {
+            "name": "quantityAdjustmentStockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockItemDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockItemDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockItemDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockItem/status/quantity-adjustment-stock/{quantityAdjustmentStockId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "QuantityAdjustmentStockItem"
+        ],
+        "parameters": [
+          {
+            "name": "quantityAdjustmentStockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockItemDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockItemDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QuantityAdjustmentStockItemDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockItem/quantity-adjustment-stock/{quantityAdjustmentStockId}/add-barcode-or-no/{isBarcode}": {
+      "post": {
+        "tags": [
+          "QuantityAdjustmentStockItem"
+        ],
+        "parameters": [
+          {
+            "name": "quantityAdjustmentStockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "isBarcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddQuantityAdjustmentStockItemCreateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddQuantityAdjustmentStockItemCreateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddQuantityAdjustmentStockItemCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/QuantityAdjustmentStockItem/quantity-adjustment-stock-item/{id}": {
+      "put": {
+        "tags": [
+          "QuantityAdjustmentStockItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "QuantityAdjustmentStockItem"
         ],
         "parameters": [
           {
@@ -10713,6 +12397,29 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/ReceiptPurchaseOrder/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "ReceiptPurchaseOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -11530,14 +13237,14 @@
         }
       }
     },
-    "/api/ReceivedItem/received-stock/{ReceivedStockId}": {
+    "/api/ReceivedItem/received-stock/{receivedStockId}": {
       "get": {
         "tags": [
           "ReceivedItem"
         ],
         "parameters": [
           {
-            "name": "ReceivedStockId",
+            "name": "receivedStockId",
             "in": "path",
             "required": true,
             "schema": {
@@ -11548,45 +13255,19 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedItemDTO"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedItemDTO"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedItemDTO"
-                  }
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
     },
-    "/api/ReceivedItem/received-stock/{ReceivedStockId}/{skip}/{pageSize}": {
+    "/api/ReceivedItem/received-stock/{receivedStockId}/{skip}/{pageSize}": {
       "get": {
         "tags": [
           "ReceivedItem"
         ],
         "parameters": [
           {
-            "name": "ReceivedStockId",
+            "name": "receivedStockId",
             "in": "path",
             "required": true,
             "schema": {
@@ -11615,45 +13296,19 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedItemDTO"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedItemDTO"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedItemDTO"
-                  }
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
     },
-    "/api/ReceivedItem/transferred-stock/{TransferredStockId}": {
+    "/api/ReceivedItem/transferred-stock/{transferredStockId}": {
       "post": {
         "tags": [
           "ReceivedItem"
         ],
         "parameters": [
           {
-            "name": "TransferredStockId",
+            "name": "transferredStockId",
             "in": "path",
             "required": true,
             "schema": {
@@ -11683,24 +13338,99 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReceivedItem"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReceivedItem"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReceivedItem"
-                }
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ReceivedItem/witout-reference/received-stock/{receivedStockId}/add-barcode-or-no/{isBarcode}": {
+      "post": {
+        "tags": [
+          "ReceivedItem"
+        ],
+        "parameters": [
+          {
+            "name": "receivedStockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "isBarcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGeneralItemByManualOrBarcodeDto"
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ReceivedItem/without-reference/{id}": {
+      "put": {
+        "tags": [
+          "ReceivedItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGeneralItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -11746,6 +13476,46 @@
       }
     },
     "/api/ReceivedItem/{id}/with-transferred-item": {
+      "get": {
+        "tags": [
+          "ReceivedItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ReceivedItem/{id}/with-item": {
       "get": {
         "tags": [
           "ReceivedItem"
@@ -11959,6 +13729,78 @@
         }
       }
     },
+    "/api/ReceivedStock/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "ReceivedStock"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "sourceWarehouseId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postingDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dueDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/ReceivedStock/{id}": {
       "get": {
         "tags": [
@@ -11977,24 +13819,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReceivedStock"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReceivedStock"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReceivedStock"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       },
@@ -12068,6 +13893,29 @@
         "parameters": [
           {
             "name": "transferredStockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ReceivedStock/by-received-stock/{receivedStockId}": {
+      "get": {
+        "tags": [
+          "ReceivedStock"
+        ],
+        "parameters": [
+          {
+            "name": "receivedStockId",
             "in": "path",
             "required": true,
             "schema": {
@@ -12234,6 +14082,165 @@
         }
       }
     },
+    "/api/ReceivedStock/{id}/with-warehouse": {
+      "get": {
+        "tags": [
+          "ReceivedStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedStock"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedStock"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedStock"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ReceivedStock/with-default-items": {
+      "post": {
+        "tags": [
+          "ReceivedStock"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReceivedStockDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReceivedStockDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReceivedStockDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedStock"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedStock"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedStock"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ReceivedStock/without-reference": {
+      "post": {
+        "tags": [
+          "ReceivedStock"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReceivedStockWithoutRefDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReceivedStockWithoutRefDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReceivedStockWithoutRefDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedStock"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedStock"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceivedStock"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ReceivedStock/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "ReceivedStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/ReceivedStockBatch": {
       "get": {
         "tags": [
@@ -12330,17 +14337,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateReceivedStockBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateReceivedStockBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateReceivedStockBatchDTO"
+                "$ref": "#/components/schemas/UpdateGeneralBatchDto"
               }
             }
           }
@@ -12391,33 +14398,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedStockBatch"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedStockBatch"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedStockBatch"
-                  }
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       },
@@ -12440,41 +14421,24 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddReceivedStockBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddReceivedStockBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AddReceivedStockBatchDTO"
+                "$ref": "#/components/schemas/GeneralBatchDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReceivedStockBatch"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReceivedStockBatch"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReceivedStockBatch"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
@@ -12515,33 +14479,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedStockBatch"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedStockBatch"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReceivedStockBatch"
-                  }
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
@@ -13000,6 +14938,54 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/SalesOrder/search-pagination/warehouse/{warehouseId}": {
+      "get": {
+        "tags": [
+          "SalesOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemCodeOrItemName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -13477,6 +15463,29 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SalesOrder/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "SalesOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -14776,6 +16785,29 @@
         }
       }
     },
+    "/api/SalesReturnOrder/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "SalesReturnOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/SalesReturnOrderBatch": {
       "get": {
         "tags": [
@@ -15795,6 +17827,189 @@
             "name": "sapId",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SapSyncReset/item/{sapId}": {
+      "patch": {
+        "tags": [
+          "SapSyncReset"
+        ],
+        "parameters": [
+          {
+            "name": "sapId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SapSyncReset/warehouse/{sapId}": {
+      "patch": {
+        "tags": [
+          "SapSyncReset"
+        ],
+        "parameters": [
+          {
+            "name": "sapId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SapSyncReset/purchase/{sapId}": {
+      "patch": {
+        "tags": [
+          "SapSyncReset"
+        ],
+        "parameters": [
+          {
+            "name": "sapId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SapSyncReset/count/{sapId}": {
+      "patch": {
+        "tags": [
+          "SapSyncReset"
+        ],
+        "parameters": [
+          {
+            "name": "sapId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SapSyncReset/business-partners/{sapId}": {
+      "patch": {
+        "tags": [
+          "SapSyncReset"
+        ],
+        "parameters": [
+          {
+            "name": "sapId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SapSyncReset/item-uom-group/{sapId}": {
+      "patch": {
+        "tags": [
+          "SapSyncReset"
+        ],
+        "parameters": [
+          {
+            "name": "sapId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SapSyncReset/sales/{sapId}": {
+      "patch": {
+        "tags": [
+          "SapSyncReset"
+        ],
+        "parameters": [
+          {
+            "name": "sapId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/SapSyncReset/all-sync": {
+      "get": {
+        "tags": [
+          "SapSyncReset"
+        ],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -17109,7 +19324,7 @@
         }
       }
     },
-    "/api/TransferredItem/Transferred-stock/{TransferredStockId}/add-barcode-or-no/{isBarcode}": {
+    "/api/TransferredItem/transferred-stock/{TransferredStockId}/add-barcode-or-no/{isBarcode}": {
       "post": {
         "tags": [
           "TransferredItem"
@@ -17176,7 +19391,47 @@
         }
       }
     },
-    "/api/TransferredItem/Transferred-item-order/{id}": {
+    "/api/TransferredItem/transferred-stock/{transferredStockId}/transferred-request-item/{transferredRequestItemId}": {
+      "post": {
+        "tags": [
+          "TransferredItem"
+        ],
+        "parameters": [
+          {
+            "name": "transferredStockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "transferredRequestItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredItem/transferred-item/{id}": {
       "put": {
         "tags": [
           "TransferredItem"
@@ -17239,6 +19494,1054 @@
         }
       }
     },
+    "/api/TransferredRequestBatch": {
+      "get": {
+        "tags": [
+          "TransferredRequestBatch"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequestBatch"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequestBatch"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequestBatch"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestBatch/{id}": {
+      "get": {
+        "tags": [
+          "TransferredRequestBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequestBatch"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequestBatch"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequestBatch"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "TransferredRequestBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferredRequestBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferredRequestBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferredRequestBatchDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TransferredRequestBatch"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestBatch/transferred-request-item/{transferredRequestItemId}": {
+      "get": {
+        "tags": [
+          "TransferredRequestBatch"
+        ],
+        "parameters": [
+          {
+            "name": "transferredRequestItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TransferredRequestBatch"
+        ],
+        "parameters": [
+          {
+            "name": "transferredRequestItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredRequestBatchDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredRequestBatchDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredRequestBatchDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestBatch/transferred-request-item/{transferredRequestItemId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "TransferredRequestBatch"
+        ],
+        "parameters": [
+          {
+            "name": "transferredRequestItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestItem": {
+      "get": {
+        "tags": [
+          "TransferredRequestItem"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequestItem"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequestItem"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequestItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestItem/{id}": {
+      "get": {
+        "tags": [
+          "TransferredRequestItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequestItem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequestItem"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequestItem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestItem/transferred-request/{transferredRequestId}": {
+      "get": {
+        "tags": [
+          "TransferredRequestItem"
+        ],
+        "parameters": [
+          {
+            "name": "transferredRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestItem/status/transferred-request/{transferredRequestId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "TransferredRequestItem"
+        ],
+        "parameters": [
+          {
+            "name": "transferredRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestItem/transferred-request/{transferredRequestId}/add-barcode-or-no/{isBarcode}": {
+      "post": {
+        "tags": [
+          "TransferredRequestItem"
+        ],
+        "parameters": [
+          {
+            "name": "transferredRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "isBarcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredRequestItemCreateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredRequestItemCreateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredRequestItemCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestItem/transferred-request-item/{id}": {
+      "put": {
+        "tags": [
+          "TransferredRequestItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferredRequestItemDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferredRequestItemDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferredRequestItemDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TransferredRequestItem"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/search-pagination/warehouse/{warehouseId}": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "itemCodeOrItemName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequest"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequest"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequest"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequest"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/warehouse/{warehouseId}": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequest"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequest"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/warehouse/{warehouseId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/items-in-warehouse/warehouse/{warehouseId}": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "destinationWarehouseId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "liveStatus",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postingDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dueDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/{id}": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequest"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequest"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredRequest"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferredRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferredRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransferredRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/with-warehouses/{id}": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/status": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/status/{status}": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredRequestOrder/pending": {
+      "get": {
+        "tags": [
+          "TransferredRequestOrder"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequest"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequest"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferredRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/TransferredStock": {
       "get": {
         "tags": [
@@ -17284,17 +20587,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddTransferredStockDTO"
+                "$ref": "#/components/schemas/AddTransferredStockWithoutRefDTO"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddTransferredStockDTO"
+                "$ref": "#/components/schemas/AddTransferredStockWithoutRefDTO"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AddTransferredStockDTO"
+                "$ref": "#/components/schemas/AddTransferredStockWithoutRefDTO"
               }
             }
           }
@@ -17413,6 +20716,85 @@
         }
       }
     },
+    "/api/TransferredStock/dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}": {
+      "get": {
+        "tags": [
+          "TransferredStock"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "destinationWarehouseId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "liveStatus",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postingDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dueDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/TransferredStock/{id}": {
       "get": {
         "tags": [
@@ -17431,24 +20813,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferredStock"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferredStock"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferredStock"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       },
@@ -17514,6 +20879,86 @@
         }
       }
     },
+    "/api/TransferredStock/{id}/with-items": {
+      "get": {
+        "tags": [
+          "TransferredStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredStock"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredStock"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredStock"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TransferredStock/{id}/with-warehouses": {
+      "get": {
+        "tags": [
+          "TransferredStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredStock"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredStock"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredStock"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/TransferredStock/status": {
       "get": {
         "tags": [
@@ -17538,6 +20983,88 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/TransferredStock/transferred-request/{transferredRequestId}/with-default-items": {
+      "post": {
+        "tags": [
+          "TransferredStock"
+        ],
+        "parameters": [
+          {
+            "name": "transferredRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredStockDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredStockDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTransferredStockDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredStock"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredStock"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferredStock"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/TransferredStock/{id}/revert-partially-failed": {
+      "patch": {
+        "tags": [
+          "TransferredStock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -17743,33 +21270,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TransferredStockBatch"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TransferredStockBatch"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TransferredStockBatch"
-                  }
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       },
@@ -17867,33 +21368,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TransferredStockBatch"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TransferredStockBatch"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TransferredStockBatch"
-                  }
-                }
-              }
-            }
+            "description": "OK"
           }
         }
       }
@@ -20094,6 +23569,111 @@
         },
         "additionalProperties": false
       },
+      "AddProductionComponentBatchDTO": {
+        "required": [
+          "batchNumber",
+          "productionComponentLineId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "productionComponentLineId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddProductionComponentLineDTO": {
+        "required": [
+          "itemId",
+          "productionOrderId",
+          "requiredQuantity",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "productionOrderId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "requiredQuantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "issueType": {
+            "maxLength": 20,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddProductionHeaderBatchDTO": {
+        "required": [
+          "batchNumber",
+          "productionOrderId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "productionOrderId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AddProductionOrderDTO": {
         "required": [
           "dueDate",
@@ -20235,6 +23815,50 @@
         },
         "additionalProperties": false
       },
+      "AddQuantityAdjustmentStockDTO": {
+        "required": [
+          "dueDate",
+          "postingDate",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddQuantityAdjustmentStockItemCreateRequest": {
+        "type": "object",
+        "properties": {
+          "barcode": {
+            "$ref": "#/components/schemas/DynamicBarcodesDto"
+          },
+          "item": {
+            "$ref": "#/components/schemas/AddGeneralItemDto"
+          }
+        },
+        "additionalProperties": false
+      },
       "AddReceiptPurchaseOrderDTO": {
         "required": [
           "dueDate",
@@ -20343,40 +23967,6 @@
         },
         "additionalProperties": false
       },
-      "AddReceivedStockBatchDTO": {
-        "required": [
-          "quantity",
-          "receivedItemId",
-          "transferredStockBatchId"
-        ],
-        "type": "object",
-        "properties": {
-          "receivedItemId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "transferredStockBatchId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "AddReceivedStockDTO": {
         "required": [
           "dueDate",
@@ -20397,6 +23987,37 @@
           "comment": {
             "type": "string",
             "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddReceivedStockWithoutRefDTO": {
+        "required": [
+          "dueDate"
+        ],
+        "type": "object",
+        "properties": {
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sourceWarehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -20613,7 +24234,126 @@
       "AddTransferredItemDTO": {
         "required": [
           "itemId",
+          "transferredRequestItemId",
           "transferredStockId",
+          "uoMEntry"
+        ],
+        "type": "object",
+        "properties": {
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "transferredStockId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestItemId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddTransferredRequestBatchDTO": {
+        "required": [
+          "quantity",
+          "transferredRequestItemId"
+        ],
+        "type": "object",
+        "properties": {
+          "transferredRequestItemId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddTransferredRequestDTO": {
+        "required": [
+          "distinationWarehouseId",
+          "dueDate",
+          "isDraft",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "distinationWarehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddTransferredRequestItemCreateRequest": {
+        "type": "object",
+        "properties": {
+          "barcode": {
+            "$ref": "#/components/schemas/DynamicBarcodesDto"
+          },
+          "item": {
+            "$ref": "#/components/schemas/AddTransferredRequestItemDTO"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddTransferredRequestItemDTO": {
+        "required": [
+          "itemId",
+          "transferredRequestId",
           "uoMEntry"
         ],
         "type": "object",
@@ -20627,7 +24367,7 @@
             "type": "number",
             "format": "double"
           },
-          "transferredStockId": {
+          "transferredRequestId": {
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
@@ -20638,6 +24378,11 @@
             "minimum": 1,
             "type": "integer",
             "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -20666,6 +24411,12 @@
             "type": "string",
             "nullable": true
           },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
           "expiryDate": {
             "type": "string",
             "format": "date-time",
@@ -20675,6 +24426,48 @@
         "additionalProperties": false
       },
       "AddTransferredStockDTO": {
+        "required": [
+          "distinationWarehouseId",
+          "dueDate",
+          "isDraft",
+          "transferredRequestId",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
+          },
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "distinationWarehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddTransferredStockWithoutRefDTO": {
         "required": [
           "distinationWarehouseId",
           "dueDate",
@@ -20943,6 +24736,13 @@
             },
             "nullable": true
           },
+          "transferredRequests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferredRequest"
+            },
+            "nullable": true
+          },
           "receivedStocks": {
             "type": "array",
             "items": {
@@ -20954,6 +24754,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CountStock"
+            },
+            "nullable": true
+          },
+          "quantityAdjustmentStocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityAdjustmentStock"
             },
             "nullable": true
           },
@@ -21347,6 +25154,10 @@
             "type": "string",
             "nullable": true
           },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
           "comment": {
             "type": "string",
             "nullable": true
@@ -21403,6 +25214,10 @@
             "type": "string",
             "format": "date-time"
           },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "countStockItemId": {
             "type": "integer",
             "format": "int32"
@@ -21452,6 +25267,10 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
           },
           "countStockId": {
             "type": "integer",
@@ -22633,6 +26452,13 @@
             },
             "nullable": true
           },
+          "transferredRequestItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferredRequestItem"
+            },
+            "nullable": true
+          },
           "receivedItems": {
             "type": "array",
             "items": {
@@ -22644,6 +26470,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CountStockItem"
+            },
+            "nullable": true
+          },
+          "quantityAdjustmentStockItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
             },
             "nullable": true
           },
@@ -22985,7 +26818,9 @@
           7,
           8,
           9,
-          10
+          10,
+          11,
+          12
         ],
         "type": "integer",
         "format": "int32"
@@ -23105,6 +26940,11 @@
           "productionOrderId": {
             "type": "integer",
             "format": "int32"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
           },
           "status": {
             "$ref": "#/components/schemas/GeneralStatus"
@@ -23588,6 +27428,275 @@
         },
         "additionalProperties": false
       },
+      "QuantityAdjustmentStock": {
+        "type": "object",
+        "properties": {
+          "quantityAdjustmentStockId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GeneralStatus"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "docEntry": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "docNum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "docType": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/ApplicationUser"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouse": {
+            "$ref": "#/components/schemas/Warehouse"
+          },
+          "quantityAdjustmentStockItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuantityAdjustmentStockBatch": {
+        "type": "object",
+        "properties": {
+          "quantityAdjustmentStockBatchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantityAdjustmentStockItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantityAdjustmentStockItem": {
+            "$ref": "#/components/schemas/QuantityAdjustmentStockItem"
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuantityAdjustmentStockBatchDTO": {
+        "type": "object",
+        "properties": {
+          "quantityAdjustmentStockBatchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantityAdjustmentStockItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuantityAdjustmentStockItem": {
+        "type": "object",
+        "properties": {
+          "quantityAdjustmentStockItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "barCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/GeneralItemStatus"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "lineNum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantityAdjustmentStockId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantityAdjustmentStock": {
+            "$ref": "#/components/schemas/QuantityAdjustmentStock"
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Item"
+          },
+          "quantityAdjustmentStockBatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityAdjustmentStockBatch"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuantityAdjustmentStockItemDTO": {
+        "type": "object",
+        "properties": {
+          "quantityAdjustmentStockItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitName": {
+            "type": "string",
+            "nullable": true
+          },
+          "barCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "itemCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantityAdjustmentStockId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "ReceiptPurchaseOrder": {
         "type": "object",
         "properties": {
@@ -23844,7 +27953,8 @@
           },
           "transferredItemId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "transferredItem": {
             "$ref": "#/components/schemas/TransferredItem"
@@ -23869,73 +27979,10 @@
               "$ref": "#/components/schemas/ReceivedStockBatch"
             },
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ReceivedItemDTO": {
-        "required": [
-          "itemId",
-          "quantity",
-          "receivedStockId",
-          "transferredItemId",
-          "uoMEntry"
-        ],
-        "type": "object",
-        "properties": {
-          "receivedItemId": {
+          },
+          "orderId": {
             "type": "integer",
             "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "uoMEntry": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "barCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "unitPrice": {
-            "minimum": 0,
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "errorMessage": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "comment": {
-            "type": "string",
-            "nullable": true
-          },
-          "receivedStockId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "transferredItemId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "itemId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "batches": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ReceivedStockBatchDTO"
-            },
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -23978,7 +28025,8 @@
           },
           "transferredStockId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "transferredStock": {
             "$ref": "#/components/schemas/TransferredStock"
@@ -24010,6 +28058,10 @@
               "$ref": "#/components/schemas/ReceivedItem"
             },
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -24044,7 +28096,8 @@
           },
           "transferredStockBatchId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "transferredStockBatch": {
             "$ref": "#/components/schemas/TransferredStockBatch"
@@ -24055,55 +28108,10 @@
           },
           "receivedItem": {
             "$ref": "#/components/schemas/ReceivedItem"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ReceivedStockBatchDTO": {
-        "required": [
-          "quantity",
-          "receivedItemId",
-          "transferredStockBatchId"
-        ],
-        "type": "object",
-        "properties": {
-          "receivedStockBatchId": {
+          },
+          "orderItemId": {
             "type": "integer",
             "format": "int32"
-          },
-          "receivedItemId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "transferredStockBatchId": {
-            "maximum": 2147483647,
-            "minimum": 1,
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "batchNumber": {
-            "maxLength": 100,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          },
-          "expiryDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -25393,6 +29401,18 @@
             "format": "int32",
             "nullable": true
           },
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestItemId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "transferredRequestItem": {
+            "$ref": "#/components/schemas/TransferredRequestItem"
+          },
           "receivedItem": {
             "$ref": "#/components/schemas/ReceivedItem"
           },
@@ -25476,6 +29496,237 @@
             "minimum": 1,
             "type": "integer",
             "format": "int32"
+          },
+          "transferredRequestItemId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "itemCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitName": {
+            "type": "string",
+            "nullable": true
+          },
+          "batches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferredStockBatchDTO"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferredRequest": {
+        "type": "object",
+        "properties": {
+          "transferredRequestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GeneralStatus"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "docEntry": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "docNum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "docType": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/ApplicationUser"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouse": {
+            "$ref": "#/components/schemas/Warehouse"
+          },
+          "distinationWarehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "distinationWarehouse": {
+            "$ref": "#/components/schemas/Warehouse"
+          },
+          "transferredRequestItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferredRequestItem"
+            },
+            "nullable": true
+          },
+          "transferredStock": {
+            "$ref": "#/components/schemas/TransferredStock"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferredRequestBatch": {
+        "type": "object",
+        "properties": {
+          "transferredRequestBatchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestItem": {
+            "$ref": "#/components/schemas/TransferredRequestItem"
+          },
+          "transferredStockBatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferredStockBatch"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferredRequestItem": {
+        "type": "object",
+        "properties": {
+          "transferredRequestItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "barCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/GeneralItemStatus"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "lineNum": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequest": {
+            "$ref": "#/components/schemas/TransferredRequest"
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Item"
+          },
+          "transferredRequestBatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferredRequestBatch"
+            },
+            "nullable": true
+          },
+          "transferredItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferredItem"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -25495,10 +29746,19 @@
             "type": "string",
             "format": "date-time"
           },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "status": {
             "$ref": "#/components/schemas/GeneralStatus"
           },
           "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
             "type": "string",
             "nullable": true
           },
@@ -25515,6 +29775,18 @@
           "docType": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "transferredRequest": {
+            "$ref": "#/components/schemas/TransferredRequest"
           },
           "receivedStock": {
             "$ref": "#/components/schemas/ReceivedStock"
@@ -25578,6 +29850,18 @@
             "type": "string",
             "format": "date-time"
           },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestBatchId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "transferredRequestBatch": {
+            "$ref": "#/components/schemas/TransferredRequestBatch"
+          },
           "receivedStockBatch": {
             "$ref": "#/components/schemas/ReceivedStockBatch"
           },
@@ -25587,6 +29871,48 @@
           },
           "transferredItem": {
             "$ref": "#/components/schemas/TransferredItem"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferredStockBatchDTO": {
+        "required": [
+          "quantity",
+          "transferredItemId"
+        ],
+        "type": "object",
+        "properties": {
+          "transferredStockBatchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredItemId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -25972,6 +30298,89 @@
         },
         "additionalProperties": false
       },
+      "UpdateProductionComponentBatchDTO": {
+        "required": [
+          "batchNumber",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateProductionComponentLineDTO": {
+        "required": [
+          "requiredQuantity",
+          "warehouseId"
+        ],
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "requiredQuantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "issuedQuantity": {
+            "minimum": 0,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "issueType": {
+            "maxLength": 20,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateProductionHeaderBatchDTO": {
+        "required": [
+          "batchNumber",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "batchNumber": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateProductionOrderDTO": {
         "required": [
           "dueDate",
@@ -26083,6 +30492,33 @@
         },
         "additionalProperties": false
       },
+      "UpdateQuantityAdjustmentStockDTO": {
+        "type": "object",
+        "properties": {
+          "postingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
+          },
+          "quantityAdjustmentStockId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateReceiptPurchaseOrderDTO": {
         "type": "object",
         "properties": {
@@ -26140,31 +30576,6 @@
         },
         "additionalProperties": false
       },
-      "UpdateReceivedStockBatchDTO": {
-        "required": [
-          "quantity",
-          "receivedStockBatchId"
-        ],
-        "type": "object",
-        "properties": {
-          "receivedStockBatchId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "quantity": {
-            "minimum": 0.01,
-            "type": "number",
-            "format": "double"
-          },
-          "comment": {
-            "maxLength": 500,
-            "minLength": 0,
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "UpdateReceivedStockDTO": {
         "required": [
           "receivedStockId"
@@ -26175,11 +30586,19 @@
             "type": "integer",
             "format": "int32"
           },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "comment": {
             "maxLength": 500,
             "minLength": 0,
             "type": "string",
             "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -26389,6 +30808,100 @@
         },
         "additionalProperties": false
       },
+      "UpdateTransferredRequestBatchDTO": {
+        "required": [
+          "quantity",
+          "transferredRequestBatchId"
+        ],
+        "type": "object",
+        "properties": {
+          "transferredRequestBatchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateTransferredRequestDTO": {
+        "required": [
+          "distinationWarehouseId",
+          "dueDate",
+          "transferredRequestId"
+        ],
+        "type": "object",
+        "properties": {
+          "transferredRequestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "distinationWarehouseId": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "isDraft": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateTransferredRequestItemDTO": {
+        "required": [
+          "transferredRequestItemId",
+          "uoMEntry"
+        ],
+        "type": "object",
+        "properties": {
+          "transferredRequestItemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "uoMEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateTransferredStockBatchDTO": {
         "required": [
           "quantity",
@@ -26411,6 +30924,10 @@
             "type": "string",
             "nullable": true
           },
+          "batchNumber": {
+            "type": "string",
+            "nullable": true
+          },
           "expiryDate": {
             "type": "string",
             "format": "date-time",
@@ -26420,10 +30937,6 @@
         "additionalProperties": false
       },
       "UpdateTransferredStockDTO": {
-        "required": [
-          "distinationWarehouseId",
-          "dueDate"
-        ],
         "type": "object",
         "properties": {
           "transferredStockId": {
@@ -26432,7 +30945,8 @@
           },
           "dueDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "comment": {
             "type": "string",
@@ -26442,7 +30956,11 @@
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
+          },
+          "isDraft": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -26671,6 +31189,20 @@
             },
             "nullable": true
           },
+          "transferredRequests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferredRequest"
+            },
+            "nullable": true
+          },
+          "distinationTransferredRequests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferredRequest"
+            },
+            "nullable": true
+          },
           "receivedStocks": {
             "type": "array",
             "items": {
@@ -26689,6 +31221,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CountStock"
+            },
+            "nullable": true
+          },
+          "quantityAdjustmentStocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuantityAdjustmentStock"
             },
             "nullable": true
           },

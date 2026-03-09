@@ -4,8 +4,6 @@ using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace DataWarehouse.Api.Controllers.admin.Processes;
 
@@ -46,7 +44,7 @@ public class TransferredStockBatchController : ControllerBase
 
     [HttpGet("transferred-item/{transferredItemId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Get}")]
-    public async Task<ActionResult<IEnumerable<TransferredStockBatch>>> GetByTransferredItemId(int transferredItemId)
+    public async Task<IActionResult> GetByTransferredItemId(int transferredItemId)
     {
         var res = await _repository.GetByTransferredItemIdAsync(transferredItemId);
 
@@ -58,7 +56,7 @@ public class TransferredStockBatchController : ControllerBase
 
     [HttpGet("transferred-item/{transferredItemId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Get}")]
-    public async Task<ActionResult<IEnumerable<TransferredStockBatch>>> GetByTransferredItemIdWithPagination(
+    public async Task<IActionResult> GetByTransferredItemIdWithPagination(
         int transferredItemId, int skip, int pageSize)
     {
         var res = await _repository.GetByTransferredItemIdWithPaginationAsync(transferredItemId, skip, pageSize);
@@ -76,7 +74,15 @@ public class TransferredStockBatchController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var created = await _repository.AddByTransferredItemIdAsync(transferredItemId, dto);
+        var mappedDto = new GeneralBatchDto
+        {
+            Quantity = dto.Quantity,
+            Comment = dto.Comment,
+            BatchNumber = dto.BatchNumber,
+            ExpiryDate = dto.ExpiryDate
+        };
+
+        var created = await _repository.AddByTransferredItemIdAsync(transferredItemId, mappedDto);
 
         if (!created.Success)
             return BadRequest(created);
@@ -91,7 +97,15 @@ public class TransferredStockBatchController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var res = await _repository.UpdateTransferredStockBatchAsync(id, dto);
+        var mappedDto = new UpdateGeneralBatchDto
+        {
+            Quantity = dto.Quantity,
+            Comment = dto.Comment,
+            BatchNumber = dto.BatchNumber,
+            ExpiryDate = dto.ExpiryDate
+        };
+
+        var res = await _repository.UpdateTransferredStockBatchAsync(id, mappedDto);
 
         if (!res.Success)
             return BadRequest(res);
@@ -103,14 +117,11 @@ public class TransferredStockBatchController : ControllerBase
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Delete}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var batch = await _repository.GetByIdAsync(id);
-        if (batch == null)
-            return NotFound($"TransferredStockBatch with ID {id} not found.");
+        var res = await _repository.DeleteTransferredStockBatchAsync(id);
+        if (!res.Success)
+            return BadRequest(res);
 
-        await _repository.DeleteAsync(id);
-        await _repository.SaveChangesAsync();
-
-        return NoContent();
+        return Ok(res);
     }
 }
 

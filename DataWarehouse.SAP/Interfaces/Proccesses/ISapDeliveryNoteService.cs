@@ -8,7 +8,7 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
 {
     public interface ISapDeliveryNoteService
     {
-        Task<string> SyncDeliveryNotesAsync(int sapId);
+        Task<string> SyncDeliveryNotesAsync(int deliveryNoteOrderId);
     }
 
 }
