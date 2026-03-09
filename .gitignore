@@ -1,6 +1,36 @@
-# Visual Studio / build artifacts
+# Build folders
+bin/
+obj/
+
+# User files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
 .vs/
-**/bin/
-**/obj/
-**/artifacts/
-artifacts/
+.vscode/
+
+# Build outputs
+*.dll
+*.exe
+*.pdb
+
+# Logs
+*.log
+
+# NuGet
+*.nupkg
+packages/
+
+# Rider / ReSharper
+_ReSharper*/
+*.DotSettings.user
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Publish
+publish/
