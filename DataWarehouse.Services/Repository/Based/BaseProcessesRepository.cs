@@ -1,10 +1,12 @@
 ﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
+using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.IsProgress;
 using DataWarehouse.Domain.Entities.Processes.IGenericDto;
@@ -23,11 +25,13 @@ namespace DataWarehouse.Services.Repository.Based
 {
     public class BaseProcessesRepository<T> : BaseRepository<T>, IBaseProcessesRepository<T> where T : class
     {
+        private readonly IProcessItemIsProgressRepository progressRepository;
         private readonly IBarCodeOrdersRepository barcodeOrder;
         private readonly ISapCache sapCache;
 
-        public BaseProcessesRepository(IBarCodeOrdersRepository barcodeOrder, ISapCache sapCache, DataWarehouseDbContext context) : base(context)
+        public BaseProcessesRepository(IProcessItemIsProgressRepository progressRepository, IBarCodeOrdersRepository barcodeOrder, ISapCache sapCache, DataWarehouseDbContext context) : base(context)
         {
+            this.progressRepository = progressRepository;
             this.barcodeOrder = barcodeOrder;
             this.sapCache = sapCache;
         }
@@ -295,6 +299,7 @@ namespace DataWarehouse.Services.Repository.Based
             return GeneralResponse<TOrderItem>.SuccessResponse(snapshot);
         }
 
+
         #endregion
 
 
@@ -509,6 +514,37 @@ where TBatch : class, IOrderBatch
             return GeneralResponse<TBatch>.SuccessResponse(snapshot);
         }
 
+        #endregion
+
+        #region Revert Partially Status
+        public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync<TEntity>(
+       int entityId,
+       ProcessType processType,
+       Expression<Func<TEntity, bool>> selector,
+       DbSet<TEntity> dbSet)
+       where TEntity : class, IOrder
+        {
+            var entity = await dbSet.FirstOrDefaultAsync(selector);
+
+            if (entity == null)
+                return GeneralResponse<ProcessItemIsProgressDto>
+                    .FailResponse("Entity not found.");
+
+            if (entity.Status != GeneralStatus.PartiallyFailed)
+                return GeneralResponse<ProcessItemIsProgressDto>
+                    .FailResponse("Status is not PartiallyFailed.");
+
+            entity.Status = GeneralStatus.Processing;
+
+            await _context.SaveChangesAsync();
+
+            var res = await progressRepository.GetProcessItemIsProgressAsync(
+                processType,
+                entityId);
+
+            return GeneralResponse<ProcessItemIsProgressDto>
+                .SuccessResponse(res, "Status changed to Processing.");
+        }
         #endregion
 
         // ===== helpers =====

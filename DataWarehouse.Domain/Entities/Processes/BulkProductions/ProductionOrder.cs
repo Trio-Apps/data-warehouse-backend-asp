@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Auth;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -9,9 +10,10 @@ using System.Threading.Tasks;
 
 namespace DataWarehouse.Domain.Entities.Processes.BulkProductions
 {
-    public  class ProductionOrder
+    public  class ProductionOrder : IOrder
     {
         public int ProductionOrderId { get; set; }
+        public int Id => ProductionOrderId;
 
         // Draft=1, Processing=2, Completed=3, PartiallyFailed=4
         public GeneralStatus Status { get; set; }

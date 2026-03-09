@@ -33,15 +33,9 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
         }
 
 
-        public async Task<string> SyncGoodsReturnAsync(int sapId)
+        public async Task<string> SyncGoodsReturnAsync(int goodsReturnId)
         {
-            const int batchSize = 200;
-
-            int totalSuccess = 0;
-            int totalFail = 0;
-
-            while (true)
-            {
+          
                 // ✅ Approved IDs من جدول الـ Process
                 // ✳️ لو ProcessType عندك اسمه مختلف غيّره هنا
                 var approvedIdsQuery = _context.ProcessItemIsProgresses
@@ -50,32 +44,25 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     .Select(p => p.ReferenceId)
                     .Distinct();
 
-                // ✅ هات أول دفعة من اللي لسه Processing
-                var batch = await _context.GoodsReturnOrders
-                    .AsTracking()
-                    .Include(o => o.Warehouse)
-                    .Include(o => o.Supplier)
-                    .Include(o => o.GoodsReturnOrderItems)
-                        .ThenInclude(i => i.Item)
-                    .Include(o => o.GoodsReturnOrderItems)
-                        .ThenInclude(i => i.GoodsReturnOrderBatches)
-                    .Where(o =>
-                        o.Status == GeneralStatus.Processing &&
-                        o.Warehouse.SapId == sapId &&
-                        approvedIdsQuery.Contains(o.GoodsReturnOrderId))
-                    .OrderBy(o => o.GoodsReturnOrderId)
-                    .Take(batchSize)
-                    .ToListAsync();
+            // ✅ هات أول دفعة من اللي لسه Processing
+            var order = await _context.GoodsReturnOrders
+                .AsTracking()
+                .Include(o => o.Warehouse)
+                .Include(o => o.Supplier)
+                .Include(o => o.GoodsReturnOrderItems)
+                    .ThenInclude(i => i.Item)
+                .Include(o => o.GoodsReturnOrderItems)
+                    .ThenInclude(i => i.GoodsReturnOrderBatches)
+                .Where(o =>
+                    o.Status == GeneralStatus.Processing &&
 
-                if (!batch.Any())
-                    break;
+                    approvedIdsQuery.Contains(o.GoodsReturnOrderId))
+               .FirstOrDefaultAsync(e => e.GoodsReturnOrderId == goodsReturnId);
+                   
 
-                int taskSuccess = 0;
-                int taskFail = 0;
+              
 
-                foreach (var order in batch)
-                {
-                    var (_, success, body, error) = await ProcessGoodsReturnAsync(sapId, order);
+                    var (_, success, body, error) = await ProcessGoodsReturnAsync(order.Warehouse.SapId, order);
 
                     if (success)
                     {
@@ -141,7 +128,6 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         _context.Entry(order).Property(x => x.DocNum).IsModified = true;
                         _context.Entry(order).Property(x => x.DocType).IsModified = true;
 
-                        taskSuccess++;
                     }
                     else
                     {
@@ -160,10 +146,8 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
                         _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
 
-                        taskFail++;
                     }
-                }
-
+              
                 try
                 {
                     _context.ChangeTracker.DetectChanges();
@@ -174,28 +158,20 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    _logger.LogError(ex, "Concurrency issue while saving goods return batch for sapId={SapId}", sapId);
+                    _logger.LogError(ex, "Concurrency issue while saving goods return batch for sapId={SapId}", order.Warehouse.SapId);
                     throw;
                 }
                 catch (DbUpdateException ex)
                 {
-                    _logger.LogError(ex, "DB update issue while saving goods return batch for sapId={SapId}", sapId);
-                    throw;
+                    _logger.LogError(ex, "DB update issue while saving goods return batch for sapId={SapId}", order.Warehouse.SapId);
+                throw;
                 }
 
-                totalSuccess += taskSuccess;
-                totalFail += taskFail;
+             
+            
 
-                _logger.LogInformation(
-                    "GoodsReturn batch processed for sapId={SapId}: {Success} succeeded, {Failed} failed. Total so far: {TotalSuccess}/{TotalFail}",
-                    sapId, taskSuccess, taskFail, totalSuccess, totalFail
-                );
-            }
-
-            if (totalSuccess == 0 && totalFail == 0)
-                return "No approved goods return orders to sync";
-
-            return $"Sync completed. Success: {totalSuccess}, Failed: {totalFail}";
+            
+            return $"Sync completed";
         }
 
         private async Task<(GoodsReturnOrder order, bool success, string res, string? error)>
@@ -295,6 +271,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
         private static string ConvertToSapDateFormat(DateTime date)
             => date.Date.ToString("yyyy-MM-dd");
+
 
         private int? TryResolveBplId(GoodsReturnOrder order)
         {

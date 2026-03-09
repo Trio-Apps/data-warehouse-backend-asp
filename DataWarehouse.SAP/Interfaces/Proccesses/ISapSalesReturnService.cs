@@ -8,6 +8,6 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
 {
     public interface ISapSalesReturnService
     {
-        Task<string> SyncSalesReturnsAsync(int sapId);
+        Task<string> SyncSalesReturnsAsync(int salesReturnId);
     }
 }

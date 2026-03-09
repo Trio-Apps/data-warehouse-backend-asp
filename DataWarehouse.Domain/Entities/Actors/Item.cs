@@ -28,6 +28,7 @@ namespace DataWarehouse.Domain.Entities.Actors
         public bool BatchNumbers { get; set; }
         public int SapId { get; set; }
         public Sap Sap { get; set; }
+
         public string ProcurementType { get; set; }
         public bool PurchaseItem { get; set; }
         public bool SalesItem { get; set; }
@@ -77,12 +78,14 @@ namespace DataWarehouse.Domain.Entities.Actors
 
         //TransferredItem
         public ICollection<TransferredItem> TransferredItems { get; set; } = new List<TransferredItem>();
+        public ICollection<TransferredRequestItem> TransferredRequestItems { get; set; } = new List<TransferredRequestItem>();
 
         //ReceivedItem
         public ICollection<ReceivedItem> ReceivedItems { get; set; } = new List<ReceivedItem>();
 
         //CountStockItem
         public ICollection<CountStockItem> CountStockItems { get; set; } = new List<CountStockItem>();
+        public ICollection<QuantityAdjustmentStockItem> QuantityAdjustmentStockItems { get; set; } = new List<QuantityAdjustmentStockItem>();
 
 
       

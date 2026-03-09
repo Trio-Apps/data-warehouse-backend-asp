@@ -78,43 +78,44 @@ namespace DataWarehouse.Api
                  j => j.SyncBusinessPartnersAsync(sapId),
                  "*/2 * * * *"
              );
-
-                RecurringJob.AddOrUpdate<SapJobsExecutor>(
-                 $"sap:{sapId}:purchases-orders-sync",
-                 j => j.SyncPurchaseAsync(sapId),
-                 "*/1 * * * *"
-             );
-
-                RecurringJob.AddOrUpdate<SapJobsExecutor>(
-              $"sap:{sapId}:receipts-orders-sync",
-              j => j.SyncReceiptAsync(sapId),
-              "*/1 * * * *"
-          );
-
-
-                RecurringJob.AddOrUpdate<SapJobsExecutor>(
-         $"sap:{sapId}:goods-return-orders-sync",
-         j => j.SyncGoodsReturnAsync(sapId),
-         "*/1 * * * *"
-     );
-
-                RecurringJob.AddOrUpdate<SapJobsExecutor>(
-     $"sap:{sapId}:delivery-note-orders-sync",
-     j => j.SyncDeliveryNoteAsync(sapId),
-     "*/1 * * * *"
- );
-
                 RecurringJob.AddOrUpdate<SapJobsExecutor>(
             $"sap:{sapId}:sales-orders-sync",
             j => j.SyncSalesAsync(sapId),
             "*/4 * * * *"
         );
 
-                RecurringJob.AddOrUpdate<SapJobsExecutor>(
-$"sap:{sapId}:delivery-note-orders-sync",
-j => j.SyncSalesReturnAsync(sapId),
-"*/1 * * * *"
-);
+                //   RecurringJob.AddOrUpdate<SapJobsExecutor>(
+                //    $"sap:{sapId}:purchases-orders-sync",
+                //    j => j.SyncPurchaseAsync(sapId),
+                //    "*/1 * * * *"
+                //);
+
+                //                RecurringJob.AddOrUpdate<SapJobsExecutor>(
+                //              $"sap:{sapId}:receipts-orders-sync",
+                //              j => j.SyncReceiptAsync(sapId),
+                //              "*/1 * * * *"
+                //          );
+
+
+                //                RecurringJob.AddOrUpdate<SapJobsExecutor>(
+                //         $"sap:{sapId}:goods-return-orders-sync",
+                //         j => j.SyncGoodsReturnAsync(sapId),
+                //         "*/1 * * * *"
+                //     );
+
+                //                RecurringJob.AddOrUpdate<SapJobsExecutor>(
+                //     $"sap:{sapId}:delivery-note-orders-sync",
+                //     j => j.SyncDeliveryNoteAsync(sapId),
+                //     "*/1 * * * *"
+                // );
+
+
+
+                //                RecurringJob.AddOrUpdate<SapJobsExecutor>(
+                //$"sap:{sapId}:delivery-note-orders-sync",
+                //j => j.SyncSalesReturnAsync(sapId),
+                //"*/1 * * * *"
+                //);
 
                 //   RecurringJob.AddOrUpdate<SapWarehouseService>(
                 //       $"sap:{sapId}:warehouses-sync",

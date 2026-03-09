@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Based;
@@ -10,6 +11,19 @@ namespace DataWarehouse.Core.Interfaces.Processes;
 
 public interface IReceivedItemRepository : IBaseRepository<ReceivedItem>
 {
+    Task<GeneralResponse<IEnumerable<ReceivedItemDTO>>> GetByReceivedStockIdAsync(int receivedStockId);
+    Task<GeneralResponse<PagedResult<ReceivedItemDTO>>> GetByReceivedStockIdWithPaginationAsync(int receivedStockId, int pageNumber, int pageSize);
+
+    Task<GeneralResponse<ReceivedItemDTO>> AddReceivedItemByReceivedStockIdWithoutRefAsync(
+        int receivedStockId,
+        bool isBarcode,
+        DynamicBarcodesDto? barcodeDto,
+        AddGeneralItemDto? dto);
+
+    Task<GeneralResponse<ReceivedItemDTO>> UpdateReceivedItemWithoutRefAsync(
+        int receivedItemId,
+        UpdateGeneralItemDto dto);
+
     Task<IEnumerable<ReceivedItemDTO>> GetByReceivedItemByReceivedStockIdAsync(int ReceivedStockId);
     Task<GeneralResponse<PagedResult<ReceivedItemDTO>>> GetByReceivedItemByReceivedStockIdWithPaginationAsync(int ReceivedStockId, int pageNumber, int pageSize);
     Task<GeneralResponse<ReceivedItemDTO>> AddReceivedItemByTransferredItemIdAsync(
@@ -17,6 +31,7 @@ public interface IReceivedItemRepository : IBaseRepository<ReceivedItem>
          int transferredStockid,
          AddReceivedItemDTO dto);
     Task<GeneralResponse<ReceivedItemDTO>> UpdateReceivedItemAsync(int ReceivedItemId, UpdateReceivedItemDTO dto);
+    Task<GeneralResponse<ReceivedItemDTO>> DeleteReceivedItemAsync(int receivedItemId);
     Task<IEnumerable<ReceivedItem>> GetByReceivedStockIdEntitiesAsync(int receivedStockId);
     Task<IEnumerable<ReceivedItem>> GetByItemIdAsync(int itemId);
     Task<ReceivedItem?> GetWithReceivedStockAsync(int receivedItemId);

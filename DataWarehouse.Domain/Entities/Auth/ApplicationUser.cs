@@ -46,6 +46,7 @@ public class ApplicationUser : IdentityUser
 
     // TransferredStock
     public ICollection<TransferredStock> TransferredStocks { get; set; } = new List<TransferredStock>();
+    public ICollection<TransferredRequest> TransferredRequests { get; set; } = new List<TransferredRequest>();
   
     // ReceivedStock
     public ICollection<ReceivedStock> ReceivedStocks { get; set; } = new List<ReceivedStock>();
@@ -53,6 +54,7 @@ public class ApplicationUser : IdentityUser
  
     // CountStock
     public ICollection<CountStock> CountStocks { get; set; } = new List<CountStock>();
+    public ICollection<QuantityAdjustmentStock> QuantityAdjustmentStocks { get; set; } = new List<QuantityAdjustmentStock>();
 
     // PurchaseOrder
     public ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();

@@ -8,6 +8,7 @@ using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Permissions;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Sync;
 using DataWarehouse.Core.IServices.Actors;
 using DataWarehouse.Core.IServices.Auth;
 using DataWarehouse.Domain.Context;
@@ -22,6 +23,7 @@ using DataWarehouse.Services.Repository.Processes.BulkProductions;
 using DataWarehouse.Services.Repository.Processes.OutSide;
 using DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo;
 using DataWarehouse.Services.Repository.SapRepo;
+using DataWarehouse.Services.Repository.Sync;
 using DataWarehouse.Services.Services.Actors;
 using DataWarehouse.Services.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -46,6 +48,7 @@ namespace DataWarehouse.Services
             services.AddScoped(typeof(IBaseProcessesRepository<>), typeof(BaseProcessesRepository<>));
             #endregion
 
+
             #region Actors Repositories
             services.AddScoped<IWarehouseRepository, WarehouseRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
@@ -57,14 +60,18 @@ namespace DataWarehouse.Services
             services.AddScoped<ISapSyncStatusFrontRepository, SapSyncStatusFrontRepository>();
             #endregion
 
+
+            #region Sync Repositories
+            services.AddScoped<ISapSyncResetRepository, SapSyncResetRepository>();
+            #endregion
+
             #region Processes Repositories
-            services.AddScoped<ICountStockRepository, CountStockRepository>();
+            services.AddScoped<IQuantityAdjustmentStockRepository, QuantityAdjustmentStockRepository>();
             services.AddScoped<IReceivedStockRepository, ReceivedStockRepository>();
             services.AddScoped<ITransferredStockRepository, TransferredStockRepository>();
+            services.AddScoped<ITransferredRequestOrderRepository, TransferredRequestOrderRepository>();
             services.AddScoped<IProcessesTypesDateRepository, ProcessesTypesDateRepository>();
-            services.AddScoped<IReceiptPurchaseOrderBatchRepository, ReceiptPurchaseOrderBatchRepository>();
-
-            
+            services.AddScoped<IReceiptPurchaseOrderBatchRepository, ReceiptPurchaseOrderBatchRepository>(); 
             #endregion
 
             #region Processes OutSide Repositories
@@ -83,16 +90,20 @@ namespace DataWarehouse.Services
 
             #region Process Items Repositories
             services.AddScoped<ICountStockItemRepository, CountStockItemRepository>();
+            services.AddScoped<IQuantityAdjustmentStockItemRepository, QuantityAdjustmentStockItemRepository>();
             services.AddScoped<IReceivedItemRepository, ReceivedItemRepository>();
             services.AddScoped<ITransferredItemRepository, TransferredItemRepository>();
+            services.AddScoped<ITransferredRequestItemRepository, TransferredRequestItemRepository>();
             services.AddScoped<ITransferredStockBatchRepository, TransferredStockBatchRepository>();
+            services.AddScoped<ITransferredRequestBatchRepository, TransferredRequestBatchRepository>();
             services.AddScoped<IReceivedStockBatchRepository, ReceivedStockBatchRepository>();
-            services.AddScoped<ICountStockBatchRepository, CountStockBatchRepository>();
+            services.AddScoped<IQuantityAdjustmentStockBatchRepository, QuantityAdjustmentStockBatchRepository>();
             services.AddScoped<IDocumentAttachmentRepository, DocumentAttachmentRepository>();
 
             
             #endregion
 
+          
             #region Process Items OutSide Repositories
             services.AddScoped<IPurchaseOrderItemRepository, PurchaseOrderItemRepository>();
             services.AddScoped<IReceiptPurchaseOrderItemRepository, ReceiptPurchaseOrderItemRepository>();

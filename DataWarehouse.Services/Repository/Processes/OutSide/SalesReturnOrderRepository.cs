@@ -1,6 +1,8 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
@@ -9,20 +11,30 @@ using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+
 namespace DataWarehouse.Services.Repository.Processes.OutSide;
+
 
 public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISalesReturnOrderRepository
 {
+    private readonly IBaseProcessesRepository<SalesReturnOrder> baseProcesses;
     private readonly IProcessItemIsProgressRepository progress;
     private readonly IApprovalRepository approval;
 
-    public SalesReturnOrderRepository(IProcessItemIsProgressRepository progress, IApprovalRepository approval, DataWarehouseDbContext context) : base(context)
+    public SalesReturnOrderRepository(
+        IBaseProcessesRepository<SalesReturnOrder> baseProcesses,
+        IProcessItemIsProgressRepository progress,
+        IApprovalRepository approval,
+        DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
         this.progress = progress;
         this.approval = approval;
     }
@@ -522,6 +534,16 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         await _context.SaveChangesAsync(cancellationToken);
 
         return GeneralResponse<SalesReturnOrderDTO>.SuccessResponse(result);
+    }
+
+    public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int salesReturnOrderId)
+    {
+        return await baseProcesses.RevertPartiallyFailedStatusToProcessingAsync<SalesReturnOrder>(
+            salesReturnOrderId,
+            ProcessType.SalesReturn,
+            x => x.SalesReturnOrderId == salesReturnOrderId,
+            _context.SalesReturnOrders
+        );
     }
   
     

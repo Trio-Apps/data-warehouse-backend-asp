@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.Based;
@@ -22,6 +23,7 @@ public interface IPurchaseOrderRepository : IBaseRepository<PurchaseOrder>
     Task<GeneralResponse<PurchaseOrderDTO>> AddPurchaseOrderByWarehouseIdAsync(string userId,
            AddPurchaseOrderDTO dto);
     Task<GeneralResponse<PurchaseOrderDTO>> UpdatePurchaseOrderAsync(string userId, int PurchaseId, UpdatePurchaseOrderDTO dto);
+    Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int purchaseOrderId);
     Task<GeneralResponse<PurchaseOrderDTO>> DeletePurchaseOrderAsync(
    int PurchaseOrderId,
    CancellationToken cancellationToken = default);

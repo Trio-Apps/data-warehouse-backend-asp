@@ -1,27 +1,38 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
+using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Based;
+using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DataWarehouse.Services.Repository.Processes;
 
 public class ReceivedStockBatchRepository : BaseRepository<ReceivedStockBatch>, IReceivedStockBatchRepository
 {
-    public ReceivedStockBatchRepository(DataWarehouseDbContext context) : base(context)
+    private readonly IBaseProcessesRepository<ReceivedStockBatch> baseProcesses;
+    private readonly IApprovalRepository approval;
+
+    public ReceivedStockBatchRepository(
+        IBaseProcessesRepository<ReceivedStockBatch> baseProcesses,
+        IApprovalRepository approval,
+        DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
+        this.approval = approval;
     }
 
     public async Task<GeneralResponse<IEnumerable<ReceivedStockBatchDTO>>> GetByReceivedItemIdAsync(int receivedItemId)
     {
-        var res = await Query().Where(b => b.ReceivedItemId == receivedItemId).ToListAsync();
+        var res = await Query()
+            .Where(b => b.ReceivedItemId == receivedItemId)
+            .ToListAsync();
+
 
         return GeneralResponse<IEnumerable<ReceivedStockBatchDTO>>.SuccessResponse(
             res.Select(b => new ReceivedStockBatchDTO
@@ -36,7 +47,10 @@ public class ReceivedStockBatchRepository : BaseRepository<ReceivedStockBatch>, 
             }));
     }
 
-    public async Task<GeneralResponse<PagedResult<ReceivedStockBatchDTO>>> GetByReceivedItemIdWithPaginationAsync(int receivedItemId, int pageNumber, int pageSize)
+    public async Task<GeneralResponse<PagedResult<ReceivedStockBatchDTO>>> GetByReceivedItemIdWithPaginationAsync(
+        int receivedItemId,
+        int pageNumber,
+        int pageSize)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
@@ -48,6 +62,7 @@ public class ReceivedStockBatchRepository : BaseRepository<ReceivedStockBatch>, 
         var totalRecords = await query.CountAsync();
 
         var data = await query
+            .OrderByDescending(x => x.ReceivedStockBatchId)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .Select(b => new ReceivedStockBatchDTO
@@ -71,90 +86,63 @@ public class ReceivedStockBatchRepository : BaseRepository<ReceivedStockBatch>, 
                 TotalRecords = totalRecords
             });
     }
-
-    public async Task<GeneralResponse<ReceivedStockBatchDTO>> AddByReceivedItemIdAsync(int receivedItemId, AddReceivedStockBatchDTO dto)
+  
+    public async Task<GeneralResponse<ReceivedStockBatchDTO>> AddByReceivedItemIdAsync(
+        int receivedItemId,
+        GeneralBatchDto dto)
     {
-        if (receivedItemId != dto.ReceivedItemId)
-            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse("Received Item ID mismatch");
+        var res = await baseProcesses.AddOrderBatchAsync<ReceivedItem, ReceivedStockBatch>(
+            orderItemId: receivedItemId,
+            processType: ProcessType.Received,
+            dto: dto,
 
-        var receivedItem = await _context.ReceivedItems
-            .Include(ri => ri.TransferredItem)
-            .FirstOrDefaultAsync(i => i.ReceivedItemId == receivedItemId);
+            orderItemSelector: i => i.ReceivedItemId == receivedItemId,
+            orderItemSet: _context.ReceivedItems,
 
-        if (receivedItem == null)
-            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse("Received Item not found");
+            batchItemSelector: b => b.ReceivedItemId == receivedItemId,
+            batchSet: _context.ReceivedStockBatches
+        );
 
-        // Validate TransferredStockBatch exists
-        var transferredStockBatch = await _context.TransferredStockBatches
-            .FirstOrDefaultAsync(b => b.TransferredStockBatchId == dto.TransferredStockBatchId);
+        if (!res.Success)
+            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse(res.Message);
 
-        if (transferredStockBatch == null)
-            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse("Transferred Stock Batch not found");
-
-        // Validate that the transferred batch belongs to the same transferred item
-        if (transferredStockBatch.TransferredItemId != receivedItem.TransferredItemId)
-            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse("Transferred Stock Batch does not belong to the same Transferred Item");
-
-        // Check if this batch already exists for this received item
-        var existingBatch = await _context.ReceivedStockBatches
-            .FirstOrDefaultAsync(b => b.ReceivedItemId == receivedItemId &&
-                                      b.TransferredStockBatchId == dto.TransferredStockBatchId);
-
-        if (existingBatch != null)
-            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse("This batch already exists for this received item");
-
-        // Validate quantity doesn't exceed transferred batch quantity
-        if (dto.Quantity > transferredStockBatch.Quantity)
-            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse("Received batch quantity cannot exceed transferred batch quantity");
-
-        var mapping = new ReceivedStockBatch
-        {
-            ReceivedItemId = dto.ReceivedItemId,
-            TransferredStockBatchId = dto.TransferredStockBatchId,
-            Quantity = dto.Quantity,
-            Comment = dto.Comment,
-            BatchNumber = transferredStockBatch.BatchNumber,
-            ExpiryDate = transferredStockBatch.ExpiryDate,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var res = await AddAsync(mapping);
-        await SaveChangesAsync();
+        var saved = res.Data;
 
         var model = new ReceivedStockBatchDTO
         {
-            ReceivedStockBatchId = res.ReceivedStockBatchId,
-            ReceivedItemId = res.ReceivedItemId,
-            TransferredStockBatchId = res.TransferredStockBatchId,
-            Quantity = res.Quantity,
-            Comment = res.Comment,
-            BatchNumber = res.BatchNumber,
-            ExpiryDate = res.ExpiryDate
+            ReceivedStockBatchId = saved.ReceivedStockBatchId,
+            ReceivedItemId = saved.ReceivedItemId,
+            TransferredStockBatchId = saved.TransferredStockBatchId,
+            Quantity = saved.Quantity,
+            Comment = saved.Comment,
+            BatchNumber = saved.BatchNumber,
+            ExpiryDate = saved.ExpiryDate
         };
 
         return GeneralResponse<ReceivedStockBatchDTO>.SuccessResponse(model);
     }
 
-    public async Task<GeneralResponse<ReceivedStockBatchDTO>> UpdateReceivedStockBatchAsync(int receivedStockBatchId, UpdateReceivedStockBatchDTO dto)
+    public async Task<GeneralResponse<ReceivedStockBatchDTO>> UpdateReceivedStockBatchAsync(
+        int receivedStockBatchId,
+        UpdateGeneralBatchDto dto)
     {
-        var entity = await _context.ReceivedStockBatches
-            .Include(b => b.TransferredStockBatch)
-            .FirstOrDefaultAsync(e => e.ReceivedStockBatchId == dto.ReceivedStockBatchId);
+        var res = await baseProcesses.UpdateOrderBatchAsync<ReceivedItem, ReceivedStockBatch>(
+            batchId: receivedStockBatchId,
+            processType: ProcessType.Received,
+            dto: dto,
 
-        if (entity == null)
-            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse("Received Stock Batch not found");
+            batchSet: _context.ReceivedStockBatches,
+            orderItemSet: _context.ReceivedItems,
 
-        if (entity.ReceivedStockBatchId != receivedStockBatchId)
-            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse("ID mismatch");
+            batchIdSelector: x => x.ReceivedStockBatchId,
+            orderItemIdSelector: x => x.ReceivedItemId,
+            orderItemIdForItemSelector: x => x.ReceivedItemId
+        );
 
-        // Validate quantity doesn't exceed transferred batch quantity
-        if (dto.Quantity > entity.TransferredStockBatch.Quantity)
-            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse("Received batch quantity cannot exceed transferred batch quantity");
+        if (!res.Success)
+            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse(res.Message);
 
-        entity.Quantity = dto.Quantity;
-        entity.Comment = dto.Comment;
-
-        await _context.SaveChangesAsync();
+        var entity = res.Data;
 
         var result = new ReceivedStockBatchDTO
         {
@@ -169,5 +157,39 @@ public class ReceivedStockBatchRepository : BaseRepository<ReceivedStockBatch>, 
 
         return GeneralResponse<ReceivedStockBatchDTO>.SuccessResponse(result);
     }
-}
 
+    public async Task<GeneralResponse<ReceivedStockBatchDTO>> DeleteReceivedStockBatchAsync(int receivedStockBatchId)
+    {
+        var res = await baseProcesses.DeleteOrderBatchAsync<ReceivedItem, ReceivedStockBatch>(
+            batchIdFromRoute: receivedStockBatchId,
+            processType: ProcessType.Received,
+
+            batchSet: _context.ReceivedStockBatches,
+            orderItemSet: _context.ReceivedItems,
+
+            batchIdSelector: b => b.ReceivedStockBatchId,
+            batchOrderItemIdSelector: b => b.ReceivedItemId,
+            orderItemPkSelector: i => i.ReceivedItemId,
+            orderIdSelector: i => i.ReceivedStockId
+        );
+
+        if (!res.Success)
+            return GeneralResponse<ReceivedStockBatchDTO>.FailResponse(res.Message);
+
+        var entity = res.Data;
+
+        var result = new ReceivedStockBatchDTO
+        {
+            ReceivedStockBatchId = entity.ReceivedStockBatchId,
+            ReceivedItemId = entity.ReceivedItemId,
+            TransferredStockBatchId = entity.TransferredStockBatchId,
+            Quantity = entity.Quantity,
+            Comment = entity.Comment,
+            BatchNumber = entity.BatchNumber,
+            ExpiryDate = entity.ExpiryDate
+        };
+
+        return GeneralResponse<ReceivedStockBatchDTO>.SuccessResponse(result);
+    }
+
+}

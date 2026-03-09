@@ -94,8 +94,12 @@ public class CountStockController : ControllerBase
             return BadRequest(ModelState);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
 
         var created = await _repository.AddCountStockByWarehouseIdAsync(userId, dto);
+        if (!created.Success)
+            return BadRequest(created);
 
         return Ok(created);
     }
@@ -108,9 +112,13 @@ public class CountStockController : ControllerBase
             return BadRequest(ModelState);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
 
+        dto.CountStockId = id;
         var res = await _repository.UpdateCountStockAsync(userId, id, dto);
-        if (!res.Success) return BadRequest(res);
+        if (!res.Success)
+            return BadRequest(res);
 
         return Ok(res);
     }

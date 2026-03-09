@@ -1,4 +1,5 @@
-﻿using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.DTOs.Approval;
+using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.IsProgress;
 using DataWarehouse.Domain.Enums;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 
 namespace DataWarehouse.Services.Repository.IsProgress;
 
@@ -21,6 +23,18 @@ public class ProcessItemIsProgressRepository : BaseRepository<ProcessItemIsProgr
     {
         // processId here is the business reference id (for example ProductionOrderId), not the table PK.
         return await Query().FirstOrDefaultAsync(pip => pip.ProcessType == processType && pip.ReferenceId == processId);
+    }
+    public async Task<ProcessItemIsProgressDto?> GetProcessItemIsProgressAsync(ProcessType processType, int orderId)
+    {
+        var res =  await Query().FirstOrDefaultAsync(pip => pip.ProcessType == processType && pip.ReferenceId == orderId);
+
+        return new ProcessItemIsProgressDto
+        {
+            ReferenceId = orderId,
+            ProcessType = res.ProcessType.ToString(),
+            ProcessItemIsProgressId = res.ProcessItemIsProgressId,
+            Status = res.Status.ToString()
+        };
     }
 
     public async Task<IEnumerable<ProcessItemIsProgress>> GetByProcessTypeAsync(ProcessType processType)

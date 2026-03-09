@@ -5,20 +5,34 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DataWarehouse.Core.DTOs.Processes;
 
-public class TransferredStockDTO
+public class TransferredStockDTO : GeneralOrderDto
 {
     public int TransferredStockId { get; set; }
 
-    [Required(ErrorMessage = "Status is required")]
-    public string Status { get; set; } // GeneralStatus enum
 
+
+
+    [Required(ErrorMessage = "Destination Warehouse ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
+    public int DistinationWarehouseId { get; set; }
+
+    public int? TransferredRequestId { get; set; }
+    public bool? IsReceived { get; set; }
+    public int? ReceivedStockId { get; set; }
+    public string? DistinationWarehouseName { get; set; }
+
+    public List<TransferredItemDTO>? TransferredItems { get; set; }
+}
+
+public class AddTransferredStockDTO
+{
     [Required(ErrorMessage = "Due Date is required")]
     public DateTime DueDate { get; set; }
 
-    [Required(ErrorMessage = "User ID is required")]
-    public string UserId { get; set; }
-
     public string? Comment { get; set; }
+
+    [Required(ErrorMessage = "IsDraft is required")]
+    public bool IsDraft { get; set; }
 
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
@@ -28,10 +42,16 @@ public class TransferredStockDTO
     [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
     public int DistinationWarehouseId { get; set; }
 
-    public List<TransferredItemDTO>? TransferredItems { get; set; }
+
+    [Required(ErrorMessage = "TransferredRequestId is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "TransferredRequestId must be greater than 0")]
+    public int TransferredRequestId { get; set; }
+
+    
 }
 
-public class AddTransferredStockDTO
+
+public class AddTransferredStockWithoutRefDTO
 {
     [Required(ErrorMessage = "Due Date is required")]
     public DateTime DueDate { get; set; }
@@ -54,14 +74,14 @@ public class UpdateTransferredStockDTO
 {
     public int TransferredStockId { get; set; }
 
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
     public string? Comment { get; set; }
 
-    [Required(ErrorMessage = "Destination Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
-    public int DistinationWarehouseId { get; set; }
+    public int? DistinationWarehouseId { get; set; }
+
+    public bool IsDraft { get; set; }
 }
 
 public class TransferredItemDTO
@@ -92,6 +112,12 @@ public class TransferredItemDTO
     [Required(ErrorMessage = "Item ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
     public int ItemId { get; set; }
+
+    public int? TransferredRequestItemId { get; set; }
+    public string? ItemCode { get; set; }
+    public string? ItemName { get; set; }
+    public string? UnitName { get; set; }
+    public List<TransferredStockBatchDTO>? Batches { get; set; }
 }
 
 public class AddTransferredItemDTO
@@ -100,7 +126,7 @@ public class AddTransferredItemDTO
     public int UoMEntry { get; set; }
 
     [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
-    public decimal Quantity { get; set; }
+    public decimal? Quantity { get; set; }
 
     [Required(ErrorMessage = "Transferred Stock ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Transferred Stock ID must be greater than 0")]
@@ -109,6 +135,10 @@ public class AddTransferredItemDTO
     [Required(ErrorMessage = "Item ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
     public int ItemId { get; set; }
+
+    [Required(ErrorMessage = "TransferredRequestItemId is required")]
+
+    public int TransferredRequestItemId { get; set; }  
 }
 
 public class UpdateTransferredItemDTO
@@ -164,6 +194,9 @@ public class AddTransferredStockBatchDTO
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
 
+    [StringLength(100, ErrorMessage = "Batch Number cannot exceed 100 characters")]
+    public string? BatchNumber { get; set; }
+
     public DateTime? ExpiryDate { get; set; }
 }
 
@@ -178,6 +211,8 @@ public class UpdateTransferredStockBatchDTO
 
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
+
+    public string? BatchNumber { get; set; }
 
     public DateTime? ExpiryDate { get; set; }
 }

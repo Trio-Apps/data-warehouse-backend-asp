@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
+using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
@@ -13,17 +14,38 @@ namespace DataWarehouse.Api.Controllers.admin.Processes.OutSide;
 [Authorize]
 public class SalesOrderController : ControllerBase
 {
+    private readonly ISapJobQueuer jobQueuer;
     private readonly ISalesOrderRepository _repository;
     private readonly ILogger<SalesOrderController> _logger;
 
     public SalesOrderController(
+        ISapJobQueuer jobQueuer,
         ISalesOrderRepository repository,
         ILogger<SalesOrderController> logger)
     {
+        this.jobQueuer = jobQueuer;
         _repository = repository;
         _logger = logger;
     }
 
+    [HttpGet("search-pagination/warehouse/{warehouseId}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Items_Get}")]
+    public async Task<IActionResult> GetByWarehouseId(
+int warehouseId,
+[FromQuery] string? itemCodeOrItemName,
+[FromQuery] int pageNumber = 1,
+[FromQuery] int pageSize = 20)
+    {
+        var result = await _repository.GetByWarehouseIdAsync(
+            warehouseId,
+            itemCodeOrItemName,
+            pageNumber,
+            pageSize);
+
+        return Ok(result);
+    }
+
+  
     [HttpGet]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Get}")]
     public async Task<ActionResult<IEnumerable<SalesOrder>>> GetAll()
@@ -188,6 +210,20 @@ public class SalesOrderController : ControllerBase
 
         var res = await _repository.UpdateSalesOrderAsync(userId, id, dto);
         if (!res.Success) return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpPatch("{id}/revert-partially-failed")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Sales_Edit}")]
+    public async Task<IActionResult> RevertPartiallyFailedStatus(int id)
+    {
+        var res = await _repository.RevertPartiallyFailedStatusToProcessingAsync(id);
+
+        await jobQueuer.DistributionOrders(res.Data);
+
+        if (!res.Success)
+            return BadRequest(res);
 
         return Ok(res);
     }

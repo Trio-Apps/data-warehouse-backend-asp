@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <Folder Include="DTOs\Actors\" />
+    <Folder Include="Interfaces\Sync\" />
     <Folder Include="IServices\Actors\" />
     <Folder Include="IServices\Processes\OutSide\" />
   </ItemGroup>

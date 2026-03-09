@@ -2,12 +2,12 @@ using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
-using DataWarehouse.Core.Interfaces.BarCode;
-using DataWarehouse.Core.Interfaces.ISap;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -18,238 +18,150 @@ namespace DataWarehouse.Services.Repository.Processes;
 
 public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountStockItemRepository
 {
-    private readonly ISapCache sapCache;
-    private readonly IBarCodeOrdersRepository barcodeOrder;
+    private readonly IBaseProcessesRepository<CountStockItem> baseProcesses;
 
-    public CountStockItemRepository(ISapCache sapCache, DataWarehouseDbContext context, IBarCodeOrdersRepository barcodeOrder) : base(context)
+    public CountStockItemRepository(IBaseProcessesRepository<CountStockItem> baseProcesses, DataWarehouseDbContext context)
+        : base(context)
     {
-        this.sapCache = sapCache;
-        this.barcodeOrder = barcodeOrder;
+        this.baseProcesses = baseProcesses;
     }
 
-    public async Task<IEnumerable<CountStockItemDTO>> GetByCountStockItemByCountStockIdAsync(int CountStockId)
+    public async Task<IEnumerable<CountStockItemDTO>> GetByCountStockItemByCountStockIdAsync(int countStockId)
     {
-        var res = await Query().Where(csi => csi.CountStockId == CountStockId).ToListAsync();
-
-        return res.Select(e => new CountStockItemDTO
-        {
-            ItemId = e.ItemId,
-            CountStockItemId = e.CountStockItemId,
-            CountStockId = e.CountStockId,
-            Quantity = e.Quantity,
-            Status = e.Status.ToString(),
-            ErrorMessage = e.ErrorMessage,
-            UoMEntry = e.UoMEntry,
-            BarCode = e.BarCode,
-            UnitPrice = e.UnitPrice,
-            Comment = e.Comment
-        });
+        return await Query()
+            .Where(x => x.CountStockId == countStockId)
+            .Select(x => new CountStockItemDTO
+            {
+                ItemId = x.ItemId,
+                CountStockItemId = x.CountStockItemId,
+                CountStockId = x.CountStockId,
+                Quantity = x.Quantity,
+                Status = x.Status.ToString(),
+                ErrorMessage = x.ErrorMessage,
+                UoMEntry = x.UoMEntry,
+                BarCode = x.BarCode,
+                UnitPrice = x.UnitPrice,
+                Comment = x.Comment
+            })
+            .ToListAsync();
     }
 
-    public async Task<GeneralResponse<PagedResult<CountStockItemDTO>>>
-     GetByCountStockItemByCountStockIdWithPaginationAsync(int CountStockId, string? status, int pageNumber, int pageSize)
+    public async Task<GeneralResponse<PagedResult<CountStockItemDTO>>> GetByCountStockItemByCountStockIdWithPaginationAsync(
+        int countStockId, string? status, int pageNumber, int pageSize)
     {
-        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-        pageSize = pageSize <= 0 ? 10 : pageSize;
+        var res = await baseProcesses.GetOrderItemsByOrderIdWithPaginationAsync<
+            CountStock,
+            CountStockItem,
+            CountStockItemDTO,
+            string,
+            GeneralItemStatus>(
+            orderId: countStockId,
+            pageNumber: pageNumber,
+            pageSize: pageSize,
+            status: status,
+            extraSelector: o => o.Status.ToString(),
+            orderIdSelector: o => o.CountStockId == countStockId,
+            orderSet: _context.CountStocks,
+            itemSet: _context.CountStockItems,
+            itemFilter: i => i.CountStockId == countStockId,
+            include: null,
+            selector: x => new CountStockItemDTO
+            {
+                ItemId = x.ItemId,
+                CountStockItemId = x.CountStockItemId,
+                CountStockId = x.CountStockId,
+                Quantity = x.Quantity,
+                Status = x.Status.ToString(),
+                ErrorMessage = x.ErrorMessage,
+                UoMEntry = x.UoMEntry,
+                BarCode = x.BarCode,
+                UnitPrice = x.UnitPrice,
+                Comment = x.Comment
+            },
+            orderByDescSelector: x => x.CountStockItemId,
+            itemStatusSelector: x => x.Status);
 
-        var query = _context.CountStockItems.AsNoTracking().Where(csi => csi.CountStockId == CountStockId);
+        if (!res.Success)
+            return GeneralResponse<PagedResult<CountStockItemDTO>>.FailResponse(res.Message);
 
-        // 🔹 Filtering
-        if (!string.IsNullOrWhiteSpace(status))
-        {
-            var statusEnum = Enum.Parse<GeneralItemStatus>(status, ignoreCase: true);
-            query = query.Where(iw => iw.Status == statusEnum);
-        }
-
-        var totalRecords = await query.CountAsync();
-
-        var data = query.Select(e => new CountStockItemDTO
-        {
-            ItemId = e.ItemId,
-            Status = e.Status.ToString(),
-            ErrorMessage = e.ErrorMessage,
-            Quantity = e.Quantity,
-            CountStockItemId = e.CountStockItemId,
-            CountStockId = e.CountStockId,
-            UoMEntry = e.UoMEntry,
-            BarCode = e.BarCode,
-            UnitPrice = e.UnitPrice,
-            Comment = e.Comment
-        }).ToList();
-
-        return GeneralResponse<PagedResult<CountStockItemDTO>>.SuccessResponse(new PagedResult<CountStockItemDTO>
-        {
-            Data = data,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            TotalRecords = totalRecords
-        });
+        return GeneralResponse<PagedResult<CountStockItemDTO>>.SuccessResponse(res.Data);
     }
 
-    // create
-    public async Task<GeneralResponse<CountStockItemDTO>> AddCountStockItemByCountStockIdAsync(int CountStockid, bool isBarcode,
-           DynamicBarcodesDto? barcodeDto,
-           AddCountStockItemDTO? dto)
+    public async Task<GeneralResponse<CountStockItemDTO>> AddCountStockItemByCountStockIdAsync(
+        int countStockId,
+        bool isBarcode,
+        DynamicBarcodesDto? dynamicDto,
+        AddCountStockItemDTO? dto)
     {
-        var model = new CountStockItem();
-        var entity = await _context.CountStocks.FirstOrDefaultAsync(e => e.CountStockId == CountStockid);
-
-        if (entity == null)
-            return GeneralResponse<CountStockItemDTO>.FailResponse("id is not found");
-
-        if (isBarcode)
+        var mappedDto = dto == null ? null : new AddGeneralItemDto
         {
-            var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
-            var item = new ItemByBarCodeDto();
-            if (isDynamic)
-            {
-                var resD = await barcodeOrder.GetItemByDynamicBarCodeAsync(entity.WarehouseId, barcodeDto);
-
-                if (!resD.Success)
-                    return GeneralResponse<CountStockItemDTO>.FailResponse(resD.Message);
-
-                item = resD.Data;
-
-                if (resD.Data == null)
-                    return GeneralResponse<CountStockItemDTO>.FailResponse(resD.Message);
-            }
-            else
-            {
-                var resD = await barcodeOrder.GetItemByStaticBarCodeAsync(entity.WarehouseId, barcodeDto);
-                if (!resD.Success)
-                    return GeneralResponse<CountStockItemDTO>.FailResponse(resD.Message);
-
-                item = resD.Data;
-                if (resD.Data == null)
-                    return GeneralResponse<CountStockItemDTO>.FailResponse(resD.Message);
-            }
-
-            model = new CountStockItem()
-            {
-                Status = GeneralItemStatus.Planned,
-                CountStockId = CountStockid,
-                ItemId = item.Id,
-                Quantity = item.Quantity,
-                BarCode = item.Barcode,
-                UnitPrice = item.Price,
-                UoMEntry = item.UoMEntry
-            };
-        }
-        else
-        {
-            var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == dto.ItemId);
-            model = new CountStockItem
-            {
-                Status = GeneralItemStatus.Planned,
-                CountStockId = dto.CountStockId,
-                ItemId = dto.ItemId,
-                Quantity = dto.Quantity,
-                BarCode = "",
-                UnitPrice = item.SalesPrice,
-                UoMEntry = dto.UoMEntry,
-            };
-        }
-
-        var res = await AddAsync(model);
-        await SaveChangesAsync();
-
-        var modelfin = new CountStockItemDTO
-        {
-            CountStockId = res.CountStockId,
-            Quantity = res.Quantity,
-            Status = GetEnumString(res.Status),
-            ItemId = res.ItemId,
-            CountStockItemId = res.CountStockItemId,
-            UoMEntry = res.UoMEntry,
-            BarCode = res.BarCode,
-            UnitPrice = res.UnitPrice,
-            ErrorMessage = res.ErrorMessage,
-            Comment = res.Comment
+            ItemId = dto.ItemId,
+            Quantity = dto.Quantity,
+            UoMEntry = dto.UoMEntry
         };
 
-        return GeneralResponse<CountStockItemDTO>.SuccessResponse(modelfin);
-    }
+        var res = await baseProcesses.AddOrderItemAsync<CountStock, CountStockItem>(
+            orderId: countStockId,
+            processType: ProcessType.Counting,
+            isBarcode: isBarcode,
+            barcodeDto: dynamicDto,
+            dto: mappedDto,
+            orderIdSelector: x => x.CountStockId == countStockId,
+            orderSet: _context.CountStocks,
+            itemSet: _context.CountStockItems);
 
-    // update
-    public async Task<GeneralResponse<CountStockItemDTO>> UpdateCountStockItemAsync(int CountStockItemId,
-           UpdateCountStockItemDTO dto)
-    {
-        var entity = await _context.CountStockItems.FirstOrDefaultAsync(e => e.CountStockItemId == dto.CountStockItemId);
-        if (entity == null)
-            return GeneralResponse<CountStockItemDTO>.FailResponse("id is not found");
-        if (entity.CountStockItemId != CountStockItemId)
+        if (!res.Success)
+            return GeneralResponse<CountStockItemDTO>.FailResponse(res.Message);
+
+        var entity = res.Data;
+
+        return GeneralResponse<CountStockItemDTO>.SuccessResponse(new CountStockItemDTO
         {
-            return GeneralResponse<CountStockItemDTO>.FailResponse("id not equal Count stock item id!");
-        }
-
-        var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == entity.ItemId);
-
-        if (dto.Quantity.HasValue && dto.Quantity.Value >= 0)
-        {
-            entity.Quantity = dto.Quantity.Value;
-        }
-
-        if (dto.UoMEntry > 0)
-        {
-            entity.UoMEntry = dto.UoMEntry;
-        }
-
-        await _context.SaveChangesAsync();
-
-        var result = new CountStockItemDTO
-        {
-            CountStockId = entity.CountStockId,
-            Quantity = entity.Quantity,
-            Status = GetEnumString(entity.Status),
             ItemId = entity.ItemId,
             CountStockItemId = entity.CountStockItemId,
-            BarCode = entity.BarCode,
-            UoMEntry = entity.UoMEntry,
+            CountStockId = entity.CountStockId,
+            Quantity = entity.Quantity,
+            Status = entity.Status.ToString(),
             ErrorMessage = entity.ErrorMessage,
+            UoMEntry = entity.UoMEntry,
+            BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
             Comment = entity.Comment
+        });
+    }
+
+    public async Task<GeneralResponse<CountStockItemDTO>> UpdateCountStockItemAsync(int countStockItemId, UpdateCountStockItemDTO dto)
+    {
+        var mappedDto = new UpdateGeneralItemDto
+        {
+            Quantity = dto.Quantity,
+            UoMEntry = dto.UoMEntry
         };
 
-        return GeneralResponse<CountStockItemDTO>.SuccessResponse(result);
-    }
+        var res = await baseProcesses.UpdateOrderItemAsync<CountStockItem>(
+            itemIdFromRoute: countStockItemId,
+            processType: ProcessType.Counting,
+            dto: mappedDto,
+            itemSelector: x => x.CountStockItemId == countStockItemId,
+            itemSet: _context.CountStockItems);
 
-    private async Task<bool> CheckDynamicCodeValidationLocal(string barCode)
-    {
-        var sapId = await sapCache.Get();
+        if (!res.Success)
+            return GeneralResponse<CountStockItemDTO>.FailResponse(res.Message);
 
-        var settings = await _context.BarCodeSettings
-            .Where(bs => bs.Company.Saps.Any(s => s.SapId == sapId))
-            .ToListAsync();
+        var entity = res.Data;
 
-        foreach (var setting in settings)
+        return GeneralResponse<CountStockItemDTO>.SuccessResponse(new CountStockItemDTO
         {
-            if (barCode.Length != setting.TotalLength)
-                continue;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private string GetEnumString(GeneralItemStatus status)
-    {
-        switch (status)
-        {
-            case GeneralItemStatus.Draft:
-                return "Draft";
-            case GeneralItemStatus.Planned:
-                return "Planned";
-            case GeneralItemStatus.Released:
-                return "Released";
-            case GeneralItemStatus.Received:
-                return "Received";
-            case GeneralItemStatus.Closed:
-                return "Closed";
-            case GeneralItemStatus.Failed:
-                return "Failed";
-            default:
-                return "Unknown";
-        }
+            ItemId = entity.ItemId,
+            CountStockItemId = entity.CountStockItemId,
+            CountStockId = entity.CountStockId,
+            Quantity = entity.Quantity,
+            Status = entity.Status.ToString(),
+            ErrorMessage = entity.ErrorMessage,
+            UoMEntry = entity.UoMEntry,
+            BarCode = entity.BarCode,
+            UnitPrice = entity.UnitPrice,
+            Comment = entity.Comment
+        });
     }
 }

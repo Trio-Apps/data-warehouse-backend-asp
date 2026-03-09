@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
+using DataWarehouse.Api;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
@@ -10,14 +11,17 @@ using System.Security.Claims;
 [Route("api/[controller]")]
 public class DeliveryNoteOrderController : ControllerBase
 {
+    private readonly ISapJobQueuer jobQueuer;
     private readonly IDeliveryNoteOrderRepository _repository;
     private readonly ILogger<DeliveryNoteOrderController> _logger;
 
 
     public DeliveryNoteOrderController(
+        ISapJobQueuer jobQueuer,
         IDeliveryNoteOrderRepository repository,
         ILogger<DeliveryNoteOrderController> logger)
     {
+        this.jobQueuer = jobQueuer;
         _repository = repository;
         _logger = logger;
     }
@@ -230,6 +234,21 @@ public class DeliveryNoteOrderController : ControllerBase
         var res = await _repository.UpdateDeliveryNoteOrderAsync(userId!, id, dto);
         if (!res.Success)
             return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpPatch("{id}/revert-partially-failed")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.DeliveryNote_Edit}")]
+    public async Task<IActionResult> RevertPartiallyFailedStatus(int id)
+    {
+        var res = await _repository.RevertPartiallyFailedStatusToProcessingAsync(id);
+
+        await jobQueuer.DistributionOrders(res.Data);
+
+        if (!res.Success)
+            return BadRequest(res);
+
 
         return Ok(res);
     }

@@ -1,6 +1,8 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
@@ -14,10 +16,16 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoodsReturnOrderRepository
 {
+    private readonly IBaseProcessesRepository<GoodsReturnOrder> baseProcesses;
     private readonly IProcessItemIsProgressRepository progress;
     private readonly IApprovalRepository approval;
-    public GoodsReturnOrderRepository(IProcessItemIsProgressRepository progress, IApprovalRepository approval, DataWarehouseDbContext context) : base(context)
+    public GoodsReturnOrderRepository(
+        IBaseProcessesRepository<GoodsReturnOrder> baseProcesses,
+        IProcessItemIsProgressRepository progress,
+        IApprovalRepository approval,
+        DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
         this.progress = progress;
         this.approval = approval;
     }
@@ -457,6 +465,16 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         await _context.SaveChangesAsync(cancellationToken);
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(result);
+    }
+
+    public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int goodsReturnOrderId)
+    {
+        return await baseProcesses.RevertPartiallyFailedStatusToProcessingAsync<GoodsReturnOrder>(
+            goodsReturnOrderId,
+            ProcessType.GoodsReturn,
+            x => x.GoodsReturnOrderId == goodsReturnOrderId,
+            _context.GoodsReturnOrders
+        );
     }
     
     public async Task<GeneralResponse<GoodsReturnOrderDTO>> GetByReceiptPurchaseOrderIdAsync(int receiptPurchaseOrderId)

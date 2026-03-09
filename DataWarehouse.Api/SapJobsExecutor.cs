@@ -6,6 +6,7 @@ using DataWarehouse.SAP.Interfaces.Proccesses;
 using DataWarehouse.SAP.Repositories.Actors;
 using DataWarehouse.SAP.Repositories.BarCode;
 using Hangfire;
+using Hangfire.Storage;
 
 
 namespace DataWarehouse.Api
@@ -55,108 +56,181 @@ namespace DataWarehouse.Api
         // =========================
         // 🔒 LOCKED JOBS
         // =========================
+        private async Task ExecuteWithSkipIfRunningAsync(
+                string jobKey,
+                int sapId,
+                Func<Task> action)
+        {
+            using var connection = JobStorage.Current.GetConnection();
 
-        [DisableConcurrentExecution(1800)]
+            try
+            {
+                using var distributedLock = connection.AcquireDistributedLock(
+                    $"{jobKey}:{sapId}",
+                    TimeSpan.FromSeconds(1));
+
+              //  _logger.LogInformation("Starting job {JobKey} for SapId={SapId}", jobKey, sapId);
+
+                await action();
+
+             //   _logger.LogInformation("Completed job {JobKey} for SapId={SapId}", jobKey, sapId);
+            }
+            catch (DistributedLockTimeoutException)
+            {
+                //_logger.LogInformation(
+                //    "Skipping job {JobKey} for SapId={SapId} because another instance is already running.",
+                //    jobKey,
+                //    sapId);
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex,
+                //    "Job {JobKey} failed for SapId={SapId}",
+                //    jobKey,
+                //    sapId);
+
+                throw;
+            }
+        }
+
         [AutomaticRetry(Attempts = 0)]
         public async Task SyncWarehousesAsync(int sapId)
         {
-            await _warehouseService.SyncWarehouseAsync(sapId);
+            await ExecuteWithSkipIfRunningAsync(
+                "sync-warehouses",
+                sapId,
+                () => _warehouseService.SyncWarehouseAsync(sapId));
         }
 
-        [DisableConcurrentExecution(1800)]
         [AutomaticRetry(Attempts = 0)]
         public async Task SyncItemsAsync(int sapId)
         {
-            await _itemService.SyncItemsAsync(sapId);
+            await ExecuteWithSkipIfRunningAsync(
+                "sync-items",
+                sapId,
+                () => _itemService.SyncItemsAsync(sapId));
         }
 
-        [DisableConcurrentExecution(1800)]
         [AutomaticRetry(Attempts = 0)]
         public async Task SyncBarcodesAsync(int sapId)
         {
-            await _barCodeService.SyncBarCodeAsync(sapId);
+            await ExecuteWithSkipIfRunningAsync(
+                "sync-barcodes",
+                sapId,
+                () => _barCodeService.SyncBarCodeAsync(sapId));
         }
 
-        [DisableConcurrentExecution(1800)]
         [AutomaticRetry(Attempts = 0)]
         public async Task SyncUomGroupsAsync(int sapId)
         {
-            await _barCodeService.SyncItemUomGroupAsync(sapId);
+            await ExecuteWithSkipIfRunningAsync(
+                "sync-uom-groups",
+                sapId,
+                () => _barCodeService.SyncItemUomGroupAsync(sapId));
         }
 
-        [DisableConcurrentExecution(1800)]
         [AutomaticRetry(Attempts = 0)]
         public async Task SyncDeleteBarcodesAsync(int sapId)
         {
-            await _barCodeService.SyncDeleteBarCodeAsync(sapId);
+            await ExecuteWithSkipIfRunningAsync(
+                "sync-delete-barcodes",
+                sapId,
+                () => _barCodeService.SyncDeleteBarCodeAsync(sapId));
         }
 
-        [DisableConcurrentExecution(1800)]
         [AutomaticRetry(Attempts = 0)]
         public async Task SyncDynamicBarcodesAsync(int sapId)
         {
-            await _dynamicBarCodeService.SyncDynamicBarcodeAsync(sapId);
+            await ExecuteWithSkipIfRunningAsync(
+                "sync-dynamic-barcodes",
+                sapId,
+                () => _dynamicBarCodeService.SyncDynamicBarcodeAsync(sapId));
         }
 
-        [DisableConcurrentExecution(1800)]
         [AutomaticRetry(Attempts = 0)]
         public async Task SyncDeleteDynamicBarcodesAsync(int sapId)
         {
-            await _dynamicBarCodeService.SyncDeleteDynamicBarCodeAsync(sapId);
+            await ExecuteWithSkipIfRunningAsync(
+                "sync-delete-dynamic-barcodes",
+                sapId,
+                () => _dynamicBarCodeService.SyncDeleteDynamicBarCodeAsync(sapId));
         }
-        // Partners
-        [DisableConcurrentExecution(1800)]
+
         [AutomaticRetry(Attempts = 0)]
         public async Task SyncBusinessPartnersAsync(int sapId)
         {
-            await businessPartnersService.SyncBusinessPartnersAsync(sapId);
+            await ExecuteWithSkipIfRunningAsync(
+                "sync-business-partners",
+                sapId,
+                () => businessPartnersService.SyncBusinessPartnersAsync(sapId));
         }
-
-        // purchase
-        [DisableConcurrentExecution(1800)]
-        [AutomaticRetry(Attempts = 0)]
-        public async Task SyncPurchaseAsync(int sapId)
-        {
-            await purchaseService.SyncPurchaseAsync(sapId);
-        }
-        // purchase
-        [DisableConcurrentExecution(1800)]
-        [AutomaticRetry(Attempts = 0)]
-        public async Task SyncReceiptAsync(int sapId)
-        {
-            await receiptService.SyncReceiptAsync(sapId);
-        }
-
-        // purchase
-        [DisableConcurrentExecution(1800)]
-        [AutomaticRetry(Attempts = 0)]
-        public async Task SyncGoodsReturnAsync(int sapId)
-        {
-            await goodsReturnService.SyncGoodsReturnAsync(sapId);
-        }
-
-        // purchase
-        [DisableConcurrentExecution(1800)]
+        // sales
+        //[DisableConcurrentExecution(1800)]
+        //[AutomaticRetry(Attempts = 0)]
+        //public async Task SyncSalesAsync(int sapId)
+        //{
+        //    await salesService.SyncSalesOrdersAsync(sapId);
+        //}
         [AutomaticRetry(Attempts = 0)]
         public async Task SyncSalesAsync(int sapId)
         {
-            await salesService.SyncSalesOrdersAsync(sapId);
+            using var connection = JobStorage.Current.GetConnection();
+
+            try
+            {
+                // لو في واحدة شغالة بالفعل لنفس sapId، ما تستناش
+                using var distributedLock = connection.AcquireDistributedLock(
+                    $"sync-sales:{sapId}",
+                    TimeSpan.FromSeconds(1));
+
+                await salesService.SyncSalesOrdersAsync(sapId);
+            }
+            catch (DistributedLockTimeoutException)
+            {
+                // نسخة أخرى ما زالت شغالة -> تجاهل هذه الدورة
+                // لا ترمي exception علشان ما تتحسبش failure
+            }
         }
 
         // purchase
-        [DisableConcurrentExecution(1800)]
-        [AutomaticRetry(Attempts = 0)]
-        public async Task SyncDeliveryNoteAsync(int sapId)
-        {
-            await deliveryNoteService.SyncDeliveryNotesAsync(sapId);
-        }
-        // purchase
-        [DisableConcurrentExecution(1800)]
-        [AutomaticRetry(Attempts = 0)]
-        public async Task SyncSalesReturnAsync(int sapId)
-        {
-            await salesReturnService.SyncSalesReturnsAsync(sapId);
-        }
+        //[DisableConcurrentExecution(1800)]
+        //[AutomaticRetry(Attempts = 0)]
+        //public async Task SyncPurchaseAsync(int sapId)
+        //{
+        //    await purchaseService.SyncPurchaseAsync(sapId);
+        //}
+        //// purchase
+        //[DisableConcurrentExecution(1800)]
+        //[AutomaticRetry(Attempts = 0)]
+        //public async Task SyncReceiptAsync(int sapId)
+        //{
+        //    await receiptService.SyncReceiptAsync(sapId);
+        //}
+
+        //// purchase
+        //[DisableConcurrentExecution(1800)]
+        //[AutomaticRetry(Attempts = 0)]
+        //public async Task SyncGoodsReturnAsync(int sapId)
+        //{
+        //    await goodsReturnService.SyncGoodsReturnAsync(sapId);
+        //}
+
+
+
+        //// purchase
+        //[DisableConcurrentExecution(1800)]
+        //[AutomaticRetry(Attempts = 0)]
+        //public async Task SyncDeliveryNoteAsync(int sapId)
+        //{
+        //    await deliveryNoteService.SyncDeliveryNotesAsync(sapId);
+        //}
+        //// purchase
+        //[DisableConcurrentExecution(1800)]
+        //[AutomaticRetry(Attempts = 0)]
+        //public async Task SyncSalesReturnAsync(int sapId)
+        //{
+        //    await salesReturnService.SyncSalesReturnsAsync(sapId);
+        //}
     }
 
 }

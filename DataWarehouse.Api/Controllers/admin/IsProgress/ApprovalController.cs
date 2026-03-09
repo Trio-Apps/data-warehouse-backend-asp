@@ -14,10 +14,12 @@ namespace DataWarehouse.Api.Controllers.admin.IsProgress
     [Authorize]
     public class ApprovalController : ControllerBase
     {
+        private readonly ISapJobQueuer jobQueuer;
         private readonly IApprovalRepository repository;
 
-        public ApprovalController(IApprovalRepository repository)
+        public ApprovalController(ISapJobQueuer jobQueuer, IApprovalRepository repository)
         {
+            this.jobQueuer = jobQueuer;
             this.repository = repository;
         }
 
@@ -42,9 +44,14 @@ namespace DataWarehouse.Api.Controllers.admin.IsProgress
             GeneralResponse<ProcessApprovalDto> res;
 
             if (approval)
+            {
                 res = await repository.ApproveStepAsync(processApproval, userId, comment);
+
+                await jobQueuer.DistributionOrders(res.Data.ProcessItemIsProgress);
+            }
             else
                 res = await repository.RejectStepAsync(processApproval, userId, comment);
+
 
             if (!res.Success)
                 return BadRequest(res);

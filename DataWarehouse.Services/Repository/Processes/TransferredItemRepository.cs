@@ -2,254 +2,460 @@ using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
-using DataWarehouse.Core.Interfaces.BarCode;
-using DataWarehouse.Core.Interfaces.ISap;
+using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
+using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DataWarehouse.Services.Repository.Processes;
 
 public class TransferredItemRepository : BaseRepository<TransferredItem>, ITransferredItemRepository
 {
-    private readonly ISapCache sapCache;
-    private readonly IBarCodeOrdersRepository barcodeOrder;
+    private readonly IBaseProcessesRepository<TransferredItem> baseProcesses;
 
-    public TransferredItemRepository(ISapCache sapCache, DataWarehouseDbContext context, IBarCodeOrdersRepository barcodeOrder) : base(context)
+    public TransferredItemRepository(
+        IBaseProcessesRepository<TransferredItem> baseProcesses,
+        DataWarehouseDbContext context) : base(context)
     {
-        this.sapCache = sapCache;
-        this.barcodeOrder = barcodeOrder;
+        this.baseProcesses = baseProcesses;
     }
 
-    public async Task<IEnumerable<TransferredItemDTO>> GetByTransferredItemByTransferredStockIdAsync(int TransferredStockId)
+    public async Task<IEnumerable<TransferredItemDTO>> GetByTransferredItemByTransferredStockIdAsync(int transferredStockId)
     {
-        var res = await Query().Where(ti => ti.TransferredStockId == TransferredStockId).ToListAsync();
+        var res = await Query()
+            .Where(ti => ti.TransferredStockId == transferredStockId)
+            .Select(e => new TransferredItemDTO
+            {
+                TransferredItemId = e.TransferredItemId,
+                Quantity = e.Quantity,
+                UoMEntry = e.UoMEntry,
+                BarCode = e.BarCode,
+                UnitPrice = e.UnitPrice,
+                ErrorMessage = e.ErrorMessage,
+                Status = e.Status.ToString(),
+                TransferredStockId = e.TransferredStockId,
+                TransferredRequestItemId = e.TransferredRequestItemId,
+                ItemId = e.ItemId,
+                ItemCode = e.Item.ItemCode,
+                ItemName = e.Item.ItemName,
+                UnitName = e.Item.ItemUomGroups.FirstOrDefault(i => i.UomEntry == e.UoMEntry)!.UomCode,
+                Comment = e.Comment
+            })
+            .ToListAsync();
 
-        return res.Select(e => new TransferredItemDTO
-        {
-            ItemId = e.ItemId,
-            TransferredItemId = e.TransferredItemId,
-            TransferredStockId = e.TransferredStockId,
-            Quantity = e.Quantity,
-            Status = e.Status.ToString(),
-            ErrorMessage = e.ErrorMessage,
-            UoMEntry = e.UoMEntry,
-            BarCode = e.BarCode,
-            UnitPrice = e.UnitPrice,
-            Comment = e.Comment
-        });
+        return res;
     }
 
-    public async Task<GeneralResponse<PagedResult<TransferredItemDTO>>>
-     GetByTransferredItemByTransferredStockIdWithPaginationAsync(int TransferredStockId, string? status, int pageNumber, int pageSize)
+    public async Task<GeneralResponse<PagedResult<TransferredItemDTO>>> GetByTransferredItemByTransferredStockIdWithPaginationAsync(
+        int transferredStockId, string? status, int pageNumber, int pageSize)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
 
-        var query = _context.TransferredItems.AsNoTracking().Where(b => b.TransferredStockId == TransferredStockId);
+        var query = _context.TransferredItems
+            .AsNoTracking()
+            .Where(ti => ti.TransferredStockId == transferredStockId);
 
-        // 🔹 Filtering
         if (!string.IsNullOrWhiteSpace(status))
         {
-            var statusEnum = Enum.Parse<GeneralItemStatus>(status, ignoreCase: true);
-            query = query.Where(iw => iw.Status == statusEnum);
+            if (!Enum.TryParse<GeneralItemStatus>(status, true, out var statusEnum))
+                return GeneralResponse<PagedResult<TransferredItemDTO>>.FailResponse("Invalid status");
+
+            query = query.Where(ti => ti.Status == statusEnum);
         }
 
         var totalRecords = await query.CountAsync();
 
-        var data = query.Select(e => new TransferredItemDTO
-        {
-            ItemId = e.ItemId,
-            Status = e.Status.ToString(),
-            ErrorMessage = e.ErrorMessage,
-            Quantity = e.Quantity,
-            TransferredItemId = e.TransferredItemId,
-            TransferredStockId = e.TransferredStockId,
-            UoMEntry = e.UoMEntry,
-            BarCode = e.BarCode,
-            UnitPrice = e.UnitPrice,
-            Comment = e.Comment
-        }).ToList();
+        var data = await query
+            .OrderByDescending(x => x.TransferredItemId)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(e => new TransferredItemDTO
+            {
+                TransferredItemId = e.TransferredItemId,
+                Quantity = e.Quantity,
+                UoMEntry = e.UoMEntry,
+                BarCode = e.BarCode,
+                UnitPrice = e.UnitPrice,
+                ErrorMessage = e.ErrorMessage,
+                Status = e.Status.ToString(),
+                TransferredStockId = e.TransferredStockId,
+                TransferredRequestItemId = e.TransferredRequestItemId,
+                ItemId = e.ItemId,
+                ItemCode = e.Item.ItemCode,
+                ItemName = e.Item.ItemName,
+                Comment = e.Comment
+            })
+            .ToListAsync();
 
-        return GeneralResponse<PagedResult<TransferredItemDTO>>.SuccessResponse(new PagedResult<TransferredItemDTO>
-        {
-            Data = data,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            TotalRecords = totalRecords
-        });
+        return GeneralResponse<PagedResult<TransferredItemDTO>>.SuccessResponse(
+            new PagedResult<TransferredItemDTO>
+            {
+                Data = data,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords
+            });
     }
 
-    // create
-    public async Task<GeneralResponse<TransferredItemDTO>> AddTransferredItemByTransferredStockIdAsync(int TransferredStockid, bool isBarcode,
-           DynamicBarcodesDto? barcodeDto,
-           AddTransferredItemDTO? dto)
+    public async Task<GeneralResponse<TransferredItemDTO>> AddTransferredItemByTransferredStockIdWithoutRefAsync(
+        int transferredStockId,
+        bool isBarcode,
+        DynamicBarcodesDto? barcodeDto,
+        AddGeneralItemDto? dto)
     {
-        var model = new TransferredItem();
-        var entity = await _context.TransferredStocks.FirstOrDefaultAsync(e => e.TransferredStockId == TransferredStockid);
+      
 
-        if (entity == null)
-            return GeneralResponse<TransferredItemDTO>.FailResponse("id is not found");
+        var res = await baseProcesses.AddOrderItemAsync<TransferredStock, TransferredItem>(
+            orderId: transferredStockId,
+            processType: ProcessType.Transferred,
+            isBarcode: isBarcode,
+            barcodeDto: barcodeDto,
+            dto: dto,
+            orderIdSelector: x => x.TransferredStockId == transferredStockId,
+            orderSet: _context.TransferredStocks,
+            itemSet: _context.TransferredItems
+        );
 
-        if (isBarcode)
+        if (!res.Success)
+            return GeneralResponse<TransferredItemDTO>.FailResponse(res.Message);
+
+        var model = new TransferredItemDTO
         {
-            var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
-            var item = new ItemByBarCodeDto();
-            if (isDynamic)
-            {
-                var resD = await barcodeOrder.GetItemByDynamicBarCodeAsync(entity.WarehouseId, barcodeDto);
-
-                if (!resD.Success)
-                    return GeneralResponse<TransferredItemDTO>.FailResponse(resD.Message);
-
-                item = resD.Data;
-
-                if (resD.Data == null)
-                    return GeneralResponse<TransferredItemDTO>.FailResponse(resD.Message);
-            }
-            else
-            {
-                var resD = await barcodeOrder.GetItemByStaticBarCodeAsync(entity.WarehouseId, barcodeDto);
-                if (!resD.Success)
-                    return GeneralResponse<TransferredItemDTO>.FailResponse(resD.Message);
-
-                item = resD.Data;
-                if (resD.Data == null)
-                    return GeneralResponse<TransferredItemDTO>.FailResponse(resD.Message);
-            }
-
-            model = new TransferredItem()
-            {
-                Status = GeneralItemStatus.Planned,
-                TransferredStockId = TransferredStockid,
-                ItemId = item.Id,
-                Quantity = item.Quantity,
-                BarCode = item.Barcode,
-                UnitPrice = item.Price,
-                UoMEntry = item.UoMEntry
-            };
-        }
-        else
-        {
-            var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == dto.ItemId);
-            model = new TransferredItem
-            {
-                Status = GeneralItemStatus.Planned,
-                TransferredStockId = dto.TransferredStockId,
-                ItemId = dto.ItemId,
-                Quantity = dto.Quantity,
-                BarCode = "",
-                UnitPrice = item.SalesPrice,
-                UoMEntry = dto.UoMEntry,
-            };
-        }
-
-        var res = await AddAsync(model);
-        await SaveChangesAsync();
-
-        var modelfin = new TransferredItemDTO
-        {
-            TransferredStockId = res.TransferredStockId,
-            Quantity = res.Quantity,
-            Status = GetEnumString(res.Status),
-            ItemId = res.ItemId,
-            TransferredItemId = res.TransferredItemId,
-            UoMEntry = res.UoMEntry,
-            BarCode = res.BarCode,
-            UnitPrice = res.UnitPrice,
-            ErrorMessage = res.ErrorMessage,
-            Comment = res.Comment
+            TransferredStockId = res.Data.TransferredStockId,
+            Quantity = res.Data.Quantity,
+            ItemId = res.Data.ItemId,
+            TransferredItemId = res.Data.TransferredItemId,
+            UoMEntry = res.Data.UoMEntry,
+            BarCode = res.Data.BarCode,
+            UnitPrice = res.Data.UnitPrice,
+            ErrorMessage = res.Data.ErrorMessage,
+            TransferredRequestItemId = res.Data.TransferredRequestItemId,
+            Comment = res.Data.Comment
         };
 
-        return GeneralResponse<TransferredItemDTO>.SuccessResponse(modelfin);
+        return GeneralResponse<TransferredItemDTO>.SuccessResponse(model);
     }
 
-    // update
-    public async Task<GeneralResponse<TransferredItemDTO>> UpdateTransferredItemAsync(int TransferredItemId,
-           UpdateTransferredItemDTO dto)
+
+    public async Task<GeneralResponse<TransferredItemDTO>> UpdateTransferredItemWithoutRefAsync(
+          int transferredItemId,
+          UpdateGeneralItemDto dto)
     {
-        var entity = await _context.TransferredItems.FirstOrDefaultAsync(e => e.TransferredItemId == dto.TransferredItemId);
-        if (entity == null)
-            return GeneralResponse<TransferredItemDTO>.FailResponse("id is not found");
-        if (entity.TransferredItemId != TransferredItemId)
-        {
-            return GeneralResponse<TransferredItemDTO>.FailResponse("id not equal Transferred item id!");
-        }
+        var res = await baseProcesses.UpdateOrderItemAsync<TransferredItem>(
+            itemIdFromRoute: transferredItemId,
+            processType: ProcessType.Transferred,
+            dto: dto,
+            itemSelector: x => x.TransferredItemId == transferredItemId,
+            itemSet: _context.TransferredItems
+        );
 
-        var item = await _context.Items.FirstOrDefaultAsync(e => e.ItemId == entity.ItemId);
+        if (!res.Success)
+            return GeneralResponse<TransferredItemDTO>.FailResponse(res.Message);
 
-        if (dto.Quantity.HasValue && dto.Quantity.Value > 0)
-        {
-            entity.Quantity = dto.Quantity.Value;
-        }
-
-        if (dto.UoMEntry > 0)
-        {
-            entity.UoMEntry = dto.UoMEntry;
-        }
-
-        await _context.SaveChangesAsync();
+        var entity = res.Data;
 
         var result = new TransferredItemDTO
         {
             TransferredStockId = entity.TransferredStockId,
-            Quantity = entity.Quantity,
-            Status = GetEnumString(entity.Status),
-            ItemId = entity.ItemId,
             TransferredItemId = entity.TransferredItemId,
+            Quantity = entity.Quantity,
+            ItemId = entity.ItemId,
+            TransferredRequestItemId = entity.TransferredRequestItemId,
             BarCode = entity.BarCode,
             UoMEntry = entity.UoMEntry,
             ErrorMessage = entity.ErrorMessage,
+            UnitPrice = entity.UnitPrice
+        };
+
+        return GeneralResponse<TransferredItemDTO>.SuccessResponse(result);
+    }
+
+
+ 
+    public async Task<GeneralResponse<TransferredItemDTO>> AddTransferredItemByTransferredRequestItemIdAsync(
+           string userId,
+           int transferredStockId,
+           AddTransferredItemDTO dto)
+    {
+        var stock = await _context.TransferredStocks
+            .FirstOrDefaultAsync(ts => ts.TransferredStockId == transferredStockId);
+
+        if (stock == null)
+            return GeneralResponse<TransferredItemDTO>.FailResponse("Transferred stock not found");
+
+        var requestItem = await _context.TransferredRequestItems
+            .Include(ri => ri.TransferredRequestBatches)
+            .Include(ri => ri.Item)
+            .FirstOrDefaultAsync(ri => ri.TransferredRequestItemId == dto.TransferredRequestItemId);
+
+        if (requestItem == null)
+            return GeneralResponse<TransferredItemDTO>.FailResponse("Transferred request item not found");
+
+
+        var exists = await _context.TransferredItems
+          .AnyAsync(x => x.TransferredStockId == transferredStockId && x.TransferredRequestItemId == dto.TransferredRequestItemId);
+
+        if (exists)
+            return GeneralResponse<TransferredItemDTO>.FailResponse("This transferred request item already exists in this transferred stock");
+
+        var qty = dto.Quantity ?? requestItem.Quantity;
+        if (qty <= 0)
+            return GeneralResponse<TransferredItemDTO>.FailResponse("Quantity must be greater than zero");
+
+        if (qty > requestItem.Quantity)
+            return GeneralResponse<TransferredItemDTO>.FailResponse("Transfer quantity cannot exceed request quantity");
+
+        var item = new TransferredItem
+        {
+            TransferredStockId = transferredStockId,
+            TransferredRequestItemId = dto.TransferredRequestItemId,
+            ItemId = requestItem.ItemId,
+            Quantity = qty,
+            UoMEntry = requestItem.UoMEntry,
+            BarCode = requestItem.BarCode,
+            UnitPrice = requestItem.UnitPrice,
+            Status = GeneralItemStatus.Planned,
+            ErrorMessage = null,
+            Comment = requestItem.Comment,
+            LineNum = requestItem.LineNum
+        };
+
+        var res = await AddAsync(item);
+        await SaveChangesAsync();
+
+        if (requestItem.TransferredRequestBatches != null && requestItem.TransferredRequestBatches.Any())
+        {
+            var batchesToAdd = new List<TransferredStockBatch>();
+            decimal remainingQuantity = qty;
+
+            foreach (var requestBatch in requestItem.TransferredRequestBatches.OrderBy(b => b.CreatedAt))
+            {
+                if (remainingQuantity <= 0)
+                    break;
+
+                decimal batchQuantity = remainingQuantity > requestBatch.Quantity ? requestBatch.Quantity : remainingQuantity;
+
+                batchesToAdd.Add(new TransferredStockBatch
+                {
+                    TransferredItemId = res.TransferredItemId,
+                    TransferredRequestBatchId = requestBatch.TransferredRequestBatchId,
+                    Quantity = batchQuantity,
+                    BatchNumber = requestBatch.BatchNumber,
+                    ExpiryDate = requestBatch.ExpiryDate,
+                    Comment = requestBatch.Comment,
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                remainingQuantity -= batchQuantity;
+            }
+
+            if (batchesToAdd.Any())
+            {
+                await _context.TransferredStockBatches.AddRangeAsync(batchesToAdd);
+                await SaveChangesAsync();
+            }
+        }
+
+        var finalItem = await _context.TransferredItems
+            .Include(i => i.TransferredStockBatches)
+            .FirstOrDefaultAsync(i => i.TransferredItemId == res.TransferredItemId);
+
+        var model = new TransferredItemDTO
+        {
+            TransferredItemId = finalItem!.TransferredItemId,
+            Quantity = finalItem.Quantity,
+            UoMEntry = finalItem.UoMEntry,
+            BarCode = finalItem.BarCode,
+            UnitPrice = finalItem.UnitPrice,
+            ErrorMessage = finalItem.ErrorMessage,
+            TransferredStockId = finalItem.TransferredStockId,
+            TransferredRequestItemId = finalItem.TransferredRequestItemId,
+            ItemId = finalItem.ItemId,
+            Comment = finalItem.Comment,
+            Status = finalItem.Status.ToString(),
+            Batches = finalItem.TransferredStockBatches?.Select(b => new TransferredStockBatchDTO
+            {
+                TransferredStockBatchId = b.TransferredStockBatchId,
+                TransferredItemId = b.TransferredItemId,
+                Quantity = b.Quantity,
+                Comment = b.Comment,
+                BatchNumber = b.BatchNumber,
+                ExpiryDate = b.ExpiryDate
+            }).ToList()
+        };
+
+        return GeneralResponse<TransferredItemDTO>.SuccessResponse(model);
+    }
+
+    public async Task<GeneralResponse<TransferredItemDTO>> UpdateTransferredItemAsync(
+        int transferredItemId,
+        UpdateTransferredItemDTO dto)
+    {
+        var entity = await _context.TransferredItems
+            .Include(i => i.TransferredRequestItem)
+                .ThenInclude(ri => ri.TransferredRequestBatches)
+            .FirstOrDefaultAsync(e => e.TransferredItemId == transferredItemId);
+
+        if (entity == null)
+            return GeneralResponse<TransferredItemDTO>.FailResponse("Transferred Item not found");
+
+        if (entity.TransferredItemId != transferredItemId)
+            return GeneralResponse<TransferredItemDTO>.FailResponse("ID mismatch");
+
+        var mappedDto = new UpdateGeneralItemDto
+        {
+            Quantity = dto.Quantity,
+            UoMEntry = dto.UoMEntry
+        };
+
+        var res = await baseProcesses.UpdateOrderItemAsync<TransferredItem>(
+            itemIdFromRoute: transferredItemId,
+            processType: ProcessType.Transferred,
+            dto: mappedDto,
+            itemSelector: x => x.TransferredItemId == transferredItemId,
+            itemSet: _context.TransferredItems);
+
+        if (!res.Success)
+            return GeneralResponse<TransferredItemDTO>.FailResponse(res.Message);
+
+        if (dto.Quantity.HasValue && res.Data.TransferredRequestItemId.HasValue)
+        {
+            var existingBatches = await _context.TransferredStockBatches
+                .Where(b => b.TransferredItemId == entity.TransferredItemId)
+                .ToListAsync();
+
+            if (existingBatches.Any())
+            {
+                _context.TransferredStockBatches.RemoveRange(existingBatches);
+                await _context.SaveChangesAsync();
+            }
+
+            if (entity.TransferredRequestItem?.TransferredRequestBatches != null &&
+                entity.TransferredRequestItem.TransferredRequestBatches.Any())
+            {
+                var newBatches = new List<TransferredStockBatch>();
+                decimal remainingQty = entity.Quantity;
+
+                foreach (var requestBatch in entity.TransferredRequestItem.TransferredRequestBatches.OrderBy(b => b.CreatedAt))
+                {
+                    if (remainingQty <= 0)
+                        break;
+
+                    decimal batchQty = Math.Min(requestBatch.Quantity, remainingQty);
+
+                    newBatches.Add(new TransferredStockBatch
+                    {
+                        TransferredItemId = entity.TransferredItemId,
+                        TransferredRequestBatchId = requestBatch.TransferredRequestBatchId,
+                        Quantity = batchQty,
+                        BatchNumber = requestBatch.BatchNumber,
+                        ExpiryDate = requestBatch.ExpiryDate,
+                        CreatedAt = DateTime.UtcNow,
+                        Comment = dto.Quantity.HasValue ? entity.Comment : null
+                    });
+
+                    remainingQty -= batchQty;
+                }
+
+                if (newBatches.Any())
+                {
+                    await _context.TransferredStockBatches.AddRangeAsync(newBatches);
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
+
+        var result = new TransferredItemDTO
+        {
+            TransferredItemId = entity.TransferredItemId,
+            Quantity = entity.Quantity,
+            UoMEntry = entity.UoMEntry,
+            BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            ErrorMessage = entity.ErrorMessage,
+            Status = entity.Status.ToString(),
+            TransferredStockId = entity.TransferredStockId,
+            TransferredRequestItemId = entity.TransferredRequestItemId,
+            ItemId = entity.ItemId,
             Comment = entity.Comment
         };
 
         return GeneralResponse<TransferredItemDTO>.SuccessResponse(result);
     }
 
-    private async Task<bool> CheckDynamicCodeValidationLocal(string barCode)
+    public async Task<GeneralResponse<TransferredItemDTO>> DeleteTransferredItemAsync(int transferredItemId)
     {
-        var sapId = await sapCache.Get();
+        var res = await baseProcesses.DeleteOrderItemAsync<TransferredItem>(
+            itemIdFromRoute: transferredItemId,
+            processType: ProcessType.Transferred,
+            itemSelector: x => x.TransferredItemId == transferredItemId,
+            itemSet: _context.TransferredItems);
 
-        var settings = await _context.BarCodeSettings
-            .Where(bs => bs.Company.Saps.Any(s => s.SapId == sapId))
-            .ToListAsync();
+        if (!res.Success)
+            return GeneralResponse<TransferredItemDTO>.FailResponse(res.Message);
 
-        foreach (var setting in settings)
+        var entity = res.Data;
+
+        var dto = new TransferredItemDTO
         {
-            if (barCode.Length != setting.TotalLength)
-                continue;
+            TransferredItemId = entity.TransferredItemId,
+            Quantity = entity.Quantity,
+            UoMEntry = entity.UoMEntry,
+            BarCode = entity.BarCode,
+            UnitPrice = entity.UnitPrice,
+            ErrorMessage = entity.ErrorMessage,
+            Status = entity.Status.ToString(),
+            TransferredStockId = entity.TransferredStockId,
+            TransferredRequestItemId = entity.TransferredRequestItemId,
+            ItemId = entity.ItemId,
+            Comment = entity.Comment
+        };
 
-            return true;
-        }
-
-        return false;
+        return GeneralResponse<TransferredItemDTO>.SuccessResponse(dto);
     }
 
-    private string GetEnumString(GeneralItemStatus status)
+    public async Task<IEnumerable<TransferredItem>> GetByTransferredStockIdEntitiesAsync(int transferredStockId)
     {
-        switch (status)
-        {
-            case GeneralItemStatus.Draft:
-                return "Draft";
-            case GeneralItemStatus.Planned:
-                return "Planned";
-            case GeneralItemStatus.Released:
-                return "Released";
-            case GeneralItemStatus.Received:
-                return "Received";
-            case GeneralItemStatus.Closed:
-                return "Closed";
-            case GeneralItemStatus.Failed:
-                return "Failed";
-            default:
-                return "Unknown";
-        }
+        return await Query()
+            .Where(ti => ti.TransferredStockId == transferredStockId)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<TransferredItem>> GetByItemIdAsync(int itemId)
+    {
+        return await Query()
+            .Where(ti => ti.ItemId == itemId)
+            .ToListAsync();
+    }
+
+    public async Task<TransferredItem?> GetWithTransferredStockAsync(int transferredItemId)
+    {
+        return await QueryIncluding(false, ti => ti.TransferredStock)
+            .FirstOrDefaultAsync(ti => ti.TransferredItemId == transferredItemId);
+    }
+
+    public async Task<TransferredItem?> GetWithTransferredRequestItemAsync(int transferredItemId)
+    {
+        return await QueryIncluding(false, ti => ti.TransferredRequestItem)
+            .FirstOrDefaultAsync(ti => ti.TransferredItemId == transferredItemId);
+    }
+
+    public async Task<TransferredItem?> GetWithItemAsync(int transferredItemId)
+    {
+        return await QueryIncluding(false, ti => ti.Item)
+            .FirstOrDefaultAsync(ti => ti.TransferredItemId == transferredItemId);
+    }
+
+    public async Task<TransferredItem?> GetWithBatchesAsync(int transferredItemId)
+    {
+        return await QueryIncluding(false, ti => ti.TransferredStockBatches)
+            .FirstOrDefaultAsync(ti => ti.TransferredItemId == transferredItemId);
     }
 }

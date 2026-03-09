@@ -9,6 +9,6 @@ namespace DataWarehouse.SAP.Interfaces.Proccesses
     public interface ISapReceiptService
     {
         // go planned if faild return draft
-        Task<string> SyncReceiptAsync(int sapId);
+        Task<string> SyncReceiptAsync(int receiptOrderId);
     }
 }

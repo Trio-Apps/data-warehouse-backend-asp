@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataWarehouse.Domain.Context;
+﻿using DataWarehouse.Domain.Context;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.SAP.Interfaces.Based;
+using DataWarehouse.SAP.Interfaces.Proccesses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
-using DataWarehouse.SAP.Interfaces.Proccesses;
+using System.Threading.Tasks;
 
 namespace DataWarehouse.SAP.Repositories.Proccesses
 {
@@ -34,15 +35,9 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             _context = context;
         }
 
-        public async Task<string> SyncDeliveryNotesAsync(int sapId)
+        public async Task<string> SyncDeliveryNotesAsync(int deliveryNoteOrderId)
         {
-            const int batchSize = 200;
-
-            int totalSuccess = 0;
-            int totalFail = 0;
-
-            while (true)
-            {
+           
                 // ✅ Approved IDs من جدول الـ Process
                 // ✳️ غيّر ProcessType.DeliveryNote لو enum عندك مختلف
                 var approvedIdsQuery = _context.ProcessItemIsProgresses
@@ -51,35 +46,28 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     .Select(p => p.ReferenceId)
                     .Distinct();
 
-                // ✅ هات أول دفعة من اللي لسه Processing
-                var batch = await _context.DeliveryNoteOrders
-                    .AsTracking()
-                    .Include(o => o.Warehouse)
-                    .Include(o => o.Customer)
-                    .Include(o => o.SalesOrder) // عشان BaseEntry لو based on SO
-                    .Include(o => o.DeliveryNoteItems)
-                        .ThenInclude(i => i.Item)
-                    .Include(o => o.DeliveryNoteItems)
-                        .ThenInclude(i => i.SalesOrderItem) // عشان BaseLine لو based on SO
-                    .Include(o => o.DeliveryNoteItems)
-                        .ThenInclude(i => i.DeliveryNoteBatches)
-                    .Where(o =>
-                        o.Status == GeneralStatus.Processing &&
-                        o.Warehouse.SapId == sapId &&
-                        approvedIdsQuery.Contains(o.DeliveryNoteOrderId))
-                    .OrderBy(o => o.DeliveryNoteOrderId)
-                    .Take(batchSize)
-                    .ToListAsync();
+            // ✅ هات أول دفعة من اللي لسه Processing
+            var order = await _context.DeliveryNoteOrders
+                .AsTracking()
+                .Include(o => o.Warehouse)
+                .Include(o => o.Customer)
+                .Include(o => o.SalesOrder) // عشان BaseEntry لو based on SO
+                .Include(o => o.DeliveryNoteItems)
+                    .ThenInclude(i => i.Item)
+                .Include(o => o.DeliveryNoteItems)
+                    .ThenInclude(i => i.SalesOrderItem) // عشان BaseLine لو based on SO
+                .Include(o => o.DeliveryNoteItems)
+                    .ThenInclude(i => i.DeliveryNoteBatches)
+                .Where(o => o.Status == GeneralStatus.Processing &&
+                    approvedIdsQuery.Contains(o.DeliveryNoteOrderId))
+                .FirstOrDefaultAsync(e => e.DeliveryNoteOrderId == deliveryNoteOrderId);
+                   
 
-                if (!batch.Any())
-                    break;
+            if (order == null)
+                return "This order must be Approval To send it to Sap";
 
-                int taskSuccess = 0;
-                int taskFail = 0;
-
-                foreach (var order in batch)
-                {
-                    var (_, success, body, error) = await ProcessDeliveryNoteAsync(sapId, order);
+            
+                var (_, success, body, error) = await ProcessDeliveryNoteAsync(order.Warehouse.SapId, order);
 
                     if (success)
                     {
@@ -127,7 +115,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
                         _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
 
-                        taskSuccess++;
+                     
                     }
                     else
                     {
@@ -146,9 +134,8 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         _context.Entry(order).Property(x => x.Status).IsModified = true;
                         _context.Entry(order).Property(x => x.ErrorMessage).IsModified = true;
 
-                        taskFail++;
                     }
-                }
+                
 
                 try
                 {
@@ -160,28 +147,17 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
-                    _logger.LogError(ex, "Concurrency issue while saving DeliveryNotes batch for sapId={SapId}", sapId);
+                    _logger.LogError(ex, "Concurrency issue while saving DeliveryNotes batch for sapId={SapId}", order.Warehouse.SapId);
                     throw;
                 }
                 catch (DbUpdateException ex)
                 {
-                    _logger.LogError(ex, "DB update issue while saving DeliveryNotes batch for sapId={SapId}", sapId);
-                    throw;
+                    _logger.LogError(ex, "DB update issue while saving DeliveryNotes batch for sapId={SapId}", order.Warehouse.SapId);
+                throw;
                 }
 
-                totalSuccess += taskSuccess;
-                totalFail += taskFail;
-
-                _logger.LogInformation(
-                    "DeliveryNotes batch processed for sapId={SapId}: {Success} succeeded, {Failed} failed. Total so far: {TotalSuccess}/{TotalFail}",
-                    sapId, taskSuccess, taskFail, totalSuccess, totalFail
-                );
-            }
-
-            if (totalSuccess == 0 && totalFail == 0)
-                return "No approved delivery notes to sync";
-
-            return $"Sync completed. Success: {totalSuccess}, Failed: {totalFail}";
+           
+            return $"Sync completed.";
         }
 
         private async Task<(DeliveryNoteOrder order, bool success, string res, string? error)>

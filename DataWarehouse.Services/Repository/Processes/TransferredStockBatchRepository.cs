@@ -1,27 +1,32 @@
 using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
+using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DataWarehouse.Services.Repository.Processes;
 
 public class TransferredStockBatchRepository : BaseRepository<TransferredStockBatch>, ITransferredStockBatchRepository
 {
-    public TransferredStockBatchRepository(DataWarehouseDbContext context) : base(context)
+    private readonly IBaseProcessesRepository<TransferredStockBatch> baseProcesses;
+
+    public TransferredStockBatchRepository(
+        IBaseProcessesRepository<TransferredStockBatch> baseProcesses,
+        DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
     }
 
     public async Task<GeneralResponse<IEnumerable<TransferredStockBatchDTO>>> GetByTransferredItemIdAsync(int transferredItemId)
     {
-        var res = await Query().Where(b => b.TransferredItemId == transferredItemId).ToListAsync();
+        var res = await Query()
+            .Where(b => b.TransferredItemId == transferredItemId)
+            .ToListAsync();
 
         return GeneralResponse<IEnumerable<TransferredStockBatchDTO>>.SuccessResponse(
             res.Select(b => new TransferredStockBatchDTO
@@ -35,7 +40,8 @@ public class TransferredStockBatchRepository : BaseRepository<TransferredStockBa
             }));
     }
 
-    public async Task<GeneralResponse<PagedResult<TransferredStockBatchDTO>>> GetByTransferredItemIdWithPaginationAsync(int transferredItemId, int pageNumber, int pageSize)
+    public async Task<GeneralResponse<PagedResult<TransferredStockBatchDTO>>> GetByTransferredItemIdWithPaginationAsync(
+        int transferredItemId, int pageNumber, int pageSize)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
@@ -70,58 +76,88 @@ public class TransferredStockBatchRepository : BaseRepository<TransferredStockBa
             });
     }
 
-    public async Task<GeneralResponse<TransferredStockBatchDTO>> AddByTransferredItemIdAsync(int transferredItemId, AddTransferredStockBatchDTO dto)
+    public async Task<GeneralResponse<TransferredStockBatchDTO>> AddByTransferredItemIdAsync(
+        int transferredItemId, GeneralBatchDto dto)
     {
-        if (transferredItemId != dto.TransferredItemId)
-            return GeneralResponse<TransferredStockBatchDTO>.FailResponse("Transferred Item ID mismatch");
+      
 
-        var transferredItem = await _context.TransferredItems
-            .FirstOrDefaultAsync(i => i.TransferredItemId == transferredItemId);
+        var res = await baseProcesses.AddOrderBatchAsync<TransferredItem, TransferredStockBatch>(
+            orderItemId: transferredItemId,
+            processType: ProcessType.Transferred,
+            dto: dto,
+            orderItemSelector: i => i.TransferredItemId == transferredItemId,
+            orderItemSet: _context.TransferredItems,
+            batchItemSelector: b => b.TransferredItemId == transferredItemId,
+            batchSet: _context.TransferredStockBatches
+        );
 
-        if (transferredItem == null)
-            return GeneralResponse<TransferredStockBatchDTO>.FailResponse("Transferred Item not found");
+        if (!res.Success)
+            return GeneralResponse<TransferredStockBatchDTO>.FailResponse(res.Message);
 
-        var mapping = new TransferredStockBatch
-        {
-            TransferredItemId = dto.TransferredItemId,
-            Quantity = dto.Quantity,
-            Comment = dto.Comment,
-            ExpiryDate = dto.ExpiryDate,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var res = await AddAsync(mapping);
-        await SaveChangesAsync();
+        var saved = res.Data;
 
         var model = new TransferredStockBatchDTO
         {
-            TransferredStockBatchId = res.TransferredStockBatchId,
-            TransferredItemId = res.TransferredItemId,
-            Quantity = res.Quantity,
-            Comment = res.Comment,
-            BatchNumber = res.BatchNumber,
-            ExpiryDate = res.ExpiryDate
+            TransferredStockBatchId = saved.TransferredStockBatchId,
+            TransferredItemId = saved.TransferredItemId,
+            Quantity = saved.Quantity,
+            Comment = saved.Comment,
+            BatchNumber = saved.BatchNumber,
+            ExpiryDate = saved.ExpiryDate
         };
 
         return GeneralResponse<TransferredStockBatchDTO>.SuccessResponse(model);
     }
 
-    public async Task<GeneralResponse<TransferredStockBatchDTO>> UpdateTransferredStockBatchAsync(int transferredStockBatchId, UpdateTransferredStockBatchDTO dto)
+    public async Task<GeneralResponse<TransferredStockBatchDTO>> UpdateTransferredStockBatchAsync(
+        int transferredStockBatchId, UpdateGeneralBatchDto dto)
     {
-        var entity = await _context.TransferredStockBatches
-            .FirstOrDefaultAsync(e => e.TransferredStockBatchId == dto.TransferredStockBatchId);
+      
 
-        if (entity == null)
-            return GeneralResponse<TransferredStockBatchDTO>.FailResponse("Transferred Stock Batch not found");
+        var res = await baseProcesses.UpdateOrderBatchAsync<TransferredItem, TransferredStockBatch>(
+            batchId: transferredStockBatchId,
+            processType: ProcessType.Transferred,
+            dto: dto,
+            batchSet: _context.TransferredStockBatches,
+            orderItemSet: _context.TransferredItems,
+            batchIdSelector: x => x.TransferredStockBatchId,
+            orderItemIdSelector: x => x.TransferredItemId,
+            orderItemIdForItemSelector: x => x.TransferredItemId
+        );
 
-        if (entity.TransferredStockBatchId != transferredStockBatchId)
-            return GeneralResponse<TransferredStockBatchDTO>.FailResponse("ID mismatch");
+        if (!res.Success)
+            return GeneralResponse<TransferredStockBatchDTO>.FailResponse(res.Message);
 
-        entity.Quantity = dto.Quantity;
-        entity.Comment = dto.Comment;
-        entity.ExpiryDate = dto.ExpiryDate;
+        var entity = res.Data;
 
-        await _context.SaveChangesAsync();
+        return GeneralResponse<TransferredStockBatchDTO>.SuccessResponse(new TransferredStockBatchDTO
+        {
+            TransferredStockBatchId = entity.TransferredStockBatchId,
+            TransferredItemId = entity.TransferredItemId,
+            Quantity = entity.Quantity,
+            Comment = entity.Comment,
+            BatchNumber = entity.BatchNumber,
+            ExpiryDate = entity.ExpiryDate
+        });
+    }
+
+    public async Task<GeneralResponse<TransferredStockBatchDTO>> DeleteTransferredStockBatchAsync(int transferredStockBatchId)
+    {
+        var res = await baseProcesses.DeleteOrderBatchAsync<TransferredItem, TransferredStockBatch>(
+            batchIdFromRoute: transferredStockBatchId,
+            processType: ProcessType.Transferred,
+            batchSet: _context.TransferredStockBatches,
+            orderItemSet: _context.TransferredItems,
+            batchIdSelector: b => b.TransferredStockBatchId,
+            batchOrderItemIdSelector: b => b.TransferredItemId,
+            orderItemPkSelector: i => i.TransferredItemId,
+            orderIdSelector: i => i.TransferredStockId
+        );
+
+        if (!res.Success)
+            return GeneralResponse<TransferredStockBatchDTO>.FailResponse(res.Message);
+
+        var entity = res.Data;
 
         var result = new TransferredStockBatchDTO
         {
@@ -136,4 +172,3 @@ public class TransferredStockBatchRepository : BaseRepository<TransferredStockBa
         return GeneralResponse<TransferredStockBatchDTO>.SuccessResponse(result);
     }
 }
-

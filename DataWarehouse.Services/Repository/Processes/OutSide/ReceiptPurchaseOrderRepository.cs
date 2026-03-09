@@ -1,7 +1,9 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
@@ -23,10 +25,15 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide;
 
 public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrder>, IReceiptPurchaseOrderRepository
 {
+    private readonly IBaseProcessesRepository<ReceiptPurchaseOrder> baseProcesses;
     private readonly IApprovalRepository approval;
 
-    public ReceiptPurchaseOrderRepository(IApprovalRepository approval, DataWarehouseDbContext context) : base(context)
+    public ReceiptPurchaseOrderRepository(
+        IBaseProcessesRepository<ReceiptPurchaseOrder> baseProcesses,
+        IApprovalRepository approval,
+        DataWarehouseDbContext context) : base(context)
     {
+        this.baseProcesses = baseProcesses;
         this.approval = approval;
     }
 
@@ -537,6 +544,16 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         await _context.SaveChangesAsync(cancellationToken);
 
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(result);
+    }
+
+    public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int receiptPurchaseOrderId)
+    {
+        return await baseProcesses.RevertPartiallyFailedStatusToProcessingAsync<ReceiptPurchaseOrder>(
+            receiptPurchaseOrderId,
+            ProcessType.Receipt,
+            x => x.ReceiptPurchaseOrderId == receiptPurchaseOrderId,
+            _context.ReceiptPurchaseOrders
+        );
     }
 
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetByPurchaseOrderIdAsync(string userId, int purchaseOrderId)
