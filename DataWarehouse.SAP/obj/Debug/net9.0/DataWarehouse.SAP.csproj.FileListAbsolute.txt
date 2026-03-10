@@ -170,3 +170,6 @@ D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\refint\DataWarehouse.SAP.dll
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.pdb
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\ref\DataWarehouse.SAP.dll
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.SAP.deps.json
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.SAP.dll
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.SAP.pdb

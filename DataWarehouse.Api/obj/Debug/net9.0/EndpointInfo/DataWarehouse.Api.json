@@ -22284,6 +22284,273 @@
         }
       }
     },
+    "/api/client/Warehouse/reports/transactions": {
+      "get": {
+        "tags": [
+          "Warehouse"
+        ],
+        "parameters": [
+          {
+            "name": "WarehouseId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "TransactionType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ItemCodeOrName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportItemDtoPagedResultGeneralResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportItemDtoPagedResultGeneralResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/client/Warehouse/reports/transactions/sources-counts": {
+      "get": {
+        "tags": [
+          "Warehouse"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportSourcesCountDtoGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportSourcesCountDtoGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportSourcesCountDtoGeneralResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportSourcesCountDtoGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportSourcesCountDtoGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionReportSourcesCountDtoGeneralResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/client/Warehouse/reports/in-warehouse": {
+      "get": {
+        "tags": [
+          "Warehouse"
+        ],
+        "parameters": [
+          {
+            "name": "WarehouseId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ItemCodeOrName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ShowItemsWithNoQuantityInStock",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/InWarehouseReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InWarehouseReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InWarehouseReportItemDtoPagedResultGeneralResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/InWarehouseReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InWarehouseReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InWarehouseReportItemDtoPagedResultGeneralResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/client/Warehouse/{id}": {
       "get": {
         "tags": [
@@ -25955,6 +26222,102 @@
         },
         "additionalProperties": false
       },
+      "InWarehouseReportItemDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "uoM": {
+            "type": "string",
+            "nullable": true
+          },
+          "inStock": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InWarehouseReportItemDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InWarehouseReportItemDto"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "hasPrevious": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNext": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InWarehouseReportItemDtoPagedResultGeneralResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/InWarehouseReportItemDtoPagedResult"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Item": {
         "type": "object",
         "properties": {
@@ -29038,6 +29401,187 @@
           },
           "data": {
             "$ref": "#/components/schemas/SupplierPagedResult"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransactionReportItemDto": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "type": "string",
+            "nullable": true
+          },
+          "transactionType": {
+            "type": "string",
+            "nullable": true
+          },
+          "direction": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseReference": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "itemCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransactionReportItemDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionReportItemDto"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "hasPrevious": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNext": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransactionReportItemDtoPagedResultGeneralResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/TransactionReportItemDtoPagedResult"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransactionReportSourcesCountDto": {
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "goodsReceiptCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "goodsIssueCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferOutCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferInCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "countingCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productionReceiptCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "salesDeliveryCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "salesReturnCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransactionReportSourcesCountDtoGeneralResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/TransactionReportSourcesCountDto"
           },
           "errors": {
             "type": "array",

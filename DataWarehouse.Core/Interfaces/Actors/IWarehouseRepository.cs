@@ -31,4 +31,13 @@ public interface IWarehouseRepository : IBaseRepository<Warehouse>
           string? itemName,
           int pageNumber,
           int pageSize);
+
+    Task<GeneralResponse<PagedResult<TransactionReportItemDto>>> GetTransactionReportAsync(
+        TransactionReportFilterDto filter);
+
+    Task<GeneralResponse<PagedResult<InWarehouseReportItemDto>>> GetInWarehouseReportAsync(
+        InWarehouseReportFilterDto filter);
+
+    Task<GeneralResponse<TransactionReportSourcesCountDto>> GetTransactionReportSourcesCountAsync(
+        int warehouseId);
 }

@@ -141,3 +141,7 @@ D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.pdb
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.genruntimeconfig.cache
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\ref\DataWarehouse.Domain.dll
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.Domain.deps.json
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.Domain.runtimeconfig.json
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.Domain.dll
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.Domain.pdb

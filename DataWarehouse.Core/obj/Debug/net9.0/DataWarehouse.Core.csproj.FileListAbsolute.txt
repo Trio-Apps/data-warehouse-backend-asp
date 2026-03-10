@@ -170,3 +170,7 @@ D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\ne
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\DataWarehouse.Core.pdb
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\DataWarehouse.Core.genruntimeconfig.cache
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\ref\DataWarehouse.Core.dll
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.Core.deps.json
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.Core.runtimeconfig.json
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.Core.dll
+d:\trioapps\warehouse\_tmp_build\api_out3\DataWarehouse.Core.pdb

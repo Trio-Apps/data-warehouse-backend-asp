@@ -1,0 +1,154 @@
+﻿{
+  "info": {
+    "_postman_id": "2f8d2e5f-22df-4e96-b956-4c8d59b25c9d",
+    "name": "Warehouse Reports API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Login (Admin)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "var json = pm.response.json();",
+              "var token = json.token || json.Token;",
+              "pm.test('Token exists', function () {",
+              "  pm.expect(token).to.be.a('string').and.not.empty;",
+              "});",
+              "pm.environment.set('token', token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"rememberMe\": true\n}"
+        },
+        "url": "{{apiBase}}/Auth/login"
+      }
+    },
+    {
+      "name": "Warehouse - Transaction Report",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "var json = pm.response.json();",
+              "pm.test('Success=true', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{apiBase}}/client/Warehouse/reports/transactions?warehouseId={{warehouseId}}&pageNumber={{pageNumber}}&pageSize={{pageSize}}&fromDate={{fromDate}}&toDate={{toDate}}&transactionType={{transactionType}}&itemCodeOrName={{itemCodeOrName}}"
+      }
+    },
+    {
+      "name": "Warehouse - Transaction Sources Counts",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "var json = pm.response.json();",
+              "pm.test('Success=true', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "});",
+              "pm.test('TotalCount exists', function () {",
+              "  pm.expect(json.data.totalCount).to.be.a('number');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{apiBase}}/client/Warehouse/reports/transactions/sources-counts?warehouseId={{warehouseId}}"
+      }
+    },
+    {
+      "name": "Warehouse - In-Warehouse Report",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "var json = pm.response.json();",
+              "pm.test('Success=true', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{apiBase}}/client/Warehouse/reports/in-warehouse?warehouseId={{warehouseId}}&pageNumber={{pageNumber}}&pageSize={{pageSize}}&itemCodeOrName={{itemCodeOrName}}&showItemsWithNoQuantityInStock={{showZeroStock}}"
+      }
+    }
+  ]
+}
