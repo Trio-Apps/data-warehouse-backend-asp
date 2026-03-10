@@ -351,9 +351,8 @@ where TBatch : class, IOrderBatch
                 return GeneralResponse<TBatch>.FailResponse("Order Item not found");
 
 
-            var item = await _context.Items.Where(i => i.ItemId == orderItem.ItemId).FirstOrDefaultAsync();
-
-            if (item == null || item.BatchNumbers == false)
+            var canAddBatch = await CanItemAcceptBatchesAsync(orderItem.OrderId, orderItem.ItemId, processType);
+            if (!canAddBatch)
                 return GeneralResponse<TBatch>.FailResponse("You cannot add any batch to this Item.");
 
             // 2) Approval check (هنا نستخدم OrderId من الـ entity بعد تحميله)
@@ -390,6 +389,115 @@ where TBatch : class, IOrderBatch
             await _context.SaveChangesAsync();
 
             return GeneralResponse<TBatch>.SuccessResponse(batch);
+        }
+
+        private async Task<bool> CanItemAcceptBatchesAsync(int orderId, int itemId, ProcessType processType)
+        {
+            // Match production-like behavior for Stock Counting: allow batches regardless of batch-managed flag.
+            if (processType == ProcessType.Counting)
+                return true;
+
+            var item = await _context.Items
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.ItemId == itemId);
+
+            if (item == null)
+                return false;
+
+            var warehouseId = await ResolveWarehouseIdByOrderAsync(orderId, processType);
+            if (warehouseId.HasValue)
+            {
+                var warehouseManaged = await _context.WarehouseItems
+                    .AsNoTracking()
+                    .Where(w => w.WarehouseId == warehouseId.Value && w.ItemId == itemId)
+                    .Select(w => (bool?)w.IsBatchManaged)
+                    .FirstOrDefaultAsync();
+
+                if (warehouseManaged.HasValue)
+                    return warehouseManaged.Value;
+            }
+
+            return item.BatchNumbers;
+        }
+
+        private async Task<int?> ResolveWarehouseIdByOrderAsync(int orderId, ProcessType processType)
+        {
+            return processType switch
+            {
+                ProcessType.Sales => await _context.SalesOrders
+                    .AsNoTracking()
+                    .Where(x => x.SalesOrderId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.SalesReturn => await _context.SalesReturnOrders
+                    .AsNoTracking()
+                    .Where(x => x.SalesReturnOrderId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.Purchase => await _context.PurchaseOrders
+                    .AsNoTracking()
+                    .Where(x => x.PurchaseOrderId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.Receipt => await _context.ReceiptPurchaseOrders
+                    .AsNoTracking()
+                    .Where(x => x.ReceiptPurchaseOrderId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.GoodsReturn => await _context.GoodsReturnOrders
+                    .AsNoTracking()
+                    .Where(x => x.GoodsReturnOrderId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.Production => await _context.ProductionOrders
+                    .AsNoTracking()
+                    .Where(x => x.ProductionOrderId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.Transferred => await _context.TransferredStocks
+                    .AsNoTracking()
+                    .Where(x => x.TransferredStockId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.Received => await _context.ReceivedStocks
+                    .AsNoTracking()
+                    .Where(x => x.ReceivedStockId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.Counting => await _context.CountStocks
+                    .AsNoTracking()
+                    .Where(x => x.CountStockId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.DeliveryNote => await _context.DeliveryNoteOrders
+                    .AsNoTracking()
+                    .Where(x => x.DeliveryNoteOrderId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.TransferredRequest => await _context.TransferredRequests
+                    .AsNoTracking()
+                    .Where(x => x.TransferredRequestId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                ProcessType.QuantityAdjustment => await _context.QuantityAdjustmentStocks
+                    .AsNoTracking()
+                    .Where(x => x.QuantityAdjustmentStockId == orderId)
+                    .Select(x => (int?)x.WarehouseId)
+                    .FirstOrDefaultAsync(),
+
+                _ => null
+            };
         }
 
         public async Task<GeneralResponse<TBatch>> UpdateOrderBatchAsync<TOrderItem, TBatch>(

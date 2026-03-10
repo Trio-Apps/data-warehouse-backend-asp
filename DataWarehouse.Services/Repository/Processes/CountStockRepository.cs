@@ -288,7 +288,8 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
                     UnitPrice = item.UnitPrice,
                     Comment = item.Comment,
                     CountStockId = item.CountStockId,
-                    ItemId = item.ItemId
+                    ItemId = item.ItemId,
+                    IsBatchManaged = item.Item?.BatchNumbers ?? false
                 }).ToList()
                 : null
         };

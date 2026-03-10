@@ -24986,6 +24986,9 @@
             "minimum": 1,
             "type": "integer",
             "format": "int32"
+          },
+          "isBatchManaged": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

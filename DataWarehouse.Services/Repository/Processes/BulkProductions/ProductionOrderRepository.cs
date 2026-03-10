@@ -59,6 +59,10 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             .SelectMany(e => e.ProductionOrders)
             .Include(e=>e.ProductionOrderItems);
 
+        var processQuery = _context.ProcessItemIsProgresses
+            .AsNoTracking()
+            .Where(p => p.ProcessType == ProcessType.Production);
+
         // 🔹 Filtering
 
 
@@ -70,18 +74,28 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
 
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(iw => new ProductionOrderDTO
+            .Select(iw => new
             {
-                DueDate = iw.DueDate,
-                PostingDate = iw.PostingDate,
-                ProductionOrderId = iw.ProductionOrderId,
-                Remarks = iw.Remarks,
-                Status = iw.Status.ToString(),
-                // string = enum
-                UserId = iw.UserId,
+                Order = iw,
+                HasProgress = processQuery.Any(p => p.ReferenceId == iw.ProductionOrderId),
+                LatestStatus = processQuery
+                    .Where(p => p.ReferenceId == iw.ProductionOrderId)
+                    .OrderByDescending(p => p.ProcessItemIsProgressId)
+                    .Select(p => (ProcessStatus?)p.Status)
+                    .FirstOrDefault()
+            })
+            .Select(x => new ProductionOrderDTO
+            {
+                DueDate = x.Order.DueDate,
+                PostingDate = x.Order.PostingDate,
+                ProductionOrderId = x.Order.ProductionOrderId,
+                Remarks = x.Order.Remarks,
+                Status = x.Order.Status.ToString(),
+                UserId = x.Order.UserId,
                 WarehouseId = warehouseId,
-                NumberOfProductionItem = iw.ProductionOrderItems.Count(),
-
+                NumberOfProductionItem = x.Order.ProductionOrderItems.Count(),
+                Approval = x.HasProgress,
+                ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
             })
             .ToListAsync();
 

@@ -49,12 +49,7 @@ public class FinishedGoodItemRepository : BaseRepository<WarehouseItem>, IFinish
         return await Query().FirstOrDefaultAsync(fgi => fgi.ItemId == itemId && fgi.WarehouseId == warehouseId);
     }
 
-    public async Task<GeneralResponse<PagedResult<WarehouseItemDto>>>
-    GetFinishedGoodBomItemsByWarehouseIdAsync(
-        int warehouseId,
-        int? itemId,
-        int pageNumber,
-        int pageSize)
+    public async Task<GeneralResponse<PagedResult<WarehouseItemDto>>>  GetFinishedGoodBomItemsByWarehouseIdAsync( int warehouseId, int? itemId,int pageNumber,int pageSize)
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
