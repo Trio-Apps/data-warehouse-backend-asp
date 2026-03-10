@@ -33,6 +33,10 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
             .Select(x => new CountStockItemDTO
             {
                 ItemId = x.ItemId,
+                IsBatchManaged = _context.WarehouseItems
+                    .Where(w => w.WarehouseId == x.CountStock.WarehouseId && w.ItemId == x.ItemId)
+                    .Select(w => (bool?)w.IsBatchManaged)
+                    .FirstOrDefault() ?? x.Item.BatchNumbers,
                 CountStockItemId = x.CountStockItemId,
                 CountStockId = x.CountStockId,
                 Quantity = x.Quantity,
@@ -68,6 +72,10 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
             selector: x => new CountStockItemDTO
             {
                 ItemId = x.ItemId,
+                IsBatchManaged = _context.WarehouseItems
+                    .Where(w => w.WarehouseId == x.CountStock.WarehouseId && w.ItemId == x.ItemId)
+                    .Select(w => (bool?)w.IsBatchManaged)
+                    .FirstOrDefault() ?? x.Item.BatchNumbers,
                 CountStockItemId = x.CountStockItemId,
                 CountStockId = x.CountStockId,
                 Quantity = x.Quantity,
@@ -114,10 +122,12 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
             return GeneralResponse<CountStockItemDTO>.FailResponse(res.Message);
 
         var entity = res.Data;
+        var isBatchManaged = await ResolveIsBatchManagedAsync(entity.CountStockId, entity.ItemId);
 
         return GeneralResponse<CountStockItemDTO>.SuccessResponse(new CountStockItemDTO
         {
             ItemId = entity.ItemId,
+            IsBatchManaged = isBatchManaged,
             CountStockItemId = entity.CountStockItemId,
             CountStockId = entity.CountStockId,
             Quantity = entity.Quantity,
@@ -149,10 +159,12 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
             return GeneralResponse<CountStockItemDTO>.FailResponse(res.Message);
 
         var entity = res.Data;
+        var isBatchManaged = await ResolveIsBatchManagedAsync(entity.CountStockId, entity.ItemId);
 
         return GeneralResponse<CountStockItemDTO>.SuccessResponse(new CountStockItemDTO
         {
             ItemId = entity.ItemId,
+            IsBatchManaged = isBatchManaged,
             CountStockItemId = entity.CountStockItemId,
             CountStockId = entity.CountStockId,
             Quantity = entity.Quantity,
@@ -163,5 +175,32 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
             UnitPrice = entity.UnitPrice,
             Comment = entity.Comment
         });
+    }
+
+    private async Task<bool> ResolveIsBatchManagedAsync(int countStockId, int itemId)
+    {
+        var warehouseId = await _context.CountStocks
+            .AsNoTracking()
+            .Where(c => c.CountStockId == countStockId)
+            .Select(c => (int?)c.WarehouseId)
+            .FirstOrDefaultAsync();
+
+        if (warehouseId.HasValue)
+        {
+            var warehouseManaged = await _context.WarehouseItems
+                .AsNoTracking()
+                .Where(w => w.WarehouseId == warehouseId.Value && w.ItemId == itemId)
+                .Select(w => (bool?)w.IsBatchManaged)
+                .FirstOrDefaultAsync();
+
+            if (warehouseManaged.HasValue)
+                return warehouseManaged.Value;
+        }
+
+        return await _context.Items
+            .AsNoTracking()
+            .Where(i => i.ItemId == itemId)
+            .Select(i => i.BatchNumbers)
+            .FirstOrDefaultAsync();
     }
 }

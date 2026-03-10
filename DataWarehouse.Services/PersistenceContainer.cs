@@ -66,6 +66,7 @@ namespace DataWarehouse.Services
             #endregion
 
             #region Processes Repositories
+            services.AddScoped<ICountStockRepository, CountStockRepository>();
             services.AddScoped<IQuantityAdjustmentStockRepository, QuantityAdjustmentStockRepository>();
             services.AddScoped<IReceivedStockRepository, ReceivedStockRepository>();
             services.AddScoped<ITransferredStockRepository, TransferredStockRepository>();
@@ -90,6 +91,7 @@ namespace DataWarehouse.Services
 
             #region Process Items Repositories
             services.AddScoped<ICountStockItemRepository, CountStockItemRepository>();
+            services.AddScoped<ICountStockBatchRepository, CountStockBatchRepository>();
             services.AddScoped<IQuantityAdjustmentStockItemRepository, QuantityAdjustmentStockItemRepository>();
             services.AddScoped<IReceivedItemRepository, ReceivedItemRepository>();
             services.AddScoped<ITransferredItemRepository, TransferredItemRepository>();

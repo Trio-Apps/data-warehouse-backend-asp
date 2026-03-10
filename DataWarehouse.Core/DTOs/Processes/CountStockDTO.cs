@@ -95,6 +95,8 @@ public class CountStockItemDTO
     [Required(ErrorMessage = "Item ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
     public int ItemId { get; set; }
+
+    public bool IsBatchManaged { get; set; }
 }
 
 public class AddCountStockItemDTO

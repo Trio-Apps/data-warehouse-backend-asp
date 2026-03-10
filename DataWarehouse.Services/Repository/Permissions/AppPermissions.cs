@@ -59,6 +59,10 @@ namespace DataWarehouse.Services.Repository.Permissions
         public const string Warehouses_Get = "Warehouses.Get";
         #endregion
 
+        #region Reports
+        public const string Reports_Get = "Reports.Get";
+        #endregion
+
 
         #endregion
 
@@ -242,6 +246,10 @@ namespace DataWarehouse.Services.Repository.Permissions
               //new(AppPermissions.Warehouses_Edit,   "Edit Warehouse",   "Warehouses"),
               //new(AppPermissions.Warehouses_Delete, "Delete Warehouse", "Warehouses"),
               new(AppPermissions.Warehouses_Get, "Get Warehouse", "Warehouses"),
+            #endregion
+
+             #region Reports
+              new(AppPermissions.Reports_Get, "Get Reports", "Reports"),
             #endregion
 
           

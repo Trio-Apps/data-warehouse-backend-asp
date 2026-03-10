@@ -31,6 +31,8 @@ public class ProductionOrderDTO
     public int WarehouseId { get; set; }
 
     public int NumberOfProductionItem {  get; set; }
+    public bool Approval { get; set; }
+    public string? ApprovalStatus { get; set; }
     public List<ProductionOrderItemDTO>? ProductionOrderItems { get; set; }
 }
 public class AddProductionOrderDTO

@@ -1,6 +1,28 @@
 @DataWarehouse.Api_HostAddress = http://localhost:5276
+@Token = YOUR_BEARER_TOKEN
 
 GET {{DataWarehouse.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+# Reports - Transaction Report
+GET {{DataWarehouse.Api_HostAddress}}/api/client/Warehouse/reports/transactions?warehouseId=1&pageNumber=1&pageSize=20&fromDate=2020-01-01&toDate=2030-12-31&transactionType=all&itemCodeOrName=
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+###
+
+# Reports - Transaction sources debug counts
+GET {{DataWarehouse.Api_HostAddress}}/api/client/Warehouse/reports/transactions/sources-counts?warehouseId=1
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+###
+
+# Reports - In-Warehouse Report
+GET {{DataWarehouse.Api_HostAddress}}/api/client/Warehouse/reports/in-warehouse?warehouseId=1&pageNumber=1&pageSize=20&itemCodeOrName=&showItemsWithNoQuantityInStock=true
+Authorization: Bearer {{Token}}
 Accept: application/json
 
 ###
