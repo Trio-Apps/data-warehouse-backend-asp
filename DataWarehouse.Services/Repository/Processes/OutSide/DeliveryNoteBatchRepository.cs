@@ -90,10 +90,11 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             int deliveryNoteItemId,
             GeneralBatchDto dto)
         {
-            var res = await baseProcesses.AddOrderBatchAsync<DeliveryNoteItem, DeliveryNoteBatch>(
+            var res = await baseProcesses.AddOrderBatchAsync<DeliveryNoteOrder, DeliveryNoteItem, DeliveryNoteBatch>(
                 orderItemId: deliveryNoteItemId,
                 processType: ProcessType.DeliveryNote,
                 dto: dto,
+                orderSet: _context.DeliveryNoteOrders,
 
                 // ✅ predicate على الـ PK الحقيقي للـ item
                 orderItemSelector: i => i.DeliveryNoteItemId == deliveryNoteItemId,
@@ -127,10 +128,11 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             int deliveryNoteBatchId,
             UpdateGeneralBatchDto dto)
         {
-            var res = await baseProcesses.UpdateOrderBatchAsync<DeliveryNoteItem, DeliveryNoteBatch>(
+            var res = await baseProcesses.UpdateOrderBatchAsync<DeliveryNoteOrder, DeliveryNoteItem, DeliveryNoteBatch>(
                 batchId: deliveryNoteBatchId,
                 processType: ProcessType.DeliveryNote,
                 dto: dto,
+                orderSet: _context.DeliveryNoteOrders,
 
                 batchSet: _context.DeliveryNoteBatches,
                 orderItemSet: _context.DeliveryNoteItems,
@@ -161,9 +163,10 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
 
         public async Task<GeneralResponse<DeliveryNoteBatchDTO>> DeleteDeliveryNoteBatchAsync(int deliveryNoteBatchId)
         {
-            var res = await baseProcesses.DeleteOrderBatchAsync<DeliveryNoteItem, DeliveryNoteBatch>(
+            var res = await baseProcesses.DeleteOrderBatchAsync<DeliveryNoteOrder, DeliveryNoteItem, DeliveryNoteBatch>(
                 batchIdFromRoute: deliveryNoteBatchId,
                 processType: ProcessType.DeliveryNote,
+                orderSet: _context.DeliveryNoteOrders,
 
                 batchSet: _context.DeliveryNoteBatches,
                 orderItemSet: _context.DeliveryNoteItems,

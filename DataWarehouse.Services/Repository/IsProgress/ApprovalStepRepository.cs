@@ -100,6 +100,7 @@ public class ApprovalStepRepository : BaseRepository<ApprovalStep>, IApprovalSte
             RoleId = dto.RoleId,
             StepName = dto.StepName,
             StepOrder = dto.StepOrder,
+            ProcessSettingApprovalId = dto.ProcessSettingApprovalId
 
         };
 

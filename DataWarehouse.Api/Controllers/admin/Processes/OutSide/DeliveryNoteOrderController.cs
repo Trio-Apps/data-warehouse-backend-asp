@@ -1,6 +1,7 @@
-﻿using DataWarehouse.Core.DTOs.Processes.OutSide;
+﻿using DataWarehouse.Api;
+using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
-using DataWarehouse.Api;
+using DataWarehouse.Core.Interfaces.Queue;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;

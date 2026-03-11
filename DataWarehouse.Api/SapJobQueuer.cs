@@ -1,4 +1,5 @@
 ﻿using DataWarehouse.Core.DTOs.Approval;
+using DataWarehouse.Core.Interfaces.Queue;
 using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.SAP.Interfaces.Proccesses;
@@ -6,22 +7,7 @@ using Hangfire;
 
 namespace DataWarehouse.Api
 { 
-    public interface ISapJobQueuer
-    {
-        Task DistributionOrders(ProcessItemIsProgressDto res);
-
-        Task PushPurchaseToSapAsync(int orderId);
-        Task PushReceiptToSapAsync(int orderId);
-        Task PushGoodsReturnToSapAsync(int orderId);
-        Task PushDeliveryNoteToSapAsync(int orderId);
-        Task PushSalesReturnToSapAsync(int orderId);
-
-        Task PushQuantityAdjustmentToSapAsync(int orderId);
-        Task PushTransferredRequestToSapAsync(int orderId);
-        Task PushTransferredStockToSapAsync(int orderId);
-        Task PushReceivedStockToSapAsync(int orderId);
-
-    }
+   
 
     public class SapJobQueuer : ISapJobQueuer
     {

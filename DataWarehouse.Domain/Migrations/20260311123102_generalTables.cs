@@ -168,29 +168,6 @@ namespace DataWarehouse.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ApprovalSteps",
-                columns: table => new
-                {
-                    ApprovalStepId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    StepName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    StepOrder = table.Column<int>(type: "int", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    IsFinalStep = table.Column<bool>(type: "bit", nullable: false),
-                    CompanyId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ApprovalSteps", x => x.ApprovalStepId);
-                    table.ForeignKey(
-                        name: "FK_ApprovalSteps_Companies_CompanyId",
-                        column: x => x.CompanyId,
-                        principalTable: "Companies",
-                        principalColumn: "CompanyId");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
@@ -251,6 +228,26 @@ namespace DataWarehouse.Domain.Migrations
                     table.PrimaryKey("PK_ProcessesTypes", x => x.ProcessesTypeId);
                     table.ForeignKey(
                         name: "FK_ProcessesTypes_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "CompanyId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProcessSettingApprovals",
+                columns: table => new
+                {
+                    ProcessSettingApprovalId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProcessType = table.Column<int>(type: "int", nullable: false),
+                    IgnoreSteps = table.Column<bool>(type: "bit", nullable: false),
+                    CompanyId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProcessSettingApprovals", x => x.ProcessSettingApprovalId);
+                    table.ForeignKey(
+                        name: "FK_ProcessSettingApprovals_Companies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Companies",
                         principalColumn: "CompanyId");
@@ -367,6 +364,35 @@ namespace DataWarehouse.Domain.Migrations
                         principalTable: "ProcessesTypes",
                         principalColumn: "ProcessesTypeId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ApprovalSteps",
+                columns: table => new
+                {
+                    ApprovalStepId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StepName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    StepOrder = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsFinalStep = table.Column<bool>(type: "bit", nullable: false),
+                    CompanyId = table.Column<int>(type: "int", nullable: false),
+                    ProcessSettingApprovalId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ApprovalSteps", x => x.ApprovalStepId);
+                    table.ForeignKey(
+                        name: "FK_ApprovalSteps_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "CompanyId");
+                    table.ForeignKey(
+                        name: "FK_ApprovalSteps_ProcessSettingApprovals_ProcessSettingApprovalId",
+                        column: x => x.ProcessSettingApprovalId,
+                        principalTable: "ProcessSettingApprovals",
+                        principalColumn: "ProcessSettingApprovalId");
                 });
 
             migrationBuilder.CreateTable(
@@ -2119,6 +2145,11 @@ namespace DataWarehouse.Domain.Migrations
                 column: "CompanyId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ApprovalSteps_ProcessSettingApprovalId",
+                table: "ApprovalSteps",
+                column: "ProcessSettingApprovalId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
@@ -2426,6 +2457,11 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_ProcessItemIsProgresses_ReferenceId_ProcessType_Status",
                 table: "ProcessItemIsProgresses",
                 columns: new[] { "ReferenceId", "ProcessType", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProcessSettingApprovals_CompanyId",
+                table: "ProcessSettingApprovals",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductionHeaderBatches_ProductionOrderId",
@@ -3040,6 +3076,9 @@ namespace DataWarehouse.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "ReceiptPurchaseOrderItems");
+
+            migrationBuilder.DropTable(
+                name: "ProcessSettingApprovals");
 
             migrationBuilder.DropTable(
                 name: "ProductionOrders");

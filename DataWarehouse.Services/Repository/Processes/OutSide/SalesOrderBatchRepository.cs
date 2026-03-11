@@ -88,10 +88,11 @@ public class SalesOrderBatchRepository : BaseRepository<SalesOrderBatch>, ISales
       int salesOrderItemId,
       GeneralBatchDto dto)
     {
-        var res = await baseProcesses.AddOrderBatchAsync<SalesOrderItem, SalesOrderBatch>(
+        var res = await baseProcesses.AddOrderBatchAsync<SalesOrder, SalesOrderItem, SalesOrderBatch>(
             orderItemId: salesOrderItemId,
             processType: ProcessType.Sales,
             dto: dto,
+            orderSet: _context.SalesOrders,
             // ✅ لازم predicate على العمود الحقيقي
             orderItemSelector: i => i.SalesOrderItemId == salesOrderItemId,
             orderItemSet: _context.SalesOrderItems,
@@ -123,10 +124,11 @@ public class SalesOrderBatchRepository : BaseRepository<SalesOrderBatch>, ISales
        int salesOrderBatchId,
        UpdateGeneralBatchDto dto)
     {
-        var res = await baseProcesses.UpdateOrderBatchAsync<SalesOrderItem, SalesOrderBatch>(
+        var res = await baseProcesses.UpdateOrderBatchAsync<SalesOrder, SalesOrderItem, SalesOrderBatch>(
             batchId: salesOrderBatchId,
             processType: ProcessType.Sales,
             dto: dto,
+            orderSet: _context.SalesOrders,
 
             batchSet: _context.SalesOrderBatches,
             orderItemSet: _context.SalesOrderItems,
@@ -155,9 +157,10 @@ public class SalesOrderBatchRepository : BaseRepository<SalesOrderBatch>, ISales
 
     public async Task<GeneralResponse<SalesOrderBatchDTO>> DeleteSalesOrderBatchAsync(int salesOrderBatchId)
     {
-        var res = await baseProcesses.DeleteOrderBatchAsync<SalesOrderItem, SalesOrderBatch>(
+        var res = await baseProcesses.DeleteOrderBatchAsync<SalesOrder, SalesOrderItem, SalesOrderBatch>(
             batchIdFromRoute: salesOrderBatchId,
             processType: ProcessType.Sales,
+            orderSet: _context.SalesOrders,
 
             batchSet: _context.SalesOrderBatches,
             orderItemSet: _context.SalesOrderItems,

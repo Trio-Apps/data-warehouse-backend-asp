@@ -91,10 +91,11 @@ public class ReceivedStockBatchRepository : BaseRepository<ReceivedStockBatch>, 
         int receivedItemId,
         GeneralBatchDto dto)
     {
-        var res = await baseProcesses.AddOrderBatchAsync<ReceivedItem, ReceivedStockBatch>(
+        var res = await baseProcesses.AddOrderBatchAsync<ReceivedStock, ReceivedItem, ReceivedStockBatch>(
             orderItemId: receivedItemId,
             processType: ProcessType.Received,
             dto: dto,
+            orderSet: _context.ReceivedStocks,
 
             orderItemSelector: i => i.ReceivedItemId == receivedItemId,
             orderItemSet: _context.ReceivedItems,
@@ -126,10 +127,11 @@ public class ReceivedStockBatchRepository : BaseRepository<ReceivedStockBatch>, 
         int receivedStockBatchId,
         UpdateGeneralBatchDto dto)
     {
-        var res = await baseProcesses.UpdateOrderBatchAsync<ReceivedItem, ReceivedStockBatch>(
+        var res = await baseProcesses.UpdateOrderBatchAsync<ReceivedStock, ReceivedItem, ReceivedStockBatch>(
             batchId: receivedStockBatchId,
             processType: ProcessType.Received,
             dto: dto,
+            orderSet: _context.ReceivedStocks,
 
             batchSet: _context.ReceivedStockBatches,
             orderItemSet: _context.ReceivedItems,
@@ -160,9 +162,10 @@ public class ReceivedStockBatchRepository : BaseRepository<ReceivedStockBatch>, 
 
     public async Task<GeneralResponse<ReceivedStockBatchDTO>> DeleteReceivedStockBatchAsync(int receivedStockBatchId)
     {
-        var res = await baseProcesses.DeleteOrderBatchAsync<ReceivedItem, ReceivedStockBatch>(
+        var res = await baseProcesses.DeleteOrderBatchAsync<ReceivedStock, ReceivedItem, ReceivedStockBatch>(
             batchIdFromRoute: receivedStockBatchId,
             processType: ProcessType.Received,
+            orderSet: _context.ReceivedStocks,
 
             batchSet: _context.ReceivedStockBatches,
             orderItemSet: _context.ReceivedItems,

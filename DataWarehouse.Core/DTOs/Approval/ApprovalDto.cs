@@ -15,7 +15,22 @@ namespace DataWarehouse.Core.DTOs.Approval
     public class ApprovalDto
     {
     }
-    
+
+    public class ProcessSettingApprovalDto
+    {
+        public int ProcessSettingApprovalId { get; set; }
+
+        public string ProcessType { get; set; } // SalesOrder / Transfer // Count Stock etc....
+
+        public bool IgnoreSteps { get; set; } = true;
+
+        public int CompanyId { get; set; }
+
+        public Company Company { get; set; }
+
+
+        public ICollection<ApprovalStepDto>? ApprovalSteps { get; set; } = new List<ApprovalStepDto>();
+    }
     public class AddApprovalStepDto
     {
         [Required]
@@ -26,8 +41,11 @@ namespace DataWarehouse.Core.DTOs.Approval
 
         [Required]
         public string RoleId { get; set; }
+        [Required]
+        public int ProcessSettingApprovalId { get; set; }
 
-       // public bool IsFinalStep { get; set; }
+
+        // public bool IsFinalStep { get; set; }
 
     }
 

@@ -62,25 +62,29 @@ namespace DataWarehouse.Core.Interfaces.Based
         where TOrder : class, IOrder
         where TOrderItem : class, IOrderItem, new();
 
-        Task<GeneralResponse<TOrderItem>> UpdateOrderItemAsync<TOrderItem>(
+       Task<GeneralResponse<TOrderItem>> UpdateOrderItemAsync<TOrder, TOrderItem>(
     int itemIdFromRoute,
     ProcessType processType,
     UpdateGeneralItemDto dto,
+       DbSet<TOrder> orderSet,
     Expression<Func<TOrderItem, bool>> itemSelector,
     DbSet<TOrderItem> itemSet)
+    where TOrder : class, IOrder
     where TOrderItem : class, IOrderItem;
 
 
-        Task<GeneralResponse<TOrderItem>> DeleteOrderItemAsync<TOrderItem>(
-        int itemIdFromRoute,
-        ProcessType processType,
-        Expression<Func<TOrderItem, bool>> itemSelector,
-        DbSet<TOrderItem> itemSet)
-        where TOrderItem : class, IOrderItem;
-
+        Task<GeneralResponse<TOrderItem>> DeleteOrderItemAsync<TOrder, TOrderItem>(
+       int itemIdFromRoute,
+       ProcessType processType,
+         DbSet<TOrder> orderSet,
+       Expression<Func<TOrderItem, bool>> itemSelector,
+       DbSet<TOrderItem> itemSet)
+        where TOrder : class, IOrder
+       where TOrderItem : class, IOrderItem;
+   
         // batch
 
-        Task<GeneralResponse<IEnumerable<TDto>>> GetOrderBatchesAsync<TOrderItem, TBatch, TDto>(
+           Task<GeneralResponse<IEnumerable<TDto>>> GetOrderBatchesAsync<TOrderItem, TBatch, TDto>(
     int orderItemId,
     Expression<Func<TOrderItem, bool>> orderItemSelector,
     DbSet<TOrderItem> orderItemSet,
@@ -89,46 +93,51 @@ namespace DataWarehouse.Core.Interfaces.Based
     Func<TBatch, TDto> map)
     where TOrderItem : class, IOrderItem
     where TBatch : class, IOrderBatch;
+        Task<GeneralResponse<TBatch>> AddOrderBatchAsync<TOrder, TOrderItem, TBatch>(
+            int orderItemId,
+            ProcessType processType,
+            GeneralBatchDto dto,
+                   DbSet<TOrder> orderSet,
+            Expression<Func<TOrderItem, bool>> orderItemSelector,
+            DbSet<TOrderItem> orderItemSet,
+            Expression<Func<TBatch, bool>> batchItemSelector,
+            DbSet<TBatch> batchSet)
+            where TOrder : class, IOrder
+            where TOrderItem : class, IOrderItem
+            where TBatch : class, IOrderBatch, new();
 
-        Task<GeneralResponse<TBatch>> AddOrderBatchAsync<TOrderItem, TBatch>(
-        int orderItemId,
-        ProcessType processType,
-        GeneralBatchDto dto,
-        Expression<Func<TOrderItem, bool>> orderItemSelector,
-        DbSet<TOrderItem> orderItemSet,
-        Expression<Func<TBatch, bool>> batchItemSelector,
-        DbSet<TBatch> batchSet)
-        where TOrderItem : class, IOrderItem
-        where TBatch : class, IOrderBatch, new();
 
-        Task<GeneralResponse<TBatch>> UpdateOrderBatchAsync<TOrderItem, TBatch>(
-                 int batchId,
-                 ProcessType processType,
-                 UpdateGeneralBatchDto dto,
+        Task<GeneralResponse<TBatch>> UpdateOrderBatchAsync<TOrder, TOrderItem, TBatch>(
+     int batchId,
+     ProcessType processType,
+     UpdateGeneralBatchDto dto,
+     DbSet<TOrder> orderSet,
+     DbSet<TBatch> batchSet,
+     DbSet<TOrderItem> orderItemSet,
 
-                 DbSet<TBatch> batchSet,
-                 DbSet<TOrderItem> orderItemSet,
+     Expression<Func<TBatch, int>> batchIdSelector,
+     Expression<Func<TBatch, int>> orderItemIdSelector,
+     Expression<Func<TOrderItem, int>> orderItemIdForItemSelector)
+         where TOrder : class, IOrder
+     where TOrderItem : class, IOrderItem
+     where TBatch : class, IOrderBatch;
 
-                 Expression<Func<TBatch, int>> batchIdSelector,
-                 Expression<Func<TBatch, int>> orderItemIdSelector,
-                 Expression<Func<TOrderItem, int>> orderItemIdForItemSelector)
-                 where TOrderItem : class, IOrderItem
-                 where TBatch : class, IOrderBatch;
+        Task<GeneralResponse<TBatch>> DeleteOrderBatchAsync<TOrder, TOrderItem, TBatch>(
+              int batchIdFromRoute,
+              ProcessType processType,
+                          DbSet<TOrder> orderSet,
 
-        Task<GeneralResponse<TBatch>> DeleteOrderBatchAsync<TOrderItem, TBatch>(
-         int batchIdFromRoute,
-         ProcessType processType,
+              DbSet<TBatch> batchSet,
+              DbSet<TOrderItem> orderItemSet,
 
-         DbSet<TBatch> batchSet,
-         DbSet<TOrderItem> orderItemSet,
-
-         // selectors (على الأعمدة الحقيقية)
-         Expression<Func<TBatch, int>> batchIdSelector,
-         Expression<Func<TBatch, int>> batchOrderItemIdSelector,
-         Expression<Func<TOrderItem, int>> orderItemPkSelector,
-         Expression<Func<TOrderItem, int>> orderIdSelector)
-         where TOrderItem : class
-         where TBatch : class;
+              // selectors (على الأعمدة الحقيقية)
+              Expression<Func<TBatch, int>> batchIdSelector,
+              Expression<Func<TBatch, int>> batchOrderItemIdSelector,
+              Expression<Func<TOrderItem, int>> orderItemPkSelector,
+              Expression<Func<TOrderItem, int>> orderIdSelector)
+                where TOrder : class
+              where TOrderItem : class
+              where TBatch : class;
 
         Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync<TEntity>(
           int entityId,

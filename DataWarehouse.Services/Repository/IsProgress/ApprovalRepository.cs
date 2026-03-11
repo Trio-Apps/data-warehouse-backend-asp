@@ -2,6 +2,7 @@
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Queue;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Auth;
 using DataWarehouse.Domain.Entities.IsProgress;
@@ -21,14 +22,16 @@ namespace DataWarehouse.Services.Repository.IsProgress
 {
     public class ApprovalRepository : IApprovalRepository
     {
+        private readonly ISapJobQueuer jobQueuer;
         private readonly RoleManager<ApplicationRole> roleManager;
         private readonly DataWarehouseDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public ApprovalRepository(RoleManager<ApplicationRole> roleManager,
+        public ApprovalRepository(ISapJobQueuer jobQueuer, RoleManager<ApplicationRole> roleManager,
             DataWarehouseDbContext context,
             UserManager<ApplicationUser> userManager)
         {
+            this.jobQueuer = jobQueuer;
             this.roleManager = roleManager;
             _context = context;
             _userManager = userManager;
@@ -38,59 +41,107 @@ namespace DataWarehouse.Services.Repository.IsProgress
         /// <summary>
         /// بداية عملية الـ Approval لأي Order
         /// </summary>
-      
-      
+
+
         public async Task<int> StartProcessAsync(ProcessType processType, int referenceId, int warehouseId, string userId)
         {
-            // ✅ 1. Check if process already exists
             var existingProcess = await _context.ProcessItemIsProgresses
                 .FirstOrDefaultAsync(p =>
                     p.ReferenceId == referenceId &&
                     p.ProcessType == processType);
 
             if (existingProcess != null)
-            {
-                // ✅ عملية موجودة فعلاً، رجع الـ ID
                 return existingProcess.ProcessItemIsProgressId;
-            }
 
-            // ✅ 2. Get companyId from warehouse
             var companyId = await _context.Warehouses
                 .Where(w => w.WarehouseId == warehouseId)
                 .Select(w => w.Sap.CompanyId)
                 .FirstOrDefaultAsync();
 
-            // ✅ 3. Load approval steps
-            var steps = await _context.ApprovalSteps
-                .Where(s => s.IsActive && s.CompanyId == companyId && s.StepOrder > 0)
+            if (companyId == 0)
+                throw new Exception("Company not found for the selected warehouse.");
+
+            var processSetting = await _context.Set<ProcessSettingApproval>()
+                .Include(x => x.ApprovalSteps.Where(s => s.IsActive).OrderBy(s => s.StepOrder))
+                .FirstOrDefaultAsync(x =>
+                    x.CompanyId == companyId &&
+                    x.ProcessType == processType);
+
+            var steps = processSetting?.ApprovalSteps
+                .Where(s => s.StepOrder > 0)
                 .OrderBy(s => s.StepOrder)
+                .ToList() ?? new List<ApprovalStep>();
+
+            var shouldAutoApprove =
+                processSetting == null ||
+                processSetting.IgnoreSteps ||
+                !steps.Any();
+
+            if (shouldAutoApprove)
+            {
+                var approvedProcess = new ProcessItemIsProgress
+                {
+                    ProcessType = processType,
+                    ReferenceId = referenceId,
+                    Status = ProcessStatus.Approved,
+                    CurrentStepOrder = 0,
+                    CreatedDate = DateTime.UtcNow,
+                    CompletedDate = DateTime.UtcNow
+                };
+
+                _context.ProcessItemIsProgresses.Add(approvedProcess);
+                await _context.SaveChangesAsync();
+
+                var res = new ProcessItemIsProgressDto
+                {
+                     ProcessItemIsProgressId = approvedProcess.ProcessItemIsProgressId,
+                     ProcessType = approvedProcess.ProcessType.ToString(),
+                     ReferenceId= referenceId,
+                     Status = approvedProcess.Status.ToString(),
+                };
+
+                await jobQueuer.DistributionOrders(res);
+
+                // call job
+
+
+                return approvedProcess.ProcessItemIsProgressId;
+            }
+
+            var userRoleIds = await _context.UserRoles
+                .Where(x => x.UserId == userId)
+                .Select(x => x.RoleId)
                 .ToListAsync();
 
-            if (!steps.Any())
-                throw new Exception("No approval steps defined for this process.");
+            var matchedStep = steps
+                .FirstOrDefault(x => userRoleIds.Contains(x.RoleId));
 
-            // ✅ 4. Create process
+            if (matchedStep == null)
+            {
+                matchedStep = steps.First();
+            }
+
             var process = new ProcessItemIsProgress
             {
                 ProcessType = processType,
                 ReferenceId = referenceId,
                 Status = ProcessStatus.InProgress,
-                CurrentStepOrder = 1
+                CurrentStepOrder = matchedStep.StepOrder,
+                CreatedDate = DateTime.UtcNow,
+                CompletedDate = null
             };
 
             _context.ProcessItemIsProgresses.Add(process);
             await _context.SaveChangesAsync();
 
-            // ✅ 5. Add first approval step
-            var firstStep = steps.First(s => s.StepOrder == 1);
-
             var approval = new ProcessApproval
             {
-                ApprovalStepId = firstStep.ApprovalStepId,
+                ApprovalStepId = matchedStep.ApprovalStepId,
                 Status = ApprovalStatus.Pending,
                 ProcessItemIsProgressId = process.ProcessItemIsProgressId,
                 WarehouseId = warehouseId,
                 UserId = userId,
+                CreatedDate = DateTime.UtcNow
             };
 
             _context.ProcessApprovals.Add(approval);
@@ -98,47 +149,41 @@ namespace DataWarehouse.Services.Repository.IsProgress
 
             return process.ProcessItemIsProgressId;
         }
-
         /// <summary>
         /// الموافقة على الخطوة الحالية
         /// </summary>
-        
-        public async Task<GeneralResponse<ProcessApprovalDto>> ApproveStepAsync(int approvalId, string userId, string? comment = null)
+
+        public async Task<GeneralResponse<ProcessApprovalDto>> ApproveStepAsync(
+        int approvalId,
+        string userId,
+        string? comment = null)
         {
             var approval = await _context.ProcessApprovals
                 .Include(a => a.ApprovalStep)
                 .Include(a => a.ProcessItemIsProgress)
+                .Include(a => a.Warehouse)
                 .FirstOrDefaultAsync(a => a.ProcessApprovalId == approvalId);
 
-
             if (approval == null)
-                GeneralResponse<ProcessApprovalDto>.FailResponse("Approval step not found.");
+                return GeneralResponse<ProcessApprovalDto>.FailResponse("Approval step not found.");
 
             var process = approval.ProcessItemIsProgress;
 
-            // ✅ تحقق إن الخطوة دي هي الخطوة الحالية للـ process
             if (approval.ApprovalStep.StepOrder != process.CurrentStepOrder)
                 return GeneralResponse<ProcessApprovalDto>.FailResponse("This step is not the current step of the process.");
-
 
             var role = await roleManager.FindByIdAsync(approval.ApprovalStep.RoleId);
             if (role == null)
                 return GeneralResponse<ProcessApprovalDto>.FailResponse("Invalid role configured for approval step.");
 
             var user = await _userManager.FindByIdAsync(userId);
-            var userRoles = await _userManager.GetRolesAsync(user);
+            if (user == null)
+                return GeneralResponse<ProcessApprovalDto>.FailResponse("User not found.");
 
-            if (!userRoles.Contains(role.Name))
-                return GeneralResponse<ProcessApprovalDto>.FailResponse("User does not have permission to approve this step.");
-
-
-
-            var isInRole = await _userManager.IsInRoleAsync(user, role.Name);
+            var isInRole = await _userManager.IsInRoleAsync(user, role.Name!);
             if (!isInRole)
                 return GeneralResponse<ProcessApprovalDto>.FailResponse("User does not have permission to approve this step.");
 
-            
-            // Update current approval
             approval.Status = ApprovalStatus.Approved;
             approval.Comment = comment;
             approval.ActionDate = DateTime.UtcNow;
@@ -146,14 +191,12 @@ namespace DataWarehouse.Services.Repository.IsProgress
 
             _context.ProcessApprovals.Update(approval);
 
-             process = approval.ProcessItemIsProgress;
-            var companyId = approval.ApprovalStep.CompanyId;
-
             var currentStepOrder = approval.ApprovalStep.StepOrder;
+            var processSettingApprovalId = approval.ApprovalStep.ProcessSettingApprovalId;
 
             var nextStep = await _context.ApprovalSteps
                 .Where(s =>
-                    s.CompanyId == companyId &&
+                    s.ProcessSettingApprovalId == processSettingApprovalId &&
                     s.IsActive &&
                     s.StepOrder > currentStepOrder &&
                     !s.ProcessApprovals.Any(p =>
@@ -161,33 +204,31 @@ namespace DataWarehouse.Services.Repository.IsProgress
                 .OrderBy(s => s.StepOrder)
                 .FirstOrDefaultAsync();
 
-
             if (nextStep != null)
             {
-                // Add next approval step
                 var nextApproval = new ProcessApproval
                 {
                     ApprovalStepId = nextStep.ApprovalStepId,
                     ProcessItemIsProgressId = process.ProcessItemIsProgressId,
                     WarehouseId = approval.WarehouseId,
                     Status = ApprovalStatus.Pending,
+                    CreatedDate = DateTime.UtcNow,
                     UserId = userId
                 };
 
                 _context.ProcessApprovals.Add(nextApproval);
                 process.CurrentStepOrder = nextStep.StepOrder;
+                process.Status = ProcessStatus.InProgress;
             }
             else
             {
-                // No more steps -> approve whole process
                 process.Status = ProcessStatus.Approved;
                 process.CompletedDate = DateTime.UtcNow;
             }
 
             await _context.SaveChangesAsync();
 
-            // ✅ رجع الـ DTO المطلوب
-            return GeneralResponse<ProcessApprovalDto>.SuccessResponse( new ProcessApprovalDto
+            return GeneralResponse<ProcessApprovalDto>.SuccessResponse(new ProcessApprovalDto
             {
                 ProcessApprovalId = approval.ProcessApprovalId,
                 Status = approval.Status.ToString(),
@@ -207,9 +248,9 @@ namespace DataWarehouse.Services.Repository.IsProgress
                     CompanyId = approval.ApprovalStep.CompanyId
                 },
                 UserId = approval.UserId,
-                User = approval.User, // أو اعمل map لـ UserDto لو عندك واحد
+                User = approval.User,
                 WarehouseId = approval.WarehouseId,
-                Warehouse = approval.Warehouse, // برضو لو عندك DTO خاص بيه
+                Warehouse = approval.Warehouse,
                 ProcessItemIsProgressId = approval.ProcessItemIsProgressId,
                 ProcessItemIsProgress = new ProcessItemIsProgressDto
                 {
@@ -222,7 +263,6 @@ namespace DataWarehouse.Services.Repository.IsProgress
                 }
             });
         }
-
         /// <summary>
         /// رفض الخطوة الحالية
         /// </summary>
@@ -318,6 +358,7 @@ namespace DataWarehouse.Services.Repository.IsProgress
         /// <summary>
         /// Get the basic status of the process without loading all approval details
         /// </summary>
+        /// 
         public async Task<ProcessItemIsProgress?> GetProcessStatusAsync(int processItemId)
         {
             return await _context.ProcessItemIsProgresses
@@ -348,11 +389,12 @@ namespace DataWarehouse.Services.Repository.IsProgress
             // 1) user + warehouses
             var user = await _userManager.Users
                 .Include(u => u.UserWarehouses)
-                
                 .FirstOrDefaultAsync(u => u.Id == userId);
+
 
             if (user == null)
                 return GeneralResponse<PagedResult<ProcessApprovalDto>>.FailResponse("user id not found");
+
 
             // 2) role ids
             var roleIds = await _context.UserRoles
@@ -373,10 +415,7 @@ namespace DataWarehouse.Services.Repository.IsProgress
                     a.Status == ApprovalStatus.Pending &&
                     a.ProcessItemIsProgress.Status == ProcessStatus.InProgress &&
                     a.ProcessItemIsProgress.CurrentStepOrder == a.ApprovalStep.StepOrder &&
-                    roleIds.Contains(a.ApprovalStep.RoleId) &&
-
-
-            warehouseIds.Contains(a.WarehouseId));
+                    roleIds.Contains(a.ApprovalStep.RoleId) && warehouseIds.Contains(a.WarehouseId));
 
 
             // 5) total count قبل pagination

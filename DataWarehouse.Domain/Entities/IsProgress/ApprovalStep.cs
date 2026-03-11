@@ -31,6 +31,8 @@ namespace DataWarehouse.Domain.Entities.IsProgress
         // Navigation
         public ICollection<ProcessApproval> ProcessApprovals { get; set; } = new List<ProcessApproval>();
 
+        public int ProcessSettingApprovalId { get; set; }
+        public ProcessSettingApproval ProcessSettingApproval { get; set; }
 
     }
 }

@@ -103,10 +103,11 @@ public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchas
 
     public async Task<GeneralResponse<ReceiptPurchaseOrderBatchDTO>> AddByReceiptPurchaseOrderItemIdAsync(int receiptPurchaseOrderItemId, GeneralBatchDto dto)
     {
-        var res = await baseProcesses.AddOrderBatchAsync<ReceiptPurchaseOrderItem, ReceiptPurchaseOrderBatch>(
+        var res = await baseProcesses.AddOrderBatchAsync<ReceiptPurchaseOrder, ReceiptPurchaseOrderItem, ReceiptPurchaseOrderBatch>(
             orderItemId: receiptPurchaseOrderItemId,
             processType: ProcessType.Receipt,
             dto: dto,
+            orderSet: _context.ReceiptPurchaseOrders,
             // ✅ لازم predicate على العمود الحقيقي
             orderItemSelector: i => i.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId,
             orderItemSet: _context.ReceiptPurchaseOrderItems,
@@ -137,10 +138,11 @@ public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchas
     int receiptPurchaseOrderBatchId,
     UpdateGeneralBatchDto dto)
     {
-        var res = await baseProcesses.UpdateOrderBatchAsync<ReceiptPurchaseOrderItem, ReceiptPurchaseOrderBatch>(
+        var res = await baseProcesses.UpdateOrderBatchAsync<ReceiptPurchaseOrder, ReceiptPurchaseOrderItem, ReceiptPurchaseOrderBatch>(
             batchId: receiptPurchaseOrderBatchId,
             processType: ProcessType.Receipt,
             dto: dto,
+            orderSet: _context.ReceiptPurchaseOrders,
 
             batchSet: _context.ReceiptPurchaseOrderBatches,
             orderItemSet: _context.ReceiptPurchaseOrderItems,
@@ -173,10 +175,12 @@ public class ReceiptPurchaseOrderBatchRepository : BaseRepository<ReceiptPurchas
   int receiptPurchaseOrderBatchId)
     {
         var res = await baseProcesses.DeleteOrderBatchAsync<
+            ReceiptPurchaseOrder,
             ReceiptPurchaseOrderItem,
             ReceiptPurchaseOrderBatch>(
             batchIdFromRoute: receiptPurchaseOrderBatchId,
             processType: ProcessType.Receipt,
+            orderSet: _context.ReceiptPurchaseOrders,
 
             batchSet: _context.ReceiptPurchaseOrderBatches,
             orderItemSet: _context.ReceiptPurchaseOrderItems,

@@ -83,10 +83,11 @@ public class QuantityAdjustmentStockBatchRepository : BaseRepository<QuantityAdj
 
     public async Task<GeneralResponse<QuantityAdjustmentStockBatchDTO>> AddByQuantityAdjustmentStockItemIdAsync(int quantityAdjustmentStockItemId, GeneralBatchDto dto)
     {
-        var res = await baseProcesses.AddOrderBatchAsync<QuantityAdjustmentStockItem, QuantityAdjustmentStockBatch>(
+        var res = await baseProcesses.AddOrderBatchAsync<QuantityAdjustmentStock, QuantityAdjustmentStockItem, QuantityAdjustmentStockBatch>(
             orderItemId: quantityAdjustmentStockItemId,
             processType: ProcessType.QuantityAdjustment,
             dto: dto,
+            orderSet: _context.QuantityAdjustmentStocks,
             orderItemSelector: i => i.QuantityAdjustmentStockItemId == quantityAdjustmentStockItemId,
             orderItemSet: _context.QuantityAdjustmentStockItems,
             batchItemSelector: b => b.QuantityAdjustmentStockItemId == quantityAdjustmentStockItemId,
@@ -111,10 +112,11 @@ public class QuantityAdjustmentStockBatchRepository : BaseRepository<QuantityAdj
     public async Task<GeneralResponse<QuantityAdjustmentStockBatchDTO>> UpdateQuantityAdjustmentStockBatchAsync(
         int quantityAdjustmentStockBatchId, UpdateGeneralBatchDto dto)
     {
-        var res = await baseProcesses.UpdateOrderBatchAsync<QuantityAdjustmentStockItem, QuantityAdjustmentStockBatch>(
+        var res = await baseProcesses.UpdateOrderBatchAsync<QuantityAdjustmentStock, QuantityAdjustmentStockItem, QuantityAdjustmentStockBatch>(
             batchId: quantityAdjustmentStockBatchId,
             processType: ProcessType.QuantityAdjustment,
             dto: dto,
+            orderSet: _context.QuantityAdjustmentStocks,
             batchSet: _context.QuantityAdjustmentStockBatches,
             orderItemSet: _context.QuantityAdjustmentStockItems,
             batchIdSelector: x => x.QuantityAdjustmentStockBatchId,
@@ -139,9 +141,10 @@ public class QuantityAdjustmentStockBatchRepository : BaseRepository<QuantityAdj
 
     public async Task<GeneralResponse<QuantityAdjustmentStockBatchDTO>> DeleteQuantityAdjustmentStockBatchAsync(int quantityAdjustmentStockBatchId)
     {
-        var res = await baseProcesses.DeleteOrderBatchAsync<QuantityAdjustmentStockItem, QuantityAdjustmentStockBatch>(
+        var res = await baseProcesses.DeleteOrderBatchAsync<QuantityAdjustmentStock, QuantityAdjustmentStockItem, QuantityAdjustmentStockBatch>(
             batchIdFromRoute: quantityAdjustmentStockBatchId,
             processType: ProcessType.QuantityAdjustment,
+            orderSet: _context.QuantityAdjustmentStocks,
             batchSet: _context.QuantityAdjustmentStockBatches,
             orderItemSet: _context.QuantityAdjustmentStockItems,
             batchIdSelector: b => b.QuantityAdjustmentStockBatchId,

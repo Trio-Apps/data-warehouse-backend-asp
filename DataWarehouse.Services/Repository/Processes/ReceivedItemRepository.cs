@@ -162,10 +162,11 @@ public class ReceivedItemRepository : BaseRepository<ReceivedItem>, IReceivedIte
         int receivedItemId,
         UpdateGeneralItemDto dto)
     {
-        var res = await baseProcesses.UpdateOrderItemAsync<ReceivedItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<ReceivedStock, ReceivedItem>(
                 itemIdFromRoute: receivedItemId,
                 processType: ProcessType.DeliveryNote,
                 dto: dto,
+                orderSet: _context.ReceivedStocks,
                 itemSelector: x => x.ReceivedItemId == receivedItemId,
                 itemSet: _context.ReceivedItems
             );
@@ -407,9 +408,10 @@ public class ReceivedItemRepository : BaseRepository<ReceivedItem>, IReceivedIte
     }
     public async Task<GeneralResponse<ReceivedItemDTO>> DeleteReceivedItemAsync(int receivedItemId)
     {
-        var res = await baseProcesses.DeleteOrderItemAsync<ReceivedItem>(
+        var res = await baseProcesses.DeleteOrderItemAsync<ReceivedStock, ReceivedItem>(
             itemIdFromRoute: receivedItemId,
             processType: ProcessType.Received,
+            orderSet: _context.ReceivedStocks,
             itemSelector: x => x.ReceivedItemId == receivedItemId,
             itemSet: _context.ReceivedItems);
 

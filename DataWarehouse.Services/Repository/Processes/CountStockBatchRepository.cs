@@ -91,10 +91,11 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
             ExpiryDate = dto.ExpiryDate
         };
 
-        var res = await baseProcesses.AddOrderBatchAsync<CountStockItem, CountStockBatch>(
+        var res = await baseProcesses.AddOrderBatchAsync<CountStock, CountStockItem, CountStockBatch>(
             orderItemId: countStockItemId,
             processType: ProcessType.Counting,
             dto: mappedDto,
+            orderSet: _context.CountStocks,
             orderItemSelector: i => i.CountStockItemId == countStockItemId,
             orderItemSet: _context.CountStockItems,
             batchItemSelector: b => b.CountStockItemId == countStockItemId,
@@ -126,10 +127,11 @@ public class CountStockBatchRepository : BaseRepository<CountStockBatch>, ICount
             ExpiryDate = dto.ExpiryDate
         };
 
-        var res = await baseProcesses.UpdateOrderBatchAsync<CountStockItem, CountStockBatch>(
+        var res = await baseProcesses.UpdateOrderBatchAsync<CountStock, CountStockItem, CountStockBatch>(
             batchId: countStockBatchId,
             processType: ProcessType.Counting,
             dto: mappedDto,
+            orderSet: _context.CountStocks,
             batchSet: _context.CountStockBatches,
             orderItemSet: _context.CountStockItems,
             batchIdSelector: x => x.CountStockBatchId,

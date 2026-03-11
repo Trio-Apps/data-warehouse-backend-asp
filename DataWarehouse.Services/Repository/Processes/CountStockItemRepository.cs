@@ -148,10 +148,11 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
             UoMEntry = dto.UoMEntry
         };
 
-        var res = await baseProcesses.UpdateOrderItemAsync<CountStockItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<CountStock, CountStockItem>(
             itemIdFromRoute: countStockItemId,
             processType: ProcessType.Counting,
             dto: mappedDto,
+            orderSet: _context.CountStocks,
             itemSelector: x => x.CountStockItemId == countStockItemId,
             itemSet: _context.CountStockItems);
 

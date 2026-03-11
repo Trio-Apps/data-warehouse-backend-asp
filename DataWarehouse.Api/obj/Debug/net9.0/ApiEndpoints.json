@@ -5470,6 +5470,68 @@
     ]
   },
   {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.IsProgress.ProcessSettingApprovalController",
+    "Method": "GetAll",
+    "RelativePath": "api/ProcessSettingApproval",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IReadOnlyList\u00601[[DataWarehouse.Domain.Entities.IsProgress.ProcessSettingApproval, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.IsProgress.ProcessSettingApprovalController",
+    "Method": "GetById",
+    "RelativePath": "api/ProcessSettingApproval/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Domain.Entities.IsProgress.ProcessSettingApproval",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.IsProgress.ProcessSettingApprovalController",
+    "Method": "ToggleIgnoreSteps",
+    "RelativePath": "api/ProcessSettingApproval/{id}/toggle-ignore",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionHeaderBatchController",
     "Method": "Create",
     "RelativePath": "api/production-header-batches",

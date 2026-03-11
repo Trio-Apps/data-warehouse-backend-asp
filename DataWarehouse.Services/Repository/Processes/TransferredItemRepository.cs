@@ -148,10 +148,11 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
           int transferredItemId,
           UpdateGeneralItemDto dto)
     {
-        var res = await baseProcesses.UpdateOrderItemAsync<TransferredItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<TransferredStock, TransferredItem>(
             itemIdFromRoute: transferredItemId,
             processType: ProcessType.Transferred,
             dto: dto,
+            orderSet: _context.TransferredStocks,
             itemSelector: x => x.TransferredItemId == transferredItemId,
             itemSet: _context.TransferredItems
         );
@@ -315,10 +316,11 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
             UoMEntry = dto.UoMEntry
         };
 
-        var res = await baseProcesses.UpdateOrderItemAsync<TransferredItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<TransferredStock, TransferredItem>(
             itemIdFromRoute: transferredItemId,
             processType: ProcessType.Transferred,
             dto: mappedDto,
+            orderSet: _context.TransferredStocks,
             itemSelector: x => x.TransferredItemId == transferredItemId,
             itemSet: _context.TransferredItems);
 
@@ -392,9 +394,10 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
 
     public async Task<GeneralResponse<TransferredItemDTO>> DeleteTransferredItemAsync(int transferredItemId)
     {
-        var res = await baseProcesses.DeleteOrderItemAsync<TransferredItem>(
+        var res = await baseProcesses.DeleteOrderItemAsync<TransferredStock, TransferredItem>(
             itemIdFromRoute: transferredItemId,
             processType: ProcessType.Transferred,
+            orderSet: _context.TransferredStocks,
             itemSelector: x => x.TransferredItemId == transferredItemId,
             itemSet: _context.TransferredItems);
 

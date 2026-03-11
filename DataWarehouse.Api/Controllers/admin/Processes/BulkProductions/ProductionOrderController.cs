@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
 using DataWarehouse.Core.Interfaces.Processes;
+using DataWarehouse.Core.Interfaces.Queue;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Services.Repository.Permissions;

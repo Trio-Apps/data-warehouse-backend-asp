@@ -20,9 +20,7 @@ namespace DataWarehouse.Domain.Enums.Approval
         DeliveryNote=10,
         TransferredRequest = 11,
         QuantityAdjustment = 12,
-
-
-
-
     }
+
+
 }

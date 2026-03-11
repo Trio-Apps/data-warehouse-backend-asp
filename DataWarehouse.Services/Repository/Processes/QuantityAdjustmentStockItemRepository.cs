@@ -140,10 +140,11 @@ public class QuantityAdjustmentStockItemRepository : BaseRepository<QuantityAdju
     public async Task<GeneralResponse<QuantityAdjustmentStockItemDTO>> UpdateQuantityAdjustmentStockItemAsync(
         int quantityAdjustmentStockItemId, UpdateGeneralItemDto dto)
     {
-        var res = await baseProcesses.UpdateOrderItemAsync<QuantityAdjustmentStockItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<QuantityAdjustmentStock, QuantityAdjustmentStockItem>(
             itemIdFromRoute: quantityAdjustmentStockItemId,
             processType: ProcessType.QuantityAdjustment,
             dto: dto,
+            orderSet: _context.QuantityAdjustmentStocks,
             itemSelector: x => x.QuantityAdjustmentStockItemId == quantityAdjustmentStockItemId,
             itemSet: _context.QuantityAdjustmentStockItems);
 
@@ -168,9 +169,10 @@ public class QuantityAdjustmentStockItemRepository : BaseRepository<QuantityAdju
 
     public async Task<GeneralResponse<QuantityAdjustmentStockItemDTO>> DeleteQuantityAdjustmentStockItemAsync(int quantityAdjustmentStockItemId)
     {
-        var res = await baseProcesses.DeleteOrderItemAsync<QuantityAdjustmentStockItem>(
+        var res = await baseProcesses.DeleteOrderItemAsync<QuantityAdjustmentStock, QuantityAdjustmentStockItem>(
             itemIdFromRoute: quantityAdjustmentStockItemId,
             processType: ProcessType.QuantityAdjustment,
+            orderSet: _context.QuantityAdjustmentStocks,
             itemSelector: x => x.QuantityAdjustmentStockItemId == quantityAdjustmentStockItemId,
             itemSet: _context.QuantityAdjustmentStockItems);
 

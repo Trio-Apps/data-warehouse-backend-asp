@@ -81,10 +81,11 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
     public async Task<GeneralResponse<SalesReturnOrderBatchDTO>> AddBySalesReturnOrderItemIdAsync(int salesReturnOrderItemId,
         GeneralBatchDto dto)
     {
-        var res = await baseProcesses.AddOrderBatchAsync<SalesReturnOrderItem, SalesReturnOrderBatch>(
+        var res = await baseProcesses.AddOrderBatchAsync<SalesReturnOrder, SalesReturnOrderItem, SalesReturnOrderBatch>(
             orderItemId: salesReturnOrderItemId,
             processType: ProcessType.SalesReturn,
             dto: dto,
+            orderSet: _context.SalesReturnOrders,
 
             // ✅ لازم predicate على العمود الحقيقي
             orderItemSelector: i => i.SalesReturnOrderItemId == salesReturnOrderItemId,
@@ -117,10 +118,11 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
     public async Task<GeneralResponse<SalesReturnOrderBatchDTO>> UpdateSalesReturnOrderBatchAsync(
         int salesReturnOrderBatchId, UpdateGeneralBatchDto dto)
     {
-        var res = await baseProcesses.UpdateOrderBatchAsync<SalesReturnOrderItem, SalesReturnOrderBatch>(
+        var res = await baseProcesses.UpdateOrderBatchAsync<SalesReturnOrder, SalesReturnOrderItem, SalesReturnOrderBatch>(
             batchId: salesReturnOrderBatchId,
             processType: ProcessType.SalesReturn,
             dto: dto,
+            orderSet: _context.SalesReturnOrders,
 
             batchSet: _context.SalesReturnOrderBatches,
             orderItemSet: _context.SalesReturnOrderItems,
@@ -152,9 +154,10 @@ public class SalesReturnOrderBatchRepository : BaseRepository<SalesReturnOrderBa
     public async Task<GeneralResponse<SalesReturnOrderBatchDTO>> DeleteSalesReturnOrderBatchAsync(
         int salesReturnOrderBatchId)
     {
-        var res = await baseProcesses.DeleteOrderBatchAsync<SalesReturnOrderItem, SalesReturnOrderBatch>(
+        var res = await baseProcesses.DeleteOrderBatchAsync<SalesReturnOrder, SalesReturnOrderItem, SalesReturnOrderBatch>(
             batchIdFromRoute: salesReturnOrderBatchId,
             processType: ProcessType.SalesReturn,
+            orderSet: _context.SalesReturnOrders,
 
             batchSet: _context.SalesReturnOrderBatches,
             orderItemSet: _context.SalesReturnOrderItems,

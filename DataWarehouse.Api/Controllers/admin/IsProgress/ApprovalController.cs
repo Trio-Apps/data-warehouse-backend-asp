@@ -1,6 +1,7 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Queue;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

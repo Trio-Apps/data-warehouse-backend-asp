@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataWarehouse.Domain.Migrations
 {
     [DbContext(typeof(DataWarehouseDbContext))]
-    [Migration("20260309215604_generalTables")]
+    [Migration("20260311123102_generalTables")]
     partial class generalTables
     {
         /// <inheritdoc />
@@ -946,6 +946,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<bool>("IsFinalStep")
                         .HasColumnType("bit");
 
+                    b.Property<int>("ProcessSettingApprovalId")
+                        .HasColumnType("int");
+
                     b.Property<string>("RoleId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -961,6 +964,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("ApprovalStepId");
 
                     b.HasIndex("CompanyId");
+
+                    b.HasIndex("ProcessSettingApprovalId");
 
                     b.ToTable("ApprovalSteps");
                 });
@@ -1046,6 +1051,30 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("ReferenceId", "ProcessType", "Status");
 
                     b.ToTable("ProcessItemIsProgresses");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ProcessSettingApproval", b =>
+                {
+                    b.Property<int>("ProcessSettingApprovalId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProcessSettingApprovalId"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IgnoreSteps")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProcessType")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProcessSettingApprovalId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("ProcessSettingApprovals");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
@@ -3286,7 +3315,15 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.IsProgress.ProcessSettingApproval", "ProcessSettingApproval")
+                        .WithMany("ApprovalSteps")
+                        .HasForeignKey("ProcessSettingApprovalId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Company");
+
+                    b.Navigation("ProcessSettingApproval");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ProcessApproval", b =>
@@ -3322,6 +3359,17 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("User");
 
                     b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ProcessSettingApproval", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.AllinAll.Company", "Company")
+                        .WithMany("ProcessSettingApprovals")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
@@ -4296,6 +4344,8 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("CompanyUsers");
 
+                    b.Navigation("ProcessSettingApprovals");
+
                     b.Navigation("ProcessesTypes");
 
                     b.Navigation("Roles");
@@ -4396,6 +4446,11 @@ namespace DataWarehouse.Domain.Migrations
             modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ProcessItemIsProgress", b =>
                 {
                     b.Navigation("ProcessApprovals");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ProcessSettingApproval", b =>
+                {
+                    b.Navigation("ApprovalSteps");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", b =>

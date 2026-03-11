@@ -22,5 +22,6 @@ namespace DataWarehouse.Domain.Entities.AllinAll
         public ICollection<ProcessesType> ProcessesTypes { get; set; } = new List<ProcessesType>();
         public ICollection<ApprovalStep> ApprovalSteps { get; set; } = new List<ApprovalStep>();
         public ICollection<ApplicationRole> Roles { get; set; } = new HashSet<ApplicationRole>();
+        public ICollection<ProcessSettingApproval>  ProcessSettingApprovals { get; set; } = new HashSet<ProcessSettingApproval>();
     }
 }

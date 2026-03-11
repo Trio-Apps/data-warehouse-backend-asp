@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Api;
 using DataWarehouse.Core.DTOs.Auth;
+using DataWarehouse.Core.Interfaces.Queue;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Auth;
 using DataWarehouse.SAP;
@@ -100,9 +101,6 @@ using (var scope = app.Services.CreateScope())
 
     // ثم Users
     await UserSeeder.SeedAsync(services);
-
-   
-
 }
 
 // Configure the HTTP request pipeline.

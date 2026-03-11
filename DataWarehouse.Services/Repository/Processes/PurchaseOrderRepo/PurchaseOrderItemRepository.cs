@@ -158,18 +158,20 @@ public async Task<GeneralResponse<PurchaseOrderItemDTO>> AddPurchaseItemByPurcha
            UpdateGeneralItemDto dto)
     {
 
-        var res = await baseProcesses.UpdateOrderItemAsync<PurchaseOrderItem>(
-        itemIdFromRoute: PurchaseItemId,
-        processType: ProcessType.Purchase,
-        dto: dto,
-        itemSelector: x => x.PurchaseOrderItemId == PurchaseItemId, // أو x => x.SalesOrderItemId == SalesItemId
-        itemSet: _context.PurchaseOrderItems
-    );
+        var res = await baseProcesses.UpdateOrderItemAsync<PurchaseOrder, PurchaseOrderItem>(
+            itemIdFromRoute: PurchaseItemId,
+            processType: ProcessType.Purchase,
+            dto: dto,
+            orderSet: _context.PurchaseOrders,
+            itemSelector: x => x.PurchaseOrderItemId == PurchaseItemId, // أو x => x.SalesOrderItemId == SalesItemId
+            itemSet: _context.PurchaseOrderItems
+        );
 
         if (!res.Success)
             return GeneralResponse<PurchaseOrderItemDTO>.FailResponse(res.Message);
 
         var entity = res.Data;
+
 
         // 4️⃣ Map to DTO
         var result = new PurchaseOrderItemDTO
@@ -193,9 +195,10 @@ public async Task<GeneralResponse<PurchaseOrderItemDTO>> AddPurchaseItemByPurcha
     }
     public async Task<GeneralResponse<PurchaseOrderItemDTO>> DeletePurchaseItemAsync(int PurchaseItemId)
     {
-        var res = await baseProcesses.DeleteOrderItemAsync<PurchaseOrderItem>(
+        var res = await baseProcesses.DeleteOrderItemAsync<PurchaseOrder, PurchaseOrderItem>(
             itemIdFromRoute: PurchaseItemId,
-            processType: ProcessType.Sales,
+            orderSet: _context.PurchaseOrders,
+            processType: ProcessType.Purchase,
             itemSelector: x => x.PurchaseOrderItemId == PurchaseItemId,
             itemSet: _context.PurchaseOrderItems
         );

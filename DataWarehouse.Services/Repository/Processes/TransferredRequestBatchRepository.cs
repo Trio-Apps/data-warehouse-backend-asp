@@ -85,10 +85,11 @@ public class TransferredRequestBatchRepository : BaseRepository<TransferredReque
     {
        
 
-        var res = await baseProcesses.AddOrderBatchAsync<TransferredRequestItem, TransferredRequestBatch>(
+        var res = await baseProcesses.AddOrderBatchAsync<TransferredRequest, TransferredRequestItem, TransferredRequestBatch>(
             orderItemId: transferredRequestItemId,
             processType: ProcessType.TransferredRequest,
             dto: dto,
+            orderSet: _context.TransferredRequests,
             orderItemSelector: i => i.TransferredRequestItemId == transferredRequestItemId,
             orderItemSet: _context.TransferredRequestItems,
             batchItemSelector: b => b.TransferredRequestItemId == transferredRequestItemId,
@@ -118,10 +119,11 @@ public class TransferredRequestBatchRepository : BaseRepository<TransferredReque
     {
       
 
-        var res = await baseProcesses.UpdateOrderBatchAsync<TransferredRequestItem, TransferredRequestBatch>(
+        var res = await baseProcesses.UpdateOrderBatchAsync<TransferredRequest, TransferredRequestItem, TransferredRequestBatch>(
             batchId: transferredRequestBatchId,
             processType: ProcessType.TransferredRequest,
             dto: dto,
+            orderSet: _context.TransferredRequests,
             batchSet: _context.TransferredRequestBatches,
             orderItemSet: _context.TransferredRequestItems,
             batchIdSelector: x => x.TransferredRequestBatchId,
@@ -147,9 +149,10 @@ public class TransferredRequestBatchRepository : BaseRepository<TransferredReque
     public async Task<GeneralResponse<TransferredRequestBatchDTO>> DeleteTransferredRequestBatchAsync
         (int transferredRequestBatchId)
     {
-        var res = await baseProcesses.DeleteOrderBatchAsync<TransferredRequestItem, TransferredRequestBatch>(
+        var res = await baseProcesses.DeleteOrderBatchAsync<TransferredRequest, TransferredRequestItem, TransferredRequestBatch>(
             batchIdFromRoute: transferredRequestBatchId,
             processType: ProcessType.TransferredRequest,
+            orderSet: _context.TransferredRequests,
             batchSet: _context.TransferredRequestBatches,
             orderItemSet: _context.TransferredRequestItems,
             batchIdSelector: b => b.TransferredRequestBatchId,

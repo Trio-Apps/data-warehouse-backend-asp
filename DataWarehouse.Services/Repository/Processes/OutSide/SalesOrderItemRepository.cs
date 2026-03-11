@@ -162,10 +162,11 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
           UpdateGeneralItemDto dto)
     {
 
-        var res = await baseProcesses.UpdateOrderItemAsync<SalesOrderItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<SalesOrder, SalesOrderItem>(
        itemIdFromRoute: SalesItemId,
        processType: ProcessType.Sales,
        dto: dto,
+       orderSet: _context.SalesOrders,
        itemSelector: x => x.SalesOrderItemId == SalesItemId, // أو x => x.SalesOrderItemId == SalesItemId
        itemSet: _context.SalesOrderItems
        );
@@ -194,9 +195,10 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
 
     public async Task<GeneralResponse<SalesOrderItemDTO>> DeleteSalesItemAsync(int SalesItemId)
     {
-        var res = await baseProcesses.DeleteOrderItemAsync<SalesOrderItem>(
+        var res = await baseProcesses.DeleteOrderItemAsync<SalesOrder, SalesOrderItem>(
             itemIdFromRoute: SalesItemId,
             processType: ProcessType.Sales,
+            orderSet: _context.SalesOrders,
             itemSelector: x => x.SalesOrderItemId == SalesItemId,
             itemSet: _context.SalesOrderItems
         );

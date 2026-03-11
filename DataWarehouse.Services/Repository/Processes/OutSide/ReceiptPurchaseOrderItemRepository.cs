@@ -129,11 +129,12 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
         UpdateGeneralItemDto dto)
     {
 
-        var res = await baseProcesses.UpdateOrderItemAsync<ReceiptPurchaseOrderItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<ReceiptPurchaseOrder, ReceiptPurchaseOrderItem>(
        itemIdFromRoute: ReceiptPurchaseItemId,
        processType: ProcessType.Receipt,
        dto: dto,
-       itemSelector: x => x.ReceiptPurchaseOrderItemId == ReceiptPurchaseItemId, // Ãæ x => x.SalesOrderItemId == SalesItemId
+       orderSet: _context.ReceiptPurchaseOrders,
+       itemSelector: x => x.ReceiptPurchaseOrderItemId == ReceiptPurchaseItemId,
        itemSet: _context.ReceiptPurchaseOrderItems
    );
 
@@ -159,9 +160,10 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
 
     public async Task<GeneralResponse<ReceiptPurchaseOrderItemDTO>> DeleteReceiptPurchaseItemAsync(int ReceiptPurchaseItemId)
     {
-        var res = await baseProcesses.DeleteOrderItemAsync<ReceiptPurchaseOrderItem>(
+        var res = await baseProcesses.DeleteOrderItemAsync<ReceiptPurchaseOrder, ReceiptPurchaseOrderItem>(
             itemIdFromRoute: ReceiptPurchaseItemId,
             processType: ProcessType.Receipt,
+            orderSet: _context.ReceiptPurchaseOrders,
             itemSelector: x => x.ReceiptPurchaseOrderItemId == ReceiptPurchaseItemId,
             itemSet: _context.ReceiptPurchaseOrderItems
         );

@@ -823,6 +823,17 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         .HasPrincipalKey(e => e.Id)
         .OnDelete(DeleteBehavior.NoAction);
 
+        builder.Entity<Company>()
+.HasMany(o => o.ProcessSettingApprovals).WithOne(a => a.Company)
+.HasForeignKey(o => o.CompanyId)
+.HasPrincipalKey(e => e.CompanyId)
+.OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<ProcessSettingApproval>()
+  .HasMany(o => o.ApprovalSteps).WithOne(a => a.ProcessSettingApproval)
+  .HasForeignKey(o => o.ProcessSettingApprovalId)
+  .HasPrincipalKey(e => e.ProcessSettingApprovalId)
+  .OnDelete(DeleteBehavior.NoAction);
 
         builder.Entity<ApprovalStep>()
     .HasMany(o => o.ProcessApprovals).WithOne(a => a.ApprovalStep)
@@ -1192,12 +1203,14 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<SupplierItem> SupplierItems { get; set; }
     public DbSet<Customer> Customers { get; set; }
-  
-    public DbSet<ApprovalStep> ApprovalSteps { get; set; }
+
+
+    public DbSet<ProcessSettingApproval> ProcessSettingApprovals { get; set; }
     public DbSet<ProcessItemIsProgress> ProcessItemIsProgresses { get; set; }
+    public DbSet<ApprovalStep> ApprovalSteps { get; set; }
     public DbSet<ProcessApproval> ProcessApprovals { get; set; }
 
-   
+
 
     //
 

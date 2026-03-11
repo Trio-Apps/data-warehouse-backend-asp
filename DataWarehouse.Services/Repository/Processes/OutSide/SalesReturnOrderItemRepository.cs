@@ -130,10 +130,11 @@ public class SalesReturnOrderItemRepository : BaseRepository<SalesReturnOrderIte
     int salesReturnOrderItemId,
     UpdateGeneralItemDto dto)
     {
-        var res = await baseProcesses.UpdateOrderItemAsync<SalesReturnOrderItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<SalesReturnOrder, SalesReturnOrderItem>(
             itemIdFromRoute: salesReturnOrderItemId,
             processType: ProcessType.SalesReturn,
             dto: dto,
+            orderSet: _context.SalesReturnOrders,
             itemSelector: x => x.SalesReturnOrderItemId == salesReturnOrderItemId,
             itemSet: _context.SalesReturnOrderItems
         );

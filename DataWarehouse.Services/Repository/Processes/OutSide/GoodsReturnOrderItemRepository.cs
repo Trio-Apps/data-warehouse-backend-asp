@@ -127,10 +127,11 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
         UpdateGeneralItemDto dto)
     {
 
-        var res = await baseProcesses.UpdateOrderItemAsync<GoodsReturnOrderItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<GoodsReturnOrder, GoodsReturnOrderItem>(
        itemIdFromRoute: goodsReturnOrderItemId,
        processType: ProcessType.GoodsReturn,
        dto: dto,
+       orderSet: _context.GoodsReturnOrders,
        itemSelector: x => x.GoodsReturnOrderItemId == goodsReturnOrderItemId, // أو x => x.SalesOrderItemId == SalesItemId
        itemSet: _context.GoodsReturnOrderItems
    );

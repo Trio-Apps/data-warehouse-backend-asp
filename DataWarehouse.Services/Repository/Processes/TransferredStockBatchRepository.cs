@@ -81,10 +81,11 @@ public class TransferredStockBatchRepository : BaseRepository<TransferredStockBa
     {
       
 
-        var res = await baseProcesses.AddOrderBatchAsync<TransferredItem, TransferredStockBatch>(
+        var res = await baseProcesses.AddOrderBatchAsync<TransferredStock, TransferredItem, TransferredStockBatch>(
             orderItemId: transferredItemId,
             processType: ProcessType.Transferred,
             dto: dto,
+            orderSet: _context.TransferredStocks,
             orderItemSelector: i => i.TransferredItemId == transferredItemId,
             orderItemSet: _context.TransferredItems,
             batchItemSelector: b => b.TransferredItemId == transferredItemId,
@@ -114,10 +115,11 @@ public class TransferredStockBatchRepository : BaseRepository<TransferredStockBa
     {
       
 
-        var res = await baseProcesses.UpdateOrderBatchAsync<TransferredItem, TransferredStockBatch>(
+        var res = await baseProcesses.UpdateOrderBatchAsync<TransferredStock, TransferredItem, TransferredStockBatch>(
             batchId: transferredStockBatchId,
             processType: ProcessType.Transferred,
             dto: dto,
+            orderSet: _context.TransferredStocks,
             batchSet: _context.TransferredStockBatches,
             orderItemSet: _context.TransferredItems,
             batchIdSelector: x => x.TransferredStockBatchId,
@@ -143,9 +145,10 @@ public class TransferredStockBatchRepository : BaseRepository<TransferredStockBa
 
     public async Task<GeneralResponse<TransferredStockBatchDTO>> DeleteTransferredStockBatchAsync(int transferredStockBatchId)
     {
-        var res = await baseProcesses.DeleteOrderBatchAsync<TransferredItem, TransferredStockBatch>(
+        var res = await baseProcesses.DeleteOrderBatchAsync<TransferredStock, TransferredItem, TransferredStockBatch>(
             batchIdFromRoute: transferredStockBatchId,
             processType: ProcessType.Transferred,
+            orderSet: _context.TransferredStocks,
             batchSet: _context.TransferredStockBatches,
             orderItemSet: _context.TransferredItems,
             batchIdSelector: b => b.TransferredStockBatchId,

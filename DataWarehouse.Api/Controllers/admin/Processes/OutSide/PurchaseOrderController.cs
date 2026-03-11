@@ -4,6 +4,7 @@ using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.Queue;
 using DataWarehouse.Core.IServices.Processes.OutSide;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Entities.Processes.OutSide;

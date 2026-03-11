@@ -415,6 +415,7 @@ namespace DataWarehouse.SAP.Repositories.Based
 
             return score;
         }
+      
         //public async Task<string> GetAllSap(int sapId, string entityType)
         //{
         //    var client = await clientFactory.Create(sapId);
@@ -472,5 +473,6 @@ namespace DataWarehouse.SAP.Repositories.Based
         {
             throw new NotImplementedException();
         }
+    
     }
 }

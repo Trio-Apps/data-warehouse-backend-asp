@@ -174,7 +174,11 @@ namespace DataWarehouse.Services.Repository.Based
 
             var approval = await GetProcessItem(orderId, processType);
 
-            if (approval != null && approval.Status == ProcessStatus.Approved)
+            //if (approval != null && approval.Status == ProcessStatus.Approved)
+            //    return GeneralResponse<TOrderItem>.FailResponse("You cannot add any item because its approval status is 'Approved' and all approval steps have been completed.");
+           
+            
+            if (order.Status == GeneralStatus.Completed)
                 return GeneralResponse<TOrderItem>.FailResponse("You cannot add any item because its approval status is 'Approved' and all approval steps have been completed.");
 
 
@@ -227,12 +231,14 @@ namespace DataWarehouse.Services.Repository.Based
             return GeneralResponse<TOrderItem>.SuccessResponse(model);
         }
 
-        public async Task<GeneralResponse<TOrderItem>> UpdateOrderItemAsync<TOrderItem>(
+        public async Task<GeneralResponse<TOrderItem>> UpdateOrderItemAsync<TOrder,TOrderItem>(
     int itemIdFromRoute,
     ProcessType processType,
     UpdateGeneralItemDto dto,
+       DbSet<TOrder> orderSet,
     Expression<Func<TOrderItem, bool>> itemSelector,
     DbSet<TOrderItem> itemSet)
+    where TOrder : class, IOrder
     where TOrderItem : class, IOrderItem
         {
             var entity = await itemSet.FirstOrDefaultAsync(itemSelector);
@@ -242,13 +248,24 @@ namespace DataWarehouse.Services.Repository.Based
                 return GeneralResponse<TOrderItem>.FailResponse("id is not found");
 
 
-            // Approval check
-            var approval = await GetProcessItem(entity.OrderId, processType);
+            var order = await orderSet.FindAsync(entity.OrderId);
 
-            if (approval != null && approval.Status == ProcessStatus.Approved)
-                return GeneralResponse<TOrderItem>.FailResponse(
-                    "You cannot edit any item because its approval status is 'Approved' and all approval steps have been completed."
-                );
+
+            if (order == null)
+                return GeneralResponse<TOrderItem>.FailResponse("order id is not found");
+
+
+            // Approval check
+            //  var approval = await GetProcessItem(entity.OrderId, processType);
+
+            //if (approval != null && approval.Status == ProcessStatus.Approved)
+            //    return GeneralResponse<TOrderItem>.FailResponse(
+            //        "You cannot edit any item because its approval status is 'Approved' and all approval steps have been completed."
+            //    );
+
+            if (order.Status == GeneralStatus.Completed)
+                return GeneralResponse<TOrderItem>.FailResponse("You cannot add any item because its approval status is 'Approved' and all approval steps have been completed.");
+
 
             // Update rules (زي اللي عندك)
             if (dto.Quantity.HasValue && dto.Quantity.Value > 0)
@@ -269,11 +286,13 @@ namespace DataWarehouse.Services.Repository.Based
             return GeneralResponse<TOrderItem>.SuccessResponse(entity);
         }
 
-        public async Task<GeneralResponse<TOrderItem>> DeleteOrderItemAsync<TOrderItem>(
+        public async Task<GeneralResponse<TOrderItem>> DeleteOrderItemAsync<TOrder, TOrderItem>(
     int itemIdFromRoute,
     ProcessType processType,
+      DbSet<TOrder> orderSet,
     Expression<Func<TOrderItem, bool>> itemSelector,
     DbSet<TOrderItem> itemSet)
+     where TOrder : class, IOrder
     where TOrderItem : class, IOrderItem
         {
             var entity = await itemSet.FirstOrDefaultAsync(itemSelector);
@@ -281,14 +300,22 @@ namespace DataWarehouse.Services.Repository.Based
             if (entity == null)
                 return GeneralResponse<TOrderItem>.FailResponse("id is not found");
 
+            var order = await orderSet.FindAsync(entity.OrderId);
+
+            if (order == null)
+                return GeneralResponse<TOrderItem>.FailResponse("order id is not found");
+
 
             // Approval check
-            var approval = await GetProcessItem(entity.OrderId, processType);
+            // var approval = await GetProcessItem(entity.OrderId, processType);
 
-            if (approval != null && approval.Status == ProcessStatus.Approved)
-                return GeneralResponse<TOrderItem>.FailResponse(
-                    "You cannot delete any item because its approval status is 'Approved' and all approval steps have been completed."
-                );
+            //if (approval != null && approval.Status == ProcessStatus.Approved)
+            //    return GeneralResponse<TOrderItem>.FailResponse(
+            //        "You cannot delete any item because its approval status is 'Approved' and all approval steps have been completed."
+            //    );
+
+            if (order.Status == GeneralStatus.Completed)
+                return GeneralResponse<TOrderItem>.FailResponse("You cannot add any item because its approval status is 'Approved' and all approval steps have been completed.");
 
             // Snapshot قبل الحذف علشان نرجعه في response
             var snapshot = entity;
@@ -306,6 +333,7 @@ namespace DataWarehouse.Services.Repository.Based
         #region batches
         public async Task<GeneralResponse<IEnumerable<TDto>>> GetOrderBatchesAsync<TOrderItem, TBatch, TDto>(
 int orderItemId,
+
 Expression<Func<TOrderItem, bool>> orderItemSelector,
 DbSet<TOrderItem> orderItemSet,
 Expression<Func<TBatch, bool>> batchItemSelector,
@@ -334,14 +362,16 @@ where TBatch : class, IOrderBatch
 
             return GeneralResponse<IEnumerable<TDto>>.SuccessResponse(dtos);
         }
-        public async Task<GeneralResponse<TBatch>> AddOrderBatchAsync<TOrderItem, TBatch>(
+        public async Task<GeneralResponse<TBatch>> AddOrderBatchAsync<TOrder, TOrderItem, TBatch>(
     int orderItemId,
     ProcessType processType,
     GeneralBatchDto dto,
+           DbSet<TOrder> orderSet,
     Expression<Func<TOrderItem, bool>> orderItemSelector,
     DbSet<TOrderItem> orderItemSet,
     Expression<Func<TBatch, bool>> batchItemSelector,
     DbSet<TBatch> batchSet)
+    where TOrder : class, IOrder
     where TOrderItem : class, IOrderItem
     where TBatch : class, IOrderBatch, new()
         {
@@ -350,17 +380,25 @@ where TBatch : class, IOrderBatch
             if (orderItem == null)
                 return GeneralResponse<TBatch>.FailResponse("Order Item not found");
 
+            var order = await orderSet.FindAsync(orderItem.OrderId);
+
+            if (order == null)
+                return GeneralResponse<TBatch>.FailResponse("order id is not found");
+
 
             var canAddBatch = await CanItemAcceptBatchesAsync(orderItem.OrderId, orderItem.ItemId, processType);
             if (!canAddBatch)
                 return GeneralResponse<TBatch>.FailResponse("You cannot add any batch to this Item.");
 
             // 2) Approval check (هنا نستخدم OrderId من الـ entity بعد تحميله)
-            var approval = await GetProcessItem(orderItem.OrderId, processType);
-            if (approval != null && approval.Status == ProcessStatus.Approved)
-                return GeneralResponse<TBatch>.FailResponse(
-                    "You cannot add any batch because its approval status is 'Approved' and all approval steps have been completed."
-                );
+            //var approval = await GetProcessItem(orderItem.OrderId, processType);
+            //if (approval != null && approval.Status == ProcessStatus.Approved)
+            //    return GeneralResponse<TBatch>.FailResponse(
+            //        "You cannot add any batch because its approval status is 'Approved' and all approval steps have been completed."
+            //    );
+
+            if (order.Status == GeneralStatus.Completed)
+                return GeneralResponse<TBatch>.FailResponse("You cannot add any item because its approval status is 'Approved' and all approval steps have been completed.");
 
 
             // 3) Sum existing batches
@@ -390,6 +428,8 @@ where TBatch : class, IOrderBatch
 
             return GeneralResponse<TBatch>.SuccessResponse(batch);
         }
+
+
 
         private async Task<bool> CanItemAcceptBatchesAsync(int orderId, int itemId, ProcessType processType)
         {
@@ -500,17 +540,18 @@ where TBatch : class, IOrderBatch
             };
         }
 
-        public async Task<GeneralResponse<TBatch>> UpdateOrderBatchAsync<TOrderItem, TBatch>(
+        public async Task<GeneralResponse<TBatch>> UpdateOrderBatchAsync<TOrder, TOrderItem, TBatch>(
             int batchId,
             ProcessType processType,
             UpdateGeneralBatchDto dto,
-
+            DbSet<TOrder> orderSet,
             DbSet<TBatch> batchSet,
             DbSet<TOrderItem> orderItemSet,
 
             Expression<Func<TBatch, int>> batchIdSelector,
             Expression<Func<TBatch, int>> orderItemIdSelector,
             Expression<Func<TOrderItem, int>> orderItemIdForItemSelector)
+                where TOrder : class, IOrder
             where TOrderItem : class, IOrderItem
             where TBatch : class, IOrderBatch
         {
@@ -527,14 +568,25 @@ where TBatch : class, IOrderBatch
             var orderItem = await orderItemSet
                 .FirstOrDefaultAsync(BuildEquals(orderItemIdForItemSelector, orderItemId));
 
+        
             if (orderItem == null)
                 return GeneralResponse<TBatch>.FailResponse("Order Item not found");
 
+            var order = await orderSet.FindAsync(orderItem.OrderId);
+
+            if (order == null)
+                return GeneralResponse<TBatch>.FailResponse("order id is not found");
+
+
+
             // 3️⃣ Approval
-            var approval = await GetProcessItem(orderItem.OrderId, processType);
-            if (approval != null && approval.Status == ProcessStatus.Approved)
-                return GeneralResponse<TBatch>.FailResponse(
-                    "You cannot edit any batch because its approval status is 'Approved'.");
+            //var approval = await GetProcessItem(orderItem.OrderId, processType);
+            //if (approval != null && approval.Status == ProcessStatus.Approved)
+            //    return GeneralResponse<TBatch>.FailResponse(
+            //        "You cannot edit any batch because its approval status is 'Approved'.");
+
+            if (order.Status == GeneralStatus.Completed)
+                return GeneralResponse<TBatch>.FailResponse("You cannot add any item because its approval status is 'Approved' and all approval steps have been completed.");
 
             // 4️⃣ Sum other batches
             var otherTotal = await batchSet
@@ -576,9 +628,10 @@ where TBatch : class, IOrderBatch
 
 
 
-        public async Task<GeneralResponse<TBatch>> DeleteOrderBatchAsync<TOrderItem, TBatch>(
+        public async Task<GeneralResponse<TBatch>> DeleteOrderBatchAsync<TOrder,TOrderItem, TBatch>(
             int batchIdFromRoute,
             ProcessType processType,
+                        DbSet<TOrder> orderSet,
 
             DbSet<TBatch> batchSet,
             DbSet<TOrderItem> orderItemSet,
@@ -588,6 +641,7 @@ where TBatch : class, IOrderBatch
             Expression<Func<TBatch, int>> batchOrderItemIdSelector,
             Expression<Func<TOrderItem, int>> orderItemPkSelector,
             Expression<Func<TOrderItem, int>> orderIdSelector)
+              where TOrder : class
             where TOrderItem : class
             where TBatch : class
         {
@@ -601,17 +655,28 @@ where TBatch : class, IOrderBatch
 
             // 3) Load order item
             var orderItem = await orderItemSet.FirstOrDefaultAsync(BuildEquals(orderItemPkSelector, orderItemId));
+        
             if (orderItem == null)
                 return GeneralResponse<TBatch>.FailResponse("Order Item not found");
+
+          
+        
+
 
             // 4) Approval check using OrderId from orderItem
             var orderId = GetValue(orderIdSelector, orderItem);
 
-            var approval = await GetProcessItem(orderId, processType);
-            if (approval != null && approval.Status == ProcessStatus.Approved)
-                return GeneralResponse<TBatch>.FailResponse(
-                    "You cannot delete any batch because its approval status is 'Approved' and all approval steps have been completed."
-                );
+            var order = await orderSet.FindAsync(orderId);
+
+            if (order == null)
+                return GeneralResponse<TBatch>.FailResponse("order id is not found");
+
+
+            //var approval = await GetProcessItem(orderId, processType);
+            //if (approval != null && approval.Status == ProcessStatus.Approved)
+            //    return GeneralResponse<TBatch>.FailResponse(
+            //        "You cannot delete any batch because its approval status is 'Approved' and all approval steps have been completed."
+            //    );
 
             // 5) Delete
             var snapshot = batch;

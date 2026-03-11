@@ -8492,6 +8492,107 @@
         }
       }
     },
+    "/api/ProcessSettingApproval": {
+      "get": {
+        "tags": [
+          "ProcessSettingApproval"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProcessSettingApproval"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProcessSettingApproval"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProcessSettingApproval"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ProcessSettingApproval/{id}": {
+      "get": {
+        "tags": [
+          "ProcessSettingApproval"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessSettingApproval"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessSettingApproval"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessSettingApproval"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ProcessSettingApproval/{id}/toggle-ignore": {
+      "patch": {
+        "tags": [
+          "ProcessSettingApproval"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/production-header-batches": {
       "post": {
         "tags": [
@@ -23069,6 +23170,7 @@
     "schemas": {
       "AddApprovalStepDto": {
         "required": [
+          "processSettingApprovalId",
           "roleId",
           "stepName"
         ],
@@ -23086,6 +23188,10 @@
           "roleId": {
             "minLength": 1,
             "type": "string"
+          },
+          "processSettingApprovalId": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -24748,6 +24854,13 @@
               "$ref": "#/components/schemas/ProcessApproval"
             },
             "nullable": true
+          },
+          "processSettingApprovalId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "processSettingApproval": {
+            "$ref": "#/components/schemas/ProcessSettingApproval"
           }
         },
         "additionalProperties": false
@@ -24993,6 +25106,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ApplicationRole"
+            },
+            "nullable": true
+          },
+          "processSettingApprovals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProcessSettingApproval"
             },
             "nullable": true
           }
@@ -26792,6 +26912,36 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProcessApproval"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProcessSettingApproval": {
+        "type": "object",
+        "properties": {
+          "processSettingApprovalId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "processType": {
+            "$ref": "#/components/schemas/ProcessType"
+          },
+          "ignoreSteps": {
+            "type": "boolean"
+          },
+          "companyId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "company": {
+            "$ref": "#/components/schemas/Company"
+          },
+          "approvalSteps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApprovalStep"
             },
             "nullable": true
           }

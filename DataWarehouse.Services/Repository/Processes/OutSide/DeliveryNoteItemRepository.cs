@@ -144,10 +144,11 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             int deliveryNoteItemId,
             UpdateGeneralItemDto dto)
         {
-            var res = await baseProcesses.UpdateOrderItemAsync<DeliveryNoteItem>(
+            var res = await baseProcesses.UpdateOrderItemAsync<DeliveryNoteOrder, DeliveryNoteItem>(
                 itemIdFromRoute: deliveryNoteItemId,
                 processType: ProcessType.DeliveryNote,
                 dto: dto,
+                orderSet: _context.DeliveryNoteOrders,
                 itemSelector: x => x.DeliveryNoteItemId == deliveryNoteItemId,
                 itemSet: _context.DeliveryNoteItems
             );

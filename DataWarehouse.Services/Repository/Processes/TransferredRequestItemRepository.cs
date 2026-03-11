@@ -150,10 +150,11 @@ public class TransferredRequestItemRepository : BaseRepository<TransferredReques
     {
        
 
-        var res = await baseProcesses.UpdateOrderItemAsync<TransferredRequestItem>(
+        var res = await baseProcesses.UpdateOrderItemAsync<TransferredRequest, TransferredRequestItem>(
             itemIdFromRoute: transferredRequestItemId,
             processType: ProcessType.TransferredRequest,
             dto: dto,
+            orderSet: _context.TransferredRequests,
             itemSelector: x => x.TransferredRequestItemId == transferredRequestItemId,
             itemSet: _context.TransferredRequestItems);
 
@@ -181,9 +182,10 @@ public class TransferredRequestItemRepository : BaseRepository<TransferredReques
 
     public async Task<GeneralResponse<TransferredRequestItemDTO>> DeleteTransferredRequestItemAsync(int transferredRequestItemId)
     {
-        var res = await baseProcesses.DeleteOrderItemAsync<TransferredRequestItem>(
+        var res = await baseProcesses.DeleteOrderItemAsync<TransferredRequest, TransferredRequestItem>(
             itemIdFromRoute: transferredRequestItemId,
             processType: ProcessType.TransferredRequest,
+            orderSet: _context.TransferredRequests,
             itemSelector: x => x.TransferredRequestItemId == transferredRequestItemId,
             itemSet: _context.TransferredRequestItems);
 

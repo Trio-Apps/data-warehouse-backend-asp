@@ -92,10 +92,11 @@ public class GoodsReturnOrderBatchRepository : BaseRepository<GoodsReturnOrderBa
     }
     public async Task<GeneralResponse<GoodsReturnOrderBatchDTO>> AddByGoodsReturnOrderItemIdAsync(int goodsReturnOrderItemId, GeneralBatchDto dto)
     {
-        var res = await baseProcesses.AddOrderBatchAsync<GoodsReturnOrderItem, GoodsReturnOrderBatch>(
+        var res = await baseProcesses.AddOrderBatchAsync<GoodsReturnOrder, GoodsReturnOrderItem, GoodsReturnOrderBatch>(
             orderItemId: goodsReturnOrderItemId,
             processType: ProcessType.GoodsReturn,
             dto: dto,
+            orderSet: _context.GoodsReturnOrders,
             // ✅ لازم predicate على العمود الحقيقي
             orderItemSelector: i => i.GoodsReturnOrderItemId == goodsReturnOrderItemId,
             orderItemSet: _context.GoodsReturnOrderItems,
@@ -125,10 +126,11 @@ public class GoodsReturnOrderBatchRepository : BaseRepository<GoodsReturnOrderBa
 
     public async Task<GeneralResponse<GoodsReturnOrderBatchDTO>> UpdateGoodsReturnOrderBatchAsync(int goodsReturnOrderBatchId, UpdateGeneralBatchDto dto)
     {
-        var res = await baseProcesses.UpdateOrderBatchAsync<GoodsReturnOrderItem, GoodsReturnOrderBatch>(
+        var res = await baseProcesses.UpdateOrderBatchAsync<GoodsReturnOrder, GoodsReturnOrderItem, GoodsReturnOrderBatch>(
              batchId: goodsReturnOrderBatchId,
              processType: ProcessType.GoodsReturn,
              dto: dto,
+             orderSet: _context.GoodsReturnOrders,
 
              batchSet: _context.GoodsReturnOrderBatches,
              orderItemSet: _context.GoodsReturnOrderItems,
@@ -159,9 +161,10 @@ public class GoodsReturnOrderBatchRepository : BaseRepository<GoodsReturnOrderBa
 
     public async Task<GeneralResponse<GoodsReturnOrderBatchDTO>> DeleteGoodsReturnOrderBatchAsync(int goodsReturnOrderBatchId)
     {
-        var res = await baseProcesses.DeleteOrderBatchAsync<GoodsReturnOrderItem, GoodsReturnOrderBatch>(
+        var res = await baseProcesses.DeleteOrderBatchAsync<GoodsReturnOrder, GoodsReturnOrderItem, GoodsReturnOrderBatch>(
             batchIdFromRoute: goodsReturnOrderBatchId,
             processType: ProcessType.GoodsReturn,
+            orderSet: _context.GoodsReturnOrders,
 
             batchSet: _context.GoodsReturnOrderBatches,
             orderItemSet: _context.GoodsReturnOrderItems,

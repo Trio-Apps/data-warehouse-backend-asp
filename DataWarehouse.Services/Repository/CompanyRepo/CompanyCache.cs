@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.Interfaces.Company;
+using DataWarehouse.Domain.Entities.AllinAll;
 using DataWarehouse.Domain.Entities.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -59,7 +60,9 @@ namespace DataWarehouse.Services.Repository.CompanyRepo
 
         public async Task<int?> Get()
         {
-            int companyId = await GetCurrentCompanyIdAsync();
+            int? companyId = await GetCurrentCompanyIdAsync();
+            if (companyId == null)
+                return null;
             //_cache.TryGetValue(CacheKey(companyId), out CompanyDto company);
             return companyId;
         }

@@ -137,6 +137,7 @@ namespace DataWarehouse.Services
             services.AddScoped<IProcessItemIsProgressRepository, ProcessItemIsProgressRepository>();
             services.AddScoped<IProcessApprovalRepository, ProcessApprovalRepository>();
             services.AddScoped<IApprovalStepRepository, ApprovalStepRepository>();
+            services.AddScoped<IProcessSettingApprovalRepository, ProcessSettingApprovalRepository>();
 
             services.AddScoped<IApprovalRepository, ApprovalRepository>();
 
