@@ -56,6 +56,7 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
                 Comment = x.Comment,
                 CreatedAt = x.CreatedAt,
                 PostingDate = x.PostingDate,
+                Mode = x.DocType,
                 WarehouseId = x.WarehouseId,
                 CountStockItems = null
             })
@@ -84,6 +85,7 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
         {
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
             PostingDate = dto.PostingDate,
+            DocType = NormalizeMode(dto.Mode),
             CreatedAt = DateTime.UtcNow,
             UserId = userId,
             WarehouseId = dto.WarehouseId,
@@ -136,6 +138,15 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
         if (entity.Comment != dto.Comment)
             entity.Comment = dto.Comment;
 
+        if (!string.IsNullOrWhiteSpace(dto.Mode))
+        {
+            var normalizedMode = NormalizeMode(dto.Mode);
+            if (!string.Equals(entity.DocType, normalizedMode, StringComparison.OrdinalIgnoreCase))
+            {
+                entity.DocType = normalizedMode;
+            }
+        }
+
         if (!string.IsNullOrWhiteSpace(userId) && entity.UserId != userId)
             entity.UserId = userId;
 
@@ -178,6 +189,7 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
                 Comment = x.Comment,
                 CreatedAt = x.CreatedAt,
                 PostingDate = x.PostingDate,
+                Mode = x.DocType,
                 WarehouseId = x.WarehouseId
             })
             .ToListAsync();
@@ -275,6 +287,7 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
             Comment = entity.Comment,
             CreatedAt = entity.CreatedAt,
             PostingDate = entity.PostingDate,
+            Mode = entity.DocType,
             WarehouseId = entity.WarehouseId,
             CountStockItems = includeItems
                 ? entity.CountStockItem.Select(item => new CountStockItemDTO
@@ -293,5 +306,12 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
                 }).ToList()
                 : null
         };
+    }
+
+    private static string NormalizeMode(string? mode)
+    {
+        return string.Equals(mode?.Trim(), "Posting", StringComparison.OrdinalIgnoreCase)
+            ? "Posting"
+            : "Counting";
     }
 }

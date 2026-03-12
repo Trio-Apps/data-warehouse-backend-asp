@@ -29,6 +29,7 @@ public class WarehouseItemDto
     public int WarehouseItemId { get; set; }
     public int ItemId { get; set; }
     public int WarehouseId { get; set; }
+    public bool IsBatchManaged { get; set; }
     public string ItemName { get; set; }
     public string ItemCode { get; set; }
     public string WarehouseCode { get; set; }

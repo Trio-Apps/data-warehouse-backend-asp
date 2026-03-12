@@ -68,6 +68,7 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo
                     WarehouseItemId = 0,              // مفيش row
                     ItemId = i.ItemId,
                     WarehouseId = warehouse.WarehouseId,
+                    IsBatchManaged = false,
                     ItemName = i.ItemName,
                     ItemCode = i.ItemCode,
 
@@ -135,6 +136,7 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo
                     WarehouseItemId = 0,
                     ItemId = i.ItemId,
                     WarehouseId = warehouse.WarehouseId,
+                    IsBatchManaged = false,
                     ItemName = i.ItemName,
                     ItemCode = i.ItemCode,
                     WarehouseCode = warehouse.WarehouseCode,
@@ -206,6 +208,7 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo
                     WarehouseItemId = wi.WarehouseItemId,
                     ItemId = wi.ItemId,
                     WarehouseId = wi.WarehouseId,
+                    IsBatchManaged = wi.IsBatchManaged,
                     ItemName = wi.Item.ItemName,
                     ItemCode = wi.Item.ItemCode,
                     WarehouseCode = wi.Warehouse.WarehouseCode,
