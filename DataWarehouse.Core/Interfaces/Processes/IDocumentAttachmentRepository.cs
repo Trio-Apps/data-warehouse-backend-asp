@@ -1,6 +1,8 @@
 ﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,18 +13,16 @@ namespace DataWarehouse.Core.Interfaces.Processes
 {
     public interface IDocumentAttachmentRepository
     {
-        Task<GeneralResponse<DocumentAttachmentDto>> UploadDocumentAsync(
-      
-       UploadDocumentDto dto,
-       string userId);
 
-        Task<GeneralResponse<List<DocumentAttachmentDto>>> UploadMultipleDocumentsAsync(
-            
-            UploadMultipleDocumentsDto dto,
-            string userId);
+        Task<GeneralResponse<List<DocumentAttachmentDto>>> UploadFilesForDocumentAsync(
 
-        Task<GeneralResponse<List<DocumentAttachmentDto>>> GetDocumentsByTypeAndIdAsync( 
-            DocumentType documentType,
+    string userId,
+     UploadDocumentDto dto);
+
+
+
+        Task<GeneralResponse<List<DocumentAttachmentDto>>> GetDocumentsByTypeAndIdAsync(
+            string documentType,
             int documentId);
 
         Task<GeneralResponse<byte[]>> DownloadDocumentAsync(

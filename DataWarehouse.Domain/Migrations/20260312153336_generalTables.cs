@@ -462,6 +462,7 @@ namespace DataWarehouse.Domain.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DocumentType = table.Column<int>(type: "int", nullable: false),
                     DocumentId = table.Column<int>(type: "int", nullable: false),
+                    SourcePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OriginalFileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FileExtension = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -469,7 +470,7 @@ namespace DataWarehouse.Domain.Migrations
                     FileSizeBytes = table.Column<long>(type: "bigint", nullable: false),
                     ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AttachmentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UploadedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     SapId = table.Column<int>(type: "int", nullable: false)

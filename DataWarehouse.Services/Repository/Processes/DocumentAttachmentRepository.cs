@@ -5,6 +5,7 @@ using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DataWarehouse.Services.Repository.Processes
 {
@@ -29,10 +31,14 @@ namespace DataWarehouse.Services.Repository.Processes
         private readonly string[] _allowedExtensions =
         {
         ".jpg", ".jpeg", ".png", ".gif", ".pdf",
-        ".doc", ".docx", ".xls", ".xlsx", ".txt", ".zip"};
+        ".doc", ".docx", ".xls", ".xlsx", ".txt", ".zip"
+        };
+
+
 
         // Max file size: 10MB
         private const long MaxFileSize = 10 * 1024 * 1024;
+
 
         public DocumentAttachmentRepository(
             DataWarehouseDbContext context,
@@ -46,115 +52,147 @@ namespace DataWarehouse.Services.Repository.Processes
             this.sapCache = sapCache;
         }
 
-        public async Task<GeneralResponse<DocumentAttachmentDto>> UploadDocumentAsync(
-        
-            UploadDocumentDto dto,
-            string userId)
+
+        public async Task<GeneralResponse<List<DocumentAttachmentDto>>> UploadFilesForDocumentAsync(
+        string userId,
+        UploadDocumentDto dto)
         {
+            var savedPhysicalPaths = new List<string>();
+
             try
             {
+                if (dto.Files == null || !dto.Files.Any())
+                    return GeneralResponse<List<DocumentAttachmentDto>>.SuccessResponse(new List<DocumentAttachmentDto>());
+
+
                 var sapId = await sapCache.Get();
 
+                if (sapId == null || sapId <= 0)
+                    return GeneralResponse<List<DocumentAttachmentDto>>.FailResponse("SAP is not selected");
 
-                // 1️⃣ Validate file
-                var validation = ValidateFile(dto.File);
-                if (!validation.IsValid)
-                    return GeneralResponse<DocumentAttachmentDto>.FailResponse(validation.ErrorMessage);
+                var attachments = new List<DocumentAttachment>();
 
-                // 2️⃣ Generate unique filename
-                var fileExtension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
-                var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                if (!Enum.TryParse<ProcessType>(dto.DocumentType, true, out var processType))
+                {
+                    throw new Exception($"Invalid document type: {dto.DocumentType}");
+                }
 
-                // 3️⃣ Create directory structure: wwwroot/uploads/{sapId}/{documentType}/{year}/{month}/
+                var now = DateTime.UtcNow;
+
                 var uploadsBasePath = Path.Combine(
-                    _environment.WebRootPath ?? _environment.ContentRootPath,
-                    "uploads"
+                    _environment.WebRootPath ?? _environment.ContentRootPath
+                   
                 );
 
                 var uploadPath = Path.Combine(
                     uploadsBasePath,
-                    sapId.ToString(),
+                     "uploads",
+                    sapId.Value.ToString(),
                     dto.DocumentType.ToString(),
-                    DateTime.UtcNow.Year.ToString(),
-                    DateTime.UtcNow.Month.ToString("D2")
+                    now.Year.ToString(),
+                    now.Month.ToString("D2")
                 );
 
-                // Ensure directory exists
+
+
                 if (!Directory.Exists(uploadPath))
                 {
                     Directory.CreateDirectory(uploadPath);
                     _logger.LogInformation("Created upload directory: {Path}", uploadPath);
                 }
 
-                // 4️⃣ Save file
-                var filePath = Path.Combine(uploadPath, uniqueFileName);
-                try
+                foreach (var file in dto.Files)
                 {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    var validation = ValidateFile(file);
+                    if (!validation.IsValid)
                     {
-                        await dto.File.CopyToAsync(stream);
+                        return GeneralResponse<List<DocumentAttachmentDto>>.FailResponse(
+                            $"File '{file.FileName}' is invalid: {validation.ErrorMessage}");
                     }
-                    _logger.LogInformation("File saved successfully: {FilePath}", filePath);
+
+                    var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                    var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                    var physicalPath = Path.Combine(uploadPath, uniqueFileName);
+
+                    using (var stream = new FileStream(physicalPath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    savedPhysicalPaths.Add(physicalPath);
+
+                    var relativePath = Path.Combine(
+                        "uploads",
+                        sapId.Value.ToString(),
+                        dto.DocumentType.ToString(),
+                        now.Year.ToString(),
+                        now.Month.ToString("D2"),
+                        uniqueFileName
+                    ).Replace('\\', '/');
+
+                    var attachment = new DocumentAttachment
+                    {
+                        DocumentType = processType,
+                        DocumentId = dto.DocumentId,
+                        SourcePath = uploadsBasePath,
+                        FileName = uniqueFileName,
+                        OriginalFileName = file.FileName,
+                        FileExtension = fileExtension,
+                        FilePath = relativePath,
+                        FileSizeBytes = file.Length,
+                        ContentType = file.ContentType,
+                        Description = dto.Description,
+                        AttachmentDate = now,
+                        UploadedBy = userId,
+                        SapId = sapId.Value,
+                        IsActive = true
+                    };
+
+                    attachments.Add(attachment);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error saving file to: {FilePath}", filePath);
-                    throw;
-                }
 
-                // 5️⃣ Save to database
-                // Store relative path for better portability
-                var relativePath = Path.Combine(
-                    "uploads",
-                    sapId.ToString(),
-                    dto.DocumentType.ToString(),
-                    DateTime.UtcNow.Year.ToString(),
-                    DateTime.UtcNow.Month.ToString("D2"),
-                    uniqueFileName
-                ).Replace('\\', '/'); // Use forward slashes for web paths
-
-                var attachment = new DocumentAttachment
-                {
-                    DocumentType = dto.DocumentType,
-                    DocumentId = dto.DocumentId,
-                    FileName = uniqueFileName,
-                    OriginalFileName = dto.File.FileName,
-                    FileExtension = fileExtension,
-                    FilePath = relativePath, // Store relative path
-                    FileSizeBytes = dto.File.Length,
-                    ContentType = dto.File.ContentType,
-                    Description = dto.Description,
-                    UploadedAt = DateTime.UtcNow,
-                    UploadedBy = userId,
-                    SapId = sapId??0,
-                    IsActive = true
-                };
-
-                await _context.DocumentAttachments.AddAsync(attachment);
+                await _context.DocumentAttachments.AddRangeAsync(attachments);
                 await _context.SaveChangesAsync();
 
-                // 6️⃣ Return response
-                var result = MapToDto(attachment);
+                var result = attachments.Select(MapToDto).ToList();
 
                 _logger.LogInformation(
-                    "Document uploaded: {FileName} for {DocumentType} #{DocumentId}",
-                    dto.File.FileName, dto.DocumentType, dto.DocumentId
-                );
+                    "Uploaded {Count} attachments for {DocumentType} #{DocumentId}",
+                    attachments.Count,
+                    dto.DocumentType,
+                    dto.DocumentId);
 
-                return GeneralResponse<DocumentAttachmentDto>.SuccessResponse(result);
+                return GeneralResponse<List<DocumentAttachmentDto>>.SuccessResponse(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading document");
-                return GeneralResponse<DocumentAttachmentDto>.FailResponse("Failed to upload document");
+                _logger.LogError(ex, "Error uploading files for document {DocumentType} #{DocumentId}", dto.DocumentType,
+                    dto.DocumentId);
+
+                // Cleanup physical files لو حصل failure
+                foreach (var path in savedPhysicalPaths)
+                {
+                    try
+                    {
+                        if (File.Exists(path))
+                            File.Delete(path);
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logger.LogWarning(cleanupEx, "Failed to cleanup uploaded file: {Path}", path);
+                    }
+                }
+
+                return GeneralResponse<List<DocumentAttachmentDto>>.FailResponse("Failed to upload document attachments");
             }
         }
 
 
+       
         public async Task<GeneralResponse<List<NameStatus>>> GetDocumentStatus()
         {
-            var statuses = Enum.GetValues(typeof(DocumentType))
-                .Cast<DocumentType>()
+            var statuses = Enum.GetValues(typeof(ProcessType))
+                .Cast<ProcessType>()
                 .Select(s => new NameStatus
                 {
                     Id = (int)s,
@@ -169,65 +207,27 @@ namespace DataWarehouse.Services.Repository.Processes
                 Data = statuses
             });
         }
-        public async Task<GeneralResponse<List<DocumentAttachmentDto>>> UploadMultipleDocumentsAsync(
-            UploadMultipleDocumentsDto dto,
-            string userId)
-        {
-            try
-            {
-                var results = new List<DocumentAttachmentDto>();
-                var errors = new List<string>();
-
-                foreach (var file in dto.Files)
-                {
-                    var singleDto = new UploadDocumentDto
-                    {
-                        DocumentType = dto.DocumentType,
-                        DocumentId = dto.DocumentId,
-                        File = file,
-                        Description = dto.Description
-                    };
-
-                    var result = await UploadDocumentAsync(singleDto, userId);
-
-                    if (result.Success)
-                        results.Add(result.Data);
-                    else
-                        errors.Add($"{file.FileName}: {result.Message}");
-                }
-
-                if (errors.Any())
-                {
-                    return GeneralResponse<List<DocumentAttachmentDto>>.FailResponse(
-                        $"Some files failed: {string.Join(", ", errors)}",
-                        errors
-                    );
-                }
-
-                return GeneralResponse<List<DocumentAttachmentDto>>.SuccessResponse(results);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error uploading multiple documents");
-                return GeneralResponse<List<DocumentAttachmentDto>>.FailResponse("Failed to upload documents");
-            }
-        }
-
+      
         public async Task<GeneralResponse<List<DocumentAttachmentDto>>> GetDocumentsByTypeAndIdAsync(
            
-            DocumentType documentType,
+            string documentType,
             int documentId)
         {
             try
             {
                 var sapId = await sapCache.Get();
 
+                if (!Enum.TryParse<ProcessType>(documentType, true, out var processType))
+                {
+                    throw new Exception($"Invalid document type: {documentType}");
+                }
+
                 var attachments = await _context.DocumentAttachments
                     .Where(x => x.SapId == sapId
-                             && x.DocumentType == documentType
+                             && x.DocumentType == processType
                              && x.DocumentId == documentId
                              && x.IsActive)
-                    .OrderByDescending(x => x.UploadedAt)
+                    .OrderByDescending(x => x.AttachmentDate)
                     .ToListAsync();
 
                 var results = attachments.Select(MapToDto).ToList();
@@ -294,12 +294,16 @@ namespace DataWarehouse.Services.Repository.Processes
                     return GeneralResponse<bool>.FailResponse("Document not found");
 
                 // Soft delete
-                attachment.IsActive = false;
+                //  attachment.IsActive = false;
+
+                //hard delete
+                _context.DocumentAttachments.Remove(attachment);
                 await _context.SaveChangesAsync();
 
                 // Optional: Delete physical file
                 try
                 {
+
                     var fullPath = Path.IsPathRooted(attachment.FilePath)
                         ? attachment.FilePath
                         : Path.Combine(_environment.WebRootPath ?? _environment.ContentRootPath, attachment.FilePath);
@@ -349,8 +353,12 @@ namespace DataWarehouse.Services.Repository.Processes
             {
                 DocumentAttachmentId = attachment.DocumentAttachmentId,
                 DocumentType = attachment.DocumentType,
-                DocumentName = ((DocumentType)attachment.DocumentType).ToString(),
+                DocumentName = ((ProcessType)attachment.DocumentType).ToString(),
                 DocumentId = attachment.DocumentId,
+                 
+                FilePath = attachment.FilePath,
+                SourcePath = attachment.SourcePath,
+                FullPath = $"{attachment.SourcePath}/{attachment.FilePath}",
                 FileName = attachment.FileName,
                 OriginalFileName = attachment.OriginalFileName,
                 FileExtension = attachment.FileExtension,
@@ -358,11 +366,12 @@ namespace DataWarehouse.Services.Repository.Processes
                 FileSizeFormatted = FormatFileSize(attachment.FileSizeBytes),
                 ContentType = attachment.ContentType,
                 Description = attachment.Description,
-                UploadedAt = attachment.UploadedAt,
+                AttachmentDate = attachment.AttachmentDate,
                 UploadedBy = attachment.UploadedBy,
                 DownloadUrl = $"/api/documents/{attachment.DocumentAttachmentId}/download"
             };
         }
+
 
         private string FormatFileSize(long bytes)
         {
@@ -377,8 +386,7 @@ namespace DataWarehouse.Services.Repository.Processes
             return $"{len:0.##} {sizes[order]}";
         }
 
-        public async Task<DocumentAttachmentDto?> GetDocumentAttachmentByIdAsync(
-          
+        public async Task<DocumentAttachmentDto?> GetDocumentAttachmentByIdAsync(         
             int documentAttachmentId)
         {
             var sapId = await sapCache.Get();
@@ -394,4 +402,5 @@ namespace DataWarehouse.Services.Repository.Processes
             return MapToDto(attachment);
         }
     }
+
 }

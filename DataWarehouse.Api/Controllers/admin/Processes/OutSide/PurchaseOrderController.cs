@@ -103,7 +103,6 @@ public class PurchaseOrderController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
-
     public async Task<ActionResult<ProductionOrder>> GetById(int id)
     {
         var productionOrder = await _repository.GetByIdAsync(id);
@@ -114,11 +113,8 @@ public class PurchaseOrderController : ControllerBase
     }
 
 
-
-
     [HttpGet("status")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
-
     public async Task<IActionResult> Status()
     {
         var productionOrder = await _repository.GetPurchaseOrderStatus();
@@ -129,9 +125,9 @@ public class PurchaseOrderController : ControllerBase
         return Ok(productionOrder);
     }
 
+
     [HttpGet("status/{status}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Get}")]
-
     public async Task<IActionResult> Status(string status)
     {
         var productionOrder = await _repository.GetByStatusAsync(status);
@@ -142,19 +138,18 @@ public class PurchaseOrderController : ControllerBase
         return Ok(productionOrder);
     }
 
+
+
     [HttpPost]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Purchases_Create}")]
-
     public async Task<ActionResult<ProductionOrder>> Create(AddPurchaseOrderDTO dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var created = await _repository.AddPurchaseOrderByWarehouseIdAsync(userId, dto);
-
 
         return Ok(created);
     }

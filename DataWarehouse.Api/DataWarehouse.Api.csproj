@@ -38,4 +38,8 @@
     <ProjectReference Include="..\DataWarehouse.Services\DataWarehouse.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\1\" />
+  </ItemGroup>
+
 </Project>

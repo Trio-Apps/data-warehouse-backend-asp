@@ -17,6 +17,7 @@ using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Net.NetworkInformation;
 using System.Security.Claims;
 using System.Threading;
@@ -26,6 +27,8 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo;
 
 public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseOrderRepository
 {
+    private readonly IDocumentAttachmentRepository document;
+    private readonly ILogger<PurchaseOrderRepository> logger;
     private readonly IBaseProcessesRepository<PurchaseOrder> baseProcesses;
     private readonly IProcessItemIsProgressRepository progressRepository;
     private readonly IApprovalRepository approval;
@@ -33,8 +36,10 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
     private readonly ISapSettingsRepository sap;
     private readonly IProcessesTypesDateRepository processes;
 
-    public PurchaseOrderRepository(IBaseProcessesRepository<PurchaseOrder> baseProcesses, IProcessItemIsProgressRepository progressRepository, IApprovalRepository approval, ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, DataWarehouseDbContext context) : base(context)
+    public PurchaseOrderRepository(IDocumentAttachmentRepository document, ILogger<PurchaseOrderRepository> logger, IBaseProcessesRepository<PurchaseOrder> baseProcesses, IProcessItemIsProgressRepository progressRepository, IApprovalRepository approval, ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, DataWarehouseDbContext context) : base(context)
     {
+        this.document = document;
+        this.logger = logger;
         this.baseProcesses = baseProcesses;
         this.progressRepository = progressRepository;
         this.approval = approval;
@@ -296,53 +301,89 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
     }
 
     // create
-    public async Task<GeneralResponse<PurchaseOrderDTO>> AddPurchaseOrderByWarehouseIdAsync(string userId,
-           AddPurchaseOrderDTO dto)
+    public async Task<GeneralResponse<PurchaseOrderDTO>> AddPurchaseOrderByWarehouseIdAsync(
+       string userId,
+       AddPurchaseOrderDTO dto)
     {
+    //    await using var transaction = await _context.Database.BeginTransactionAsync();
 
-        var suppler = await _context.Suppliers.FirstOrDefaultAsync(p => p.SupplierId == dto.SupplierId);
-
-        if (suppler == null)
-            return GeneralResponse<PurchaseOrderDTO>.FailResponse("suppler is not found");
-
-        var mapping = new PurchaseOrder
+        try
         {
-            Status = dto.IsDraft?GeneralStatus.Draft:GeneralStatus.Processing,
-            PostingDate = dto.PostingDate,
-            DueDate = dto.DueDate,
-            CreatedAt = DateTime.UtcNow,
-            UserId = userId,
-            WarehouseId = dto.WarehouseId,
-            Comment = dto.Comment,
-            SupplierId = dto.SupplierId,
-        };
+            var suppler = await _context.Suppliers
+                .FirstOrDefaultAsync(p => p.SupplierId == dto.SupplierId);
 
-        var res = await AddAsync(mapping);
-         await SaveChangesAsync();
 
-        // ✅ شغل الـ Approval Workflow لو مش Draft
-        if (!dto.IsDraft)
-        {
-            await approval.StartProcessAsync(
-                processType: ProcessType.Purchase,
-                referenceId: res.PurchaseOrderId,
-                warehouseId: res.WarehouseId,
-                userId: userId
-            );
+            if (suppler == null)
+                return GeneralResponse<PurchaseOrderDTO>.FailResponse("suppler is not found");
+
+
+            var mapping = new PurchaseOrder
+            {
+                Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
+                PostingDate = dto.PostingDate,
+                DueDate = dto.DueDate,
+                CreatedAt = DateTime.UtcNow,
+                UserId = userId,
+                WarehouseId = dto.WarehouseId,
+                Comment = dto.Comment,
+                SupplierId = dto.SupplierId,
+            };
+
+
+
+            var res = await AddAsync(mapping);
+            await SaveChangesAsync();
+
+
+            // upload attachments after order created
+            //if (dto.Attachments != null && dto.Attachments.Any())
+            //{
+            //    var uploadResult = await document.UploadFilesForDocumentAsync(
+
+            //        documentType: ProcessType.Purchase, // غيّرها لو عندك enum مختلف مثل PurchaseOrder
+            //        documentId: res.PurchaseOrderId,
+            //        files: dto.Attachments,
+            //        userId: userId
+            //    );
+
+            //    if (!uploadResult.Success)
+            //    {
+            //        await transaction.RollbackAsync();
+            //        return GeneralResponse<PurchaseOrderDTO>.FailResponse(uploadResult.Message);
+            //    }
+            //}
+
+
+            // approval only when not draft
+            if (!dto.IsDraft)
+            {
+                await approval.StartProcessAsync(
+                    processType: ProcessType.Purchase,
+                    referenceId: res.PurchaseOrderId,
+                    warehouseId: res.WarehouseId,
+                    userId: userId
+                );
+            }
+
+         //   await transaction.CommitAsync();
+
+            var model = new PurchaseOrderDTO
+            {
+                PurchaseOrderId = res.PurchaseOrderId,
+                DueDate = res.DueDate,
+                PostingDate = res.PostingDate,
+                Status = res.Status.ToString()
+            };
+
+            return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(model);
         }
-
-
-        var model = new PurchaseOrderDTO
+        catch (Exception ex)
         {
-            PurchaseOrderId = res.PurchaseOrderId,
-            DueDate = res.DueDate,
-            PostingDate = res.PostingDate,
-            Status = res.Status.ToString() // <-- هنا بنحول الـ enum ل string
-        };
-
-        return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(model);
+         //   await transaction.RollbackAsync();
+            logger.LogError(ex, "Error while adding purchase order with attachments");
+            return GeneralResponse<PurchaseOrderDTO>.FailResponse("Failed to create purchase order");
+        }
     }
-
     private async Task<(bool IsValid, string Message)> ValidateBusinessDatesAsync(
       DateTime postingDate,
       DateTime dueDate)

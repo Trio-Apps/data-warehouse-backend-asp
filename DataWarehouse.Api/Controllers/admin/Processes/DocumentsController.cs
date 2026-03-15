@@ -2,6 +2,7 @@
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums;
+using DataWarehouse.Domain.Enums.Approval;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,39 +23,11 @@ namespace DataWarehouse.Api.Controllers.admin.Processes
             _service = service;
         }
 
+
+
+     
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadDocument([FromForm] UploadDocumentDto dto)
-        {
-            // Manual validation for file upload
-            if (dto == null)
-                return BadRequest(new { error = "Request body is required" });
-
-            // Skip ModelState validation for File field - we handle it manually
-            ModelState.Remove(nameof(dto.File));
-
-            if (dto.File == null || dto.File.Length == 0)
-                return BadRequest(new { error = "File is required and cannot be empty" });
-
-            if (dto.DocumentId <= 0)
-                return BadRequest(new { error = "DocumentId is required and must be greater than 0" });
-
-            if (!Enum.IsDefined(typeof(DocumentType), dto.DocumentType))
-                return BadRequest(new { error = "Invalid DocumentType" });
-
-           
-          
-
-            var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId))
-                return BadRequest(new { error = "UserId is required" });
-
-            var result = await _service.UploadDocumentAsync(dto, userId);
-
-            return result.Success ? Ok(result) : BadRequest(result);
-        }
-
-        [HttpPost("upload-multiple")]
-        public async Task<IActionResult> UploadMultipleDocuments([FromForm] UploadMultipleDocumentsDto dto)
+        public async Task<IActionResult> UploadDocuments([FromForm] UploadDocumentDto dto)
         {
             // Manual validation for multiple file upload
             if (dto == null)
@@ -69,32 +42,28 @@ namespace DataWarehouse.Api.Controllers.admin.Processes
             if (dto.DocumentId <= 0)
                 return BadRequest(new { error = "DocumentId is required and must be greater than 0" });
 
-            if (!Enum.IsDefined(typeof(DocumentType), dto.DocumentType))
+            if (!Enum.IsDefined(typeof(ProcessType), dto.DocumentType))
                 return BadRequest(new { error = "Invalid DocumentType" });
-
-           
-            
-         
+   
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
                 return BadRequest(new { error = "UserId is required" });
 
-            var result = await _service.UploadMultipleDocumentsAsync( dto, userId);
+            var result = await _service.UploadFilesForDocumentAsync( userId,dto);
 
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("{documentType}/{documentId}")]
-        public async Task<IActionResult> GetDocuments(DocumentType documentType, int documentId)
+        public async Task<IActionResult> GetDocuments(string documentType, int documentId)
         {
-           
-
             var result = await _service.GetDocumentsByTypeAndIdAsync( documentType, documentId);
 
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("{documentAttachmentId}/download")]
+
+        [HttpPatch("{documentAttachmentId}/download")]
         public async Task<IActionResult> DownloadDocument(int documentAttachmentId)
         {
          
@@ -121,7 +90,6 @@ namespace DataWarehouse.Api.Controllers.admin.Processes
 
             return result.Success ? Ok(result) : BadRequest(result);
         }
-
         //
 
         [HttpGet("status")]
@@ -136,6 +104,7 @@ namespace DataWarehouse.Api.Controllers.admin.Processes
 
             return Ok(result);
         }
+
 
         // Helper methods
         private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";

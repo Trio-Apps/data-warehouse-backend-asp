@@ -81,6 +81,7 @@ namespace DataWarehouse.SAP
             services.AddScoped<ISapTransferredRequestService, SapTransferredRequestService>();
             services.AddScoped<ISapTransferredStockService, SapTransferredStockService>();
 
+            services.AddScoped<ISapAttachmentService, SapAttachmentService>();
 
 
             //  services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));

@@ -25,6 +25,7 @@ public class ReceivedStockBatchRepository : BaseRepository<ReceivedStockBatch>, 
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        
     }
 
     public async Task<GeneralResponse<IEnumerable<ReceivedStockBatchDTO>>> GetByReceivedItemIdAsync(int receivedItemId)
