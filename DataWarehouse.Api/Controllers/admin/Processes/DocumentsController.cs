@@ -16,14 +16,12 @@ namespace DataWarehouse.Api.Controllers.admin.Processes
     [Authorize]
     public class DocumentsController : ControllerBase
     {
-        private readonly IDocumentAttachmentRepository _service;
 
+        private readonly IDocumentAttachmentRepository _service;
         public DocumentsController(IDocumentAttachmentRepository service)
         {
             _service = service;
         }
-
-
 
      
         [HttpPost("upload")]
@@ -54,6 +52,7 @@ namespace DataWarehouse.Api.Controllers.admin.Processes
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
+        
         [HttpGet("{documentType}/{documentId}")]
         public async Task<IActionResult> GetDocuments(string documentType, int documentId)
         {
@@ -61,6 +60,7 @@ namespace DataWarehouse.Api.Controllers.admin.Processes
 
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
 
 
         [HttpPatch("{documentAttachmentId}/download")]
