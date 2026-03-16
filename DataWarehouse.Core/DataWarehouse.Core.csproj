@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Interfaces\Dashboard\**" />
     <Compile Remove="Models\**" />
-    <EmbeddedResource Remove="Interfaces\Dashboard\**" />
     <EmbeddedResource Remove="Models\**" />
-    <None Remove="Interfaces\Dashboard\**" />
     <None Remove="Models\**" />
   </ItemGroup>
 

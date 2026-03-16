@@ -18,6 +18,28 @@ D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\refint\DataWarehouse.SAP.dll
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.pdb
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\ref\DataWarehouse.SAP.dll
+<<<<<<< HEAD
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.deps.json
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.pdb
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.Core.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.Domain.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.Services.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.Core.pdb
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.Domain.pdb
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.Services.pdb
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.csproj.AssemblyReference.cache
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.GeneratedMSBuildEditorConfig.editorconfig
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.AssemblyInfoInputs.cache
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.AssemblyInfo.cs
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.csproj.CoreCompileInputs.cache
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.sourcelink.json
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWare.F35D0999.Up2Date
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\refint\DataWarehouse.SAP.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.pdb
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\ref\DataWarehouse.SAP.dll
+=======
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.deps.json
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.dll
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.pdb
@@ -38,3 +60,4 @@ D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWareh
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\refint\DataWarehouse.SAP.dll
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.pdb
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\ref\DataWarehouse.SAP.dll
+>>>>>>> 2ff7c6cba1043726ff89701e198bac4117f67a2c

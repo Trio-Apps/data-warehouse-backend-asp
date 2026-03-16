@@ -16,6 +16,26 @@ D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debu
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\refint\DataWarehouse.Services.dll
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.pdb
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\ref\DataWarehouse.Services.dll
+<<<<<<< HEAD
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Services.deps.json
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Services.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Services.pdb
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Core.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Domain.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Core.pdb
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Domain.pdb
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.csproj.AssemblyReference.cache
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.GeneratedMSBuildEditorConfig.editorconfig
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.AssemblyInfoInputs.cache
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.AssemblyInfo.cs
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.csproj.CoreCompileInputs.cache
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.sourcelink.json
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWare.23DED3A8.Up2Date
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\refint\DataWarehouse.Services.dll
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.pdb
+E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\ref\DataWarehouse.Services.dll
+=======
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Services.deps.json
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Services.dll
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\bin\Debug\net9.0\DataWarehouse.Services.pdb
@@ -34,3 +54,4 @@ D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\Data
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\refint\DataWarehouse.Services.dll
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\DataWarehouse.Services.pdb
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Services\obj\Debug\net9.0\ref\DataWarehouse.Services.dll
+>>>>>>> 2ff7c6cba1043726ff89701e198bac4117f67a2c

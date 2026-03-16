@@ -2996,6 +2996,45 @@
         }
       }
     },
+    "/api/Dashboard/due-today": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DueTodaySummaryDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DueTodaySummaryDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DueTodaySummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/DeliveryNoteBatch": {
       "get": {
         "tags": [
@@ -8970,6 +9009,119 @@
       "get": {
         "tags": [
           "ProductionOrder"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/ProductionOrder/bulk": {
+      "post": {
+        "tags": [
+          "ProductionOrder"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AddProductionOrderDTO"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AddProductionOrderDTO"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AddProductionOrderDTO"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductionOrder"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductionOrder"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductionOrder"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ProductionOrder/search": {
+      "get": {
+        "tags": [
+          "ProductionOrder"
+        ],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -25862,6 +26014,210 @@
         },
         "additionalProperties": false
       },
+<<<<<<< HEAD
+      "DocumentType": {
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "DueTodayInventoryTaskDto": {
+        "type": "object",
+        "properties": {
+          "quantityAdjustmentStockId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DueTodayProductionOrderDto": {
+        "type": "object",
+        "properties": {
+          "productionOrderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "plannedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "warehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DueTodaySummaryDto": {
+        "type": "object",
+        "properties": {
+          "purchaseOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deliveriesDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productionOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestsDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredStockDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "receivedStockDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantityAdjustmentsDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "salesOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "salesReturnOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "receiptPurchaseOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "goodsReturnOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferRequests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DueTodayTransferRequestDto"
+            },
+            "nullable": true
+          },
+          "productionOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DueTodayProductionOrderDto"
+            },
+            "nullable": true
+          },
+          "inventoryTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DueTodayInventoryTaskDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DueTodayTransferRequestDto": {
+        "type": "object",
+        "properties": {
+          "transferredRequestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceWarehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "destinationWarehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "submittedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "submittedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+=======
+>>>>>>> 2ff7c6cba1043726ff89701e198bac4117f67a2c
       "DynamicBarCode": {
         "required": [
           "absEntry"
