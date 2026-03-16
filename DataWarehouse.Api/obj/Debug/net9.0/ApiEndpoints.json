@@ -2271,6 +2271,32 @@
     ]
   },
   {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Dashboard.DashboardController",
+    "Method": "GetDueTodaySummary",
+    "RelativePath": "api/Dashboard/due-today",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "warehouseId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "DataWarehouse.Core.DTOs.Dashboard.DueTodaySummaryDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.OutSide.DeliveryNoteBatchController",
     "Method": "GetAll",
     "RelativePath": "api/DeliveryNoteBatch",
@@ -5737,6 +5763,32 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
+    "Method": "CreateBulk",
+    "RelativePath": "api/ProductionOrder/bulk",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dtos",
+        "Type": "System.Collections.Generic.List\u00601[[DataWarehouse.Core.DTOs.Processes.BulkProductions.AddProductionOrderDTO, DataWarehouse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder, DataWarehouse.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
     "Method": "GetPendingOrders",
     "RelativePath": "api/ProductionOrder/processing",
     "HttpMethod": "GET",
@@ -5754,6 +5806,37 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",
+    "Method": "Search",
+    "RelativePath": "api/ProductionOrder/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "query",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "warehouseId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.BulkProductions.ProductionOrderController",

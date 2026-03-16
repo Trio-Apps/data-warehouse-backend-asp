@@ -92,6 +92,39 @@ public class ProductionOrderController : ControllerBase
         return Ok(created);
     }
 
+    [HttpPost("bulk")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Create}")]
+    public async Task<ActionResult<IEnumerable<ProductionOrder>>> CreateBulk([FromBody] List<AddProductionOrderDTO> dtos)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        if (dtos == null || !dtos.Any())
+            return BadRequest("Request must contain at least one production order.");
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var created = await _repository.AddProductionOrdersByWarehouseIdAsync(userId, dtos);
+        return Ok(created);
+    }
+
+    [HttpGet("search")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Get}")]
+    public async Task<IActionResult> Search(
+        [FromQuery] string? query,
+        [FromQuery] int warehouseId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var result = await _repository.SearchProductionOrdersAsync(userId, query, warehouseId, pageNumber, pageSize);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
     [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Edit}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateProductionOrderDTO dto)

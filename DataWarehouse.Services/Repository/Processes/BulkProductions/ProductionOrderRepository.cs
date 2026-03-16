@@ -169,6 +169,63 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
 
         return GeneralResponse<ProductionOrderDTO>.SuccessResponse(model);
     }
+
+    public async Task<GeneralResponse<IEnumerable<ProductionOrderDTO>>> AddProductionOrdersByWarehouseIdAsync(string userId,
+           IEnumerable<AddProductionOrderDTO> dtos)
+    {
+        if (dtos == null || !dtos.Any())
+            return GeneralResponse<IEnumerable<ProductionOrderDTO>>.FailResponse("No production orders were provided.");
+
+        // Validate access and required fields per order.
+        foreach (var dto in dtos)
+        {
+            if (!await UserHasWarehouseAccessAsync(userId, dto.WarehouseId))
+                return GeneralResponse<IEnumerable<ProductionOrderDTO>>.FailResponse("You don't have access to one or more warehouses.");
+        }
+
+        var createdOrders = new List<ProductionOrderDTO>();
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            foreach (var dto in dtos)
+            {
+                var mapping = new ProductionOrder
+                {
+                    Status = GeneralStatus.Draft,
+                    PostingDate = dto.PostingDate,
+                    DueDate = dto.DueDate,
+                    CreatedAt = DateTime.UtcNow,
+                    UserId = userId,
+                    WarehouseId = dto.WarehouseId,
+                    Remarks = dto.Remarks,
+                };
+
+                var res = await AddAsync(mapping);
+
+                createdOrders.Add(new ProductionOrderDTO
+                {
+                    ProductionOrderId = res.ProductionOrderId,
+                    DueDate = res.DueDate,
+                    PostingDate = res.PostingDate,
+                    Status = res.Status.ToString(),
+                    UserId = res.UserId,
+                    WarehouseId = res.WarehouseId,
+                    Remarks = res.Remarks
+                });
+            }
+
+            await SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return GeneralResponse<IEnumerable<ProductionOrderDTO>>.SuccessResponse(createdOrders);
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return GeneralResponse<IEnumerable<ProductionOrderDTO>>.FailResponse($"Failed to create bulk production orders: {ex.Message}");
+        }
+    }
     private async Task<(bool IsValid, string Message)> ValidateBusinessDatesAsync(
       DateTime postingDate,
       DateTime dueDate)
@@ -398,6 +455,53 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
     public async Task<IEnumerable<ProductionOrder>> GetPendingOrdersAsync()
     {
         return await Query().Where(po => po.Status == GeneralStatus.Processing).ToListAsync();
+    }
+
+    public async Task<GeneralResponse<PagedResult<ProductionOrderDTO>>> SearchProductionOrdersAsync(string userId, string? query, int warehouseId, int pageNumber, int pageSize)
+    {
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        pageSize = pageSize <= 0 ? 10 : pageSize;
+
+        if (!await UserHasWarehouseAccessAsync(userId, warehouseId))
+            return GeneralResponse<PagedResult<ProductionOrderDTO>>.FailResponse("You don't have access to this warehouse.");
+
+        var queryable = _context.ProductionOrders
+            .AsNoTracking()
+            .Where(po => po.WarehouseId == warehouseId);
+
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            queryable = queryable.Where(po =>
+                po.Remarks.Contains(query) ||
+                po.ProductionOrderId.ToString().Contains(query));
+        }
+
+        var totalRecords = await queryable.CountAsync();
+
+        var data = await queryable
+            .OrderByDescending(po => po.ProductionOrderId)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(po => new ProductionOrderDTO
+            {
+                ProductionOrderId = po.ProductionOrderId,
+                PostingDate = po.PostingDate,
+                DueDate = po.DueDate,
+                Remarks = po.Remarks,
+                Status = po.Status.ToString(),
+                UserId = po.UserId,
+                WarehouseId = po.WarehouseId,
+                NumberOfProductionItem = po.ProductionOrderItems.Count()
+            })
+            .ToListAsync();
+
+        return GeneralResponse<PagedResult<ProductionOrderDTO>>.SuccessResponse(new PagedResult<ProductionOrderDTO>
+        {
+            Data = data,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalRecords = totalRecords
+        });
     }
 
     private Task<bool> UserHasWarehouseAccessAsync(string userId, int warehouseId)

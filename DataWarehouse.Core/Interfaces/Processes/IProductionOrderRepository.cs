@@ -15,6 +15,8 @@ public interface IProductionOrderRepository : IBaseRepository<ProductionOrder>
     Task<GeneralResponse<PagedResult<ProductionOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize);
     Task<GeneralResponse<ProductionOrderDTO>> AddProductionOrderByWarehouseIdAsync(string userId,
            AddProductionOrderDTO dto);
+    Task<GeneralResponse<IEnumerable<ProductionOrderDTO>>> AddProductionOrdersByWarehouseIdAsync(string userId,
+           IEnumerable<AddProductionOrderDTO> dtos);
     Task<GeneralResponse<ProductionOrderDTO>> UpdateProductionOrderAsync(string userId, int productionId, UpdateProductionOrderDTO dto);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int productionOrderId);
     Task<GeneralResponse<List<NameStatus>>> GetProductionOrderStatus();
@@ -25,5 +27,6 @@ public interface IProductionOrderRepository : IBaseRepository<ProductionOrder>
     Task<ProductionOrder?> GetWithWarehouseAsync(int productionOrderId);
     Task<IEnumerable<ProductionOrder>> GetByDateRangeAsync(System.DateTime startDate, System.DateTime endDate);
     Task<IEnumerable<ProductionOrder>> GetPendingOrdersAsync();
+    Task<GeneralResponse<PagedResult<ProductionOrderDTO>>> SearchProductionOrdersAsync(string userId, string? query, int warehouseId, int pageNumber, int pageSize);
     Task<GeneralResponse<ProductionOrderDTO>> SubmitProductionOrderAsync(string userId, int productionOrderId, string? note = null);
 }

@@ -3,6 +3,7 @@ using DataWarehouse.Core.Interfaces.Actors;
 using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.Company;
+using DataWarehouse.Core.Interfaces.Dashboard;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Permissions;
@@ -16,6 +17,7 @@ using DataWarehouse.Services.Repository.Actors;
 using DataWarehouse.Services.Repository.BarCode;
 using DataWarehouse.Services.Repository.Based;
 using DataWarehouse.Services.Repository.CompanyRepo;
+using DataWarehouse.Services.Repository.Dashboard;
 using DataWarehouse.Services.Repository.IsProgress;
 using DataWarehouse.Services.Repository.Permissions;
 using DataWarehouse.Services.Repository.Processes;
@@ -124,6 +126,10 @@ namespace DataWarehouse.Services
             services.AddScoped<IFinishedGoodItemRepository, FinishedGoodItemRepository>();
             services.AddScoped<IProductionReceiptRepository, ProductionReceiptRepository>();
             services.AddScoped<IProductionHeaderBatchRepository, ProductionHeaderBatchRepository>();
+            #endregion
+
+            #region Dashboard Repositories
+            services.AddScoped<IDashboardRepository, DashboardRepository>();
             #endregion
 
             #region BarCode Repositories

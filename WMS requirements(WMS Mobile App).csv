@@ -13,8 +13,8 @@
 appear in the WMS Mobile Application. Plus Reason assignment to type of document",New,Phase 1,,,Yes,,"Quantity Adjustment, Stock Goods Receipt,  Purchase Return, Sales Return"
 12,Purchasing,Goods Return,Standalone Goods Return,Allow creation of independent Goods Return documents without referencing an existing GRPO or Delivery Note,New,Phase 1,,,Yes,,"Purchase Return, Sales Reutrn"
 13,Customer Portal,Document Settings,Disable Future Posting,Restrict users from posting documents with future-dated transactions to maintain accounting accuracy,New,Phase 1,,,Yes,,All Pages
-14,General guidline,Home Page ,Main Page Widgets � �Due Today� Functionality,Daily summary of all transactions that are due today ,New,Phase 1,,,Yes,,Main Page
-15,Inventory,Stock transfer request,Add �Required Date� in Stock Transfer Request Page,Add �Required Date� as a new field in the Stock Transfer Request,New,Phase 1,,,Yes,,Stock Transfer Request
+14,General guidline,Home Page ,Main Page Widgets � �Due Today� Functionality,Daily summary of all transactions that are due today ,New,Phase 1,,,Yes,,Main Page
+15,Inventory,Stock transfer request,Add �Required Date� in Stock Transfer Request Page,Add �Required Date� as a new field in the Stock Transfer Request,New,Phase 1,,,Yes,,Stock Transfer Request
 16,Web Base,Web Base,Web Based WMS,"Introduce a browser-accessible version of WMS for desktop users, maintaining full SAP B1 integration",New,Phase 1,,,Yes,,All Pages
 17,Customer Portal,Admin,Approval Process Enhancements,"Enhancements:
 1- New report Document Status Report (shows where the transaction is stuck)
@@ -98,6 +98,19 @@ Transfers"
 74,General guidline,All Documents,Create UDFs and Service Layer Queries,Auto Create UDF when initilize the company,Enhancment,Unassigned,Phase 1,,No,,NA
 75,Login Page,,SAP B1 Licenses User Login,"If the user has an SAP Business One account, the application must authenticate access using that user; otherwise, it should log in using the default user configured in the admin panel.",New,Unassigned,Phase 1,,No,,Login
 76,IOS,IOS,iOS Deployment,Have a release to be work on iOS,New,Unassigned,Phase 3,,No,,NA
+77,Customer Portal,Warehouse Setup,Enhance Warehouses,"Enhance the Warehouses and Suppliers pages by displaying additional information fields. - Cost Centers / Location Details and so on",Enhancment,Phase 3,,,No,,Warehouses Pages
+78,General guidline,All Documents,Set discount,"Add Discount field on a line or header level and read based on saved values in previous document - non editable",New,Unassigned,Phase 2,,No,,"Purchasing, Sales Pages"
+79,General guidline,Purchasing and sales,Change discount,If user is authorized discount ccan be edited cbased on autorization and allowed discount percentage,,,,,,,,,,,
+80,General guidline,All Documents,Change VAT,"If user is authorized VAT Code can be changed based on pre-defined list of VAT Codes from SAP",New,Unassigned,Phase 2,,No,,"Purchasing, Sales Pages"
+81,General guidline,All Documents,Approval,All document are subject to Approval,New,,Phase 1,,,,,,,,,
+82,General guidline,All Documents,Authorization,All documents are subject to Authorization,New,,Phase 1,,,,,,,,,
+83,General guidline,All Documents,Notfication,All documents are subject to notfication,New,,Phase 1,,,,,,,,,
+84,General guidline,All Documents,Layouts,All documents are subject to Layouts,New,,Phase 1,,,,,,,,,
+85,General guidline,All Documents,Save as draft,All documents are subject to save as draft,New,,Phase 1,,,,,,,,,
+86,General guidline,All Documents,Field update,"Authoity on the Price , add item , remove item , change field value",New,,Phase 1,,,,,,,,,
+87,General guidline,All Documents,,All document filter document list by header fields,New,,Phase 1,,,,,,,,,
+88,Franchise Process,Purchasing and sales,,Franchise Process for PO and Deliveries , automate creation of Sales Orders and receivings (Different Companies),,,,,,,,,,,,
+89,Purchase,Goods Receipt,items managed by series,,,,,,,,,,,,ناقص اي في المشروع ده
 77,Customer Portal,Warehouse Setup,Enhance Warehouses,Enhance the Warehouses and Suppliers pages by displaying additional information fields. - Cost Centers / Location Details and so on,Enhancment,Phase 3,,,No,,Warehouses Pages
 78,General guidline,All Documents,Set discount,Add Discount field on a line or header level and read based on saved values in previous document - non editable,New,Unassigned,Phase 2,,No,,"Purchasing, Sales Pages"
 79,General guidline,Purchasing and sales,Change discount,If user is authorized discount ccan be edited cbased on autorization and allowed discount percentage,,,,,,,
