@@ -3150,7 +3150,7 @@
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.DocumentsController",
     "Method": "DownloadDocument",
     "RelativePath": "api/Documents/{documentAttachmentId}/download",
-    "HttpMethod": "GET",
+    "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -3195,39 +3195,8 @@
   },
   {
     "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.DocumentsController",
-    "Method": "UploadDocument",
+    "Method": "UploadDocuments",
     "RelativePath": "api/Documents/upload",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "DocumentType",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "DocumentId",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "File",
-        "Type": "Microsoft.AspNetCore.Http.IFormFile",
-        "IsRequired": false
-      },
-      {
-        "Name": "Description",
-        "Type": "System.String",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DataWarehouse.Api.Controllers.admin.Processes.DocumentsController",
-    "Method": "UploadMultipleDocuments",
-    "RelativePath": "api/Documents/upload-multiple",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,

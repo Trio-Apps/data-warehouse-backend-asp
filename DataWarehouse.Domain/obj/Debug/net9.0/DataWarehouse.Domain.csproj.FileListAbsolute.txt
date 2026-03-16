@@ -1,18 +1,3 @@
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.deps.json
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.runtimeconfig.json
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.dll
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.pdb
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.csproj.AssemblyReference.cache
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.GeneratedMSBuildEditorConfig.editorconfig
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.AssemblyInfoInputs.cache
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.AssemblyInfo.cs
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.csproj.CoreCompileInputs.cache
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.sourcelink.json
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.dll
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\refint\DataWarehouse.Domain.dll
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.pdb
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.genruntimeconfig.cache
-D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\ref\DataWarehouse.Domain.dll
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.deps.json
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.runtimeconfig.json
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.dll
@@ -28,6 +13,7 @@ D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.pdb
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.genruntimeconfig.cache
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\ref\DataWarehouse.Domain.dll
+<<<<<<< HEAD
 E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.deps.json
 E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.runtimeconfig.json
 E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.dll
@@ -43,3 +29,20 @@ E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\re
 E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.pdb
 E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.genruntimeconfig.cache
 E:\warehouse\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\ref\DataWarehouse.Domain.dll
+=======
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.deps.json
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.runtimeconfig.json
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\bin\Debug\net9.0\DataWarehouse.Domain.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.csproj.AssemblyReference.cache
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.AssemblyInfoInputs.cache
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.AssemblyInfo.cs
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.csproj.CoreCompileInputs.cache
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.sourcelink.json
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\refint\DataWarehouse.Domain.dll
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.pdb
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\DataWarehouse.Domain.genruntimeconfig.cache
+D:\Files\data-warehouse-backend-asp\DataWarehouse.Domain\obj\Debug\net9.0\ref\DataWarehouse.Domain.dll
+>>>>>>> 2ff7c6cba1043726ff89701e198bac4117f67a2c

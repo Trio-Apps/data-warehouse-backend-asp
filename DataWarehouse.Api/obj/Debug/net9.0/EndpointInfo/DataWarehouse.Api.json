@@ -4437,62 +4437,7 @@
                 "type": "object",
                 "properties": {
                   "DocumentType": {
-                    "$ref": "#/components/schemas/DocumentType"
-                  },
-                  "DocumentId": {
-                    "type": "integer",
-                    "format": "int32"
-                  },
-                  "File": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "Description": {
                     "type": "string"
-                  }
-                }
-              },
-              "encoding": {
-                "DocumentType": {
-                  "style": "form"
-                },
-                "DocumentId": {
-                  "style": "form"
-                },
-                "File": {
-                  "style": "form"
-                },
-                "Description": {
-                  "style": "form"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Documents/upload-multiple": {
-      "post": {
-        "tags": [
-          "Documents"
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "required": [
-                  "DocumentId",
-                  "DocumentType"
-                ],
-                "type": "object",
-                "properties": {
-                  "DocumentType": {
-                    "$ref": "#/components/schemas/DocumentType"
                   },
                   "DocumentId": {
                     "type": "integer",
@@ -4545,7 +4490,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/DocumentType"
+              "type": "string"
             }
           },
           {
@@ -4566,7 +4511,7 @@
       }
     },
     "/api/Documents/{documentAttachmentId}/download": {
-      "get": {
+      "patch": {
         "tags": [
           "Documents"
         ],
@@ -26010,11 +25955,15 @@
             "format": "int32"
           },
           "documentType": {
-            "$ref": "#/components/schemas/DocumentType"
+            "$ref": "#/components/schemas/ProcessType"
           },
           "documentId": {
             "type": "integer",
             "format": "int32"
+          },
+          "sourcePath": {
+            "type": "string",
+            "nullable": true
           },
           "fileName": {
             "type": "string",
@@ -26044,7 +25993,7 @@
             "type": "string",
             "nullable": true
           },
-          "uploadedAt": {
+          "attachmentDate": {
             "type": "string",
             "format": "date-time"
           },
@@ -26065,6 +26014,7 @@
         },
         "additionalProperties": false
       },
+<<<<<<< HEAD
       "DocumentType": {
         "enum": [
           1,
@@ -26266,6 +26216,8 @@
         },
         "additionalProperties": false
       },
+=======
+>>>>>>> 2ff7c6cba1043726ff89701e198bac4117f67a2c
       "DynamicBarCode": {
         "required": [
           "absEntry"

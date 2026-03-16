@@ -19,15 +19,17 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 {
     public class SapPurchaseService : ISapPurchaseService
     {
+        private readonly ISapAttachmentService sapAttachmentService;
         private readonly IBaseSap<SapPurchaseOrderDto> sap;
         private readonly IDynamicBarCodeRepository dynamicBarCodeRepository;
         private readonly ISapSyncStatusRepository _syncRepo;
         private readonly ILogger<SapPurchaseService> logger;
         private readonly DataWarehouseDbContext _context;
 
-        public SapPurchaseService(IBaseSap<SapPurchaseOrderDto> sap, IDynamicBarCodeRepository dynamicBarCodeRepository,
+        public SapPurchaseService(ISapAttachmentService sapAttachmentService, IBaseSap<SapPurchaseOrderDto> sap, IDynamicBarCodeRepository dynamicBarCodeRepository,
             ISapSyncStatusRepository syncRepo, DataWarehouseDbContext context, ILogger<SapPurchaseService> logger)
         {
+            this.sapAttachmentService = sapAttachmentService;
             this.sap = sap;
             this.dynamicBarCodeRepository = dynamicBarCodeRepository;
             _syncRepo = syncRepo;
@@ -177,6 +179,19 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 if (order.PurchaseOrderItems == null || order.PurchaseOrderItems.Count == 0)
                     throw new InvalidOperationException($"PO#{order.PurchaseOrderId}: No items.");
 
+                var attachments = await _context.DocumentAttachments
+             .Where(x => x.DocumentType == ProcessType.Purchase
+             && x.DocumentId == order.PurchaseOrderId
+             && x.IsActive)
+             .ToListAsync();
+
+                int? attachmentEntry = null;
+
+                if (attachments.Any())
+                {
+                    attachmentEntry = await sapAttachmentService
+                        .CreateAttachmentEntryAsync(order.Warehouse.SapId, attachments);
+                }
                 // ✅ Build DTO
                 var sapDto = new SapPurchaseOrderDto
                 {
@@ -184,9 +199,13 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     CardName = order.Supplier.SupplierName, // optional
                     DocDate = ConvertToSapDateFormat(order.DueDate == default ? order.CreatedAt : order.DueDate),
                     NumAtCard = $"PO-{order.PurchaseOrderId}",
-                    BPL_IDAssignedToInvoice = TryResolveBplId(order)
-                };
+                    BPL_IDAssignedToInvoice = TryResolveBplId(order),
 
+                };
+                if (attachmentEntry.HasValue)
+                {
+                    sapDto.AttachmentEntry = attachmentEntry.Value;
+                }
 
                 foreach (var line in order.PurchaseOrderItems)
                 {
@@ -274,6 +293,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
         public string DocDate { get; set; } = string.Empty;
         public string? NumAtCard { get; set; }
         public int? BPL_IDAssignedToInvoice { get; set; }
+        public int? AttachmentEntry {  get; set; }
         public List<SapPurchaseOrderLineDto> DocumentLines { get; set; } = new();
     }
 

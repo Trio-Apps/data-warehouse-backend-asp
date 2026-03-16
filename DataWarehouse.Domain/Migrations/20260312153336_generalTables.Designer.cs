@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataWarehouse.Domain.Migrations
 {
     [DbContext(typeof(DataWarehouseDbContext))]
-    [Migration("20260311123102_generalTables")]
+    [Migration("20260312153336_generalTables")]
     partial class generalTables
     {
         /// <inheritdoc />
@@ -1358,6 +1358,9 @@ namespace DataWarehouse.Domain.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentAttachmentId"));
 
+                    b.Property<DateTime>("AttachmentDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1396,8 +1399,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("SapId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("SourcePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UploadedBy")
                         .IsRequired()

@@ -1,5 +1,6 @@
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Auth;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -47,6 +48,10 @@ public class AddPurchaseOrderDTO
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
+
+    // Attachments
+ //   public List<IFormFile>? Attachments { get; set; } = new();
+
 
 }
 public class UpdatePurchaseOrderDTO
