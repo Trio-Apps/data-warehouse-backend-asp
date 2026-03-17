@@ -14,7 +14,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DataWarehouse.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< Updated upstream
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ff7c6cba1043726ff89701e198bac4117f67a2c")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+98ebe09907391cebd6fbd832757ad4778108fddf")]
+>>>>>>> Stashed changes
 [assembly: System.Reflection.AssemblyProductAttribute("DataWarehouse.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DataWarehouse.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

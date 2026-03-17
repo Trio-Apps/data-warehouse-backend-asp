@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\bin\Debug\net9.0\DataWarehouse.Core.deps.json
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\bin\Debug\net9.0\DataWarehouse.Core.runtimeconfig.json
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\bin\Debug\net9.0\DataWarehouse.Core.dll
@@ -16,6 +17,8 @@ D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\ne
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\DataWarehouse.Core.pdb
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\DataWarehouse.Core.genruntimeconfig.cache
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Core\obj\Debug\net9.0\ref\DataWarehouse.Core.dll
+=======
+>>>>>>> Stashed changes
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\bin\Debug\net9.0\DataWarehouse.Core.deps.json
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\bin\Debug\net9.0\DataWarehouse.Core.runtimeconfig.json
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Core\bin\Debug\net9.0\DataWarehouse.Core.dll

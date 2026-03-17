@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.deps.json
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.dll
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.pdb
@@ -18,6 +19,8 @@ D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\refint\DataWarehouse.SAP.dll
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\DataWarehouse.SAP.pdb
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.SAP\obj\Debug\net9.0\ref\DataWarehouse.SAP.dll
+=======
+>>>>>>> Stashed changes
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.deps.json
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.dll
 D:\Files\data-warehouse-backend-asp\DataWarehouse.SAP\bin\Debug\net9.0\DataWarehouse.SAP.pdb

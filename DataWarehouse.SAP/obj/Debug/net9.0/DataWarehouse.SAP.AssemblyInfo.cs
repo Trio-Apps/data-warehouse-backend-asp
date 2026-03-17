@@ -14,7 +14,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DataWarehouse.SAP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< Updated upstream
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+41bb70b6d59912338f59d198fcb89b2eb19ea254")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+98ebe09907391cebd6fbd832757ad4778108fddf")]
+>>>>>>> Stashed changes
 [assembly: System.Reflection.AssemblyProductAttribute("DataWarehouse.SAP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DataWarehouse.SAP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

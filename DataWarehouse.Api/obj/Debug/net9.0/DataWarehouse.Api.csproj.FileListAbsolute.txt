@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Api\bin\Debug\net9.0\appsettings.Development.json
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Api\bin\Debug\net9.0\appsettings.json
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Api\bin\Debug\net9.0\bin_temp\appsettings.Development.json
@@ -207,6 +208,8 @@ D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\DataWarehouse.Api.pdb
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\DataWarehouse.Api.genruntimeconfig.cache
 D:\trioapps\warehouse\data-warehouse-backend-asp\DataWarehouse.Api\obj\Debug\net9.0\ref\DataWarehouse.Api.dll
+=======
+>>>>>>> Stashed changes
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Api\bin\Debug\net9.0\appsettings.Development.json
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Api\bin\Debug\net9.0\appsettings.json
 D:\Files\data-warehouse-backend-asp\DataWarehouse.Api\bin\Debug\net9.0\bin_temp\appsettings.Development.json

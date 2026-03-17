@@ -25862,6 +25862,198 @@
         },
         "additionalProperties": false
       },
+<<<<<<< Updated upstream
+=======
+      "DueTodayInventoryTaskDto": {
+        "type": "object",
+        "properties": {
+          "quantityAdjustmentStockId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DueTodayProductionOrderDto": {
+        "type": "object",
+        "properties": {
+          "productionOrderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "plannedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "warehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DueTodaySummaryDto": {
+        "type": "object",
+        "properties": {
+          "purchaseOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deliveriesDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productionOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredRequestsDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferredStockDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "receivedStockDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantityAdjustmentsDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "salesOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "salesReturnOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "receiptPurchaseOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "goodsReturnOrdersDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalDueToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transferRequests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DueTodayTransferRequestDto"
+            },
+            "nullable": true
+          },
+          "productionOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DueTodayProductionOrderDto"
+            },
+            "nullable": true
+          },
+          "inventoryTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DueTodayInventoryTaskDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DueTodayTransferRequestDto": {
+        "type": "object",
+        "properties": {
+          "transferredRequestId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceWarehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "destinationWarehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "submittedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "submittedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+>>>>>>> Stashed changes
       "DynamicBarCode": {
         "required": [
           "absEntry"
