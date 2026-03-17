@@ -116,6 +116,43 @@
       }
     },
     {
+      "name": "Dashboard - Due Today Summary",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "var json = pm.response.json();",
+              "pm.test('Counts are present', function () {",
+              "  pm.expect(json.purchaseOrdersDueToday).to.be.a('number');",
+              "  pm.expect(json.deliveriesDueToday).to.be.a('number');",
+              "  pm.expect(json.totalDueToday).to.be.a('number');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{apiBase}}/api/Dashboard/due-today?warehouseId={{warehouseId}}"
+      }
+    },
+    {
       "name": "Warehouse - In-Warehouse Report",
       "event": [
         {
