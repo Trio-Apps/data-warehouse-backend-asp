@@ -1,0 +1,259 @@
+{
+  "app": {
+    "name": "Smart Warehouse"
+  },
+  "common": {
+    "loading": "Loading...",
+    "logout": "Logout",
+    "back": "Back",
+    "search": "Search",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "profile": "Profile",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "language": "Language",
+    "arabic": "العربية",
+    "english": "English",
+    "getStarted": "Get Started",
+    "notAvailable": "N/A"
+  },
+  "header": {
+    "toggleSidebar": "Toggle sidebar navigation",
+    "userMenu": "User Menu",
+    "openUserMenu": "Open user menu",
+    "openLanguageMenu": "Open language menu",
+    "selectLanguage": "Select language",
+    "sapConnections": "SAP Connections",
+    "openSapMenu": "Open SAP connections menu",
+    "loadingSaps": "Loading SAPs...",
+    "noSapConnections": "No SAP connections found",
+    "connections": "Connections"
+  },
+  "messages": {
+    "success": "Success",
+    "error": "Error",
+    "info": "Info",
+    "accessDenied": "Access Denied"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "theme": "Theme",
+    "companies": "Companies",
+    "components": "Components",
+    "usersManagement": "Users Management",
+    "rolesManagement": "Roles Management",
+    "approval": "Approval",
+    "approvalStepsManagement": "Approval Steps Management",
+    "myApprovals": "My Approvals",
+    "setting": "Setting",
+    "language": "Language",
+    "sapAuthSettings": "SAP Auth Settings",
+    "sapSyncReset": "SAP Sync Reset",
+    "barcodeSettings": "Barcode Settings"
+  },
+  "settings": {
+    "language": {
+      "title": "Language",
+      "subtitle": "Choose your preferred language",
+      "changeLanguage": "Change Language",
+      "successMessage": "Language changed to {{language}} successfully."
+    }
+  },
+  "validation": {
+    "required": "{{field}} is required",
+    "invalidEmail": "Please enter a valid email address",
+    "minLength": "{{field}} must be at least {{count}} characters",
+    "invalidPhone": "Please enter a valid phone number",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "users": {
+    "page": {
+      "title": "Users Management",
+      "addUser": "Add User",
+      "actions": "Actions",
+      "paginationSummary": "Showing {{from}} to {{to}} of {{total}} users"
+    },
+    "modal": {
+      "addTitle": "Add New User",
+      "editTitle": "Edit User"
+    },
+    "fields": {
+      "email": "Email",
+      "fullName": "Full Name",
+      "phoneNumber": "Phone Number",
+      "roles": "Roles",
+      "company": "Company",
+      "name": "Name",
+      "sapConnections": "SAP Connections",
+      "warehousesFor": "Warehouses for {{sap}}",
+      "password": "Password",
+      "confirmPassword": "Confirm Password"
+    },
+    "placeholders": {
+      "enterEmail": "Enter email",
+      "enterName": "Enter name",
+      "enterFullName": "Enter full name",
+      "enterPhoneNumber": "Enter phone number",
+      "selectRoles": "Select roles",
+      "selectCompany": "-- Select Company --",
+      "allCompanies": "-- All Companies --",
+      "allSaps": "-- All SAPs --",
+      "enterPassword": "Enter password",
+      "confirmPassword": "Confirm password"
+    },
+    "validation": {
+      "selectSap": "Please select at least one SAP connection",
+      "selectWarehouse": "Please select at least one warehouse"
+    },
+    "messages": {
+      "loadedSuccess": "Loaded {{count}} user(s) successfully",
+      "loadError": "Failed to load users. Please try again.",
+      "searching": "Searching users...",
+      "createSuccess": "User created successfully",
+      "createError": "Error creating user. Please try again.",
+      "updateSuccess": "User updated successfully",
+      "updateError": "Error updating user. Please try again.",
+      "deleteSuccess": "User \"{{user}}\" deleted successfully",
+      "deleteError": "Error deleting user. Please try again.",
+      "deleteConfirm": "Are you sure you want to delete user: {{user}}?",
+      "noUsersFound": "No users found",
+      "loadingCompanies": "Loading companies...",
+      "loadingSaps": "Loading SAPs...",
+      "loadingWarehouses": "Loading warehouses...",
+      "noSapsAvailable": "No SAPs available",
+      "noWarehousesForSap": "No warehouses available for this SAP",
+      "permissionViewDenied": "You do not have permission to view users.",
+      "permissionCreateDenied": "You do not have permission to create users.",
+      "permissionEditDenied": "You do not have permission to edit users.",
+      "permissionDeleteDenied": "You do not have permission to delete users."
+    }
+  },
+  "stockCounting": {
+    "orders": {
+      "title": "Stock Counting Orders",
+      "newOrder": "New Order",
+      "noOrders": "No orders found.",
+      "paginationSummary": "Showing {{from}} to {{to}} of {{total}} stock counting orders"
+    },
+    "form": {
+      "newTitle": "New Stock Counting Order",
+      "editTitle": "Edit Stock Counting Order"
+    },
+    "fields": {
+      "orderId": "Order ID",
+      "mode": "Mode"
+    },
+    "mode": {
+      "Counting": "Counting",
+      "Posting": "Posting"
+    }
+  },
+  "transferredStockForm": {
+    "title": {
+      "create": "Create Transferred Stock",
+      "edit": "Edit Transferred Stock"
+    },
+    "actions": {
+      "create": "Create Stock",
+      "update": "Update Stock"
+    },
+    "placeholders": {
+      "selectDestinationWarehouse": "-- Select Destination Warehouse --",
+      "comment": "Enter any comments for this transferred stock"
+    },
+    "validation": {
+      "destinationWarehouseRequired": "Destination warehouse is required"
+    },
+    "hint": "Draft transferred stocks can be modified later. Final stocks cannot be edited."
+  },
+  "transferredRequestForm": {
+    "title": {
+      "create": "Create Transferred Request",
+      "edit": "Edit Transferred Request"
+    },
+    "actions": {
+      "create": "Create Request",
+      "update": "Update Request"
+    },
+    "placeholders": {
+      "selectDestinationWarehouse": "-- Select Destination Warehouse --",
+      "comment": "Enter any comments for this transferred request"
+    },
+    "validation": {
+      "destinationWarehouseRequired": "Destination warehouse is required"
+    },
+    "hint": "Draft transferred requests can be modified later. Final requests cannot be edited."
+  },
+  "approvalProcess": {
+    "page": {
+      "title": "Approval Steps",
+      "paginationSummary": "Showing {{from}} to {{to}} of {{total}} steps"
+    },
+    "modal": {
+      "addTitle": "Add Approval Step",
+      "editTitle": "Edit Approval Step"
+    },
+    "actions": {
+      "addStep": "Add Step",
+      "ignoreStepsOn": "Ignore Steps: ON",
+      "ignoreStepsOff": "Ignore Steps: OFF"
+    },
+    "labels": {
+      "processType": "Process Type",
+      "ignoreSteps": "Ignore Steps",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "fields": {
+      "stepName": "Step Name",
+      "stepOrder": "Step Order",
+      "role": "Role",
+      "active": "Active"
+    },
+    "placeholders": {
+      "stepName": "Enter step name",
+      "selectRole": "-- Select Role --"
+    },
+    "validation": {
+      "maxLength": "{{field}} must be at most {{count}} characters",
+      "minValue": "{{field}} must be at least {{count}}"
+    },
+    "messages": {
+      "permissionViewDenied": "You do not have permission to view approval steps.",
+      "permissionCreateDenied": "You do not have permission to create approval steps.",
+      "permissionEditDenied": "You do not have permission to edit approval steps.",
+      "permissionDeleteDenied": "You do not have permission to delete approval steps.",
+      "processSettingNotFound": "Process setting details were not found.",
+      "noStepsFound": "No approval steps found",
+      "ignoreStepsUpdated": "Ignore steps updated successfully.",
+      "ignoreStepsUpdateError": "Failed to update ignore steps.",
+      "createSuccess": "Approval step created successfully",
+      "createError": "Error creating approval step.",
+      "updateSuccess": "Approval step updated successfully",
+      "updateError": "Error updating approval step.",
+      "deleteConfirm": "Are you sure you want to delete step: {{step}}?",
+      "deleteSuccess": "Step \"{{step}}\" deleted successfully",
+      "deleteError": "Error deleting approval step. Please try again."
+    }
+  },
+  "login": {
+    "title": "Login",
+    "subtitle": "Sign in to your account",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "submit": "Login",
+    "submitting": "Logging in...",
+    "forgotPassword": "Forgot password?",
+    "welcomeTitle": "Welcome",
+    "welcomeMessage": "Welcome to the Smart Warehouse Management System. Manage your inventory, track items, and monitor stock efficiently from one place.",
+    "errors": {
+      "required": "This field is required",
+      "invalidCredentials": "Invalid username or password. Please try again."
+    }
+  }
+}

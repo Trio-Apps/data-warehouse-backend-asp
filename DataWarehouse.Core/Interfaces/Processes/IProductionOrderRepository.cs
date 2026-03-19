@@ -28,5 +28,8 @@ public interface IProductionOrderRepository : IBaseRepository<ProductionOrder>
     Task<IEnumerable<ProductionOrder>> GetByDateRangeAsync(System.DateTime startDate, System.DateTime endDate);
     Task<IEnumerable<ProductionOrder>> GetPendingOrdersAsync();
     Task<GeneralResponse<PagedResult<ProductionOrderDTO>>> SearchProductionOrdersAsync(string userId, string? query, int warehouseId, int pageNumber, int pageSize);
+    Task<GeneralResponse<PagedResult<ProductionOrderReportItemDto>>> GetProductionOrdersReportAsync(
+        string userId,
+        ProductionOrderReportFilterDto filter);
     Task<GeneralResponse<ProductionOrderDTO>> SubmitProductionOrderAsync(string userId, int productionOrderId, string? note = null);
 }

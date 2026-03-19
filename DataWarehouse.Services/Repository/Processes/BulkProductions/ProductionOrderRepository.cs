@@ -504,6 +504,111 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         });
     }
 
+    public async Task<GeneralResponse<PagedResult<ProductionOrderReportItemDto>>> GetProductionOrdersReportAsync(
+        string userId,
+        ProductionOrderReportFilterDto filter)
+    {
+        var pageNumber = filter.PageNumber <= 0 ? 1 : filter.PageNumber;
+        var pageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+
+        var warehouseExists = await _context.Warehouses
+            .AsNoTracking()
+            .AnyAsync(x => x.WarehouseId == filter.WarehouseId);
+
+        if (!warehouseExists)
+            return GeneralResponse<PagedResult<ProductionOrderReportItemDto>>.FailResponse("Warehouse not found.");
+
+        if (!await UserHasWarehouseAccessAsync(userId, filter.WarehouseId))
+            return GeneralResponse<PagedResult<ProductionOrderReportItemDto>>.FailResponse("You don't have access to this warehouse.");
+
+        GeneralStatus? statusFilter = null;
+        if (!string.IsNullOrWhiteSpace(filter.Status))
+        {
+            if (!Enum.TryParse<GeneralStatus>(filter.Status.Trim(), true, out var parsedStatus))
+                return GeneralResponse<PagedResult<ProductionOrderReportItemDto>>.FailResponse("Invalid production order status.");
+
+            statusFilter = parsedStatus;
+        }
+
+        var processQuery = _context.ProcessItemIsProgresses
+            .AsNoTracking()
+            .Where(p => p.ProcessType == ProcessType.Production);
+
+        var query = _context.ProductionOrders
+            .AsNoTracking()
+            .Where(po => po.WarehouseId == filter.WarehouseId);
+
+        if (filter.FromDate.HasValue)
+        {
+            var fromDate = filter.FromDate.Value.Date;
+            query = query.Where(po => po.PostingDate >= fromDate);
+        }
+
+        if (filter.ToDate.HasValue)
+        {
+            var toExclusive = filter.ToDate.Value.Date.AddDays(1);
+            query = query.Where(po => po.PostingDate < toExclusive);
+        }
+
+        if (statusFilter.HasValue)
+        {
+            query = query.Where(po => po.Status == statusFilter.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+        {
+            var term = filter.SearchTerm.Trim();
+            query = query.Where(po =>
+                po.ProductionOrderId.ToString().Contains(term) ||
+                (po.Remarks != null && po.Remarks.Contains(term)) ||
+                po.ProductionOrderItems.Any(item =>
+                    item.Item.ItemCode.Contains(term) ||
+                    item.Item.ItemName.Contains(term)));
+        }
+
+        var totalRecords = await query.CountAsync();
+
+        var data = await query
+            .OrderByDescending(po => po.PostingDate)
+            .ThenByDescending(po => po.ProductionOrderId)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(po => new
+            {
+                Order = po,
+                HasProgress = processQuery.Any(p => p.ReferenceId == po.ProductionOrderId),
+                LatestStatus = processQuery
+                    .Where(p => p.ReferenceId == po.ProductionOrderId)
+                    .OrderByDescending(p => p.ProcessItemIsProgressId)
+                    .Select(p => (ProcessStatus?)p.Status)
+                    .FirstOrDefault()
+            })
+            .Select(x => new ProductionOrderReportItemDto
+            {
+                ProductionOrderId = x.Order.ProductionOrderId,
+                PostingDate = x.Order.PostingDate,
+                DueDate = x.Order.DueDate,
+                Status = x.Order.Status.ToString(),
+                Remarks = x.Order.Remarks,
+                WarehouseId = x.Order.WarehouseId,
+                WarehouseCode = x.Order.Warehouse.WarehouseCode,
+                NumberOfProductionItems = x.Order.ProductionOrderItems.Count(),
+                TotalPlannedQuantity = x.Order.ProductionOrderItems.Sum(item => item.PlannedQuantity),
+                TotalProducedQuantity = x.Order.ProductionOrderItems.Sum(item => item.ProducedQuantity ?? 0),
+                Approval = x.HasProgress,
+                ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
+            })
+            .ToListAsync();
+
+        return GeneralResponse<PagedResult<ProductionOrderReportItemDto>>.SuccessResponse(new PagedResult<ProductionOrderReportItemDto>
+        {
+            Data = data,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalRecords = totalRecords
+        });
+    }
+
     private Task<bool> UserHasWarehouseAccessAsync(string userId, int warehouseId)
     {
         return _context.UserWarehouses

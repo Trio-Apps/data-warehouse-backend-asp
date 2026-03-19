@@ -6920,6 +6920,28 @@
         }
       }
     },
+    "/api/Localization/{language}": {
+      "get": {
+        "tags": [
+          "Localization"
+        ],
+        "parameters": [
+          {
+            "name": "language",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/client/Password/change": {
       "post": {
         "tags": [
@@ -9492,6 +9514,118 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/client/production-orders/reports": {
+      "get": {
+        "tags": [
+          "ProductionOrderReport"
+        ],
+        "parameters": [
+          {
+            "name": "WarehouseId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionOrderReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionOrderReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionOrderReportItemDtoPagedResultGeneralResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionOrderReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionOrderReportItemDtoPagedResultGeneralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionOrderReportItemDtoPagedResultGeneralResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -18945,6 +19079,78 @@
         }
       }
     },
+    "/api/Test/localized": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Test"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalizeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalizeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalizeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Test/localized/with-culture": {
+      "post": {
+        "tags": [
+          "Test"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalizeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalizeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalizeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Test": {
       "post": {
         "tags": [
@@ -26014,19 +26220,6 @@
         },
         "additionalProperties": false
       },
-<<<<<<< HEAD
-      "DocumentType": {
-        "enum": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "DueTodayInventoryTaskDto": {
         "type": "object",
         "properties": {
@@ -26216,8 +26409,6 @@
         },
         "additionalProperties": false
       },
-=======
->>>>>>> 2ff7c6cba1043726ff89701e198bac4117f67a2c
       "DynamicBarCode": {
         "required": [
           "absEntry"
@@ -27054,6 +27245,16 @@
         },
         "additionalProperties": false
       },
+      "LocalizeRequest": {
+        "type": "object",
+        "properties": {
+          "culture": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "LoginDTO": {
         "required": [
           "email",
@@ -27528,6 +27729,120 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductionReceipt"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductionOrderReportItemDto": {
+        "type": "object",
+        "properties": {
+          "productionOrderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "postingDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouseCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "numberOfProductionItems": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPlannedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalProducedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "approval": {
+            "type": "boolean"
+          },
+          "approvalStatus": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductionOrderReportItemDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductionOrderReportItemDto"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "hasPrevious": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNext": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductionOrderReportItemDtoPagedResultGeneralResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductionOrderReportItemDtoPagedResult"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "nullable": true
           }
