@@ -1,4 +1,5 @@
-﻿using DataWarehouse.Domain.Context;
+﻿using DataWarehouse.Api.Resources;
+using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.SAP.Auth;
 using DataWarehouse.SAP.Interfaces.Actors;
@@ -8,7 +9,9 @@ using Hangfire.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Polly;
+using System.Globalization;
 
 namespace DataWarehouse.Api.Controllers
 {
@@ -20,13 +23,20 @@ namespace DataWarehouse.Api.Controllers
         private readonly ILogger<TestController> logger;
         private readonly ISapAuthService sap;
         private readonly ISapItemService sapItem;
+        private readonly IStringLocalizer<SharedResource> localizer;
 
-        public TestController(DataWarehouseDbContext context, ILogger<TestController> logger, ISapAuthService sap,ISapItemService sapItem)
+        public TestController(
+            DataWarehouseDbContext context,
+            ILogger<TestController> logger,
+            ISapAuthService sap,
+            ISapItemService sapItem,
+            IStringLocalizer<SharedResource> localizer)
         {
             this.context = context;
             this.logger = logger;
             this.sap = sap;
             this.sapItem = sapItem;
+            this.localizer = localizer;
         }
 
         [HttpGet("get-el-get")]
@@ -41,6 +51,44 @@ namespace DataWarehouse.Api.Controllers
             var wi = await CheckDynamicCodeValidation(1, "9912312777777");
                                                         
             return Ok(wi==null?"nullll":wi);
+        }
+
+        [HttpGet("localized")]
+        public IActionResult LocalizedExample()
+        {
+            // This endpoint returns a localized string based on the current request culture.
+            // Use Accept-Language header or ?culture=ar to see Arabic.
+            var welcome = localizer["Welcome"].Value;
+            return Ok(new { message = welcome });
+        }
+
+        public record LocalizeRequest(string Culture);
+
+        [HttpPost("localized")]
+        public IActionResult LocalizedFromBody([FromBody] LocalizeRequest request)
+        {
+            // If the client wants to force a culture via JSON body, we can override the current thread culture.
+            if (!string.IsNullOrWhiteSpace(request?.Culture))
+            {
+                var culture = new CultureInfo(request.Culture);
+                CultureInfo.CurrentCulture = culture;
+                CultureInfo.CurrentUICulture = culture;
+            }
+
+            var welcome = localizer["Welcome"].Value;
+            return Ok(new { message = welcome, culture = CultureInfo.CurrentUICulture.Name });
+        }
+
+        [HttpPost("localized/with-culture")]
+        public IActionResult LocalizedFromBodyWithCulture([FromBody] LocalizeRequest request)
+        {
+            var culture = string.IsNullOrWhiteSpace(request?.Culture)
+                ? CultureInfo.CurrentUICulture
+                : new CultureInfo(request.Culture);
+
+            CultureInfo.CurrentUICulture = culture;
+            var welcome = localizer["Welcome"].Value;
+            return Ok(new { message = welcome, culture = culture.Name });
         }
 
         private async Task<string?> CheckDynamicCodeValidation(int sapId, string barCode)

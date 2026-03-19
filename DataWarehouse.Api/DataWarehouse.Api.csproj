@@ -42,4 +42,10 @@
     <Folder Include="wwwroot\uploads\1\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Translations\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
