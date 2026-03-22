@@ -85,13 +85,13 @@ builder.Services.AddHangfireServer(options =>
 });
 
 
-if (FirebaseApp.DefaultInstance is null)
-{
-    FirebaseApp.Create(new AppOptions
-    {
-        Credential = GoogleCredential.GetApplicationDefault()
-    });
-}
+//if (FirebaseApp.DefaultInstance is null)
+//{
+//    FirebaseApp.Create(new AppOptions
+//    {
+//        Credential = GoogleCredential.GetApplicationDefault()
+//    });
+//}
 
 builder.Services.AddScoped<ISapJobQueuer, SapJobQueuer>();
 builder.Services.AddProblemDetails();
