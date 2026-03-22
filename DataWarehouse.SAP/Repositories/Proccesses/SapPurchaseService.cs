@@ -179,6 +179,9 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 if (order.PurchaseOrderItems == null || order.PurchaseOrderItems.Count == 0)
                     throw new InvalidOperationException($"PO#{order.PurchaseOrderId}: No items.");
 
+
+
+
                 var attachments = await _context.DocumentAttachments
              .Where(x => x.DocumentType == ProcessType.Purchase
              && x.DocumentId == order.PurchaseOrderId
@@ -192,6 +195,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     attachmentEntry = await sapAttachmentService
                         .CreateAttachmentEntryAsync(order.Warehouse.SapId, attachments);
                 }
+
                 // ✅ Build DTO
                 var sapDto = new SapPurchaseOrderDto
                 {

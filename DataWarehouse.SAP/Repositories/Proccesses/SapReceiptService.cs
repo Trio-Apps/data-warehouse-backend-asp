@@ -20,15 +20,18 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
    
     public class SapReceiptService : ISapReceiptService
     {
+        private readonly ISapAttachmentService sapAttachmentService;
         private readonly IBaseSap<SapReceiptOrderDto> _sap;
         private readonly ILogger<SapReceiptService> _logger;
         private readonly DataWarehouseDbContext _context;
 
         public SapReceiptService(
+            ISapAttachmentService sapAttachmentService,
             IBaseSap<SapReceiptOrderDto> sap,
             DataWarehouseDbContext context,
             ILogger<SapReceiptService> logger)
         {
+            this.sapAttachmentService = sapAttachmentService;
             _sap = sap;
             _logger = logger;
             _context = context;
@@ -158,8 +161,26 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: WarehouseCode is missing.");
 
 
+
                 if (order.ReceiptPurchaseOrderItems == null || order.ReceiptPurchaseOrderItems.Count == 0)
                     throw new InvalidOperationException($"Receipt#{order.ReceiptPurchaseOrderId}: No items.");
+
+
+
+                var attachments = await _context.DocumentAttachments
+             .Where(x => x.DocumentType == ProcessType.Receipt
+             && x.DocumentId == order.ReceiptPurchaseOrderId
+             && x.IsActive)
+             .ToListAsync();
+
+                int? attachmentEntry = null;
+
+                if (attachments.Any())
+                {
+                    attachmentEntry = await sapAttachmentService
+                        .CreateAttachmentEntryAsync(order.Warehouse.SapId, attachments);
+                }
+
 
                 // ✅ Build SAP Receipt DTO (PurchaseDeliveryNotes = GRPO)
                 var sapDto = new SapReceiptOrderDto
@@ -169,6 +190,10 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     NumAtCard = $"ro-{order.ReceiptPurchaseOrderId}",
                     BPL_IDAssignedToInvoice = TryResolveBplId(order)
                 };
+                if (attachmentEntry.HasValue)
+                {
+                    sapDto.AttachmentEntry = attachmentEntry.Value;
+                }
 
                 foreach (var line in order.ReceiptPurchaseOrderItems.OrderBy(x => x.ReceiptPurchaseOrderItemId))
                 {
@@ -263,6 +288,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             public string DocDate { get; set; } = string.Empty;
             public string? NumAtCard { get; set; }
             public int? BPL_IDAssignedToInvoice { get; set; }
+            public int? AttachmentEntry { get; set; }
             public List<SapReceiptOrderLineDto> DocumentLines { get; set; } = new();
         }
 

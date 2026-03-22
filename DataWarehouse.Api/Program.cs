@@ -12,7 +12,9 @@ using DataWarehouse.Services.Repository.Permissions;
 using DataWarehouse.Services.SeedData.BarCode;
 using DataWarehouse.Services.SeedData.IncrementalSync;
 using DataWarehouse.Services.Services.Auth;
+using FirebaseAdmin;
 using FormBuilder.API.ExceptionHandlers;
+using Google.Apis.Auth.OAuth2;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -83,6 +85,14 @@ builder.Services.AddHangfireServer(options =>
 });
 
 
+if (FirebaseApp.DefaultInstance is null)
+{
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.GetApplicationDefault()
+    });
+}
+
 builder.Services.AddScoped<ISapJobQueuer, SapJobQueuer>();
 builder.Services.AddProblemDetails();
 
@@ -125,6 +135,9 @@ app.UseAuthorization();          // 3️⃣
 
 // باقي الميدل وير
 app.UseHangfireDashboard("/jobs");
+
+app.MapGet("/", () => "Firebase is ready");
+
 
 // 🔥 تسجيل الـ Jobs بعد ما الـ DI يبقى جاهز
 using (var scope = app.Services.CreateScope())

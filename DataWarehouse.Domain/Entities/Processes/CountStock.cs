@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace DataWarehouse.Domain.Entities.Processes
 {
+
     public class CountStock : IOrder
     {
         public int CountStockId { get; set; }
@@ -21,6 +22,8 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int? DocEntry { get; set; }
         public int? DocNum { set; get; }
         public string? DocType { get; set; }
+        public string? ErrorMessage { get; set; }
+
 
         [NotMapped]
         public int Id
@@ -42,4 +45,5 @@ namespace DataWarehouse.Domain.Entities.Processes
         public ICollection<CountStockItem> CountStockItem { get; set; }
             = new List<CountStockItem>();
     }
+
 }

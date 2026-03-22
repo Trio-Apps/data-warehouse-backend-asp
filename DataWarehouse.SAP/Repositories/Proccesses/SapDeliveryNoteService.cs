@@ -21,15 +21,18 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
   
     public class SapDeliveryNoteService : ISapDeliveryNoteService
     {
+        private readonly ISapAttachmentService sapAttachmentService;
         private readonly IBaseSap<SapDeliveryNoteDto> _sap;
         private readonly ILogger<SapDeliveryNoteService> _logger;
         private readonly DataWarehouseDbContext _context;
 
         public SapDeliveryNoteService(
+                        ISapAttachmentService sapAttachmentService,
             IBaseSap<SapDeliveryNoteDto> sap,
             DataWarehouseDbContext context,
             ILogger<SapDeliveryNoteService> logger)
         {
+            this.sapAttachmentService = sapAttachmentService;
             _sap = sap;
             _logger = logger;
             _context = context;
@@ -180,6 +183,23 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 int? baseEntry = order.SalesOrder?.DocEntry;
                 bool canBeBasedOnSalesOrder = baseEntry.HasValue;
 
+
+                var attachments = await _context.DocumentAttachments
+             .Where(x => x.DocumentType == ProcessType.DeliveryNote
+             && x.DocumentId == order.DeliveryNoteOrderId
+             && x.IsActive)
+             .ToListAsync();
+
+                int? attachmentEntry = null;
+
+                if (attachments.Any())
+                {
+                    attachmentEntry = await sapAttachmentService
+                        .CreateAttachmentEntryAsync(order.Warehouse.SapId, attachments);
+                }
+
+
+
                 var sapDto = new SapDeliveryNoteDto
                 {
                     CardCode = order.Customer.CustomerCode,
@@ -188,6 +208,10 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     NumAtCard = $"dn-{order.DeliveryNoteOrderId}",
                     BPL_IDAssignedToInvoice = TryResolveBplId(order)
                 };
+                if (attachmentEntry.HasValue)
+                {
+                    sapDto.AttachmentEntry = attachmentEntry.Value;
+                }
 
                 foreach (var line in order.DeliveryNoteItems.OrderBy(x => x.DeliveryNoteItemId))
                 {
@@ -293,6 +317,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             public string DocDate { get; set; } = string.Empty;
             public string? NumAtCard { get; set; }
             public int? BPL_IDAssignedToInvoice { get; set; }
+            public int? AttachmentEntry { get; set; }
             public List<SapDeliveryNoteLineDto> DocumentLines { get; set; } = new();
         }
 
@@ -339,4 +364,6 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             public string? ItemCode { get; set; }
         }
     }
+
+
 }
