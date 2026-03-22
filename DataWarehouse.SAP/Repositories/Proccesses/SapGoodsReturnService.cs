@@ -18,15 +18,19 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 {
     public class SapGoodsReturnService : ISapGoodsReturnService
     {
+        private readonly ISapAttachmentService sapAttachmentService;
         private readonly IBaseSap<SapPurchaseReturnDto> _sap;
         private readonly ILogger<SapGoodsReturnService> _logger;
         private readonly DataWarehouseDbContext _context;
 
+
         public SapGoodsReturnService(
+            ISapAttachmentService sapAttachmentService,
             IBaseSap<SapPurchaseReturnDto> sap,
             DataWarehouseDbContext context,
             ILogger<SapGoodsReturnService> logger)
         {
+            this.sapAttachmentService = sapAttachmentService;
             _sap = sap;
             _context = context;
             _logger = logger;
@@ -189,6 +193,20 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 if (order.GoodsReturnOrderItems == null || order.GoodsReturnOrderItems.Count == 0)
                     throw new InvalidOperationException($"Return#{order.GoodsReturnOrderId}: No items.");
 
+                var attachments = await _context.DocumentAttachments
+             .Where(x => x.DocumentType == ProcessType.GoodsReturn
+             && x.DocumentId == order.GoodsReturnOrderId
+             && x.IsActive)
+             .ToListAsync();
+
+                int? attachmentEntry = null;
+
+                if (attachments.Any())
+                {
+                    attachmentEntry = await sapAttachmentService
+                        .CreateAttachmentEntryAsync(order.Warehouse.SapId, attachments);
+                }
+
                 // ✅ Build SAP Purchase Return DTO (without base)
                 var sapDto = new SapPurchaseReturnDto
                 {
@@ -198,6 +216,10 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     Comments = order.Comment ?? string.Empty,
                     BPL_IDAssignedToInvoice = TryResolveBplId(order)
                 };
+                if (attachmentEntry.HasValue)
+                {
+                    sapDto.AttachmentEntry = attachmentEntry.Value;
+                }
 
                 foreach (var line in order.GoodsReturnOrderItems.OrderBy(x => x.GoodsReturnOrderItemId))
                 {
@@ -294,6 +316,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             public string? NumAtCard { get; set; }
             public string? Comments { get; set; }
             public int? BPL_IDAssignedToInvoice { get; set; }
+            public int? AttachmentEntry { get; set; }
             public List<SapPurchaseReturnLineDto> DocumentLines { get; set; } = new();
         }
 

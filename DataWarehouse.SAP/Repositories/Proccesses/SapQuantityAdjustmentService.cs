@@ -18,15 +18,18 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
    
     public class SapQuantityAdjustmentService : ISapQuantityAdjustmentService
     {
+        private readonly ISapAttachmentService sapAttachmentService;
         private readonly IBaseSap<SapInventoryGenExitDto> _sap;
         private readonly DataWarehouseDbContext _context;
         private readonly ILogger<SapQuantityAdjustmentService> _logger;
 
         public SapQuantityAdjustmentService(
+              ISapAttachmentService sapAttachmentService,
             IBaseSap<SapInventoryGenExitDto> sap,
             DataWarehouseDbContext context,
             ILogger<SapQuantityAdjustmentService> logger)
         {
+            this.sapAttachmentService = sapAttachmentService;
             _sap = sap;
             _context = context;
             _logger = logger;
@@ -205,6 +208,20 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     if (line.Quantity <= 0)
                         throw new InvalidOperationException($"Adj#{order.QuantityAdjustmentStockId}: Quantity must be > 0 for ItemCode={itemCode}.");
 
+                    var attachments = await _context.DocumentAttachments
+              .Where(x => x.DocumentType == ProcessType.QuantityAdjustment
+              && x.DocumentId == order.QuantityAdjustmentStockId
+              && x.IsActive)
+              .ToListAsync();
+
+                    int? attachmentEntry = null;
+
+                    if (attachments.Any())
+                    {
+                        attachmentEntry = await sapAttachmentService
+                            .CreateAttachmentEntryAsync(order.Warehouse.SapId, attachments);
+                    }
+
                     var sapLine = new SapInventoryGenExitLineDto
                     {
                         ItemCode = itemCode,
@@ -216,6 +233,10 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         UnitPrice = line.UnitPrice,
                         BatchNumbers = new List<SapBatchNumberDto>()
                     };
+                    if (attachmentEntry.HasValue)
+                    {
+                        sapDto.AttachmentEntry = attachmentEntry.Value;
+                    }
 
                     // ✅ batches (لو item batch-managed)
                     var batches = line.QuantityAdjustmentStockBatches ?? new List<QuantityAdjustmentStockBatch>();
@@ -283,6 +304,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             public string DocDate { get; set; } = string.Empty;
             public string? Comments { get; set; }
             public int? BPL_IDAssignedToInvoice { get; set; }
+            public int? AttachmentEntry { get; set; }
             public List<SapInventoryGenExitLineDto> DocumentLines { get; set; } = new();
         }
 

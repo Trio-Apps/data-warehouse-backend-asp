@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace DataWarehouse.SAP.Interfaces.Proccesses
 {
-    internal interface ISapCountingStockService
+    public interface ISapCountingStockService
     {
+        Task<string> SyncCountingStockAsync(int countingStockId);
+
+
     }
 }

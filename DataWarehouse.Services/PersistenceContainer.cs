@@ -74,7 +74,8 @@ namespace DataWarehouse.Services
             services.AddScoped<ITransferredStockRepository, TransferredStockRepository>();
             services.AddScoped<ITransferredRequestOrderRepository, TransferredRequestOrderRepository>();
             services.AddScoped<IProcessesTypesDateRepository, ProcessesTypesDateRepository>();
-            services.AddScoped<IReceiptPurchaseOrderBatchRepository, ReceiptPurchaseOrderBatchRepository>(); 
+            services.AddScoped<IReceiptPurchaseOrderBatchRepository, ReceiptPurchaseOrderBatchRepository>();
+            services.AddScoped<IDocumentSearchRepository, DocumentSearchRepository>();
             #endregion
 
             #region Processes OutSide Repositories

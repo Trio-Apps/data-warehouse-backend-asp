@@ -19,15 +19,18 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
     public class SapTransferredStockService : ISapTransferredStockService
     {
+        private readonly ISapAttachmentService sapAttachmentService;
         private readonly IBaseSap<SapInventoryTransferDto> _sap;
         private readonly DataWarehouseDbContext _context;
         private readonly ILogger<SapTransferredStockService> _logger;
 
         public SapTransferredStockService(
+            ISapAttachmentService sapAttachmentService,
             IBaseSap<SapInventoryTransferDto> sap,
             DataWarehouseDbContext context,
             ILogger<SapTransferredStockService> logger)
         {
+            this.sapAttachmentService = sapAttachmentService;
             _sap = sap;
             _context = context;
             _logger = logger;
@@ -191,6 +194,22 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     string.IsNullOrWhiteSpace(order.DistinationWarehouse.WarehouseCode))
                     throw new InvalidOperationException("Destination warehouse missing.");
 
+
+                var attachments = await _context.DocumentAttachments
+         .Where(x => x.DocumentType == ProcessType.Transferred
+         && x.DocumentId == order.TransferredStockId
+         && x.IsActive)
+         .ToListAsync();
+
+                int? attachmentEntry = null;
+
+                if (attachments.Any())
+                {
+                    attachmentEntry = await sapAttachmentService
+                        .CreateAttachmentEntryAsync(order.Warehouse.SapId, attachments);
+                }
+
+
                 var sapDto = new SapInventoryTransferDto
                 {
                     DocDate = ConvertToSapDate(order.PostingDate ?? order.CreatedAt),
@@ -198,6 +217,10 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     FromWarehouse = order.Warehouse.WarehouseCode,
                     ToWarehouse = order.DistinationWarehouse.WarehouseCode
                 };
+                if (attachmentEntry.HasValue)
+                {
+                    sapDto.AttachmentEntry = attachmentEntry.Value;
+                }
 
                 var requestEntry = order.TransferredRequest?.DocEntry;
 
@@ -265,6 +288,8 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             public string? Comments { get; set; }
             public string FromWarehouse { get; set; }
             public string ToWarehouse { get; set; }
+            public int? AttachmentEntry { get; set; }
+
             public List<SapInventoryTransferLineDto> StockTransferLines { get; set; } = new();
         }
 

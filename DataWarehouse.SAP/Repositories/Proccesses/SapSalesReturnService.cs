@@ -21,15 +21,18 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
 
     public class SapSalesReturnService : ISapSalesReturnService
     {
+        private readonly ISapAttachmentService sapAttachmentService;
         private readonly IBaseSap<SapSalesReturnDto> _sap;
         private readonly ILogger<SapSalesReturnService> _logger;
         private readonly DataWarehouseDbContext _context;
 
         public SapSalesReturnService(
+                          ISapAttachmentService sapAttachmentService,
             IBaseSap<SapSalesReturnDto> sap,
             DataWarehouseDbContext context,
             ILogger<SapSalesReturnService> logger)
         {
+            this.sapAttachmentService = sapAttachmentService;
             _sap = sap;
             _context = context;
             _logger = logger;
@@ -193,6 +196,20 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 int? baseEntry = order.DeliveryNoteOrder?.DocEntry;
                 bool canBeBasedOnDelivery = baseEntry.HasValue;
 
+                var attachments = await _context.DocumentAttachments
+              .Where(x => x.DocumentType == ProcessType.SalesReturn
+              && x.DocumentId == order.SalesReturnOrderId
+              && x.IsActive)
+              .ToListAsync();
+
+                int? attachmentEntry = null;
+
+                if (attachments.Any())
+                {
+                    attachmentEntry = await sapAttachmentService
+                        .CreateAttachmentEntryAsync(order.Warehouse.SapId, attachments);
+                }
+
                 var sapDto = new SapSalesReturnDto
                 {
                     CardCode = order.Customer.CustomerCode,
@@ -202,6 +219,10 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     Comments = order.Comment ?? string.Empty,
                     BPL_IDAssignedToInvoice = TryResolveBplId(order)
                 };
+                if (attachmentEntry.HasValue)
+                {
+                    sapDto.AttachmentEntry = attachmentEntry.Value;
+                }
 
                 foreach (var line in order.SalesReturnOrderItems.OrderBy(x => x.SalesReturnOrderItemId))
                 {
@@ -307,6 +328,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             public string? NumAtCard { get; set; }
             public string? Comments { get; set; }
             public int? BPL_IDAssignedToInvoice { get; set; }
+            public int? AttachmentEntry { get; set; }
             public List<SapSalesReturnLineDto> DocumentLines { get; set; } = new();
         }
 
