@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataWarehouse.Domain.Migrations
 {
     [DbContext(typeof(DataWarehouseDbContext))]
-    [Migration("20260312153336_generalTables")]
-    partial class generalTables
+    [Migration("20260324091230_addNewField")]
+    partial class addNewField
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1246,6 +1246,9 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("DocType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PostingDate")
@@ -2813,6 +2816,9 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<DateTime?>("PostingDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Reference")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");

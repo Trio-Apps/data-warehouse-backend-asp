@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataWarehouse.Domain.Migrations
 {
     /// <inheritdoc />
-    public partial class generalTables : Migration
+    public partial class generlTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -796,6 +796,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false)

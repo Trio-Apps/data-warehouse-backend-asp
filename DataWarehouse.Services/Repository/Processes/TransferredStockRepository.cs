@@ -62,8 +62,11 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 WarehouseCode = ts.Warehouse.WarehouseCode,
                 DistinationWarehouseName = ts.DistinationWarehouse.WarehouseName,
                 DueDate = ts.DueDate,
+                PostingDate = ts.PostingDate,
                 Status = ts.Status.ToString(),
+                ReceivingStatus = ts.ReceivingStatus.ToString(),
                 Comment = ts.Comment,
+                Reference = ts.Reference,
                 CreatedAt = ts.CreatedAt,
                 ErrorMessage = ts.ErrorMessage,
 
@@ -151,6 +154,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 TransferredStockId = x.Order.TransferredStockId,
                 DueDate = x.Order.DueDate,
                 Status = x.Order.Status.ToString(),
+                ReceivingStatus = x.Order.ReceivingStatus.ToString(),
                 Comment = x.Order.Comment,
                 UserId = x.Order.UserId,
                 WarehouseId = x.Order.WarehouseId,
@@ -158,7 +162,9 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 WarehouseCode = x.Order.Warehouse.WarehouseCode,
                 DistinationWarehouseName = x.Order.DistinationWarehouse.WarehouseName,
                 CreatedAt = x.Order.CreatedAt,
+                PostingDate = x.Order.PostingDate,
                 ErrorMessage = x.Order.ErrorMessage,
+                Reference = x.Order.Reference,
 
                 ItemCount = x.Order.TransferredItems.Count(),
                 TransferredRequestId = x.Order.TransferredRequestId,
@@ -246,6 +252,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 TransferredStockId = x.Order.TransferredStockId,
                 DueDate = x.Order.DueDate,
                 Status = x.Order.Status.ToString(),
+                ReceivingStatus = x.Order.ReceivingStatus.ToString(),
                 Comment = x.Order.Comment,
                 UserId = x.Order.UserId,
                 WarehouseId = x.Order.WarehouseId,
@@ -253,6 +260,8 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 WarehouseCode = x.Order.Warehouse.WarehouseCode,
                 DistinationWarehouseName = x.Order.DistinationWarehouse.WarehouseName,
                 CreatedAt = x.Order.CreatedAt,
+                PostingDate = x.Order.PostingDate,
+                Reference = x.Order.Reference,
                 ItemCount = x.Order.TransferredItems.Count(),
                 TransferredRequestId = x.Order.TransferredRequestId,
                 IsReceived = x.Order.ReceivedStock != null,
@@ -293,8 +302,11 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         {
             TransferredStockId = entity.TransferredStockId,
             DueDate = entity.DueDate,
+            PostingDate = entity.PostingDate,
             Status = entity.Status.ToString(),
+            ReceivingStatus = entity.ReceivingStatus.ToString(),
             Comment = entity.Comment,
+            Reference = entity.Reference,
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             DistinationWarehouseId = entity.DistinationWarehouseId,
@@ -338,12 +350,15 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         var entity = new TransferredStock
         {
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
+            ReceivingStatus = ReceivingStatus.InTransit,
             DueDate = dto.DueDate,
+            PostingDate = dto.PostingDate,
             CreatedAt = DateTime.UtcNow,
             UserId = userId,
             WarehouseId = request.WarehouseId,
             DistinationWarehouseId = request.DistinationWarehouseId,
             Comment = dto.Comment,
+            Reference = dto.Reference,
             TransferredRequestId = request.TransferredRequestId,
             TransferredItems = request.TransferredRequestItems.Select(ri => new TransferredItem
             {
@@ -385,11 +400,14 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         {
             TransferredStockId = entity.TransferredStockId,
             DueDate = entity.DueDate,
+            PostingDate = entity.PostingDate,
             Status = entity.Status.ToString(),
+            ReceivingStatus = entity.ReceivingStatus.ToString(),
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             DistinationWarehouseId = entity.DistinationWarehouseId,
             Comment = entity.Comment,
+            Reference = entity.Reference,
             CreatedAt = entity.CreatedAt,
             TransferredRequestId = entity.TransferredRequestId
         });
@@ -413,12 +431,15 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         var entity = new TransferredStock
         {
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
+            ReceivingStatus = ReceivingStatus.InTransit,
             DueDate = dto.DueDate,
+            PostingDate = dto.PostingDate,
             CreatedAt = DateTime.UtcNow,
             UserId = userId,
             WarehouseId = dto.WarehouseId,
             DistinationWarehouseId = dto.DistinationWarehouseId,
             Comment = dto.Comment,
+            Reference = dto.Reference,
             TransferredRequestId = null
         };
 
@@ -438,11 +459,14 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         {
             TransferredStockId = res.TransferredStockId,
             DueDate = res.DueDate,
+            PostingDate = res.PostingDate,
             Status = res.Status.ToString(),
+            ReceivingStatus = res.ReceivingStatus.ToString(),
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             DistinationWarehouseId = res.DistinationWarehouseId,
             Comment = res.Comment,
+            Reference = res.Reference,
             CreatedAt = res.CreatedAt
         });
     }
@@ -463,12 +487,15 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         var entity = new TransferredStock
         {
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
+            ReceivingStatus = ReceivingStatus.InTransit,
             DueDate = dto.DueDate,
             CreatedAt = DateTime.UtcNow,
+            PostingDate = dto.PostingDate,
             UserId = userId,
             WarehouseId = dto.WarehouseId,
             DistinationWarehouseId = dto.DistinationWarehouseId,
             Comment = dto.Comment,
+            Reference = dto.Reference,
             TransferredRequestId = null
         };
 
@@ -488,11 +515,14 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         {
             TransferredStockId = res.TransferredStockId,
             DueDate = res.DueDate,
+            PostingDate = res.PostingDate,
             Status = res.Status.ToString(),
+            ReceivingStatus = res.ReceivingStatus.ToString(),
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             DistinationWarehouseId = res.DistinationWarehouseId,
             Comment = res.Comment,
+            Reference = res.Reference,
             CreatedAt = res.CreatedAt
         });
     }
@@ -530,6 +560,12 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         if (dto.DueDate.HasValue)
             entity.DueDate = dto.DueDate.Value;
 
+        if (dto.PostingDate.HasValue)
+            entity.PostingDate = dto.PostingDate.Value;
+
+        if (!string.IsNullOrWhiteSpace(dto.Reference))
+            entity.Reference = dto.Reference;
+
         if (dto.DistinationWarehouseId.HasValue && entity.TransferredRequestId == null)
         {
             var destinationExists = await _context.Warehouses
@@ -565,11 +601,14 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         {
             TransferredStockId = entity.TransferredStockId,
             DueDate = entity.DueDate,
+            PostingDate = entity.PostingDate,
             Status = entity.Status.ToString(),
+            ReceivingStatus = entity.ReceivingStatus.ToString(),
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             DistinationWarehouseId = entity.DistinationWarehouseId,
             Comment = entity.Comment,
+            Reference = entity.Reference,
             CreatedAt = entity.CreatedAt,
             TransferredRequestId = entity.TransferredRequestId
         });
@@ -596,11 +635,14 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             TransferredStockId = entity.TransferredStockId,
             DueDate = entity.DueDate,
             Status = entity.Status.ToString(),
+            ReceivingStatus = entity.ReceivingStatus.ToString(),
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             DistinationWarehouseId = entity.DistinationWarehouseId,
             Comment = entity.Comment,
+            Reference = entity.Reference,
             CreatedAt = entity.CreatedAt,
+            PostingDate = entity.PostingDate,
             TransferredRequestId = entity.TransferredRequestId
         };
 
@@ -612,6 +654,12 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
 
     public async Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int transferredStockId)
     {
+        var stock = await GetByIdAsync(transferredStockId);
+
+        if (stock.ReceivingStatus != ReceivingStatus.Completed && stock.ReceivingStatus != ReceivingStatus.PartiallyReceived)
+            return GeneralResponse<ProcessItemIsProgressDto>.FailResponse("to send to Sap , the Received Status muct be completed or partiall Received");
+
+
         return await baseProcesses.RevertPartiallyFailedStatusToProcessingAsync<TransferredStock>(
             transferredStockId,
             ProcessType.Transferred,
@@ -644,9 +692,12 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             WarehouseId = entity.WarehouseId,
             DistinationWarehouseId = entity.DistinationWarehouseId,
             DueDate = entity.DueDate,
+            PostingDate = entity.PostingDate,
             Status = entity.Status.ToString(),
+            ReceivingStatus = entity.ReceivingStatus.ToString(),
             Comment = entity.Comment,
             CreatedAt = entity.CreatedAt,
+            Reference = entity.Reference,
             WarehouseCode = entity.Warehouse?.WarehouseCode,
             DistinationWarehouseName = entity.DistinationWarehouse?.WarehouseName,
             TransferredRequestId = entity.TransferredRequestId,
@@ -700,9 +751,12 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 WarehouseCode = ts.Warehouse.WarehouseCode,
                 DistinationWarehouseName = ts.DistinationWarehouse.WarehouseName,
                 DueDate = ts.DueDate,
+                PostingDate = ts.PostingDate,
                 Status = ts.Status.ToString(),
+                ReceivingStatus = ts.ReceivingStatus.ToString(),
                 Comment = ts.Comment,
                 CreatedAt = ts.CreatedAt,
+                Reference = ts.Reference,
                 TransferredRequestId = ts.TransferredRequestId,
                 IsReceived = ts.ReceivedStock != null,
                 ReceivedStockId = ts.ReceivedStock != null ? ts.ReceivedStock.ReceivedStockId : null,
@@ -780,12 +834,15 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             {
                 TransferredStockId = ts.TransferredStockId,
                 DueDate = ts.DueDate,
+                PostingDate = ts.PostingDate,
                 Status = ts.Status.ToString(),
+                ReceivingStatus = ts.ReceivingStatus.ToString(),
                 UserId = ts.UserId,
                 WarehouseId = ts.WarehouseId,
                 DistinationWarehouseId = ts.DistinationWarehouseId,
                 Comment = ts.Comment,
                 CreatedAt = ts.CreatedAt,
+                Reference = ts.Reference,
                 TransferredRequestId = ts.TransferredRequestId,
                 IsReceived = ts.ReceivedStock != null,
                 ReceivedStockId = ts.ReceivedStock != null ? ts.ReceivedStock.ReceivedStockId : null

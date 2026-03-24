@@ -29,8 +29,7 @@ namespace DataWarehouse.Core.DTOs.Processes
         public string Status { get; set; } // PurchaseStatus enum
         public int? ItemCount { get; set; }
 
-        [Required(ErrorMessage = "Posting Date is required")]
-        public DateTime PostingDate { get; set; }
+        public DateTime? PostingDate { get; set; }
 
         [Required(ErrorMessage = "Due Date is required")]
         public DateTime DueDate { get; set; }

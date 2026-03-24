@@ -7,6 +7,8 @@ namespace DataWarehouse.Domain.Entities.Processes
     {
         public int TransferredStockBatchId { get; set; }
         public decimal Quantity { get; set; }
+        public decimal? ReceivedQuantity { get; set; }
+
         public string? Comment { get; set; } = null;
         public string? BatchNumber { get; set; }
         public DateTime? ExpiryDate { get; set; }

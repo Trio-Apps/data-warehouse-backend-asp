@@ -38,6 +38,8 @@ namespace DataWarehouse.Core.DTOs.Processes
         public bool IsBatches { get; set; }
 
         public string? UnitName { get; set; }
+
+        public int? BatchesCount { get; set; } = 0;
     }
 
     public class AddGeneralItemDto

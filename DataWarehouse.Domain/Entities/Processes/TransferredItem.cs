@@ -15,6 +15,8 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int TransferredItemId { get; set; }
 
         public decimal Quantity { get; set; }
+        public decimal? ReceivedQuantity { get; set; }
+
         public int UoMEntry { get; set; }
         public string? BarCode { get; set; }
         // Pending, Planned, Released, Received, Closed, Failed

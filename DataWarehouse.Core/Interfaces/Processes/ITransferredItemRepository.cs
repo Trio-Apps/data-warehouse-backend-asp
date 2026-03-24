@@ -11,7 +11,7 @@ namespace DataWarehouse.Core.Interfaces.Processes;
 
 public interface ITransferredItemRepository : IBaseRepository<TransferredItem>
 {
-    Task<IEnumerable<TransferredItemDTO>> GetByTransferredItemByTransferredStockIdAsync(int TransferredStockId);
+    Task<GeneralResponse<IEnumerable<TransferredItemDTO>>> GetByTransferredItemByTransferredStockIdAsync(int TransferredStockId);
     Task<GeneralResponse<PagedResult<TransferredItemDTO>>>
       GetByTransferredItemByTransferredStockIdWithPaginationAsync(int TransferredStockId, string? status, int pageNumber, int pageSize);
     Task<GeneralResponse<TransferredItemDTO>> AddTransferredItemByTransferredStockIdWithoutRefAsync(

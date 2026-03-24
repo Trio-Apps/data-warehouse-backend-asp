@@ -19,9 +19,12 @@ namespace DataWarehouse.Domain.Entities.Processes
         public DateTime DueDate { get; set; }
         public DateTime? PostingDate { get; set; }
         public GeneralStatus Status { get; set; }
+        public  ReceivingStatus ReceivingStatus { get; set; }
 
         public string? Comment { get; set; }
         public string? ErrorMessage { get; set; }
+
+        public string? Reference { get; set; }
 
 
         public int? DocEntry { get; set; }

@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs.Auth;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Actors;
 using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Core.Interfaces.Based;
@@ -71,11 +72,13 @@ namespace DataWarehouse.Services
             services.AddScoped<ICountStockRepository, CountStockRepository>();
             services.AddScoped<IQuantityAdjustmentStockRepository, QuantityAdjustmentStockRepository>();
             services.AddScoped<IReceivedStockRepository, ReceivedStockRepository>();
+            services.AddScoped<IReceivedTransferredRepository, ReceivedTransferredRepository>();
             services.AddScoped<ITransferredStockRepository, TransferredStockRepository>();
             services.AddScoped<ITransferredRequestOrderRepository, TransferredRequestOrderRepository>();
             services.AddScoped<IProcessesTypesDateRepository, ProcessesTypesDateRepository>();
             services.AddScoped<IReceiptPurchaseOrderBatchRepository, ReceiptPurchaseOrderBatchRepository>();
             services.AddScoped<IDocumentSearchRepository, DocumentSearchRepository>();
+            services.AddScoped<IReceivedTransferredRepository, ReceivedTransferredRepository>();
             #endregion
 
             #region Processes OutSide Repositories

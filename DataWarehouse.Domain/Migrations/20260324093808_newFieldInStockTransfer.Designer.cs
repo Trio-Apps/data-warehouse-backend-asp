@@ -4,6 +4,7 @@ using DataWarehouse.Domain.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataWarehouse.Domain.Migrations
 {
     [DbContext(typeof(DataWarehouseDbContext))]
-    partial class DataWarehouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260324093808_newFieldInStockTransfer")]
+    partial class newFieldInStockTransfer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,7 +58,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SapId");
 
-                    b.ToTable("DynamicBarCodes", (string)null);
+                    b.ToTable("DynamicBarCodes");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.BinLocation", b =>
@@ -81,7 +84,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("BinLocations", (string)null);
+                    b.ToTable("BinLocations");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Customer", b =>
@@ -131,7 +134,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("CustomerCode", "SapId")
                         .IsUnique();
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.IncrementalSync.SapSyncPagination", b =>
@@ -156,7 +159,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SapId");
 
-                    b.ToTable("SapSyncPaginations", (string)null);
+                    b.ToTable("SapSyncPaginations");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.IncrementalSync.SapSyncStatus", b =>
@@ -181,7 +184,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SapId");
 
-                    b.ToTable("SapSyncStatuses", (string)null);
+                    b.ToTable("SapSyncStatuses");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.IncrementalSync.SapSyncStatusFront", b =>
@@ -207,7 +210,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SapSyncStatusFronts", (string)null);
+                    b.ToTable("SapSyncStatusFronts");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.IncrementalSync.WmsSyncStatus", b =>
@@ -232,7 +235,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SapId");
 
-                    b.ToTable("WmsSyncStatuses", (string)null);
+                    b.ToTable("WmsSyncStatuses");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Item", b =>
@@ -303,7 +306,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SapId", "ItemCode");
 
-                    b.ToTable("Items", (string)null);
+                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Supplier", b =>
@@ -353,7 +356,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("SupplierCode", "SapId")
                         .IsUnique();
 
-                    b.ToTable("Suppliers", (string)null);
+                    b.ToTable("Suppliers");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.SupplierItem", b =>
@@ -385,7 +388,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SupplierId");
 
-                    b.ToTable("SupplierItems", (string)null);
+                    b.ToTable("SupplierItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.UserWarehouses", b =>
@@ -412,7 +415,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("UserWarehouses", (string)null);
+                    b.ToTable("UserWarehouses");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Warehouse", b =>
@@ -446,7 +449,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("WarehouseCode", "SapId")
                         .IsUnique();
 
-                    b.ToTable("Warehouses", (string)null);
+                    b.ToTable("Warehouses");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.WarehouseItem", b =>
@@ -502,7 +505,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId", "FinishedGood", "HasActiveBOM");
 
-                    b.ToTable("WarehouseItems", (string)null);
+                    b.ToTable("WarehouseItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.AllinAll.Company", b =>
@@ -522,7 +525,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasKey("CompanyId");
 
-                    b.ToTable("Companies", (string)null);
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.AllinAll.CompanyUser", b =>
@@ -547,7 +550,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("CompanyUsers", (string)null);
+                    b.ToTable("CompanyUsers");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.AllinAll.Sap", b =>
@@ -588,7 +591,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("Saps", (string)null);
+                    b.ToTable("Saps");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.AllinAll.SapEmployee", b =>
@@ -612,7 +615,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SapEmployee", (string)null);
+                    b.ToTable("SapEmployee");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.AllinAll.SapUser", b =>
@@ -636,7 +639,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SapUsers", (string)null);
+                    b.ToTable("SapUsers");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Auth.ApplicationRole", b =>
@@ -773,7 +776,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasKey("PermissionId");
 
-                    b.ToTable("Permissions", (string)null);
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Auth.RolePermission", b =>
@@ -788,7 +791,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.ToTable("RolePermissions", (string)null);
+                    b.ToTable("RolePermissions");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.BarCode.BarCodeSetting", b =>
@@ -843,7 +846,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SapId");
 
-                    b.ToTable("BarCodeSettings", (string)null);
+                    b.ToTable("BarCodeSettings");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.BarCode.ItemBarCode", b =>
@@ -890,7 +893,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("SapId", "BarCode")
                         .HasDatabaseName("IX_ItemBarcode_SapId_Barcode");
 
-                    b.ToTable("ItemBarCodes", (string)null);
+                    b.ToTable("ItemBarCodes");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.BarCode.ItemUomGroup", b =>
@@ -923,7 +926,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SapId");
 
-                    b.ToTable("ItemUomGroups", (string)null);
+                    b.ToTable("ItemUomGroups");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ApprovalStep", b =>
@@ -964,7 +967,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ProcessSettingApprovalId");
 
-                    b.ToTable("ApprovalSteps", (string)null);
+                    b.ToTable("ApprovalSteps");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ProcessApproval", b =>
@@ -1010,7 +1013,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("ProcessApprovals", (string)null);
+                    b.ToTable("ProcessApprovals");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ProcessItemIsProgress", b =>
@@ -1047,7 +1050,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ReferenceId", "ProcessType", "Status");
 
-                    b.ToTable("ProcessItemIsProgresses", (string)null);
+                    b.ToTable("ProcessItemIsProgresses");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.IsProgress.ProcessSettingApproval", b =>
@@ -1071,7 +1074,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("ProcessSettingApprovals", (string)null);
+                    b.ToTable("ProcessSettingApprovals");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
@@ -1101,7 +1104,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ProductionOrderId");
 
-                    b.ToTable("ProductionHeaderBatches", (string)null);
+                    b.ToTable("ProductionHeaderBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", b =>
@@ -1140,7 +1143,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("ProductionOrders", (string)null);
+                    b.ToTable("ProductionOrders");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrderItem", b =>
@@ -1186,7 +1189,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("Status", "AbsoluteEntry");
 
-                    b.ToTable("ProductionOrderItems", (string)null);
+                    b.ToTable("ProductionOrderItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionReceipt", b =>
@@ -1219,7 +1222,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ProductionOrderItemId");
 
-                    b.ToTable("ProductionReceipts", (string)null);
+                    b.ToTable("ProductionReceipts");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.CountStock", b =>
@@ -1267,7 +1270,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("CountStocks", (string)null);
+                    b.ToTable("CountStocks");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.CountStockBatch", b =>
@@ -1300,7 +1303,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("CountStockItemId");
 
-                    b.ToTable("CountStockBatches", (string)null);
+                    b.ToTable("CountStockBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.CountStockItem", b =>
@@ -1347,7 +1350,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("CountStockItems", (string)null);
+                    b.ToTable("CountStockItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.DocumentAttachment", b =>
@@ -1411,7 +1414,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SapId");
 
-                    b.ToTable("DocumentAttachments", (string)null);
+                    b.ToTable("DocumentAttachments");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteBatch", b =>
@@ -1449,7 +1452,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SalesOrderBatchId");
 
-                    b.ToTable("DeliveryNoteBatches", (string)null);
+                    b.ToTable("DeliveryNoteBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteItem", b =>
@@ -1498,7 +1501,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SalesOrderItemId");
 
-                    b.ToTable("DeliveryNoteItems", (string)null);
+                    b.ToTable("DeliveryNoteItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.DeliveryNoteOrder", b =>
@@ -1559,7 +1562,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("DeliveryNoteOrders", (string)null);
+                    b.ToTable("DeliveryNoteOrders");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrder", b =>
@@ -1622,7 +1625,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("GoodsReturnOrders", (string)null);
+                    b.ToTable("GoodsReturnOrders");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrderBatch", b =>
@@ -1662,7 +1665,7 @@ namespace DataWarehouse.Domain.Migrations
                         .IsUnique()
                         .HasFilter("[ReceiptPurchaseOrderBatchId] IS NOT NULL");
 
-                    b.ToTable("GoodsReturnOrderBatches", (string)null);
+                    b.ToTable("GoodsReturnOrderBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrderItem", b =>
@@ -1716,7 +1719,7 @@ namespace DataWarehouse.Domain.Migrations
                         .IsUnique()
                         .HasFilter("[ReceiptPurchaseOrderItemId] IS NOT NULL");
 
-                    b.ToTable("GoodsReturnOrderItems", (string)null);
+                    b.ToTable("GoodsReturnOrderItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.PurchaseOrderItem", b =>
@@ -1760,7 +1763,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("PurchaseOrderId");
 
-                    b.ToTable("PurchaseOrderItems", (string)null);
+                    b.ToTable("PurchaseOrderItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", b =>
@@ -1823,7 +1826,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("ReceiptPurchaseOrders", (string)null);
+                    b.ToTable("ReceiptPurchaseOrders");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrderBatch", b =>
@@ -1856,7 +1859,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ReceiptPurchaseOrderItemId");
 
-                    b.ToTable("ReceiptPurchaseOrderBatches", (string)null);
+                    b.ToTable("ReceiptPurchaseOrderBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrderItem", b =>
@@ -1910,7 +1913,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ReceiptPurchaseOrderId");
 
-                    b.ToTable("ReceiptPurchaseOrderItems", (string)null);
+                    b.ToTable("ReceiptPurchaseOrderItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrder", b =>
@@ -1970,7 +1973,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("SalesOrders", (string)null);
+                    b.ToTable("SalesOrders");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrderBatch", b =>
@@ -2003,7 +2006,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SalesOrderItemId");
 
-                    b.ToTable("SalesOrderBatches", (string)null);
+                    b.ToTable("SalesOrderBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrderItem", b =>
@@ -2047,7 +2050,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SalesOrderId");
 
-                    b.ToTable("SalesOrderItems", (string)null);
+                    b.ToTable("SalesOrderItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrder", b =>
@@ -2110,7 +2113,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("SalesReturnOrders", (string)null);
+                    b.ToTable("SalesReturnOrders");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderBatch", b =>
@@ -2150,7 +2153,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SalesReturnOrderItemId");
 
-                    b.ToTable("SalesReturnOrderBatches", (string)null);
+                    b.ToTable("SalesReturnOrderBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrderItem", b =>
@@ -2201,7 +2204,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("SalesReturnOrderId");
 
-                    b.ToTable("SalesReturnOrderItems", (string)null);
+                    b.ToTable("SalesReturnOrderItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ProcessesType", b =>
@@ -2226,7 +2229,7 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("ProcessesName")
                         .HasDatabaseName("IX_ProcessesType_ProcessesName");
 
-                    b.ToTable("ProcessesTypes", (string)null);
+                    b.ToTable("ProcessesTypes");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ProcessesTypesDate", b =>
@@ -2250,7 +2253,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ProcessesTypeId");
 
-                    b.ToTable("ProcessesTypesDates", (string)null);
+                    b.ToTable("ProcessesTypesDates");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.PurchaseOrder", b =>
@@ -2306,7 +2309,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("PurchaseOrders", (string)null);
+                    b.ToTable("PurchaseOrders");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock", b =>
@@ -2357,7 +2360,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("QuantityAdjustmentStocks", (string)null);
+                    b.ToTable("QuantityAdjustmentStocks");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockBatch", b =>
@@ -2390,7 +2393,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("QuantityAdjustmentStockItemId");
 
-                    b.ToTable("QuantityAdjustmentStockBatches", (string)null);
+                    b.ToTable("QuantityAdjustmentStockBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockItem", b =>
@@ -2437,7 +2440,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("QuantityAdjustmentStockId");
 
-                    b.ToTable("QuantityAdjustmentStockItems", (string)null);
+                    b.ToTable("QuantityAdjustmentStockItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedItem", b =>
@@ -2491,7 +2494,7 @@ namespace DataWarehouse.Domain.Migrations
                         .IsUnique()
                         .HasFilter("[TransferredItemId] IS NOT NULL");
 
-                    b.ToTable("ReceivedItems", (string)null);
+                    b.ToTable("ReceivedItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedStock", b =>
@@ -2548,7 +2551,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("ReceivedStocks", (string)null);
+                    b.ToTable("ReceivedStocks");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedStockBatch", b =>
@@ -2588,7 +2591,7 @@ namespace DataWarehouse.Domain.Migrations
                         .IsUnique()
                         .HasFilter("[TransferredStockBatchId] IS NOT NULL");
 
-                    b.ToTable("ReceivedStockBatches", (string)null);
+                    b.ToTable("ReceivedStockBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredItem", b =>
@@ -2643,7 +2646,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("TransferredStockId");
 
-                    b.ToTable("TransferredItems", (string)null);
+                    b.ToTable("TransferredItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequest", b =>
@@ -2699,7 +2702,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("TransferredRequests", (string)null);
+                    b.ToTable("TransferredRequests");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequestBatch", b =>
@@ -2732,7 +2735,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("TransferredRequestItemId");
 
-                    b.ToTable("TransferredRequestBatches", (string)null);
+                    b.ToTable("TransferredRequestBatches");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredRequestItem", b =>
@@ -2779,7 +2782,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("TransferredRequestId");
 
-                    b.ToTable("TransferredRequestItems", (string)null);
+                    b.ToTable("TransferredRequestItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredStock", b =>
@@ -2848,7 +2851,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("TransferredStocks", (string)null);
+                    b.ToTable("TransferredStocks");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.TransferredStockBatch", b =>
@@ -2889,7 +2892,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("TransferredRequestBatchId");
 
-                    b.ToTable("TransferredStockBatches", (string)null);
+                    b.ToTable("TransferredStockBatches");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

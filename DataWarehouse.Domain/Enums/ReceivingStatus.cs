@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace DataWarehouse.Domain.Enums
 {
-    public enum StatusWithTransit
+    public enum ReceivingStatus
     {
-        // Draft / InTransit / Completed / approval
-        Draft = 1, InTransit = 2, Completed = 3, approval = 4
-
+      InTransit = 1,Draft=2, Completed = 3, PartiallyReceived = 4
     }
 }

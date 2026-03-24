@@ -26,14 +26,27 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
         this.baseProcesses = baseProcesses;
     }
 
-    public async Task<IEnumerable<TransferredItemDTO>> GetByTransferredItemByTransferredStockIdAsync(int transferredStockId)
+    public async Task<GeneralResponse<IEnumerable<TransferredItemDTO>>> GetByTransferredItemByTransferredStockIdAsync(int transferredStockId)
     {
-        var res = await Query()
-            .Where(ti => ti.TransferredStockId == transferredStockId)
-            .Select(e => new TransferredItemDTO
+        var res = await baseProcesses.GetOrderItemsByOrderIdAsync<
+            TransferredStock,
+            TransferredItem,
+            TransferredItemDTO>(
+            orderId: transferredStockId,
+            orderIdSelector: x => x.TransferredStockId == transferredStockId,
+            orderSet: _context.TransferredStocks,
+            itemSet: _context.TransferredItems,
+            itemFilter: x => x.TransferredStockId == transferredStockId,
+            include: q => q
+                .Include(x => x.Item)
+                  .ThenInclude(i => i.ItemUomGroups)
+                .Include(x => x.TransferredStockBatches)
+,
+            selector: e => new TransferredItemDTO
             {
                 TransferredItemId = e.TransferredItemId,
                 Quantity = e.Quantity,
+                ReceivedQuantity = e.ReceivedQuantity,
                 UoMEntry = e.UoMEntry,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
@@ -44,10 +57,13 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
                 ItemId = e.ItemId,
                 ItemCode = e.Item.ItemCode,
                 ItemName = e.Item.ItemName,
-                UnitName = e.Item.ItemUomGroups.FirstOrDefault(i => i.UomEntry == e.UoMEntry)!.UomCode,
+                BatchesCount = e.TransferredStockBatches.Count,
+                UnitName = e.Item.ItemUomGroups
+                    .Where(i => i.UomEntry == e.UoMEntry)
+                    .Select(i => i.UomCode)
+                    .FirstOrDefault(),
                 Comment = e.Comment
-            })
-            .ToListAsync();
+            });
 
         return res;
     }
@@ -55,31 +71,31 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
     public async Task<GeneralResponse<PagedResult<TransferredItemDTO>>> GetByTransferredItemByTransferredStockIdWithPaginationAsync(
         int transferredStockId, string? status, int pageNumber, int pageSize)
     {
-        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-        pageSize = pageSize <= 0 ? 10 : pageSize;
-
-        var query = _context.TransferredItems
-            .AsNoTracking()
-            .Where(ti => ti.TransferredStockId == transferredStockId);
-
-        if (!string.IsNullOrWhiteSpace(status))
-        {
-            if (!Enum.TryParse<GeneralItemStatus>(status, true, out var statusEnum))
-                return GeneralResponse<PagedResult<TransferredItemDTO>>.FailResponse("Invalid status");
-
-            query = query.Where(ti => ti.Status == statusEnum);
-        }
-
-        var totalRecords = await query.CountAsync();
-
-        var data = await query
-            .OrderByDescending(x => x.TransferredItemId)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(e => new TransferredItemDTO
+        var res = await baseProcesses.GetOrderItemsByOrderIdWithPaginationAsync<
+            TransferredStock,
+            TransferredItem,
+            TransferredItemDTO,
+            string,
+            GeneralItemStatus>(
+            orderId: transferredStockId,
+            pageNumber: pageNumber,
+            pageSize: pageSize,
+            status: status,
+            extraSelector: o => o.Status.ToString(),
+            orderIdSelector: o => o.TransferredStockId == transferredStockId,
+            orderSet: _context.TransferredStocks,
+            itemSet: _context.TransferredItems,
+            itemFilter: i => i.TransferredStockId == transferredStockId,
+            include: q => q
+                .Include(x => x.Item)
+                .ThenInclude(i => i.ItemUomGroups)
+                                .Include(x => x.TransferredStockBatches)
+,
+            selector: e => new TransferredItemDTO
             {
                 TransferredItemId = e.TransferredItemId,
                 Quantity = e.Quantity,
+                ReceivedQuantity = e.ReceivedQuantity,
                 UoMEntry = e.UoMEntry,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
@@ -87,23 +103,24 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
                 Status = e.Status.ToString(),
                 TransferredStockId = e.TransferredStockId,
                 TransferredRequestItemId = e.TransferredRequestItemId,
+                BatchesCount = e.TransferredStockBatches.Count,
                 ItemId = e.ItemId,
                 ItemCode = e.Item.ItemCode,
                 ItemName = e.Item.ItemName,
+                UnitName = e.Item.ItemUomGroups
+                    .Where(i => i.UomEntry == e.UoMEntry)
+                    .Select(i => i.UomCode)
+                    .FirstOrDefault(),
                 Comment = e.Comment
-            })
-            .ToListAsync();
+            },
+            orderByDescSelector: x => x.TransferredItemId,
+            itemStatusSelector: x => x.Status);
 
-        return GeneralResponse<PagedResult<TransferredItemDTO>>.SuccessResponse(
-            new PagedResult<TransferredItemDTO>
-            {
-                Data = data,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords
-            });
+        if (!res.Success)
+            return GeneralResponse<PagedResult<TransferredItemDTO>>.FailResponse(res.Message);
+
+        return GeneralResponse<PagedResult<TransferredItemDTO>>.SuccessResponse(res.Data);
     }
-
     public async Task<GeneralResponse<TransferredItemDTO>> AddTransferredItemByTransferredStockIdWithoutRefAsync(
         int transferredStockId,
         bool isBarcode,

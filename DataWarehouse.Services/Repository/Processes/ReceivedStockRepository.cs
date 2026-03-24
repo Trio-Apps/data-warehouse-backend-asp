@@ -28,6 +28,10 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         this.approval = approval;
     }
 
+
+
+
+    #region Received
     public async Task<IEnumerable<ReceivedStock>> GetByWarehouseIdAsync(int warehouseId)
     {
         return await Query()
@@ -244,7 +248,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
       string userId,
       AddReceivedStockWithoutRefDTO dto)
     {
-       
+
         var entity = new ReceivedStock
         {
             UserId = userId,
@@ -292,9 +296,9 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         if (transferredStock.TransferredItems == null || !transferredStock.TransferredItems.Any())
             return GeneralResponse<ReceivedStockDTO>.FailResponse("Transferred stock has no items");
 
-     
 
-     
+
+
         var entity = new ReceivedStock
         {
             UserId = userId,
@@ -568,4 +572,5 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
             ItemCount = stock.ReceivedItems?.Count
         };
     }
+    #endregion
 }
