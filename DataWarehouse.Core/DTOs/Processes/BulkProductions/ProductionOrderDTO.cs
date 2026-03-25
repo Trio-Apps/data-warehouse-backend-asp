@@ -65,6 +65,40 @@ public class UpdateProductionOrderDTO
     [StringLength(500, ErrorMessage = "Remarks cannot exceed 500 characters")]
     public string? Remarks { get; set; }
 
- 
 
+ 
+}
+
+public class ProductionOrderReportFilterDto
+{
+    [Required(ErrorMessage = "WarehouseId is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "WarehouseId must be greater than 0")]
+    public int WarehouseId { get; set; }
+
+    public DateTime? FromDate { get; set; }
+    public DateTime? ToDate { get; set; }
+    public string? Status { get; set; }
+    public string? SearchTerm { get; set; }
+
+    [Range(1, int.MaxValue, ErrorMessage = "PageNumber must be greater than 0")]
+    public int PageNumber { get; set; } = 1;
+
+    [Range(1, 500, ErrorMessage = "PageSize must be between 1 and 500")]
+    public int PageSize { get; set; } = 20;
+}
+
+public class ProductionOrderReportItemDto
+{
+    public int ProductionOrderId { get; set; }
+    public DateTime PostingDate { get; set; }
+    public DateTime DueDate { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? Remarks { get; set; }
+    public int WarehouseId { get; set; }
+    public string WarehouseCode { get; set; } = string.Empty;
+    public int NumberOfProductionItems { get; set; }
+    public decimal TotalPlannedQuantity { get; set; }
+    public decimal TotalProducedQuantity { get; set; }
+    public bool Approval { get; set; }
+    public string? ApprovalStatus { get; set; }
 }

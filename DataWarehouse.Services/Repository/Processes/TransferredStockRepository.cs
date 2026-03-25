@@ -797,7 +797,23 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         return GeneralResponse<TransferredStockDTO>.SuccessResponse(result);
     }
 
-    public async Task<GeneralResponse<List<NameStatus>>> GetTransferredStockStatus()
+    public async Task<GeneralResponse<TransferredStockDTO>> DuplicateTransferredStockAsync(
+        string userId,
+        int transferredStockId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.TransferredStocks
+            .AsNoTracking()
+            .Include(x => x.TransferredItems)
+                .ThenInclude(x => x.TransferredStockBatches)
+            .FirstOrDefaultAsync(x => x.TransferredStockId == transferredStockId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<TransferredStockDTO>.FailResponse("Not Found");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.TransferredStocks.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return await GetTransferredStockByIdAsync(userId, clone.TransferredStockId, cancellationToken);
+    }    public async Task<GeneralResponse<List<NameStatus>>> GetTransferredStockStatus()
     {
         var statuses = Enum.GetValues(typeof(GeneralStatus))
             .Cast<GeneralStatus>()

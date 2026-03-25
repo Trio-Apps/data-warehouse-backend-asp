@@ -1,4 +1,4 @@
-﻿using DataWarehouse.Api;
+using DataWarehouse.Api;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Queue;
@@ -223,7 +223,16 @@ public class DeliveryNoteOrderController : ControllerBase
         return Ok(created);
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}/duplicate")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.DeliveryNote_Create}")]
+    public async Task<IActionResult> Duplicate(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var res = await _repository.DuplicateDeliveryNoteOrderAsync(userId!, id);
+        if (!res.Success)
+            return BadRequest(res);
+        return Ok(res);
+    }    [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.DeliveryNote_Edit}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateDeliveryNoteOrderDTO dto)
     {

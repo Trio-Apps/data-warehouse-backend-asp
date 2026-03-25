@@ -10,6 +10,7 @@ using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.Processes;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataWarehouse.Services.Repository.Processes.OutSide;
@@ -534,6 +535,24 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         };
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(mapping);
+    }
+
+    public async Task<GeneralResponse<GoodsReturnOrderDTO>> DuplicateGoodsReturnOrderAsync(string userId, int goodsReturnOrderId, CancellationToken cancellationToken = default)
+    {
+        var source = await _context.GoodsReturnOrders
+            .AsNoTracking()
+            .Include(x => x.GoodsReturnOrderItems)
+                .ThenInclude(x => x.GoodsReturnOrderBatches)
+            .FirstOrDefaultAsync(x => x.GoodsReturnOrderId == goodsReturnOrderId, cancellationToken);
+
+        if (source == null)
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("Goods return order not found");
+
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.GoodsReturnOrders.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return await GetGoodsReturnOrderByIdAsync(userId, clone.GoodsReturnOrderId);
     }
 
   

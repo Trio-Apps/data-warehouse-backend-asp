@@ -33,6 +33,7 @@ public interface ITransferredRequestOrderRepository : IBaseRepository<Transferre
         string userId, AddTransferredRequestDTO dto, CancellationToken cancellationToken = default);
     Task<GeneralResponse<TransferredRequestDTO>> UpdateTransferredRequestAsync(
         string userId, int transferredRequestId, UpdateTransferredRequestDTO dto, CancellationToken cancellationToken = default);
+    Task<GeneralResponse<TransferredRequestDTO>> DuplicateTransferredRequestAsync(string userId, int transferredRequestId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int transferredRequestId);
     Task<GeneralResponse<TransferredRequestDTO>> DeleteTransferredRequestAsync(
         int transferredRequestId, CancellationToken cancellationToken = default);

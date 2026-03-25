@@ -37,6 +37,7 @@ public interface IReceivedStockRepository : IBaseRepository<ReceivedStock>
     Task<GeneralResponse<ReceivedStockDTO>> AddReceivedStockByTransferredStockIdAsync(string userId, AddReceivedStockDTO dto);
     Task<GeneralResponse<ReceivedStockDTO>> AddReceivedStockAndItemsByTransferredStockIdAsync(string userId, AddReceivedStockDTO dto);
     Task<GeneralResponse<ReceivedStockDTO>> UpdateReceivedStockAsync(string userId, int receivedStockId, UpdateReceivedStockDTO dto);
+    Task<GeneralResponse<ReceivedStockDTO>> DuplicateReceivedStockAsync(string userId, int receivedStockId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ReceivedStockDTO>> DeleteReceivedStockAsync(int receivedStockId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int receivedStockId);
 

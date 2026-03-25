@@ -12,6 +12,7 @@ using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.Processes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -587,6 +588,24 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             ReturnOrderId = res.GoodsReturnOrder != null ? res.GoodsReturnOrder.GoodsReturnOrderId : null,
         };
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(mapping);
+    }
+
+    public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> DuplicateReceiptPurchaseOrderAsync(string userId, int receiptPurchaseOrderId, CancellationToken cancellationToken = default)
+    {
+        var source = await _context.ReceiptPurchaseOrders
+            .AsNoTracking()
+            .Include(x => x.ReceiptPurchaseOrderItems)
+                .ThenInclude(x => x.ReceiptPurchaseOrderBatches)
+            .FirstOrDefaultAsync(x => x.ReceiptPurchaseOrderId == receiptPurchaseOrderId, cancellationToken);
+
+        if (source == null)
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("Receipt purchase order not found");
+
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.ReceiptPurchaseOrders.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return await GetReceiptOrderByIdAsync(userId, clone.ReceiptPurchaseOrderId);
     }
 
     public async Task<GeneralResponse<IEnumerable<ReceiptPurchaseOrderDTO>>> GetByStatusAsync(string status)

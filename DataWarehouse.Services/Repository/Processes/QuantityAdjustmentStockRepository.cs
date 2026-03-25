@@ -322,7 +322,23 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
         });
     }
 
-    public async Task<GeneralResponse<QuantityAdjustmentStockDTO>> DeleteQuantityAdjustmentStockAsync(
+    public async Task<GeneralResponse<QuantityAdjustmentStockDTO>> DuplicateQuantityAdjustmentStockAsync(
+        string userId,
+        int quantityAdjustmentStockId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.QuantityAdjustmentStocks
+            .AsNoTracking()
+            .Include(x => x.QuantityAdjustmentStockItems)
+                .ThenInclude(x => x.QuantityAdjustmentStockBatches)
+            .FirstOrDefaultAsync(x => x.QuantityAdjustmentStockId == quantityAdjustmentStockId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<QuantityAdjustmentStockDTO>.FailResponse("not found");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.QuantityAdjustmentStocks.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return await GetWithWarehouseAsync(clone.QuantityAdjustmentStockId, userId, cancellationToken);
+    }    public async Task<GeneralResponse<QuantityAdjustmentStockDTO>> DeleteQuantityAdjustmentStockAsync(
         int quantityAdjustmentStockId, CancellationToken cancellationToken = default)
     {
         var entity = await _context.QuantityAdjustmentStocks

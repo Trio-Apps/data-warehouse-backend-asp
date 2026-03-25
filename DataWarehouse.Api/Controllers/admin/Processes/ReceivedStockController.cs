@@ -222,7 +222,16 @@ public class ReceivedStockController : ControllerBase
         return Ok(created);
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}/duplicate")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Create}")]
+    public async Task<IActionResult> Duplicate(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var res = await repository.DuplicateReceivedStockAsync(userId!, id);
+        if (!res.Success)
+            return BadRequest(res);
+        return Ok(res);
+    }    [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Edit}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateReceivedStockDTO dto)
     {

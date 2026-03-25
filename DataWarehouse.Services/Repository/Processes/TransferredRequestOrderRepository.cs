@@ -46,7 +46,7 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
 
         var sapId = await sapCache.Get();
 
-        // 1) åÇÊ ÈíÇäÇÊ ÇáãÓÊæÏÚ ãÑÉ æÇÍÏÉ
+        // 1) ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
         var warehouse = await _context.Warehouses
             .AsNoTracking()
             .Where(w => w.WarehouseId == warehouseId)
@@ -66,7 +66,7 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
 
         search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
 
-        // 2) Left join Items ãÚ WarehouseItems (áäÝÓ ÇáãÓÊæÏÚ ÝÞØ)
+        // 2) Left join Items ï¿½ï¿½ WarehouseItems (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
         var query =
       from i in _context.Items.AsNoTracking().Where(it => it.SapId == sapId)
       join wi in _context.WarehouseItems.AsNoTracking()
@@ -433,7 +433,23 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
         });
     }
 
-    public async Task<GeneralResponse<TransferredRequestDTO>> DeleteTransferredRequestAsync(
+    public async Task<GeneralResponse<TransferredRequestDTO>> DuplicateTransferredRequestAsync(
+        string userId,
+        int transferredRequestId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.TransferredRequests
+            .AsNoTracking()
+            .Include(x => x.TransferredRequestItems)
+                .ThenInclude(x => x.TransferredRequestBatches)
+            .FirstOrDefaultAsync(x => x.TransferredRequestId == transferredRequestId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<TransferredRequestDTO>.FailResponse("not found");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.TransferredRequests.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return await GetWithWarehousesAndApprovalAsync(clone.TransferredRequestId, userId, cancellationToken);
+    }    public async Task<GeneralResponse<TransferredRequestDTO>> DeleteTransferredRequestAsync(
         int transferredRequestId,
         CancellationToken cancellationToken = default)
     {

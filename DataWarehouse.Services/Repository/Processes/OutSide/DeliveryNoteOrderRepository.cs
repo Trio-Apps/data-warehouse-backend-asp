@@ -15,6 +15,7 @@ using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.Processes;
 using Microsoft.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
@@ -407,6 +408,24 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             };
 
             return GeneralResponse<DeliveryNoteOrderDTO>.SuccessResponse(model);
+        }
+
+        public async Task<GeneralResponse<DeliveryNoteOrderDTO>> DuplicateDeliveryNoteOrderAsync(string userId, int deliveryNoteOrderId, CancellationToken cancellationToken = default)
+        {
+            var source = await _context.DeliveryNoteOrders
+                .AsNoTracking()
+                .Include(x => x.DeliveryNoteItems)
+                    .ThenInclude(x => x.DeliveryNoteBatches)
+                .FirstOrDefaultAsync(x => x.DeliveryNoteOrderId == deliveryNoteOrderId, cancellationToken);
+
+            if (source == null)
+                return GeneralResponse<DeliveryNoteOrderDTO>.FailResponse("Delivery note order not found");
+
+            var clone = OrderDuplicationHelper.Clone(source, userId);
+            await _context.DeliveryNoteOrders.AddAsync(clone, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return await GetDeliveryNoteOrderByIdAsync(userId, clone.DeliveryNoteOrderId, cancellationToken);
         }
 
         /// <summary>

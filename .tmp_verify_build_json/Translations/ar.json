@@ -1,0 +1,259 @@
+{
+  "app": {
+    "name": "المخزن الذكي"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "logout": "تسجيل الخروج",
+    "back": "رجوع",
+    "search": "بحث",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "update": "تحديث",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "dashboard": "لوحة التحكم",
+    "users": "المستخدمون",
+    "language": "اللغة",
+    "arabic": "العربية",
+    "english": "English",
+    "getStarted": "ابدأ الآن",
+    "notAvailable": "غير متاح"
+  },
+  "header": {
+    "toggleSidebar": "إظهار أو إخفاء القائمة الجانبية",
+    "userMenu": "قائمة المستخدم",
+    "openUserMenu": "فتح قائمة المستخدم",
+    "openLanguageMenu": "فتح قائمة اللغة",
+    "selectLanguage": "اختر اللغة",
+    "sapConnections": "اتصالات SAP",
+    "openSapMenu": "فتح قائمة اتصالات SAP",
+    "loadingSaps": "جاري تحميل اتصالات SAP...",
+    "noSapConnections": "لا توجد اتصالات SAP",
+    "connections": "الاتصالات"
+  },
+  "messages": {
+    "success": "نجاح",
+    "error": "خطأ",
+    "info": "معلومة",
+    "accessDenied": "تم الرفض"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "theme": "المظهر",
+    "companies": "الشركات",
+    "components": "المكونات",
+    "usersManagement": "إدارة المستخدمين",
+    "rolesManagement": "إدارة الصلاحيات",
+    "approval": "الموافقات",
+    "approvalStepsManagement": "إدارة خطوات الموافقة",
+    "myApprovals": "موافقاتي",
+    "setting": "الإعدادات",
+    "language": "اللغة",
+    "sapAuthSettings": "إعدادات ربط SAP",
+    "sapSyncReset": "إعادة مزامنة SAP",
+    "barcodeSettings": "إعدادات الباركود"
+  },
+  "settings": {
+    "language": {
+      "title": "اللغة",
+      "subtitle": "اختر اللغة المفضلة لديك",
+      "changeLanguage": "تغيير اللغة",
+      "successMessage": "تم تغيير اللغة إلى {{language}} بنجاح."
+    }
+  },
+  "validation": {
+    "required": "حقل {{field}} مطلوب",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "minLength": "يجب أن يحتوي {{field}} على {{count}} أحرف على الأقل",
+    "invalidPhone": "يرجى إدخال رقم هاتف صحيح",
+    "passwordMismatch": "كلمتا المرور غير متطابقتين"
+  },
+  "users": {
+    "page": {
+      "title": "إدارة المستخدمين",
+      "addUser": "إضافة مستخدم",
+      "actions": "الإجراءات",
+      "paginationSummary": "عرض {{from}} إلى {{to}} من إجمالي {{total}} مستخدم"
+    },
+    "modal": {
+      "addTitle": "إضافة مستخدم جديد",
+      "editTitle": "تعديل المستخدم"
+    },
+    "fields": {
+      "email": "البريد الإلكتروني",
+      "fullName": "الاسم الكامل",
+      "phoneNumber": "رقم الهاتف",
+      "roles": "الصلاحيات",
+      "company": "الشركة",
+      "name": "الاسم",
+      "sapConnections": "اتصالات SAP",
+      "warehousesFor": "المخازن الخاصة بـ {{sap}}",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور"
+    },
+    "placeholders": {
+      "enterEmail": "أدخل البريد الإلكتروني",
+      "enterName": "أدخل الاسم",
+      "enterFullName": "أدخل الاسم الكامل",
+      "enterPhoneNumber": "أدخل رقم الهاتف",
+      "selectRoles": "اختر الصلاحيات",
+      "selectCompany": "-- اختر الشركة --",
+      "allCompanies": "-- كل الشركات --",
+      "allSaps": "-- كل اتصالات SAP --",
+      "enterPassword": "أدخل كلمة المرور",
+      "confirmPassword": "أكد كلمة المرور"
+    },
+    "validation": {
+      "selectSap": "يرجى اختيار اتصال SAP واحد على الأقل",
+      "selectWarehouse": "يرجى اختيار مخزن واحد على الأقل"
+    },
+    "messages": {
+      "loadedSuccess": "تم تحميل {{count}} مستخدم بنجاح",
+      "loadError": "فشل تحميل المستخدمين. يرجى المحاولة مرة أخرى.",
+      "searching": "جارٍ البحث عن المستخدمين...",
+      "createSuccess": "تم إنشاء المستخدم بنجاح",
+      "createError": "حدث خطأ أثناء إنشاء المستخدم. يرجى المحاولة مرة أخرى.",
+      "updateSuccess": "تم تحديث المستخدم بنجاح",
+      "updateError": "حدث خطأ أثناء تحديث المستخدم. يرجى المحاولة مرة أخرى.",
+      "deleteSuccess": "تم حذف المستخدم \"{{user}}\" بنجاح",
+      "deleteError": "حدث خطأ أثناء حذف المستخدم. يرجى المحاولة مرة أخرى.",
+      "deleteConfirm": "هل أنت متأكد من حذف المستخدم: {{user}}؟",
+      "noUsersFound": "لا يوجد مستخدمون",
+      "loadingCompanies": "جارٍ تحميل الشركات...",
+      "loadingSaps": "جارٍ تحميل اتصالات SAP...",
+      "loadingWarehouses": "جارٍ تحميل المخازن...",
+      "noSapsAvailable": "لا توجد اتصالات SAP متاحة",
+      "noWarehousesForSap": "لا توجد مخازن متاحة لهذا الاتصال",
+      "permissionViewDenied": "ليس لديك صلاحية لعرض المستخدمين.",
+      "permissionCreateDenied": "ليس لديك صلاحية لإنشاء مستخدمين.",
+      "permissionEditDenied": "ليس لديك صلاحية لتعديل المستخدمين.",
+      "permissionDeleteDenied": "ليس لديك صلاحية لحذف المستخدمين."
+    }
+  },
+  "stockCounting": {
+    "orders": {
+      "title": "أوامر جرد المخزون",
+      "newOrder": "طلب جديد",
+      "noOrders": "لا توجد طلبات.",
+      "paginationSummary": "عرض {{from}} إلى {{to}} من إجمالي {{total}} أمر جرد"
+    },
+    "form": {
+      "newTitle": "أمر جرد مخزون جديد",
+      "editTitle": "تعديل أمر جرد المخزون"
+    },
+    "fields": {
+      "orderId": "معرف الطلب",
+      "mode": "الوضع"
+    },
+    "mode": {
+      "Counting": "جرد",
+      "Posting": "ترحيل"
+    }
+  },
+  "transferredStockForm": {
+    "title": {
+      "create": "إنشاء مخزون محول",
+      "edit": "تعديل مخزون محول"
+    },
+    "actions": {
+      "create": "إنشاء مخزون",
+      "update": "تحديث المخزون"
+    },
+    "placeholders": {
+      "selectDestinationWarehouse": "-- اختر المخزن الوجهة --",
+      "comment": "أدخل أي ملاحظات لهذا المخزون المحول"
+    },
+    "validation": {
+      "destinationWarehouseRequired": "المخزن الوجهة مطلوب"
+    },
+    "hint": "يمكن تعديل مسودات المخزون المحول لاحقًا. لا يمكن تعديل الأوامر النهائية."
+  },
+  "transferredRequestForm": {
+    "title": {
+      "create": "إنشاء طلب تحويل",
+      "edit": "تعديل طلب تحويل"
+    },
+    "actions": {
+      "create": "إنشاء طلب",
+      "update": "تحديث الطلب"
+    },
+    "placeholders": {
+      "selectDestinationWarehouse": "-- اختر المخزن الوجهة --",
+      "comment": "أدخل أي ملاحظات لطلب التحويل هذا"
+    },
+    "validation": {
+      "destinationWarehouseRequired": "المخزن الوجهة مطلوب"
+    },
+    "hint": "يمكن تعديل مسودات طلبات التحويل لاحقًا. لا يمكن تعديل الطلبات النهائية."
+  },
+  "approvalProcess": {
+    "page": {
+      "title": "خطوات الموافقة",
+      "paginationSummary": "عرض {{from}} إلى {{to}} من إجمالي {{total}} خطوة"
+    },
+    "modal": {
+      "addTitle": "إضافة خطوة موافقة",
+      "editTitle": "تعديل خطوة الموافقة"
+    },
+    "actions": {
+      "addStep": "إضافة خطوة",
+      "ignoreStepsOn": "تجاهل الخطوات: مفعل",
+      "ignoreStepsOff": "تجاهل الخطوات: غير مفعل"
+    },
+    "labels": {
+      "processType": "نوع العملية",
+      "ignoreSteps": "تجاهل الخطوات",
+      "enabled": "مفعل",
+      "disabled": "غير مفعل",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "fields": {
+      "stepName": "اسم الخطوة",
+      "stepOrder": "ترتيب الخطوة",
+      "role": "الصلاحية",
+      "active": "نشط"
+    },
+    "placeholders": {
+      "stepName": "أدخل اسم الخطوة",
+      "selectRole": "-- اختر الصلاحية --"
+    },
+    "validation": {
+      "maxLength": "{{field}} يجب ألا يتجاوز {{count}} حرفًا",
+      "minValue": "{{field}} يجب ألا يقل عن {{count}}"
+    },
+    "messages": {
+      "permissionViewDenied": "ليس لديك صلاحية لعرض خطوات الموافقة.",
+      "permissionCreateDenied": "ليس لديك صلاحية لإنشاء خطوات الموافقة.",
+      "permissionEditDenied": "ليس لديك صلاحية لتعديل خطوات الموافقة.",
+      "permissionDeleteDenied": "ليس لديك صلاحية لحذف خطوات الموافقة.",
+      "processSettingNotFound": "لم يتم العثور على تفاصيل إعداد مسار الموافقة.",
+      "noStepsFound": "لا توجد خطوات موافقة",
+      "ignoreStepsUpdated": "تم تحديث حالة تجاهل الخطوات بنجاح.",
+      "ignoreStepsUpdateError": "فشل تحديث حالة تجاهل الخطوات.",
+      "createSuccess": "تم إنشاء خطوة الموافقة بنجاح",
+      "createError": "حدث خطأ أثناء إنشاء خطوة الموافقة.",
+      "updateSuccess": "تم تحديث خطوة الموافقة بنجاح",
+      "updateError": "حدث خطأ أثناء تحديث خطوة الموافقة.",
+      "deleteConfirm": "هل أنت متأكد من حذف الخطوة: {{step}}؟",
+      "deleteSuccess": "تم حذف الخطوة \"{{step}}\" بنجاح",
+      "deleteError": "حدث خطأ أثناء حذف خطوة الموافقة. حاول مرة أخرى."
+    }
+  },
+  "login": {
+    "title": "تسجيل الدخول",
+    "subtitle": "سجّل الدخول إلى حسابك",
+    "emailPlaceholder": "البريد الإلكتروني",
+    "passwordPlaceholder": "كلمة المرور",
+    "submit": "دخول",
+    "submitting": "جارٍ تسجيل الدخول...",
+    "forgotPassword": "هل نسيت كلمة المرور؟",
+    "welcomeTitle": "أهلًا بك",
+    "welcomeMessage": "مرحبًا بك في نظام إدارة المخازن الذكي. يمكنك إدارة المخزون، وتتبع الأصناف، ومراقبة حركة المستودع بكفاءة من مكان واحد.",
+    "errors": {
+      "required": "هذا الحقل مطلوب",
+      "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحين. حاول مرة أخرى."
+    }
+  }
+}

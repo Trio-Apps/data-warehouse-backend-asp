@@ -23,6 +23,7 @@ public interface IQuantityAdjustmentStockRepository : IBaseRepository<QuantityAd
         string userId, AddQuantityAdjustmentStockDTO dto, CancellationToken cancellationToken = default);
     Task<GeneralResponse<QuantityAdjustmentStockDTO>> UpdateQuantityAdjustmentStockAsync(
         string userId, int quantityAdjustmentStockId, UpdateQuantityAdjustmentStockDTO dto, CancellationToken cancellationToken = default);
+    Task<GeneralResponse<QuantityAdjustmentStockDTO>> DuplicateQuantityAdjustmentStockAsync(string userId, int quantityAdjustmentStockId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int quantityAdjustmentStockId);
     Task<GeneralResponse<QuantityAdjustmentStockDTO>> DeleteQuantityAdjustmentStockAsync(
         int quantityAdjustmentStockId, CancellationToken cancellationToken = default);

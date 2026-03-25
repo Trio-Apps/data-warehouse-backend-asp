@@ -10,6 +10,7 @@ using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.Processes;
 using Microsoft.EntityFrameworkCore;
 
 using System;
@@ -277,6 +278,24 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         };
 
         return GeneralResponse<SalesReturnOrderDTO>.SuccessResponse(model);
+    }
+
+    public async Task<GeneralResponse<SalesReturnOrderDTO>> DuplicateSalesReturnOrderAsync(string userId, int salesReturnOrderId, CancellationToken cancellationToken = default)
+    {
+        var source = await _context.SalesReturnOrders
+            .AsNoTracking()
+            .Include(x => x.SalesReturnOrderItems)
+                .ThenInclude(x => x.SalesReturnOrderBatches)
+            .FirstOrDefaultAsync(x => x.SalesReturnOrderId == salesReturnOrderId, cancellationToken);
+
+        if (source == null)
+            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales return order not found");
+
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.SalesReturnOrders.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return await GetSalesReturnOrderByIdAsync(userId, clone.SalesReturnOrderId, cancellationToken);
     }
 
     public async Task<GeneralResponse<SalesReturnOrderDTO>> AddSalesReturnOrderAsync(

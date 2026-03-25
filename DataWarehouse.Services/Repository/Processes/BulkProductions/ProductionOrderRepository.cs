@@ -1,4 +1,4 @@
-﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
@@ -14,6 +14,7 @@ using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.Processes;
 using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -404,7 +405,35 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         });
     }
 
-    public async Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId)
+    public async Task<GeneralResponse<ProductionOrderDTO>> DuplicateProductionOrderAsync(
+        string userId,
+        int productionOrderId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.ProductionOrders
+            .AsNoTracking()
+            .Include(x => x.ProductionOrderItems)
+            .Include(x => x.ProductionHeaderBatches)
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == productionOrderId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("not found");
+        if (!await UserHasWarehouseAccessAsync(userId, source.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.ProductionOrders.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(new ProductionOrderDTO
+        {
+            ProductionOrderId = clone.ProductionOrderId,
+            PostingDate = clone.PostingDate,
+            DueDate = clone.DueDate,
+            Remarks = clone.Remarks,
+            Status = clone.Status.ToString(),
+            UserId = clone.UserId,
+            WarehouseId = clone.WarehouseId,
+            NumberOfProductionItem = clone.ProductionOrderItems.Count
+        });
+    }    public async Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId)
     {
         return await QueryIncluding(false, po => po.ProductionOrderItems)
             .Where(po => po.ProductionOrderItems.Any(poi => poi.ItemId == itemId))
@@ -496,6 +525,111 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             .ToListAsync();
 
         return GeneralResponse<PagedResult<ProductionOrderDTO>>.SuccessResponse(new PagedResult<ProductionOrderDTO>
+        {
+            Data = data,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalRecords = totalRecords
+        });
+    }
+
+    public async Task<GeneralResponse<PagedResult<ProductionOrderReportItemDto>>> GetProductionOrdersReportAsync(
+        string userId,
+        ProductionOrderReportFilterDto filter)
+    {
+        var pageNumber = filter.PageNumber <= 0 ? 1 : filter.PageNumber;
+        var pageSize = filter.PageSize <= 0 ? 20 : filter.PageSize;
+
+        var warehouseExists = await _context.Warehouses
+            .AsNoTracking()
+            .AnyAsync(x => x.WarehouseId == filter.WarehouseId);
+
+        if (!warehouseExists)
+            return GeneralResponse<PagedResult<ProductionOrderReportItemDto>>.FailResponse("Warehouse not found.");
+
+        if (!await UserHasWarehouseAccessAsync(userId, filter.WarehouseId))
+            return GeneralResponse<PagedResult<ProductionOrderReportItemDto>>.FailResponse("You don't have access to this warehouse.");
+
+        GeneralStatus? statusFilter = null;
+        if (!string.IsNullOrWhiteSpace(filter.Status))
+        {
+            if (!Enum.TryParse<GeneralStatus>(filter.Status.Trim(), true, out var parsedStatus))
+                return GeneralResponse<PagedResult<ProductionOrderReportItemDto>>.FailResponse("Invalid production order status.");
+
+            statusFilter = parsedStatus;
+        }
+
+        var processQuery = _context.ProcessItemIsProgresses
+            .AsNoTracking()
+            .Where(p => p.ProcessType == ProcessType.Production);
+
+        var query = _context.ProductionOrders
+            .AsNoTracking()
+            .Where(po => po.WarehouseId == filter.WarehouseId);
+
+        if (filter.FromDate.HasValue)
+        {
+            var fromDate = filter.FromDate.Value.Date;
+            query = query.Where(po => po.PostingDate >= fromDate);
+        }
+
+        if (filter.ToDate.HasValue)
+        {
+            var toExclusive = filter.ToDate.Value.Date.AddDays(1);
+            query = query.Where(po => po.PostingDate < toExclusive);
+        }
+
+        if (statusFilter.HasValue)
+        {
+            query = query.Where(po => po.Status == statusFilter.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+        {
+            var term = filter.SearchTerm.Trim();
+            query = query.Where(po =>
+                po.ProductionOrderId.ToString().Contains(term) ||
+                (po.Remarks != null && po.Remarks.Contains(term)) ||
+                po.ProductionOrderItems.Any(item =>
+                    item.Item.ItemCode.Contains(term) ||
+                    item.Item.ItemName.Contains(term)));
+        }
+
+        var totalRecords = await query.CountAsync();
+
+        var data = await query
+            .OrderByDescending(po => po.PostingDate)
+            .ThenByDescending(po => po.ProductionOrderId)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(po => new
+            {
+                Order = po,
+                HasProgress = processQuery.Any(p => p.ReferenceId == po.ProductionOrderId),
+                LatestStatus = processQuery
+                    .Where(p => p.ReferenceId == po.ProductionOrderId)
+                    .OrderByDescending(p => p.ProcessItemIsProgressId)
+                    .Select(p => (ProcessStatus?)p.Status)
+                    .FirstOrDefault()
+            })
+            .Select(x => new ProductionOrderReportItemDto
+            {
+                ProductionOrderId = x.Order.ProductionOrderId,
+                PostingDate = x.Order.PostingDate,
+                DueDate = x.Order.DueDate,
+                Status = x.Order.Status.ToString(),
+                Remarks = x.Order.Remarks,
+                WarehouseId = x.Order.WarehouseId,
+                WarehouseCode = x.Order.Warehouse.WarehouseCode,
+                NumberOfProductionItems = x.Order.ProductionOrderItems.Count(),
+                TotalPlannedQuantity = x.Order.ProductionOrderItems.Sum(item => item.PlannedQuantity),
+                TotalProducedQuantity = x.Order.ProductionOrderItems.Sum(item => item.ProducedQuantity ?? 0),
+                Approval = x.HasProgress,
+                ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
+            })
+            .ToListAsync();
+
+        return GeneralResponse<PagedResult<ProductionOrderReportItemDto>>.SuccessResponse(new PagedResult<ProductionOrderReportItemDto>
         {
             Data = data,
             PageNumber = pageNumber,

@@ -148,7 +148,18 @@ public class QuantityAdjustmentStockController : ControllerBase
         return Ok(created);
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}/duplicate")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Counting_Create}")]
+    public async Task<IActionResult> Duplicate(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
+        var res = await _repository.DuplicateQuantityAdjustmentStockAsync(userId, id);
+        if (!res.Success)
+            return BadRequest(res);
+        return Ok(res);
+    }    [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Counting_Edit}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateQuantityAdjustmentStockDTO dto)
     {

@@ -377,7 +377,23 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         return GeneralResponse<ReceivedStockDTO>.SuccessResponse(MapStockToDto(entity));
     }
 
-    public async Task<GeneralResponse<ReceivedStockDTO>> DeleteReceivedStockAsync(
+    public async Task<GeneralResponse<ReceivedStockDTO>> DuplicateReceivedStockAsync(
+        string userId,
+        int receivedStockId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.ReceivedStocks
+            .AsNoTracking()
+            .Include(x => x.ReceivedItems)
+                .ThenInclude(x => x.ReceivedStockBatches)
+            .FirstOrDefaultAsync(x => x.ReceivedStockId == receivedStockId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<ReceivedStockDTO>.FailResponse("Not Found");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.ReceivedStocks.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return await GetReceivedStockByIdAsync(userId, clone.ReceivedStockId, cancellationToken);
+    }    public async Task<GeneralResponse<ReceivedStockDTO>> DeleteReceivedStockAsync(
         int receivedStockId,
         CancellationToken cancellationToken = default)
     {
