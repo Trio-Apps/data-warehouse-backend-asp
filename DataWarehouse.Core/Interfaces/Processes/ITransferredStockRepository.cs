@@ -47,6 +47,7 @@ public interface ITransferredStockRepository : IBaseRepository<TransferredStock>
     Task<GeneralResponse<TransferredStockDTO>> AddTransferredStockByTransferredRequestIdAsync(
           string userId, AddTransferredStockDTO dto);
     Task<GeneralResponse<TransferredStockDTO>> UpdateTransferredStockAsync(string userId, int transferredStockId, UpdateTransferredStockDTO dto);
+    Task<GeneralResponse<TransferredStockDTO>> DuplicateTransferredStockAsync(string userId, int transferredStockId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int transferredStockId);
     Task<GeneralResponse<TransferredStockDTO>> DeleteTransferredStockAsync(int transferredStockId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<List<NameStatus>>> GetTransferredStockStatus();

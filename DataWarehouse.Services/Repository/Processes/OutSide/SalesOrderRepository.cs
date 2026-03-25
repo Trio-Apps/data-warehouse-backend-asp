@@ -16,6 +16,7 @@ using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using DataWarehouse.Services.Repository.SapRepo;
+using DataWarehouse.Services.Repository.Processes;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -456,6 +457,24 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
 
         return GeneralResponse<SalesOrderDTO>.SuccessResponse(model);
+    }
+
+    public async Task<GeneralResponse<SalesOrderDTO>> DuplicateSalesOrderAsync(string userId, int salesOrderId, CancellationToken cancellationToken = default)
+    {
+        var source = await _context.SalesOrders
+            .AsNoTracking()
+            .Include(x => x.SalesOrderItems)
+                .ThenInclude(x => x.SalesOrderBatches)
+            .FirstOrDefaultAsync(x => x.SalesOrderId == salesOrderId, cancellationToken);
+
+        if (source == null)
+            return GeneralResponse<SalesOrderDTO>.FailResponse("Sales order not found");
+
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.SalesOrders.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return await GetWithCustomerAsync(clone.SalesOrderId, userId, cancellationToken);
     }
 
     public async Task<GeneralResponse<SalesOrderDTO>> UpdateSalesOrderAsync(string userId, int salesOrderId, UpdateSalesOrderDTO dto,CancellationToken cancellationToken=default)

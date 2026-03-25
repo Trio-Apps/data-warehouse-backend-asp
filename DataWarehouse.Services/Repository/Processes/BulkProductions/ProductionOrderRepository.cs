@@ -1,4 +1,4 @@
-﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
@@ -14,6 +14,7 @@ using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.Processes;
 using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -404,7 +405,35 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         });
     }
 
-    public async Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId)
+    public async Task<GeneralResponse<ProductionOrderDTO>> DuplicateProductionOrderAsync(
+        string userId,
+        int productionOrderId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.ProductionOrders
+            .AsNoTracking()
+            .Include(x => x.ProductionOrderItems)
+            .Include(x => x.ProductionHeaderBatches)
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == productionOrderId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("not found");
+        if (!await UserHasWarehouseAccessAsync(userId, source.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.ProductionOrders.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(new ProductionOrderDTO
+        {
+            ProductionOrderId = clone.ProductionOrderId,
+            PostingDate = clone.PostingDate,
+            DueDate = clone.DueDate,
+            Remarks = clone.Remarks,
+            Status = clone.Status.ToString(),
+            UserId = clone.UserId,
+            WarehouseId = clone.WarehouseId,
+            NumberOfProductionItem = clone.ProductionOrderItems.Count
+        });
+    }    public async Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId)
     {
         return await QueryIncluding(false, po => po.ProductionOrderItems)
             .Where(po => po.ProductionOrderItems.Any(poi => poi.ItemId == itemId))

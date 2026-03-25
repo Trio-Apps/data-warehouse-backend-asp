@@ -21,6 +21,7 @@ public interface IReceiptPurchaseOrderRepository : IBaseRepository<ReceiptPurcha
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderByPurchaseOrderIdAsync(string userId, AddReceiptPurchaseOrderDTO dto);
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderAndItemsByPurchaseOrderIdAsync(string userId, AddReceiptPurchaseOrderDTO dto);
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderDTO dto);
+    Task<GeneralResponse<ReceiptPurchaseOrderDTO>> DuplicateReceiptPurchaseOrderAsync(string userId, int receiptPurchaseOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int receiptPurchaseOrderId);
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> DeleteReceiptOrderAsync(
     int receiptOrderId,

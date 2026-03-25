@@ -16,6 +16,7 @@ using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.Processes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Net.NetworkInformation;
@@ -383,6 +384,23 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             logger.LogError(ex, "Error while adding purchase order with attachments");
             return GeneralResponse<PurchaseOrderDTO>.FailResponse("Failed to create purchase order");
         }
+    }
+
+    public async Task<GeneralResponse<PurchaseOrderDTO>> DuplicatePurchaseOrderAsync(string userId, int purchaseOrderId, CancellationToken cancellationToken = default)
+    {
+        var source = await _context.PurchaseOrders
+            .AsNoTracking()
+            .Include(x => x.PurchaseOrderItems)
+            .FirstOrDefaultAsync(x => x.PurchaseOrderId == purchaseOrderId, cancellationToken);
+
+        if (source == null)
+            return GeneralResponse<PurchaseOrderDTO>.FailResponse("Purchase order not found");
+
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.PurchaseOrders.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return await GetWithSupplierAsync(userId, clone.PurchaseOrderId, cancellationToken);
     }
     private async Task<(bool IsValid, string Message)> ValidateBusinessDatesAsync(
       DateTime postingDate,

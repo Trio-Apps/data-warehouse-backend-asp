@@ -22,6 +22,7 @@ public interface ISalesReturnOrderRepository : IBaseRepository<SalesReturnOrder>
     Task<GeneralResponse<SalesReturnOrderDTO>> AddSalesReturnOrderWithoutRefAsync(string userId, AddSalesReturnOrderWithoutRefDTO dto);
     Task<GeneralResponse<SalesReturnOrderDTO>> AddSalesReturnOrderAsync(string userId, AddSalesReturnOrderDTO dto);
     Task<GeneralResponse<SalesReturnOrderDTO>> UpdateSalesReturnOrderAsync(string userId, int salesReturnOrderId, UpdateSalesReturnOrderDTO dto);
+    Task<GeneralResponse<SalesReturnOrderDTO>> DuplicateSalesReturnOrderAsync(string userId, int salesReturnOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int salesReturnOrderId);
     Task<GeneralResponse<SalesReturnOrderDTO>> DeleteSalesReturnOrderAsync(int salesReturnOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<SalesReturnOrderDTO>> GetByDeliveryNoteOrderIdAsync(int salesOrderId);

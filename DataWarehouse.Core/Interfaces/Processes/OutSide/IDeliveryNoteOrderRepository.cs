@@ -45,6 +45,7 @@ namespace DataWarehouse.Core.Interfaces.Processes.OutSide
         Task<GeneralResponse<DeliveryNoteOrderDTO>> AddDeliveryNoteOrderAsync(string userId, AddDeliveryNoteOrderDTO dto);
 
         Task<GeneralResponse<DeliveryNoteOrderDTO>> UpdateDeliveryNoteOrderAsync(string userId, int deliveryNoteOrderId, UpdateDeliveryNoteOrderDTO dto);
+        Task<GeneralResponse<DeliveryNoteOrderDTO>> DuplicateDeliveryNoteOrderAsync(string userId, int deliveryNoteOrderId, CancellationToken cancellationToken = default);
         Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int deliveryNoteOrderId);
 
         Task<GeneralResponse<DeliveryNoteOrderDTO>> DeleteDeliveryNoteOrderAsync(int deliveryNoteOrderId, CancellationToken cancellationToken = default);

@@ -18,6 +18,7 @@ public interface IProductionOrderRepository : IBaseRepository<ProductionOrder>
     Task<GeneralResponse<IEnumerable<ProductionOrderDTO>>> AddProductionOrdersByWarehouseIdAsync(string userId,
            IEnumerable<AddProductionOrderDTO> dtos);
     Task<GeneralResponse<ProductionOrderDTO>> UpdateProductionOrderAsync(string userId, int productionId, UpdateProductionOrderDTO dto);
+    Task<GeneralResponse<ProductionOrderDTO>> DuplicateProductionOrderAsync(string userId, int productionOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int productionOrderId);
     Task<GeneralResponse<List<NameStatus>>> GetProductionOrderStatus();
     Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId);

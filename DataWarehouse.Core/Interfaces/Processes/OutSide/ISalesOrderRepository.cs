@@ -28,6 +28,7 @@ public interface ISalesOrderRepository : IBaseRepository<SalesOrder>
     Task<GeneralResponse<PagedResult<SalesOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
       (int warehouseId, string userId, int? customerId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<GeneralResponse<SalesOrderDTO>> UpdateSalesOrderAsync(string userId, int salesOrderId, UpdateSalesOrderDTO dto, CancellationToken cancellationToken = default);
+    Task<GeneralResponse<SalesOrderDTO>> DuplicateSalesOrderAsync(string userId, int salesOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int salesOrderId);
     Task<GeneralResponse<SalesOrderDTO>> DeleteSalesOrderAsync(int salesOrderId, CancellationToken cancellationToken = default);
 

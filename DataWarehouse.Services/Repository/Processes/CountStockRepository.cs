@@ -155,7 +155,23 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
         return GeneralResponse<CountStockDTO>.SuccessResponse(MapToDto(entity));
     }
 
-    public async Task<GeneralResponse<List<NameStatus>>> GetCountStockStatus()
+    public async Task<GeneralResponse<CountStockDTO>> DuplicateCountStockAsync(
+        string userId,
+        int countStockId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.CountStocks
+            .AsNoTracking()
+            .Include(x => x.CountStockItem)
+                .ThenInclude(x => x.CountStockBatches)
+            .FirstOrDefaultAsync(x => x.CountStockId == countStockId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<CountStockDTO>.FailResponse("Count stock not found");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.CountStocks.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return GeneralResponse<CountStockDTO>.SuccessResponse(MapToDto(clone, includeItems: true));
+    }    public async Task<GeneralResponse<List<NameStatus>>> GetCountStockStatus()
     {
         var statuses = Enum.GetValues(typeof(GeneralStatus))
             .Cast<GeneralStatus>()

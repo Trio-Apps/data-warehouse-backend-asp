@@ -23,6 +23,7 @@ public interface IPurchaseOrderRepository : IBaseRepository<PurchaseOrder>
     Task<GeneralResponse<PurchaseOrderDTO>> AddPurchaseOrderByWarehouseIdAsync(string userId,
            AddPurchaseOrderDTO dto);
     Task<GeneralResponse<PurchaseOrderDTO>> UpdatePurchaseOrderAsync(string userId, int PurchaseId, UpdatePurchaseOrderDTO dto);
+    Task<GeneralResponse<PurchaseOrderDTO>> DuplicatePurchaseOrderAsync(string userId, int purchaseOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int purchaseOrderId);
     Task<GeneralResponse<PurchaseOrderDTO>> DeletePurchaseOrderAsync(
    int PurchaseOrderId,
