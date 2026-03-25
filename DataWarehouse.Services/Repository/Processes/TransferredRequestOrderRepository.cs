@@ -256,7 +256,6 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
                 Comment = x.Order.Comment,
                 CreatedAt = x.Order.CreatedAt,
                 ErrorMessage = x.Order.ErrorMessage,
-
                 ItemCount = x.Order.TransferredRequestItems.Count(),
                 WarehouseName = x.Order.Warehouse.WarehouseName,
                 DistinationWarehouseName = x.Order.DistinationWarehouse.WarehouseName,
@@ -382,8 +381,10 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
                 "You cannot edit this request because its approval status is 'Approved' and all approval steps have been completed.");
         }
 
-        if (entity.DueDate != dto.DueDate)
-            entity.DueDate = dto.DueDate;
+        if (dto.DueDate.HasValue && entity.DueDate != dto.DueDate.Value)
+        {
+            entity.DueDate = dto.DueDate.Value;
+        }
 
         if (entity.DistinationWarehouseId != dto.DistinationWarehouseId)
         {

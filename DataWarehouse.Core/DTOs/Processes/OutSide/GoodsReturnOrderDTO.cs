@@ -35,24 +35,22 @@ public class AddGoodsReturnOrderModel
     public string? Comment { get; set; }
 }
 
-public class AddGoodsReturnOrderDTO
+public class AddGoodsReturnOrderDTO : AddGeneralOrderDto
 {
     [Required(ErrorMessage = "Receipt Purchase Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Receipt Purchase Order ID must be greater than 0")]
     public int ReceiptPurchaseOrderId { get; set; }
 
+    [Required(ErrorMessage = "PostingDate is required")]
     public DateTime PostingDate { get; set; }
 
-    public DateTime DueDate { get; set; }
-
-    public string? Comment { get; set; }
-    public bool IsDraft { get; set; }
 }
 
 public class AddGoodsReturnOrderWithoutRefDTO
 {
 
     [Required(ErrorMessage = "Posting Date is required")]
+
     public DateTime PostingDate { get; set; }
     [Required(ErrorMessage = "Due Date is required")]
     public DateTime DueDate { get; set; }

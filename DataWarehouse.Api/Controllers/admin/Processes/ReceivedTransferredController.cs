@@ -35,7 +35,7 @@ public class ReceivedTransferredController : ControllerBase
     }
 
     [HttpPost("receive-quantities")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Edit}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Edit}")]
     public async Task<IActionResult> UpdateReceivedQuantities([FromBody] ReceiveTransferredStockDTO dto)
     {
         if (!ModelState.IsValid)
@@ -53,7 +53,7 @@ public class ReceivedTransferredController : ControllerBase
     }
 
     [HttpPatch("transferredStockId{transferredStockId}/complete-receiving")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Received_Edit}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Edit}")]
     public async Task<IActionResult> CompleteReceivingStatusIfDraft(int transferredStockId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

@@ -1,3 +1,4 @@
+using DataWarehouse.Domain.Validations;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -29,6 +30,7 @@ public class AddSalesReturnOrderDTO
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order ID must be greater than 0")]
     public int DeliveryNoteOrderId { get; set; }
     [Required(ErrorMessage = "Posting Date is required")]
+    [NotFutureDate]
     public DateTime PostingDate { get; set; }
     [Required(ErrorMessage = "Due Date is required")]
     public DateTime DueDate { get; set; }
@@ -41,6 +43,7 @@ public class AddSalesReturnOrderDTO
 public class AddSalesReturnOrderWithoutRefDTO
 {
     [Required(ErrorMessage = "Posting Date is required")]
+    [NotFutureDate]
     public DateTime PostingDate { get; set; }
     [Required(ErrorMessage = "Due Date is required")]
     public DateTime DueDate { get; set; }

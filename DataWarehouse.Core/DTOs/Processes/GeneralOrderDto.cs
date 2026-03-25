@@ -1,6 +1,7 @@
 ﻿using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Domain.Entities.Auth;
 using DataWarehouse.Domain.Enums.Approval;
+using DataWarehouse.Domain.Validations;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -29,6 +30,7 @@ namespace DataWarehouse.Core.DTOs.Processes
         public string Status { get; set; } // PurchaseStatus enum
         public int? ItemCount { get; set; }
 
+        [NotFutureDate]
         public DateTime? PostingDate { get; set; }
 
         [Required(ErrorMessage = "Due Date is required")]
@@ -44,6 +46,7 @@ namespace DataWarehouse.Core.DTOs.Processes
     public class AddGeneralOrderDto
     {
         [Required(ErrorMessage = "Posting Date is required")]
+        [NotFutureDate]
         public DateTime PostingDate { get; set; }
 
         [Required(ErrorMessage = "Due Date is required")]
@@ -54,6 +57,7 @@ namespace DataWarehouse.Core.DTOs.Processes
     }
     public class UpdateGeneralOrderDto
     {
+        [NotFutureDate]
         public DateTime? PostingDate { get; set; }
 
         public DateTime? DueDate { get; set; }

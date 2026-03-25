@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs.BarCode;
+using DataWarehouse.Domain.Validations;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -13,6 +14,7 @@ public class TransferredStockDTO : GeneralOrderDto
     public string? ReceivingStatus { get; set; }
 
 
+    public DateTime? PostingDate { get; set; }
 
 
     [Required(ErrorMessage = "Destination Warehouse ID is required")]
@@ -28,20 +30,14 @@ public class TransferredStockDTO : GeneralOrderDto
     public List<TransferredItemDTO>? TransferredItems { get; set; }
 }
 
-public class AddTransferredStockDTO
+public class AddTransferredStockDTO : AddGeneralOrderDto
 {
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
-
+    [NotFutureDate]
     public DateTime? PostingDate { get; set; }
 
     public string? Reference { get; set; }
 
-    public string? Comment { get; set; }
-
-    [Required(ErrorMessage = "IsDraft is required")]
-    public bool IsDraft { get; set; }
-
+  
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
@@ -59,17 +55,12 @@ public class AddTransferredStockDTO
 }
 
 
-public class AddTransferredStockWithoutRefDTO
+public class AddTransferredStockWithoutRefDTO : AddGeneralOrderDto
 {
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
-
-    public DateTime? PostingDate { get; set; }
+  
     public string? Reference { get; set; }
-    public string? Comment { get; set; }
 
-    [Required(ErrorMessage = "IsDraft is required")]
-    public bool IsDraft { get; set; }
+ 
 
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
@@ -80,21 +71,17 @@ public class AddTransferredStockWithoutRefDTO
     public int DistinationWarehouseId { get; set; }
 }
 
-public class UpdateTransferredStockDTO
+public class UpdateTransferredStockDTO : UpdateGeneralOrderDto
 {
     public int TransferredStockId { get; set; }
 
-    public DateTime? DueDate { get; set; }
-    public DateTime? PostingDate { get; set; }
-
+  
     public string? Reference { get; set; }
 
-    public string? Comment { get; set; }
 
     [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
     public int? DistinationWarehouseId { get; set; }
 
-    public bool IsDraft { get; set; }
 }
 
 public class TransferredItemDTO : GeneralItemDto
@@ -109,9 +96,7 @@ public class TransferredItemDTO : GeneralItemDto
     [Range(1, int.MaxValue, ErrorMessage = "Transferred Stock ID must be greater than 0")]
     public int TransferredStockId { get; set; }
 
-    [Required(ErrorMessage = "Item ID is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
-    public int ItemId { get; set; }
+   
 
     public int? TransferredRequestItemId { get; set; }
  

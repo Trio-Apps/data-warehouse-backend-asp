@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs.BarCode;
+using DataWarehouse.Domain.Validations;
 using System.ComponentModel.DataAnnotations;
 
 namespace DataWarehouse.Core.DTOs.Processes;
@@ -7,9 +8,9 @@ public class TransferredRequestDTO : GeneralOrderDto
 {
     public int TransferredRequestId { get; set; }
 
-  
 
-  
+    public DateTime? PostingDate { get; set; }
+
     [Required(ErrorMessage = "Destination Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
     public int DistinationWarehouseId { get; set; }
@@ -21,15 +22,11 @@ public class TransferredRequestDTO : GeneralOrderDto
     public List<TransferredRequestItemDTO>? Items { get; set; }
 }
 
-public class AddTransferredRequestDTO
+public class AddTransferredRequestDTO : AddGeneralOrderDto
 {
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
 
-    public string? Comment { get; set; }
-
-    [Required(ErrorMessage = "IsDraft is required")]
-    public bool IsDraft { get; set; }
+    [NotFutureDate]
+    public DateTime? PostingDate { get; set; }
 
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
@@ -40,70 +37,40 @@ public class AddTransferredRequestDTO
     public int DistinationWarehouseId { get; set; }
 }
 
-public class UpdateTransferredRequestDTO
+public class UpdateTransferredRequestDTO : UpdateGeneralOrderDto
 {
     [Required(ErrorMessage = "TransferredRequestId is required")]
     public int TransferredRequestId { get; set; }
 
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
-
-    public string? Comment { get; set; }
+  
 
     [Required(ErrorMessage = "Destination Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
     public int DistinationWarehouseId { get; set; }
 
-    public bool IsDraft { get; set; }
 }
 
-public class TransferredRequestItemDTO
+public class TransferredRequestItemDTO  : GeneralItemDto
 {
     public int TransferredRequestItemId { get; set; }
 
-    [Required(ErrorMessage = "Quantity is required")]
-    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
-    public decimal Quantity { get; set; }
-
-    [Required(ErrorMessage = "Status is required")]
-    public string Status { get; set; }
-
-    public string? ErrorMessage { get; set; }
-    public int UoMEntry { get; set; }
-    public string? BarCode { get; set; }
-    public decimal? UnitPrice { get; set; }
-    public string? Comment { get; set; }
 
     [Required(ErrorMessage = "Transferred Request ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Transferred Request ID must be greater than 0")]
     public int TransferredRequestId { get; set; }
 
-    [Required(ErrorMessage = "Item ID is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
-    public int ItemId { get; set; }
-
-    public string? ItemCode { get; set; }
-    public string? ItemName { get; set; }
-    public string? UnitName { get; set; }
+   
 }
 
-public class AddTransferredRequestItemDTO
+public class AddTransferredRequestItemDTO : AddGeneralItemDto
 {
-    [Required(ErrorMessage = "Unit is required")]
-    public int UoMEntry { get; set; }
 
-    [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
-    public decimal Quantity { get; set; }
 
     [Required(ErrorMessage = "Transferred Request ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Transferred Request ID must be greater than 0")]
     public int TransferredRequestId { get; set; }
 
-    [Required(ErrorMessage = "Item ID is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
-    public int ItemId { get; set; }
 
-    public decimal? UnitPrice { get; set; }
 }
 
 public class UpdateTransferredRequestItemDTO

@@ -1,5 +1,6 @@
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Auth;
+using DataWarehouse.Domain.Validations;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -30,20 +31,18 @@ public class PurchaseOrderDTO : GeneralOrderDto
     
     public List<PurchaseOrderItemDTO>? PurchaseOrderItems { get; set; }
 }
-public class AddPurchaseOrderDTO 
+public class AddPurchaseOrderDTO : AddGeneralOrderDto
 {
 
     [Required(ErrorMessage = "Posting Date is required")]
+    [NotFutureDate]
     public DateTime PostingDate { get; set; }
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
-    public string? Comment { get; set; }
+  
 
     [Required(ErrorMessage = "Supplier is required")]
     public int SupplierId { get; set; }
 
-    [Required(ErrorMessage = "IsDraft is required")]
-    public bool IsDraft { get; set; }
+ 
 
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
@@ -54,14 +53,8 @@ public class AddPurchaseOrderDTO
 
 
 }
-public class UpdatePurchaseOrderDTO
+public class UpdatePurchaseOrderDTO : UpdateGeneralOrderDto
 {
     public int PurchaseOrderId { get; set; }
-
-    public DateTime? PostingDate { get; set; }
-
-    public DateTime? DueDate { get; set; }
-
     public int? SupplierId { get; set; }
-    public bool IsDraft { get; set; }
 }
