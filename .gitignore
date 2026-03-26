@@ -34,3 +34,6 @@ Thumbs.db
 
 # Publish
 publish/DataWarehouse.Api/firebase.json 
+firebase.json
+*.json
+DataWarehouse.Api/firebase.json

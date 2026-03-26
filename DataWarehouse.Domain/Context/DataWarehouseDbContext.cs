@@ -16,14 +16,56 @@ using DataWarehouse.Domain.Entities.Actors.IncrementalSync;
 using DataWarehouse.Domain.Entities.AllinAll;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
+using DataWarehouse.Domain.Entities.Notifications;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
+using DataWarehouse.Domain.Enums;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Text.RegularExpressions;
 
 namespace DataWarehouse.Domain.Context;
 
 
 public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,ApplicationRole,string>
 {
+    private bool _isWritingNotifications;
+
     public DataWarehouseDbContext(DbContextOptions<DataWarehouseDbContext> options) : base(options)
     {
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        if (_isWritingNotifications)
+        {
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        var notificationEvents = CaptureOrderNotificationEvents();
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        if (notificationEvents.Count == 0)
+        {
+            return result;
+        }
+
+        var notifications = BuildNotifications(notificationEvents);
+        if (notifications.Count == 0)
+        {
+            return result;
+        }
+
+        _isWritingNotifications = true;
+        try
+        {
+            await Notifications.AddRangeAsync(notifications, cancellationToken);
+            await base.SaveChangesAsync(cancellationToken);
+        }
+        finally
+        {
+            _isWritingNotifications = false;
+        }
+
+        return result;
     }
 
 
@@ -962,6 +1004,19 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
           .HasPrincipalKey(e => e.WarehouseId)
           .OnDelete(DeleteBehavior.NoAction);
 
+        builder.Entity<ApplicationUser>()
+            .HasMany(o => o.Notifications)
+            .WithOne(a => a.User)
+            .HasForeignKey(o => o.UserId)
+            .HasPrincipalKey(e => e.Id)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Notification>()
+            .ToTable("Notifications");
+
+        builder.Entity<Notification>()
+            .HasKey(x => x.NotificationId);
+
 
         builder.Entity<ApplicationUser>()
       .HasMany(o => o.SapSyncStatusFronts).WithOne(a => a.User)
@@ -1303,6 +1358,7 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     #region Permissions
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
     #endregion
 
     #region incremental
@@ -1327,5 +1383,197 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     public DbSet<CompanyUser> CompanyUsers { get; set; }
     #endregion
 
+    private List<OrderNotificationEvent> CaptureOrderNotificationEvents()
+    {
+        var entries = ChangeTracker.Entries()
+            .Where(entry =>
+                entry.Entity is IOrder &&
+                entry.Entity is not Notification &&
+                (entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.State == EntityState.Deleted))
+            .ToList();
+
+        var events = new List<OrderNotificationEvent>();
+
+        foreach (var entry in entries)
+        {
+            if (entry.Entity is not IOrder order)
+            {
+                continue;
+            }
+
+            var userId = GetUserId(entry);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                continue;
+            }
+
+            var documentType = FormatDocumentType(entry.Entity.GetType().Name);
+            var processType = FormatProcessType(entry.Entity.GetType().Name);
+
+            if (entry.State == EntityState.Added)
+            {
+                events.Add(new OrderNotificationEvent(entry, userId, "Created", documentType, processType, order.Id));
+
+                if (order.Status == GeneralStatus.Processing)
+                {
+                    events.Add(new OrderNotificationEvent(entry, userId, "Submitted", documentType, processType, order.Id));
+                }
+
+                continue;
+            }
+
+            if (entry.State == EntityState.Deleted)
+            {
+                events.Add(new OrderNotificationEvent(entry, userId, "Deleted", documentType, processType, order.Id));
+                continue;
+            }
+
+            if (entry.State == EntityState.Modified)
+            {
+                var statusProperty = entry.Properties.FirstOrDefault(property => property.Metadata.Name == nameof(IOrder.Status));
+                var statusChanged = statusProperty?.IsModified == true;
+                var originalStatus = statusChanged && statusProperty?.OriginalValue is GeneralStatus original
+                    ? original
+                    : order.Status;
+                var currentStatus = statusChanged && statusProperty?.CurrentValue is GeneralStatus current
+                    ? current
+                    : order.Status;
+
+                if (statusChanged && originalStatus == GeneralStatus.Draft && currentStatus == GeneralStatus.Processing)
+                {
+                    events.Add(new OrderNotificationEvent(entry, userId, "Submitted", documentType, processType, order.Id));
+                }
+                else
+                {
+                    events.Add(new OrderNotificationEvent(entry, userId, "Updated", documentType, processType, order.Id));
+                }
+            }
+        }
+
+        return events;
+    }
+
+    private List<Notification> BuildNotifications(IEnumerable<OrderNotificationEvent> events)
+    {
+        return events
+            .GroupBy(notificationEvent => new
+            {
+                notificationEvent.UserId,
+                notificationEvent.ActionType,
+                notificationEvent.DocumentType,
+                ReferenceId = ResolveReferenceId(notificationEvent)
+            })
+            .Select(group => group.First())
+            .Select(notificationEvent => new Notification
+            {
+                UserId = notificationEvent.UserId,
+                Title = $"{TranslateDocumentType(notificationEvent.DocumentType)} {TranslateActionType(notificationEvent.ActionType)}",
+                Message = $"{TranslateDocumentType(notificationEvent.DocumentType)} رقم {ResolveReferenceId(notificationEvent)} تم {TranslateActionMessage(notificationEvent.ActionType)}.",
+                ActionType = TranslateActionType(notificationEvent.ActionType),
+                DocumentType = TranslateDocumentType(notificationEvent.DocumentType),
+                ProcessType = notificationEvent.ProcessType,
+                ReferenceId = ResolveReferenceId(notificationEvent),
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow,
+                ReadAt = null
+            })
+            .ToList();
+    }
+
+    private static int ResolveReferenceId(OrderNotificationEvent notificationEvent)
+    {
+        if (notificationEvent.ReferenceId > 0)
+        {
+            return notificationEvent.ReferenceId;
+        }
+
+        if (notificationEvent.Entry.Entity is IOrder order)
+        {
+            return order.Id;
+        }
+
+        return 0;
+    }
+
+    private static string? GetUserId(EntityEntry entry)
+    {
+        var userProperty = entry.Properties.FirstOrDefault(property => property.Metadata.Name == "UserId");
+        var currentUserId = userProperty?.CurrentValue?.ToString();
+        if (!string.IsNullOrWhiteSpace(currentUserId))
+        {
+            return currentUserId;
+        }
+
+        return userProperty?.OriginalValue?.ToString();
+    }
+
+    private static string FormatDocumentType(string typeName)
+    {
+        return Regex.Replace(typeName, "(?<=[a-z])([A-Z])", " $1").Trim();
+    }
+
+    private static string FormatProcessType(string typeName)
+    {
+        return typeName
+            .Replace("Order", string.Empty)
+            .Replace("Stock", string.Empty)
+            .Trim();
+    }
+
+    private static string TranslateDocumentType(string documentType)
+    {
+        return documentType switch
+        {
+            "Purchase Order" => "أمر الشراء",
+            "Receipt Purchase Order" => "أمر الاستلام",
+            "Production Order" => "أمر الإنتاج",
+            "Sales Order" => "أمر البيع",
+            "Delivery Note Order" => "أمر التسليم",
+            "Sales Return Order" => "أمر المرتجع",
+            "Goods Return Order" => "أمر مرتجع المشتريات",
+            "Count Stock" => "أمر الجرد",
+            "Received Stock" => "أمر الاستلام المخزني",
+            "Transferred Request" => "طلب تحويل",
+            "Transferred Stock" => "أمر التحويل",
+            "Quantity Adjustment" => "أمر تسوية الكمية",
+            _ => documentType
+        };
+    }
+
+    private static string TranslateActionType(string actionType)
+    {
+        return actionType switch
+        {
+            "Created" => "تم الإنشاء",
+            "Updated" => "تم التعديل",
+            "Deleted" => "تم الحذف",
+            "Submitted" => "تم الإرسال",
+            "Approved" => "تمت الموافقة",
+            "Rejected" => "تم الرفض",
+            _ => actionType
+        };
+    }
+
+    private static string TranslateActionMessage(string actionType)
+    {
+        return actionType switch
+        {
+            "Created" => "إنشاؤه",
+            "Updated" => "تعديله",
+            "Deleted" => "حذفه",
+            "Submitted" => "إرساله",
+            "Approved" => "الموافقة عليه",
+            "Rejected" => "رفضه",
+            _ => actionType
+        };
+    }
+
+    private sealed record OrderNotificationEvent(
+        EntityEntry Entry,
+        string UserId,
+        string ActionType,
+        string DocumentType,
+        string ProcessType,
+        int ReferenceId);
 
 }
