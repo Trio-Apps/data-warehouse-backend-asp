@@ -9,6 +9,8 @@ namespace DataWarehouse.Core.DTOs.Processes;
 public class TransferredStockDTO : GeneralOrderDto
 {
     public int TransferredStockId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
     public string? Reference { get; set; }
     public string? ReceivingStatus { get; set; }
@@ -50,6 +52,7 @@ public class AddTransferredStockDTO : AddGeneralOrderDto
     [Required(ErrorMessage = "TransferredRequestId is required")]
     [Range(1, int.MaxValue, ErrorMessage = "TransferredRequestId must be greater than 0")]
     public int TransferredRequestId { get; set; }
+    public int? ReasonId { get; set; }
 
     
 }
@@ -69,11 +72,13 @@ public class AddTransferredStockWithoutRefDTO : AddGeneralOrderDto
     [Required(ErrorMessage = "Destination Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
     public int DistinationWarehouseId { get; set; }
+    public int? ReasonId { get; set; }
 }
 
 public class UpdateTransferredStockDTO : UpdateGeneralOrderDto
 {
     public int TransferredStockId { get; set; }
+    public int? ReasonId { get; set; }
 
   
     public string? Reference { get; set; }
@@ -140,7 +145,7 @@ public class AddTransferredItemCreateRequest
 {
     public DynamicBarcodesDto? Barcode { get; set; }
 
-    public AddTransferredItemDTO? Item { get; set; }
+    public AddGeneralItemDto? Item { get; set; }
 }
 
 public class TransferredStockBatchDTO
@@ -204,6 +209,8 @@ public class UpdateTransferredStockBatchDTO
 public class TransferredStockResponseDTO
 {
     public int TransferredStockId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
     public string Status { get; set; }
     public string? ReceivingStatus { get; set; }
     public DateTime DueDate { get; set; }

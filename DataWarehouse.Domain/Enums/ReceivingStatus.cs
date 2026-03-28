@@ -8,6 +8,6 @@ namespace DataWarehouse.Domain.Enums
 {
     public enum ReceivingStatus
     {
-      InTransit = 1,Draft=2, Completed = 3, PartiallyReceived = 4
+     NoProcessing=1, InTransit = 2,Draft=3, Completed = 4, PartiallyReceived = 5
     }
 }

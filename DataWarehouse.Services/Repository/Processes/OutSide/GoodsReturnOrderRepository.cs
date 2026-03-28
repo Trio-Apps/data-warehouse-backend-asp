@@ -1,4 +1,4 @@
-Ôªøusing DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
@@ -11,6 +11,7 @@ using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using DataWarehouse.Services.Repository.Processes;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataWarehouse.Services.Repository.Processes.OutSide;
@@ -20,20 +21,23 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
     private readonly IBaseProcessesRepository<GoodsReturnOrder> baseProcesses;
     private readonly IProcessItemIsProgressRepository progress;
     private readonly IApprovalRepository approval;
+    private readonly ReasonValidationService reasonValidationService;
     public GoodsReturnOrderRepository(
         IBaseProcessesRepository<GoodsReturnOrder> baseProcesses,
         IProcessItemIsProgressRepository progress,
         IApprovalRepository approval,
+        ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.progress = progress;
         this.approval = approval;
+        this.reasonValidationService = reasonValidationService;
     }
 
     public async Task<IEnumerable<GoodsReturnOrder>> GetByWarehouseIdAsync(int warehouseId)
     {
-        return await Query().Where(gro => gro.WarehouseId == warehouseId).ToListAsync();
+        return await Query().Include(gro => gro.Reason).Where(gro => gro.WarehouseId == warehouseId).ToListAsync();
     }
 
     public async Task<GeneralResponse<PagedResult<GoodsReturnOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
@@ -44,6 +48,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         var query = _context.GoodsReturnOrders
             .AsNoTracking()
+            .Include(gro => gro.Reason)
             .Where(gro => gro.WarehouseId == warehouseId);
 
 
@@ -51,7 +56,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         {
             query = query.Where(e => e.SupplierId == supplierId);
         }
-        // üîπ Filtering
+        // ?? Filtering
         if (!string.IsNullOrEmpty(status))
         {
             if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
@@ -59,13 +64,13 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 query = query.Where(e => e.Status == statusEnum);
             }
         }
-        // üîπ Posting Date Filter
+        // ?? Posting Date Filter
         if (postingDate.HasValue)
         {
             var postDate = postingDate.Value.Date;
             query = query.Where(e => e.PostingDate.Date == postDate);
         }
-        // üîπ Due Date Filter
+        // ?? Due Date Filter
         if (DueDate.HasValue)
         {
             var dueDate = DueDate.Value.Date;
@@ -74,7 +79,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
 
 
-        query = query.OrderByDescending(e => e.CreatedAt); // ÿ™ÿ£ŸÉÿØ ŸáŸÜÿß
+        query = query.OrderByDescending(e => e.CreatedAt); //  √ﬂœ Â‰«
 
         var totalRecords = await query.CountAsync();
 
@@ -88,12 +93,12 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
          .Select(iw => new
          {
              Order = iw,
-             // ŸáŸÑ ŸÅŸäŸá progress ÿ£ÿµŸÑÿßŸãÿü
+             // Â· ›ÌÂ progress √’·«ø
              HasProgress = processQuery.Any(p => p.ReferenceId == iw.GoodsReturnOrderId),
-             // ÿ¢ÿÆÿ± Status (ŸÑŸà ŸÖŸàÿ¨ŸàÿØ)
+             // ¬Œ— Status (·Ê „ÊÃÊœ)
              LatestStatus = processQuery
                  .Where(p => p.ReferenceId == iw.GoodsReturnOrderId)
-                 .OrderByDescending(p => p.ProcessItemIsProgressId) // ÿ£Ÿà CreatedAt ŸÑŸà ÿπŸÜÿØŸÉ
+                 .OrderByDescending(p => p.ProcessItemIsProgressId) // √Ê CreatedAt ·Ê ⁄‰œﬂ
                  .Select(p => (ProcessStatus?)p.Status)
                  .FirstOrDefault()
          })
@@ -111,11 +116,13 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 SupplierName = x.Order.Supplier.SupplierName,
                 SupplierCode = x.Order.Supplier.SupplierCode,
                 ItemCount = x.Order.GoodsReturnOrderItems.Count(),
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
 
-                // ‚úÖ Ÿàÿ¨ŸàÿØ progress
+                // ? ÊÃÊœ progress
                 Approval = x.HasProgress,
 
-                // ‚úÖ ÿßÿ≥ŸÖ ÿßŸÑÿ≠ÿßŸÑÿ© ÿßŸÑÿ≠ÿßŸÑŸäÿ© (ÿ¢ÿÆÿ± Status)
+                // ? «”„ «·Õ«·… «·Õ«·Ì… (¬Œ— Status)
                 ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
 
             })
@@ -135,6 +142,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
     {
         var res = await _context.GoodsReturnOrders
             .Include(g => g.Supplier)
+            .Include(g => g.Reason)
             .FirstOrDefaultAsync(rpo => rpo.GoodsReturnOrderId == goodsReturnOrderId);
 
         if (res == null)
@@ -158,6 +166,8 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             SupplierCode = res.Supplier.SupplierCode,
             ErrorMessage = res.ErrorMessage,
             CreatedAt = res.CreatedAt,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null,
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
             ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
@@ -173,6 +183,14 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
     // without reference
     public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderWithoutRefAsync(string userId, AddGoodsReturnOrderWithoutRefDTO dto)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.GoodsReturn);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse(ex.Message);
+        }
        
         var suppler = await _context.Suppliers.FirstOrDefaultAsync(p => p.SupplierId == dto.SupplierId);
 
@@ -191,13 +209,14 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             WarehouseId = dto.WarehouseId,
             Comment = dto.Comment,
             SupplierId = dto.SupplierId,
+            ReasonId = dto.ReasonId,
         };
 
 
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
 
-        // ‚úÖ ÿ¥ÿ∫ŸÑ ÿßŸÑŸÄ Approval Workflow ŸÑŸà ŸÖÿ¥ Draft
+        // ? ‘€· «·‹ Approval Workflow ·Ê „‘ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -213,6 +232,8 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             SupplierId = res.SupplierId,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null,
         };
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(model);
@@ -221,6 +242,14 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
     // ref
     public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderAsync(string userId, AddGoodsReturnOrderDTO dto)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.GoodsReturn);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse(ex.Message);
+        }
 
         var receiptOrder = await _context.ReceiptPurchaseOrders.FirstOrDefaultAsync(p => p.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
 
@@ -244,14 +273,15 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             WarehouseId = receiptOrder.WarehouseId,
             Comment = dto.Comment,
             SupplierId = receiptOrder.SupplierId,
-            ReceiptPurchaseOrderId = dto.ReceiptPurchaseOrderId
+            ReceiptPurchaseOrderId = dto.ReceiptPurchaseOrderId,
+            ReasonId = dto.ReasonId
         };
 
 
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
 
-        // ‚úÖ ÿ¥ÿ∫ŸÑ ÿßŸÑŸÄ Approval Workflow ŸÑŸà ŸÖÿ¥ Draft
+        // ? ‘€· «·‹ Approval Workflow ·Ê „‘ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -267,6 +297,8 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             SupplierId = res.SupplierId,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null,
         };
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(model);
@@ -276,9 +308,18 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
     string userId,
     AddGoodsReturnOrderDTO dto)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.GoodsReturn);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse(ex.Message);
+        }
+
         var receiptOrder = await _context.ReceiptPurchaseOrders
             .Include(p => p.GoodsReturnOrder)
-            .Include(p => p.ReceiptPurchaseOrderItems) // ‚úÖ Ÿáÿßÿ™ items
+            .Include(p => p.ReceiptPurchaseOrderItems) // ? Â«  items
             .FirstOrDefaultAsync(p => p.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
 
         if (receiptOrder == null)
@@ -308,8 +349,9 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             Comment = dto.Comment,
             SupplierId = receiptOrder.SupplierId,
             ReceiptPurchaseOrderId = dto.ReceiptPurchaseOrderId,
+            ReasonId = dto.ReasonId,
 
-            // ‚úÖ Copy PO items -> Receipt PO items
+            // ? Copy PO items -> Receipt PO items
             GoodsReturnOrderItems = receiptOrder.ReceiptPurchaseOrderItems.Select(poi => new GoodsReturnOrderItem
             {
                 ReceiptPurchaseOrderItemId = poi.ReceiptPurchaseOrderItemId,
@@ -319,7 +361,15 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 BarCode = poi.BarCode,
                 UnitPrice = poi.UnitPrice,
 
-                // ŸÖŸÜÿ∑ŸÇ ÿßŸÑÿ≥ÿ™ÿßÿ™ÿ≥: ŸÑÿ≥Ÿá ÿßŸÑÿßÿ≥ÿ™ŸÑÿßŸÖ ŸÖÿß ÿ™ŸÖÿ¥
+                VatPercent = poi.VatPercent,
+
+                VatAmount = poi.VatAmount,
+
+                LineTotalBeforeVat = poi.LineTotalBeforeVat,
+
+                LineTotalAfterVat = poi.LineTotalAfterVat,
+
+                // „‰ÿﬁ «·” « ”: ·”Â «·«” ·«„ „«  „‘
                 Status = GeneralItemStatus.Planned,
 
                 // optional
@@ -331,7 +381,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         await _context.GoodsReturnOrders.AddAsync(returnOrder);
         await SaveChangesAsync();
 
-        // ‚úÖ ÿ¥ÿ∫ŸÑ ÿßŸÑŸÄ Approval Workflow ŸÑŸà ŸÖÿ¥ Draft
+        // ? ‘€· «·‹ Approval Workflow ·Ê „‘ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -352,7 +402,9 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             WarehouseId = returnOrder.WarehouseId,
             GoodsReturnOrderId = returnOrder.GoodsReturnOrderId,
             SupplierId = returnOrder.SupplierId,
-            Comment = returnOrder.Comment
+            Comment = returnOrder.Comment,
+            ReasonId = returnOrder.ReasonId,
+            ReasonName = returnOrder.Reason != null ? returnOrder.Reason.Name : null
         };
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(model);
@@ -360,6 +412,15 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
     public async Task<GeneralResponse<GoodsReturnOrderDTO>> UpdateGoodsReturnOrderAsync(string userId, int goodsReturnOrderId, UpdateGoodsReturnOrderDTO dto)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.GoodsReturn);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse(ex.Message);
+        }
+
         var entity = await _context.GoodsReturnOrders.FirstOrDefaultAsync(e => e.GoodsReturnOrderId == goodsReturnOrderId);
 
         if (entity == null)
@@ -395,6 +456,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         if (dto.SupplierId.HasValue)
             entity.SupplierId = dto.SupplierId.Value;
+        entity.ReasonId = dto.ReasonId;
 
         entity.Comment = dto.Comment ?? entity.Comment;
 
@@ -424,7 +486,9 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             WarehouseId = entity.WarehouseId,
             SupplierId = entity.SupplierId,
             ReceiptPurchaseOrderId = entity.ReceiptPurchaseOrderId,
-            Comment = entity.Comment
+            Comment = entity.Comment,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(result);
@@ -449,7 +513,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse(
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
-        // Snapshot ŸÇÿ®ŸÑ ÿßŸÑÿ≠ÿ∞ŸÅ ÿπŸÑÿ¥ÿßŸÜ ŸÜÿ±ÿ¨ÿπŸá ŸÅŸä ÿßŸÑŸÄ response
+        // Snapshot ﬁ»· «·Õ–› ⁄·‘«‰ ‰—Ã⁄Â ›Ì «·‹ response
         var result = new GoodsReturnOrderDTO
         {
             GoodsReturnOrderId = entity.GoodsReturnOrderId,
@@ -459,7 +523,9 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             SupplierId = entity.SupplierId,
-            Comment = entity.Comment
+            Comment = entity.Comment,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
         _context.GoodsReturnOrders.Remove(entity);
@@ -483,6 +549,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         var res = await _context.GoodsReturnOrders.AsNoTracking()
             .Include(r => r.ReceiptPurchaseOrder)
             .Include(e => e.Supplier)
+            .Include(e => e.Reason)
             .Include(e => e.GoodsReturnOrderItems)
                 .ThenInclude(i => i.Item)
                 .ThenInclude(i => i.ItemUomGroups)
@@ -504,6 +571,8 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             DueDate = res.ReceiptPurchaseOrder.DueDate,
             PostingDate = res.ReceiptPurchaseOrder.PostingDate,
             Status = res.Status.ToString(),
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null,
 
 
             Items = res.GoodsReturnOrderItems.Select(e => new GoodsReturnOrderItemDTO
@@ -519,6 +588,10 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 GoodsReturnOrderId = e.GoodsReturnOrderId,
                 ReceiptPurchaseOrderItemId = e.ReceiptPurchaseOrderItemId,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 UoMEntry = e.UoMEntry,
                 UnitName = e.Item.ItemUomGroups.FirstOrDefault(i => i.UomEntry == e.UoMEntry).UomCode,
 
@@ -558,12 +631,12 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
   
     public async Task<IEnumerable<GoodsReturnOrder>> GetByUserIdAsync(string userId)
     {
-        return await Query().Where(gro => gro.UserId == userId).ToListAsync();
+        return await Query().Include(gro => gro.Reason).Where(gro => gro.UserId == userId).ToListAsync();
     }
 
     public async Task<GoodsReturnOrder?> GetWithItemsAsync(int goodsReturnOrderId)
     {
-        return await QueryIncluding(false, gro => gro.GoodsReturnOrderItems)
+        return await QueryIncluding(false, gro => gro.GoodsReturnOrderItems, gro => gro.Reason)
             .FirstOrDefaultAsync(gro => gro.GoodsReturnOrderId == goodsReturnOrderId);
     }
 
@@ -581,6 +654,8 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 ReceiptPurchaseOrderId = g.ReceiptPurchaseOrderId,
                 WarehouseCode = g.Warehouse.WarehouseCode,
                 SupplierName = g.Supplier.SupplierName,
+                ReasonId = g.ReasonId,
+                ReasonName = g.Reason != null ? g.Reason.Name : null,
                 Items = g.GoodsReturnOrderItems.Select(i => new GoodsReturnOrderItemDTO
                 {
                     GoodsReturnOrderItemId = i.GoodsReturnOrderItemId,
@@ -588,6 +663,10 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                     UoMEntry = i.UoMEntry,
                     BarCode = i.BarCode,
                     UnitPrice = i.UnitPrice,
+                    VatPercent = i.VatPercent,
+                    VatAmount = i.VatAmount,
+                    LineTotalBeforeVat = i.LineTotalBeforeVat,
+                    LineTotalAfterVat = i.LineTotalAfterVat,
                     ErrorMessage = i.ErrorMessage,
                     Comment = i.Comment,
                     GoodsReturnOrderId = i.GoodsReturnOrderId,
@@ -615,19 +694,28 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
     public async Task<GoodsReturnOrder?> GetWithReceiptPurchaseOrderAsync(int goodsReturnOrderId)
     {
-        return await QueryIncluding(false, gro => gro.ReceiptPurchaseOrder)
+        return await QueryIncluding(false, gro => gro.ReceiptPurchaseOrder, gro => gro.Reason)
             .FirstOrDefaultAsync(gro => gro.GoodsReturnOrderId == goodsReturnOrderId);
     }
 
     public async Task<GoodsReturnOrder?> GetWithWarehouseAsync(int goodsReturnOrderId)
     {
-        return await QueryIncluding(false, gro => gro.Warehouse)
+        return await QueryIncluding(false, gro => gro.Warehouse, gro => gro.Reason)
             .FirstOrDefaultAsync(gro => gro.GoodsReturnOrderId == goodsReturnOrderId);
     }
 
     // inside
     public async Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderByReceiptPurchaseOrderIdAsync(string userId, AddGoodsReturnOrderModel dto)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.GoodsReturn);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse(ex.Message);
+        }
+
         var receiptPurchaseOrder = await _context.ReceiptPurchaseOrders
             .Include(rpo => rpo.GoodsReturnOrder)
             .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
@@ -650,7 +738,8 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             PostingDate = receiptPurchaseOrder.PostingDate,
             ReceiptPurchaseOrderId = dto.ReceiptPurchaseOrderId,
             Status = GeneralStatus.Draft,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            ReasonId = dto.ReasonId
         };
 
 
@@ -665,7 +754,9 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             SupplierId = res.SupplierId,
-            ReceiptPurchaseOrderId = res.ReceiptPurchaseOrderId
+            ReceiptPurchaseOrderId = res.ReceiptPurchaseOrderId,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null
         };
 
         return GeneralResponse<GoodsReturnOrderDTO>.SuccessResponse(model);
@@ -673,3 +764,4 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
 
 }
+

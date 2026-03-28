@@ -58,31 +58,70 @@ namespace DataWarehouse.Services.Repository.Permissions
             // 3) Assign permissions to roles (DB join table)
             var permissions = await db.Permissions.ToListAsync();
 
-            async Task GrantAll(ApplicationRole role)
+
+
+
+            //async Task GrantAll(ApplicationRole role)
+            //{
+            //    var roleId = role.Id;
+
+            //    var toAdd = permissions
+            //        .Where(p => !db.RolePermissions.Any(rp => rp.RoleId == roleId && rp.PermissionId == p.PermissionId))
+            //        .Select(p => new RolePermission { RoleId = roleId, PermissionId = p.PermissionId })
+            //        .ToList();
+
+            //    if (toAdd.Count > 0)
+            //    {
+            //        db.RolePermissions.AddRange(toAdd);
+            //        await db.SaveChangesAsync();
+            //    }
+
+            //}
+
+
+
+            //// مثال: SuperAdmin ياخد كل حاجة
+            //await GrantAll(superRole);
+
+            // Admin ياخد مجموعة معينة (مثال)
+            var superPermKeys = new[]
+  {
+    // Companies
+    AppPermissions.Companys_Create,
+    AppPermissions.Companys_Edit,
+    AppPermissions.Companys_Delete,
+    AppPermissions.Companys_Get,
+
+    // Users
+    AppPermissions.Users_Create,
+        AppPermissions.Users_Get,
+    AppPermissions.Users_Edit,
+    AppPermissions.Users_Delete,
+
+
+    // Roles
+    AppPermissions.Roles_Create,
+    AppPermissions.Roles_Get,
+    AppPermissions.Roles_Edit,
+    AppPermissions.Roles_Delete
+};
+            // var adminPermKeys = new List<string>();
+            var superPerms = permissions.Where(p => superPermKeys.Contains(p.Key)).ToList();
+
+            foreach (var p in superPerms)
             {
-                var roleId = role.Id;
+                var exists = await db.RolePermissions.AnyAsync(rp => rp.RoleId == superRole.Id && rp.PermissionId == p.PermissionId);
 
-                var toAdd = permissions
-                    .Where(p => !db.RolePermissions.Any(rp => rp.RoleId == roleId && rp.PermissionId == p.PermissionId))
-                    .Select(p => new RolePermission { RoleId = roleId, PermissionId = p.PermissionId })
-                    .ToList();
-
-                if (toAdd.Count > 0)
-                {
-                    db.RolePermissions.AddRange(toAdd);
-                    await db.SaveChangesAsync();
-                }
-
+                if (!exists)
+                    db.RolePermissions.Add(new RolePermission { RoleId = superRole.Id, PermissionId = p.PermissionId });
             }
 
 
 
-            // مثال: SuperAdmin ياخد كل حاجة
-            await GrantAll(superRole);
-
             // Admin ياخد مجموعة معينة (مثال)
-            // var adminPermKeys = new[] { AppPermissions.Users_Create, AppPermissions.Users_Edit };
-            var adminPermKeys = new List<string>();
+            var adminPermKeys = new[] { AppPermissions.Companys_Create, AppPermissions.Companys_Edit, AppPermissions.Companys_Delete
+             };
+           // var adminPermKeys = new List<string>();
             var adminPerms = permissions.Where(p => !adminPermKeys.Contains(p.Key)).ToList();
 
             foreach (var p in adminPerms)

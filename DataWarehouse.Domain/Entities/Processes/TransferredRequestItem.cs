@@ -19,6 +19,10 @@ public class TransferredRequestItem : IOrderItem
         public string? BarCode { get; set; }
         public GeneralItemStatus Status { get; set; }
         public decimal? UnitPrice { get; set; }
+        public decimal? VatPercent { get; set; }
+        public decimal? VatAmount { get; set; }
+        public decimal? LineTotalBeforeVat { get; set; }
+        public decimal? LineTotalAfterVat { get; set; }
         public string? ErrorMessage { get; set; }
         public string? Comment { get; set; }
         public int? LineNum { get; set; }

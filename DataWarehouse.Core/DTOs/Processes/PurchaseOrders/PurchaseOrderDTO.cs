@@ -11,6 +11,8 @@ namespace DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 public class PurchaseOrderDTO : GeneralOrderDto
 {
     public int PurchaseOrderId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
 
     public string? Comment { get; set; }
@@ -47,6 +49,7 @@ public class AddPurchaseOrderDTO : AddGeneralOrderDto
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
+    public int? ReasonId { get; set; }
 
     // Attachments
  //   public List<IFormFile>? Attachments { get; set; } = new();
@@ -57,4 +60,5 @@ public class UpdatePurchaseOrderDTO : UpdateGeneralOrderDto
 {
     public int PurchaseOrderId { get; set; }
     public int? SupplierId { get; set; }
+    public int? ReasonId { get; set; }
 }

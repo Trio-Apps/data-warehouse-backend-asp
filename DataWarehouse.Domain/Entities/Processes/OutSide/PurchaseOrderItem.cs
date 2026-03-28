@@ -24,6 +24,14 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
 
         public int? LineNum { get; set; }
 
+        // VAT
+        public decimal? VatPercent { get; set; }
+        public decimal? VatAmount { get; set; }
+
+        // Totals
+        public decimal? LineTotalBeforeVat { get; set; }
+        public decimal? LineTotalAfterVat { get; set; }
+
         [NotMapped]
         public int OrderId
         {

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataWarehouse.Domain.Migrations
 {
     /// <inheritdoc />
-    public partial class generlTables : Migration
+    public partial class generalTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -254,6 +254,27 @@ namespace DataWarehouse.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Reasons",
+                columns: table => new
+                {
+                    ReasonId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProcessType = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CompanyId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reasons", x => x.ReasonId);
+                    table.ForeignKey(
+                        name: "FK_Reasons_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Companies",
+                        principalColumn: "CompanyId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Saps",
                 columns: table => new
                 {
@@ -442,6 +463,7 @@ namespace DataWarehouse.Domain.Migrations
                     Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PriceListNum = table.Column<int>(type: "int", nullable: true),
                     SapId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -623,6 +645,7 @@ namespace DataWarehouse.Domain.Migrations
                     Address = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PriceListNum = table.Column<int>(type: "int", nullable: true),
                     SapId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -730,6 +753,30 @@ namespace DataWarehouse.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ItemPrices",
+                columns: table => new
+                {
+                    ItemPriceId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ItemId = table.Column<int>(type: "int", nullable: false),
+                    PriceList = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
+                    Currency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    BasePriceList = table.Column<int>(type: "int", nullable: true),
+                    Factor = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ItemPrices", x => x.ItemPriceId);
+                    table.ForeignKey(
+                        name: "FK_ItemPrices_Items_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "Items",
+                        principalColumn: "ItemId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ItemUomGroups",
                 columns: table => new
                 {
@@ -796,6 +843,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -809,6 +857,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_CountStocks_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_CountStocks_Warehouses_WarehouseId",
                         column: x => x.WarehouseId,
@@ -867,6 +920,7 @@ namespace DataWarehouse.Domain.Migrations
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Remarks = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -878,6 +932,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ProductionOrders_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_ProductionOrders_Warehouses_WarehouseId",
                         column: x => x.WarehouseId,
@@ -900,6 +959,10 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
+                    TotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    TotalVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    TotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     SupplierId = table.Column<int>(type: "int", nullable: false)
@@ -912,6 +975,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PurchaseOrders_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_PurchaseOrders_Suppliers_SupplierId",
                         column: x => x.SupplierId,
@@ -939,6 +1007,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -950,6 +1019,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_QuantityAdjustmentStocks_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_QuantityAdjustmentStocks_Warehouses_WarehouseId",
                         column: x => x.WarehouseId,
@@ -972,6 +1046,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
@@ -990,6 +1065,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.CustomerId,
                         principalTable: "Customers",
                         principalColumn: "CustomerId");
+                    table.ForeignKey(
+                        name: "FK_SalesOrders_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_SalesOrders_Saps_SapId",
                         column: x => x.SapId,
@@ -1017,6 +1097,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     DistinationWarehouseId = table.Column<int>(type: "int", nullable: false)
@@ -1029,6 +1110,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TransferredRequests_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_TransferredRequests_Warehouses_DistinationWarehouseId",
                         column: x => x.DistinationWarehouseId,
@@ -1128,6 +1214,31 @@ namespace DataWarehouse.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ItemUomPrices",
+                columns: table => new
+                {
+                    ItemUomPriceId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ItemPriceId = table.Column<int>(type: "int", nullable: false),
+                    PriceList = table.Column<int>(type: "int", nullable: false),
+                    UoMEntry = table.Column<int>(type: "int", nullable: false),
+                    ReduceBy = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
+                    Currency = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    Auto = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ItemUomPrices", x => x.ItemUomPriceId);
+                    table.ForeignKey(
+                        name: "FK_ItemUomPrices_ItemPrices_ItemPriceId",
+                        column: x => x.ItemPriceId,
+                        principalTable: "ItemPrices",
+                        principalColumn: "ItemPriceId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CountStockItems",
                 columns: table => new
                 {
@@ -1138,6 +1249,10 @@ namespace DataWarehouse.Domain.Migrations
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
@@ -1228,6 +1343,10 @@ namespace DataWarehouse.Domain.Migrations
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     PurchaseOrderId = table.Column<int>(type: "int", nullable: false),
                     ItemId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1262,6 +1381,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     SupplierId = table.Column<int>(type: "int", nullable: false),
@@ -1280,6 +1400,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.PurchaseOrderId,
                         principalTable: "PurchaseOrders",
                         principalColumn: "PurchaseOrderId");
+                    table.ForeignKey(
+                        name: "FK_ReceiptPurchaseOrders_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_ReceiptPurchaseOrders_Suppliers_SupplierId",
                         column: x => x.SupplierId,
@@ -1304,6 +1429,10 @@ namespace DataWarehouse.Domain.Migrations
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
@@ -1341,6 +1470,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     SalesOrderId = table.Column<int>(type: "int", nullable: true),
@@ -1359,6 +1489,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.CustomerId,
                         principalTable: "Customers",
                         principalColumn: "CustomerId");
+                    table.ForeignKey(
+                        name: "FK_DeliveryNoteOrders_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_DeliveryNoteOrders_SalesOrders_SalesOrderId",
                         column: x => x.SalesOrderId,
@@ -1382,6 +1517,10 @@ namespace DataWarehouse.Domain.Migrations
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
                     SalesOrderId = table.Column<int>(type: "int", nullable: false),
@@ -1414,6 +1553,10 @@ namespace DataWarehouse.Domain.Migrations
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
@@ -1446,11 +1589,14 @@ namespace DataWarehouse.Domain.Migrations
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
+                    ReceivingStatus = table.Column<int>(type: "int", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Reference = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     TransferredRequestId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
@@ -1464,6 +1610,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TransferredStocks_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_TransferredStocks_TransferredRequests_TransferredRequestId",
                         column: x => x.TransferredRequestId,
@@ -1543,6 +1694,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     SupplierId = table.Column<int>(type: "int", nullable: false),
@@ -1556,6 +1708,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_GoodsReturnOrders_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_GoodsReturnOrders_ReceiptPurchaseOrders_ReceiptPurchaseOrderId",
                         column: x => x.ReceiptPurchaseOrderId,
@@ -1585,6 +1742,10 @@ namespace DataWarehouse.Domain.Migrations
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
@@ -1652,6 +1813,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
@@ -1676,6 +1838,11 @@ namespace DataWarehouse.Domain.Migrations
                         principalTable: "DeliveryNoteOrders",
                         principalColumn: "DeliveryNoteOrderId");
                     table.ForeignKey(
+                        name: "FK_SalesReturnOrders_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
+                    table.ForeignKey(
                         name: "FK_SalesReturnOrders_Warehouses_WarehouseId",
                         column: x => x.WarehouseId,
                         principalTable: "Warehouses",
@@ -1694,6 +1861,10 @@ namespace DataWarehouse.Domain.Migrations
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
                     DeliveryNoteOrderId = table.Column<int>(type: "int", nullable: false),
@@ -1782,6 +1953,7 @@ namespace DataWarehouse.Domain.Migrations
                     DocEntry = table.Column<int>(type: "int", nullable: true),
                     DocNum = table.Column<int>(type: "int", nullable: true),
                     DocType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReasonId = table.Column<int>(type: "int", nullable: true),
                     TransferredStockId = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
@@ -1795,6 +1967,11 @@ namespace DataWarehouse.Domain.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ReceivedStocks_Reasons_ReasonId",
+                        column: x => x.ReasonId,
+                        principalTable: "Reasons",
+                        principalColumn: "ReasonId");
                     table.ForeignKey(
                         name: "FK_ReceivedStocks_TransferredStocks_TransferredStockId",
                         column: x => x.TransferredStockId,
@@ -1819,10 +1996,15 @@ namespace DataWarehouse.Domain.Migrations
                     TransferredItemId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ReceivedQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     UoMEntry = table.Column<int>(type: "int", nullable: false),
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
@@ -1862,6 +2044,10 @@ namespace DataWarehouse.Domain.Migrations
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
@@ -1925,6 +2111,10 @@ namespace DataWarehouse.Domain.Migrations
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
                     SalesReturnOrderId = table.Column<int>(type: "int", nullable: false),
@@ -1993,6 +2183,10 @@ namespace DataWarehouse.Domain.Migrations
                     BarCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    VatAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalBeforeVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    LineTotalAfterVat = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ErrorMessage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LineNum = table.Column<int>(type: "int", nullable: true),
@@ -2028,6 +2222,7 @@ namespace DataWarehouse.Domain.Migrations
                     TransferredStockBatchId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ReceivedQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BatchNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -2239,6 +2434,11 @@ namespace DataWarehouse.Domain.Migrations
                 column: "ItemId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CountStocks_ReasonId",
+                table: "CountStocks",
+                column: "ReasonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CountStocks_UserId",
                 table: "CountStocks",
                 column: "UserId");
@@ -2293,6 +2493,11 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_DeliveryNoteOrders_CustomerId",
                 table: "DeliveryNoteOrders",
                 column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DeliveryNoteOrders_ReasonId",
+                table: "DeliveryNoteOrders",
+                column: "ReasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DeliveryNoteOrders_SalesOrderId",
@@ -2354,6 +2559,11 @@ namespace DataWarehouse.Domain.Migrations
                 filter: "[ReceiptPurchaseOrderItemId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GoodsReturnOrders_ReasonId",
+                table: "GoodsReturnOrders",
+                column: "ReasonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GoodsReturnOrders_ReceiptPurchaseOrderId",
                 table: "GoodsReturnOrders",
                 column: "ReceiptPurchaseOrderId",
@@ -2386,6 +2596,12 @@ namespace DataWarehouse.Domain.Migrations
                 column: "ItemId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ItemPrices_ItemId_PriceList",
+                table: "ItemPrices",
+                columns: new[] { "ItemId", "PriceList" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Items_ItemCode",
                 table: "Items",
                 column: "ItemCode");
@@ -2409,6 +2625,12 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_ItemUomGroups_SapId",
                 table: "ItemUomGroups",
                 column: "SapId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ItemUomPrices_ItemPriceId_UoMEntry",
+                table: "ItemUomPrices",
+                columns: new[] { "ItemPriceId", "UoMEntry" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProcessApprovals_ApprovalStepId",
@@ -2486,6 +2708,11 @@ namespace DataWarehouse.Domain.Migrations
                 columns: new[] { "Status", "AbsoluteEntry" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductionOrders_ReasonId",
+                table: "ProductionOrders",
+                column: "ReasonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductionOrders_UserId",
                 table: "ProductionOrders",
                 column: "UserId");
@@ -2509,6 +2736,11 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_PurchaseOrderItems_PurchaseOrderId",
                 table: "PurchaseOrderItems",
                 column: "PurchaseOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseOrders_ReasonId",
+                table: "PurchaseOrders",
+                column: "ReasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PurchaseOrders_SupplierId",
@@ -2541,6 +2773,11 @@ namespace DataWarehouse.Domain.Migrations
                 column: "QuantityAdjustmentStockId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_QuantityAdjustmentStocks_ReasonId",
+                table: "QuantityAdjustmentStocks",
+                column: "ReasonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_QuantityAdjustmentStocks_UserId",
                 table: "QuantityAdjustmentStocks",
                 column: "UserId");
@@ -2549,6 +2786,11 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_QuantityAdjustmentStocks_WarehouseId",
                 table: "QuantityAdjustmentStocks",
                 column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reasons_CompanyId",
+                table: "Reasons",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReceiptPurchaseOrderBatches_ReceiptPurchaseOrderItemId",
@@ -2578,6 +2820,11 @@ namespace DataWarehouse.Domain.Migrations
                 column: "PurchaseOrderId",
                 unique: true,
                 filter: "[PurchaseOrderId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReceiptPurchaseOrders_ReasonId",
+                table: "ReceiptPurchaseOrders",
+                column: "ReasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReceiptPurchaseOrders_SupplierId",
@@ -2622,6 +2869,11 @@ namespace DataWarehouse.Domain.Migrations
                 column: "TransferredStockBatchId",
                 unique: true,
                 filter: "[TransferredStockBatchId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReceivedStocks_ReasonId",
+                table: "ReceivedStocks",
+                column: "ReasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReceivedStocks_SourceWarehouseId",
@@ -2669,6 +2921,11 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_SalesOrders_CustomerId",
                 table: "SalesOrders",
                 column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesOrders_ReasonId",
+                table: "SalesOrders",
+                column: "ReasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SalesOrders_SapId",
@@ -2725,6 +2982,11 @@ namespace DataWarehouse.Domain.Migrations
                 column: "DeliveryNoteOrderId",
                 unique: true,
                 filter: "[DeliveryNoteOrderId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesReturnOrders_ReasonId",
+                table: "SalesReturnOrders",
+                column: "ReasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SalesReturnOrders_UserId",
@@ -2838,6 +3100,11 @@ namespace DataWarehouse.Domain.Migrations
                 column: "DistinationWarehouseId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TransferredRequests_ReasonId",
+                table: "TransferredRequests",
+                column: "ReasonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TransferredRequests_UserId",
                 table: "TransferredRequests",
                 column: "UserId");
@@ -2861,6 +3128,11 @@ namespace DataWarehouse.Domain.Migrations
                 name: "IX_TransferredStocks_DistinationWarehouseId",
                 table: "TransferredStocks",
                 column: "DistinationWarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransferredStocks_ReasonId",
+                table: "TransferredStocks",
+                column: "ReasonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransferredStocks_TransferredRequestId",
@@ -2975,6 +3247,9 @@ namespace DataWarehouse.Domain.Migrations
                 name: "ItemUomGroups");
 
             migrationBuilder.DropTable(
+                name: "ItemUomPrices");
+
+            migrationBuilder.DropTable(
                 name: "ProcessApprovals");
 
             migrationBuilder.DropTable(
@@ -3036,6 +3311,9 @@ namespace DataWarehouse.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "ReceiptPurchaseOrderBatches");
+
+            migrationBuilder.DropTable(
+                name: "ItemPrices");
 
             migrationBuilder.DropTable(
                 name: "ApprovalSteps");
@@ -3144,6 +3422,9 @@ namespace DataWarehouse.Domain.Migrations
 
             migrationBuilder.DropTable(
                 name: "Customers");
+
+            migrationBuilder.DropTable(
+                name: "Reasons");
 
             migrationBuilder.DropTable(
                 name: "Warehouses");

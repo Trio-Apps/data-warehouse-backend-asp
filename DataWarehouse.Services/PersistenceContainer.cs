@@ -12,6 +12,7 @@ using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Sync;
 using DataWarehouse.Core.IServices.Actors;
+using DataWarehouse.Core.IServices.Processes;
 using DataWarehouse.Core.IServices.Auth;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Services.Repository.Actors;
@@ -29,6 +30,7 @@ using DataWarehouse.Services.Repository.SapRepo;
 using DataWarehouse.Services.Repository.Sync;
 using DataWarehouse.Services.Services.Actors;
 using DataWarehouse.Services.Services.Auth;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -69,6 +71,8 @@ namespace DataWarehouse.Services
             #endregion
 
             #region Processes Repositories
+            services.AddScoped<ReasonValidationService>();
+            services.AddScoped<IReasonRepository, ReasonRepository>();
             services.AddScoped<ICountStockRepository, CountStockRepository>();
             services.AddScoped<IQuantityAdjustmentStockRepository, QuantityAdjustmentStockRepository>();
             services.AddScoped<IReceivedStockRepository, ReceivedStockRepository>();
@@ -225,6 +229,10 @@ namespace DataWarehouse.Services
             services.AddScoped<IUserWarehousesService, UserWarehousesService>();
             services.AddScoped<ISupplierItemService, SupplierItemService>();
             services.AddScoped<ISapSyncStatusFrontService, SapSyncStatusFrontService>();
+            #endregion
+
+            #region Processes Services
+            services.AddScoped<IReasonService, ReasonService>();
             #endregion
             // Json
             //services.AddControllers().AddJsonOptions(

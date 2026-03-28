@@ -1,37 +1,25 @@
-using DataWarehouse.Core.DTOs.BarCode;
+﻿using DataWarehouse.Core.DTOs.BarCode;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace DataWarehouse.Core.DTOs.Processes;
 
-public class CountStockDTO
+public class CountStockDTO : GeneralOrderDto
 {
     public int CountStockId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
-    [Required(ErrorMessage = "Status is required")]
-    public string Status { get; set; }
-
+  
     [StringLength(50, ErrorMessage = "Live Status cannot exceed 50 characters")]
     public string? LiveStatus { get; set; }
 
-    [Required(ErrorMessage = "User ID is required")]
-    public string UserId { get; set; }
-
-    public string? Comment { get; set; }
-
-    public DateTime? CreatedAt { get; set; }
-
-    public DateTime? PostingDate { get; set; }
-
-    public DateTime? DueDate { get; set; }
+  
 
     [StringLength(20, ErrorMessage = "Mode cannot exceed 20 characters")]
     public string? Mode { get; set; }
 
-    [Required(ErrorMessage = "Warehouse ID is required")]
-    [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
-    public int WarehouseId { get; set; }
     public List<CountStockItemDTO>? CountStockItems { get; set; }
 }
 
@@ -52,6 +40,8 @@ public class AddCountStockDTO
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
+
+    public int? ReasonId { get; set; }
 }
 
 public class UpdateCountStockDTO
@@ -65,6 +55,8 @@ public class UpdateCountStockDTO
 
     [StringLength(20, ErrorMessage = "Mode cannot exceed 20 characters")]
     public string? Mode { get; set; }
+
+    public int? ReasonId { get; set; }
 }
 
 public class CountStockItemDTO
@@ -83,8 +75,13 @@ public class CountStockItemDTO
 
     public int UoMEntry { get; set; }
     public string? BarCode { get; set; }
-
     public decimal? UnitPrice { get; set; }
+
+    
+    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
+    public decimal? LineTotalBeforeVat { get; set; }
+    public decimal? LineTotalAfterVat { get; set; }
 
     public string? Comment { get; set; }
 
@@ -123,6 +120,12 @@ public class UpdateCountStockItemDTO
 
     [Range(0, double.MaxValue, ErrorMessage = "Quantity must be greater than or equal to 0")]
     public decimal? Quantity { get; set; }
+
+    public decimal? UnitPrice { get; set; }
+    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
+    public decimal? LineTotalBeforeVat { get; set; }
+    public decimal? LineTotalAfterVat { get; set; }
 
     [Required(ErrorMessage = "Unit is required")]
     public int UoMEntry { get; set; }
@@ -191,6 +194,8 @@ public class UpdateCountStockBatchDTO
 public class CountStockResponseDTO
 {
     public int CountStockId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
     public string Status { get; set; }
     public string? LiveStatus { get; set; }
     public DateTime? CreatedAt { get; set; }

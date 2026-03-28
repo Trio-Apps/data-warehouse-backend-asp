@@ -22,6 +22,7 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int? DocEntry { get; set; }
         public int? DocNum { set; get; }
         public string? DocType { get; set; }
+        public int? ReasonId { get; set; }
         public string? ErrorMessage { get; set; }
 
 
@@ -37,6 +38,7 @@ namespace DataWarehouse.Domain.Entities.Processes
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
+        public Reason? Reason { get; set; }
 
         // Navigation
         public int WarehouseId { get; set; }

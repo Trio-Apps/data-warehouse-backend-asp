@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
@@ -44,6 +44,10 @@ public class TransferredRequestItemRepository : BaseRepository<TransferredReques
                 UoMEntry = e.UoMEntry,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 ErrorMessage = e.ErrorMessage,
                 Status = e.Status.ToString(),
                 Comment = e.Comment,
@@ -88,6 +92,10 @@ public class TransferredRequestItemRepository : BaseRepository<TransferredReques
                 UoMEntry = e.UoMEntry,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 ErrorMessage = e.ErrorMessage,
                 Status = e.Status.ToString(),
                 Comment = e.Comment,
@@ -139,6 +147,10 @@ public class TransferredRequestItemRepository : BaseRepository<TransferredReques
             UoMEntry = res.Data.UoMEntry,
             BarCode = res.Data.BarCode,
             UnitPrice = res.Data.UnitPrice,
+            VatPercent = res.Data.VatPercent,
+            VatAmount = res.Data.VatAmount,
+            LineTotalBeforeVat = res.Data.LineTotalBeforeVat,
+            LineTotalAfterVat = res.Data.LineTotalAfterVat,
             ErrorMessage = res.Data.ErrorMessage,
             Status = GetEnumString(res.Data.Status),
             Comment = res.Data.Comment
@@ -175,6 +187,10 @@ public class TransferredRequestItemRepository : BaseRepository<TransferredReques
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             ErrorMessage = entity.ErrorMessage,
             Status = GetEnumString(entity.Status),
             Comment = entity.Comment
@@ -206,6 +222,10 @@ public class TransferredRequestItemRepository : BaseRepository<TransferredReques
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             ErrorMessage = entity.ErrorMessage,
             Status = GetEnumString(entity.Status),
             Comment = entity.Comment

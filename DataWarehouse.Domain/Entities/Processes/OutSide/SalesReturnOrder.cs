@@ -1,5 +1,6 @@
-﻿using DataWarehouse.Domain.Entities.Actors;
+using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Auth;
+using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using System;
@@ -27,6 +28,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public int? DocEntry { get; set; }
         public int? DocNum { set; get; }
         public string? DocType { get; set; }
+        public int? ReasonId { get; set; }
 
         [NotMapped]
         public int Id
@@ -38,6 +40,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         // Navigation
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
+        public Reason? Reason { get; set; }
         public int WarehouseId { get; set; }
         public Warehouse Warehouse { get; set; }
 
@@ -51,3 +54,6 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public ICollection<SalesReturnOrderItem> SalesReturnOrderItems { get; set; } = new List<SalesReturnOrderItem>();
     }
 }
+
+
+

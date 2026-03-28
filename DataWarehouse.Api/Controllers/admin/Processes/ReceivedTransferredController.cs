@@ -34,6 +34,41 @@ public class ReceivedTransferredController : ControllerBase
         this.logger = logger;
     }
 
+
+    [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.TransferredRequest_Get}")]
+    public async Task<IActionResult> GetByWarehouseIdForDashboard(
+        int warehouseId,
+        int? sourceWarehouseId,
+        string? status,
+        string? liveStatus,
+        DateTime? postingDate,
+        DateTime? dueDate,
+        int skip,
+        int pageSize)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
+
+
+        var res = await repository.GetByWarehouseIdAsDestinationWarehouseAndStatusAndDateWithPaginationForDashboardAsync(
+            warehouseId,
+            userId,
+            sourceWarehouseId,
+            postingDate,
+            dueDate,
+            status,
+            skip,
+            pageSize);
+
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+
     [HttpPost("receive-quantities")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Edit}")]
     public async Task<IActionResult> UpdateReceivedQuantities([FromBody] ReceiveTransferredStockDTO dto)
@@ -44,6 +79,10 @@ public class ReceivedTransferredController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var res = await repository.UpdateReceivedQuantitiesAsync(userId!, dto);
+
+        if (res.Message == "Draft")
+            return Ok(new { Message = "Draft" });
+
         if (!res.Success)
             return BadRequest(res);
 

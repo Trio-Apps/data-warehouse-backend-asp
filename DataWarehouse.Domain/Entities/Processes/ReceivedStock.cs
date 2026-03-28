@@ -19,10 +19,12 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int? DocEntry { get; set; }
         public int? DocNum { get; set; }
         public string? DocType { get; set; }
+        public int? ReasonId { get; set; }
 
         // Navigation
         public int? TransferredStockId { get; set; }
         public TransferredStock? TransferredStock { get; set; }
+        public Reason? Reason { get; set; }
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }

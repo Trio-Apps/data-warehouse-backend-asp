@@ -21,6 +21,10 @@ namespace DataWarehouse.Core.DTOs.Processes
 
         [Range(0, double.MaxValue, ErrorMessage = "Unit Price must be zero or greater")]
         public decimal? UnitPrice { get; set; }
+        public decimal? VatPercent { get; set; }
+        public decimal? VatAmount { get; set; }
+        public decimal? LineTotalBeforeVat { get; set; }
+        public decimal? LineTotalAfterVat { get; set; }
 
         public string? ErrorMessage { get; set; }
 
@@ -53,6 +57,10 @@ namespace DataWarehouse.Core.DTOs.Processes
 
         [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
         public decimal? UnitPrice { get; set; }
+        public decimal? VatPercent { get; set; }
+        public decimal? VatAmount { get; set; }
+        public decimal? LineTotalBeforeVat { get; set; }
+        public decimal? LineTotalAfterVat { get; set; }
 
         [Required(ErrorMessage = "Item ID is required")]
         [Range(1, int.MaxValue, ErrorMessage = "Item ID must be greater than 0")]
@@ -73,6 +81,10 @@ namespace DataWarehouse.Core.DTOs.Processes
 
         [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
         public decimal? UnitPrice { get; set; }
+        public decimal? VatPercent { get; set; }
+        public decimal? VatAmount { get; set; }
+        public decimal? LineTotalBeforeVat { get; set; }
+        public decimal? LineTotalAfterVat { get; set; }
 
 
         [Required(ErrorMessage = "Unit is required")]

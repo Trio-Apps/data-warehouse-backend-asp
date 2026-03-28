@@ -1,4 +1,4 @@
-using DataWarehouse.Domain.Entities.Actors;
+﻿using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using System.Collections.Generic;
@@ -15,6 +15,10 @@ namespace DataWarehouse.Domain.Entities.Processes
         public string? BarCode { get; set; }
         public GeneralItemStatus Status { get; set; }
         public decimal? UnitPrice { get; set; }
+        public decimal? VatPercent { get; set; }
+        public decimal? VatAmount { get; set; }
+        public decimal? LineTotalBeforeVat { get; set; }
+        public decimal? LineTotalAfterVat { get; set; }
         public string? ErrorMessage { get; set; }
         public string? Comment { get; set; }
         public int? LineNum { get; set; }

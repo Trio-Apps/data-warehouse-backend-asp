@@ -80,6 +80,7 @@ namespace DataWarehouse.SAP
             services.AddScoped<ISapQuantityAdjustmentService, SapQuantityAdjustmentService>();
             services.AddScoped<ISapTransferredRequestService, SapTransferredRequestService>();
             services.AddScoped<ISapTransferredStockService, SapTransferredStockService>();
+            services.AddScoped<ISapCountingStockService, SapCountingStockService>();
 
             services.AddScoped<ISapAttachmentService, SapAttachmentService>();
 

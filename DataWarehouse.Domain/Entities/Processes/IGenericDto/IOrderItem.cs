@@ -16,6 +16,10 @@ namespace DataWarehouse.Domain.Entities.Processes.IGenericDto
         string? BarCode { get; set; }
         GeneralItemStatus Status { get; set; }
         decimal? UnitPrice { get; set; }
+        decimal? VatPercent { get; set; }
+        decimal? VatAmount { get; set; }
+        decimal? LineTotalBeforeVat { get; set; }
+        decimal? LineTotalAfterVat { get; set; }
         string? ErrorMessage { get; set; }
     }
 

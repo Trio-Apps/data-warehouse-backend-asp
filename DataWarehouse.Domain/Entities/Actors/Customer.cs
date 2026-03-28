@@ -33,6 +33,8 @@ namespace DataWarehouse.Domain.Entities.Actors
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
 
+        public int? PriceListNum { get; set; }
+
         public int SapId { get; set; }
         public Sap Sap { get; set; }
 

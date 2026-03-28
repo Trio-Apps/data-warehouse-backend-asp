@@ -11,6 +11,7 @@ using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataWarehouse.Services.Repository.Processes;
@@ -20,11 +21,13 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
     private readonly IBaseProcessesRepository<TransferredStock> baseProcesses;
     private readonly IApprovalRepository approval;
     private readonly DataWarehouseDbContext _context;
+    private readonly ReasonValidationService reasonValidationService;
 
-    public TransferredStockRepository(IBaseProcessesRepository<TransferredStock> baseProcesses, IApprovalRepository approval, DataWarehouseDbContext context) : base(context)
+    public TransferredStockRepository(IBaseProcessesRepository<TransferredStock> baseProcesses, IApprovalRepository approval, ReasonValidationService reasonValidationService, DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        this.reasonValidationService = reasonValidationService;
         _context = context;
     }
 
@@ -69,6 +72,8 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 Reference = ts.Reference,
                 CreatedAt = ts.CreatedAt,
                 ErrorMessage = ts.ErrorMessage,
+                ReasonId = ts.ReasonId,
+                ReasonName = ts.Reason != null ? ts.Reason.Name : null,
 
                 ItemCount = ts.TransferredItems.Count(),
                 TransferredRequestId = ts.TransferredRequestId,
@@ -107,7 +112,6 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             .Include(ts => ts.TransferredItems)
             .Include(ts => ts.Warehouse)
             .Include(ts => ts.DistinationWarehouse)
-            .Include(ts => ts.ReceivedStock)
             .Where(ts => ts.WarehouseId == warehouseId);
 
         if (destinationWarehouseId.HasValue)
@@ -130,6 +134,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
 
         query = query.OrderByDescending(ts => ts.CreatedAt);
 
+
         var processQuery = _context.ProcessItemIsProgresses
             .AsNoTracking()
             .Where(p => p.ProcessType == ProcessType.Transferred);
@@ -158,13 +163,18 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 Comment = x.Order.Comment,
                 UserId = x.Order.UserId,
                 WarehouseId = x.Order.WarehouseId,
+
                 DistinationWarehouseId = x.Order.DistinationWarehouseId,
                 WarehouseCode = x.Order.Warehouse.WarehouseCode,
+                 WarehouseName =x.Order.Warehouse.WarehouseName,
+                
                 DistinationWarehouseName = x.Order.DistinationWarehouse.WarehouseName,
                 CreatedAt = x.Order.CreatedAt,
                 PostingDate = x.Order.PostingDate,
                 ErrorMessage = x.Order.ErrorMessage,
                 Reference = x.Order.Reference,
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
 
                 ItemCount = x.Order.TransferredItems.Count(),
                 TransferredRequestId = x.Order.TransferredRequestId,
@@ -185,101 +195,6 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             });
     }
 
-
-    public async Task<GeneralResponse<PagedResult<TransferredStockDTO>>> GetByWarehouseIdAsDestinationWarehouseAndStatusAndDateWithPaginationForDashboardAsync(
-      int warehouseId,
-      string userId,
-      int? transferredWarehouseId,
-      DateTime? postingDate,
-      DateTime? dueDate,
-      string? status,
-      int pageNumber,
-      int pageSize,
-      CancellationToken cancellationToken = default)
-    {
-        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-        pageSize = pageSize <= 0 ? 10 : pageSize;
-
-        var query = _context.TransferredStocks
-            .AsNoTracking()
-            .Include(ts => ts.TransferredItems)
-            .Include(ts => ts.Warehouse)
-            .Include(ts => ts.DistinationWarehouse)
-            .Include(ts => ts.ReceivedStock)
-            .Where(ts => ts.DistinationWarehouseId == warehouseId);
-
-        if (transferredWarehouseId.HasValue)
-            query = query.Where(ts => ts.WarehouseId == transferredWarehouseId.Value);
-
-        if (!string.IsNullOrEmpty(status) && Enum.TryParse<GeneralStatus>(status, out var statusEnum))
-            query = query.Where(ts => ts.Status == statusEnum);
-
-        if (postingDate.HasValue)
-        {
-            var createdDate = postingDate.Value.Date;
-            query = query.Where(ts => ts.CreatedAt.Date == createdDate);
-        }
-
-        if (dueDate.HasValue)
-        {
-            var due = dueDate.Value.Date;
-            query = query.Where(ts => ts.DueDate.Date == due);
-        }
-
-        query = query.OrderByDescending(ts => ts.CreatedAt);
-
-        var processQuery = _context.ProcessItemIsProgresses
-            .AsNoTracking()
-            .Where(p => p.ProcessType == ProcessType.Transferred);
-
-        var totalRecords = await query.CountAsync(cancellationToken);
-
-        var data = await query
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(ts => new
-            {
-                Order = ts,
-                HasProgress = processQuery.Any(p => p.ReferenceId == ts.TransferredStockId),
-                LatestStatus = processQuery
-                    .Where(p => p.ReferenceId == ts.TransferredStockId)
-                    .OrderByDescending(p => p.ProcessItemIsProgressId)
-                    .Select(p => (ProcessStatus?)p.Status)
-                    .FirstOrDefault()
-            })
-            .Select(x => new TransferredStockDTO
-            {
-                TransferredStockId = x.Order.TransferredStockId,
-                DueDate = x.Order.DueDate,
-                Status = x.Order.Status.ToString(),
-                ReceivingStatus = x.Order.ReceivingStatus.ToString(),
-                Comment = x.Order.Comment,
-                UserId = x.Order.UserId,
-                WarehouseId = x.Order.WarehouseId,
-                DistinationWarehouseId = x.Order.DistinationWarehouseId,
-                WarehouseCode = x.Order.Warehouse.WarehouseCode,
-                DistinationWarehouseName = x.Order.DistinationWarehouse.WarehouseName,
-                CreatedAt = x.Order.CreatedAt,
-                PostingDate = x.Order.PostingDate,
-                Reference = x.Order.Reference,
-                ItemCount = x.Order.TransferredItems.Count(),
-                TransferredRequestId = x.Order.TransferredRequestId,
-                IsReceived = x.Order.ReceivedStock != null,
-                ReceivedStockId = x.Order.ReceivedStock != null ? x.Order.ReceivedStock.ReceivedStockId : null,
-                Approval = x.HasProgress,
-                ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
-            })
-            .ToListAsync(cancellationToken);
-
-        return GeneralResponse<PagedResult<TransferredStockDTO>>.SuccessResponse(
-            new PagedResult<TransferredStockDTO>
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords,
-                Data = data
-            });
-    }
 
 
     public async Task<GeneralResponse<TransferredStockDTO>> GetTransferredStockByIdAsync(
@@ -313,6 +228,8 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             WarehouseCode = entity.Warehouse.WarehouseCode,
             DistinationWarehouseName = entity.DistinationWarehouse.WarehouseName,
             CreatedAt = entity.CreatedAt,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null,
             ItemCount = entity.TransferredItems.Count,
             TransferredRequestId = entity.TransferredRequestId,
             IsReceived = entity.ReceivedStock != null,
@@ -332,6 +249,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
       string userId,
       AddTransferredStockDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Transferred);
         var request = await _context.TransferredRequests
             .Include(tr => tr.TransferredStock)
             .Include(tr => tr.TransferredRequestItems)
@@ -350,7 +268,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         var entity = new TransferredStock
         {
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
-            ReceivingStatus = ReceivingStatus.InTransit,
+            ReceivingStatus = dto.IsDraft? ReceivingStatus.NoProcessing: ReceivingStatus.InTransit,
             DueDate = dto.DueDate,
             PostingDate = dto.PostingDate,
             CreatedAt = DateTime.UtcNow,
@@ -359,6 +277,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             DistinationWarehouseId = request.DistinationWarehouseId,
             Comment = dto.Comment,
             Reference = dto.Reference,
+            ReasonId = dto.ReasonId,
             TransferredRequestId = request.TransferredRequestId,
             TransferredItems = request.TransferredRequestItems.Select(ri => new TransferredItem
             {
@@ -368,6 +287,10 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 UoMEntry = ri.UoMEntry,
                 BarCode = ri.BarCode,
                 UnitPrice = ri.UnitPrice,
+                VatPercent = ri.VatPercent,
+                VatAmount = ri.VatAmount,
+                LineTotalBeforeVat = ri.LineTotalBeforeVat,
+                LineTotalAfterVat = ri.LineTotalAfterVat,
                 Status = GeneralItemStatus.Planned,
                 ErrorMessage = null,
                 Comment = ri.Comment,
@@ -409,13 +332,16 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             Comment = entity.Comment,
             Reference = entity.Reference,
             CreatedAt = entity.CreatedAt,
-            TransferredRequestId = entity.TransferredRequestId
+            TransferredRequestId = entity.TransferredRequestId,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         });
     }
 
     public async Task<GeneralResponse<TransferredStockDTO>> AddTransferredStockByWarehouseIdWithoutRefAsync
         (string userId, AddTransferredStockWithoutRefDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Transferred);
         var sourceWarehouse = await _context.Warehouses
             .AsNoTracking()
             .FirstOrDefaultAsync(w => w.WarehouseId == dto.WarehouseId);
@@ -431,7 +357,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         var entity = new TransferredStock
         {
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
-            ReceivingStatus = ReceivingStatus.InTransit,
+            ReceivingStatus = dto.IsDraft ? ReceivingStatus.NoProcessing : ReceivingStatus.InTransit,
             DueDate = dto.DueDate,
             PostingDate = dto.PostingDate,
             CreatedAt = DateTime.UtcNow,
@@ -440,6 +366,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             DistinationWarehouseId = dto.DistinationWarehouseId,
             Comment = dto.Comment,
             Reference = dto.Reference,
+            ReasonId = dto.ReasonId,
             TransferredRequestId = null
         };
 
@@ -467,13 +394,16 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             DistinationWarehouseId = res.DistinationWarehouseId,
             Comment = res.Comment,
             Reference = res.Reference,
-            CreatedAt = res.CreatedAt
+            CreatedAt = res.CreatedAt,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null
         });
     }
 
     public async Task<GeneralResponse<TransferredStockDTO>> AddTransferredStockByTransferredRequestIdAsync(
          string userId, AddTransferredStockDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Transferred);
         var request = await _context.TransferredRequests
           
            .FirstOrDefaultAsync(tr => tr.TransferredRequestId == dto.TransferredRequestId);
@@ -487,7 +417,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         var entity = new TransferredStock
         {
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
-            ReceivingStatus = ReceivingStatus.InTransit,
+            ReceivingStatus = dto.IsDraft ? ReceivingStatus.NoProcessing : ReceivingStatus.InTransit,
             DueDate = dto.DueDate,
             CreatedAt = DateTime.UtcNow,
             PostingDate = dto.PostingDate,
@@ -496,6 +426,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             DistinationWarehouseId = dto.DistinationWarehouseId,
             Comment = dto.Comment,
             Reference = dto.Reference,
+            ReasonId = dto.ReasonId,
             TransferredRequestId = null
         };
 
@@ -523,7 +454,9 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             DistinationWarehouseId = res.DistinationWarehouseId,
             Comment = res.Comment,
             Reference = res.Reference,
-            CreatedAt = res.CreatedAt
+            CreatedAt = res.CreatedAt,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null
         });
     }
 
@@ -531,6 +464,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
     public async Task<GeneralResponse<TransferredStockDTO>> UpdateTransferredStockAsync(
         string userId, int transferredStockId, UpdateTransferredStockDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Transferred);
         var entity = await _context.TransferredStocks
             .FirstOrDefaultAsync(ts => ts.TransferredStockId == transferredStockId);
 
@@ -580,6 +514,8 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         if (!string.IsNullOrWhiteSpace(dto.Comment))
             entity.Comment = dto.Comment;
 
+        entity.ReasonId = dto.ReasonId;
+
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -589,6 +525,8 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 userId: userId);
 
             entity.Status = GeneralStatus.Processing;
+            entity.ReceivingStatus = ReceivingStatus.InTransit;
+
         }
         else
         {
@@ -610,7 +548,9 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             Comment = entity.Comment,
             Reference = entity.Reference,
             CreatedAt = entity.CreatedAt,
-            TransferredRequestId = entity.TransferredRequestId
+            TransferredRequestId = entity.TransferredRequestId,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         });
     }
 
@@ -643,7 +583,9 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             Reference = entity.Reference,
             CreatedAt = entity.CreatedAt,
             PostingDate = entity.PostingDate,
-            TransferredRequestId = entity.TransferredRequestId
+            TransferredRequestId = entity.TransferredRequestId,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
         _context.TransferredStocks.Remove(entity);
@@ -698,6 +640,8 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             Comment = entity.Comment,
             CreatedAt = entity.CreatedAt,
             Reference = entity.Reference,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null,
             WarehouseCode = entity.Warehouse?.WarehouseCode,
             DistinationWarehouseName = entity.DistinationWarehouse?.WarehouseName,
             TransferredRequestId = entity.TransferredRequestId,
@@ -719,6 +663,10 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                     .FirstOrDefault(),
                 BarCode = i.BarCode,
                 UnitPrice = i.UnitPrice,
+                VatPercent = i.VatPercent,
+                VatAmount = i.VatAmount,
+                LineTotalBeforeVat = i.LineTotalBeforeVat,
+                LineTotalAfterVat = i.LineTotalAfterVat,
                 ErrorMessage = i.ErrorMessage,
                 Status = i.Status.ToString(),
                 Comment = i.Comment,
@@ -757,6 +705,8 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 Comment = ts.Comment,
                 CreatedAt = ts.CreatedAt,
                 Reference = ts.Reference,
+                ReasonId = ts.ReasonId,
+                ReasonName = ts.Reason != null ? ts.Reason.Name : null,
                 TransferredRequestId = ts.TransferredRequestId,
                 IsReceived = ts.ReceivedStock != null,
                 ReceivedStockId = ts.ReceivedStock != null ? ts.ReceivedStock.ReceivedStockId : null,
@@ -767,6 +717,10 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                     UoMEntry = i.UoMEntry,
                     BarCode = i.BarCode,
                     UnitPrice = i.UnitPrice,
+                    VatPercent = i.VatPercent,
+                    VatAmount = i.VatAmount,
+                    LineTotalBeforeVat = i.LineTotalBeforeVat,
+                    LineTotalAfterVat = i.LineTotalAfterVat,
                     ErrorMessage = i.ErrorMessage,
                     Status = i.Status.ToString(),
                     TransferredStockId = i.TransferredStockId,
@@ -813,7 +767,8 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         await _context.TransferredStocks.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
         return await GetTransferredStockByIdAsync(userId, clone.TransferredStockId, cancellationToken);
-    }    public async Task<GeneralResponse<List<NameStatus>>> GetTransferredStockStatus()
+    }
+    public async Task<GeneralResponse<List<NameStatus>>> GetTransferredStockStatus()
     {
         var statuses = Enum.GetValues(typeof(GeneralStatus))
             .Cast<GeneralStatus>()
@@ -859,6 +814,8 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 Comment = ts.Comment,
                 CreatedAt = ts.CreatedAt,
                 Reference = ts.Reference,
+                ReasonId = ts.ReasonId,
+                ReasonName = ts.Reason != null ? ts.Reason.Name : null,
                 TransferredRequestId = ts.TransferredRequestId,
                 IsReceived = ts.ReceivedStock != null,
                 ReceivedStockId = ts.ReceivedStock != null ? ts.ReceivedStock.ReceivedStockId : null
@@ -900,4 +857,102 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             .Where(ts => ts.CreatedAt >= startDate && ts.CreatedAt <= endDate)
             .ToListAsync();
     }
+
+
+    //public async Task<GeneralResponse<PagedResult<TransferredStockDTO>>> GetByWarehouseIdAsDestinationWarehouseAndStatusAndDateWithPaginationForDashboardAsync(
+    //  int warehouseId,
+    //  string userId,
+    //  int? destinationWarehouseId,
+    //  DateTime? postingDate,
+    //  DateTime? dueDate,
+    //  string? status,
+    //  int pageNumber,
+    //  int pageSize,
+    //  CancellationToken cancellationToken = default)
+    //{
+    //    pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+    //    pageSize = pageSize <= 0 ? 10 : pageSize;
+
+    //    var query = _context.TransferredStocks
+    //        .AsNoTracking()
+    //        .Include(ts => ts.TransferredItems)
+    //        .Include(ts => ts.Warehouse)
+    //        .Include(ts => ts.DistinationWarehouse)
+    //        .Where(ts => ts.WarehouseId == warehouseId);
+
+    //    if (destinationWarehouseId.HasValue)
+    //        query = query.Where(ts => ts.DistinationWarehouseId == destinationWarehouseId.Value);
+
+    //    if (!string.IsNullOrEmpty(status) && Enum.TryParse<GeneralStatus>(status, out var statusEnum))
+    //        query = query.Where(ts => ts.Status == statusEnum);
+
+    //    if (postingDate.HasValue)
+    //    {
+    //        var createdDate = postingDate.Value.Date;
+    //        query = query.Where(ts => ts.CreatedAt.Date == createdDate);
+    //    }
+
+    //    if (dueDate.HasValue)
+    //    {
+    //        var due = dueDate.Value.Date;
+    //        query = query.Where(ts => ts.DueDate.Date == due);
+    //    }
+
+    //    query = query.OrderByDescending(ts => ts.CreatedAt);
+
+    //    var processQuery = _context.ProcessItemIsProgresses
+    //        .AsNoTracking()
+    //        .Where(p => p.ProcessType == ProcessType.Transferred);
+
+    //    var totalRecords = await query.CountAsync(cancellationToken);
+
+    //    var data = await query
+    //        .Skip((pageNumber - 1) * pageSize)
+    //        .Take(pageSize)
+    //        .Select(ts => new
+    //        {
+    //            Order = ts,
+    //            HasProgress = processQuery.Any(p => p.ReferenceId == ts.TransferredStockId),
+    //            LatestStatus = processQuery
+    //                .Where(p => p.ReferenceId == ts.TransferredStockId)
+    //                .OrderByDescending(p => p.ProcessItemIsProgressId)
+    //                .Select(p => (ProcessStatus?)p.Status)
+    //                .FirstOrDefault()
+    //        })
+    //        .Select(x => new TransferredStockDTO
+    //        {
+    //            TransferredStockId = x.Order.TransferredStockId,
+    //            DueDate = x.Order.DueDate,
+    //            Status = x.Order.Status.ToString(),
+    //            ReceivingStatus = x.Order.ReceivingStatus.ToString(),
+    //            Comment = x.Order.Comment,
+    //            UserId = x.Order.UserId,
+    //            WarehouseId = x.Order.WarehouseId,
+    //            DistinationWarehouseId = x.Order.DistinationWarehouseId,
+    //            WarehouseCode = x.Order.Warehouse.WarehouseCode,
+    //            DistinationWarehouseName = x.Order.DistinationWarehouse.WarehouseName,
+    //            CreatedAt = x.Order.CreatedAt,
+    //            PostingDate = x.Order.PostingDate,
+    //            Reference = x.Order.Reference,
+    //            ItemCount = x.Order.TransferredItems.Count(),
+    //            TransferredRequestId = x.Order.TransferredRequestId,
+    //            IsReceived = x.Order.ReceivedStock != null,
+    //            ReceivedStockId = x.Order.ReceivedStock != null ? x.Order.ReceivedStock.ReceivedStockId : null,
+    //            Approval = x.HasProgress,
+    //            ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
+    //        })
+    //        .ToListAsync(cancellationToken);
+
+    //    return GeneralResponse<PagedResult<TransferredStockDTO>>.SuccessResponse(
+    //        new PagedResult<TransferredStockDTO>
+    //        {
+    //            PageNumber = pageNumber,
+    //            PageSize = pageSize,
+    //            TotalRecords = totalRecords,
+    //            Data = data
+    //        });
+    //}
+
+
 }
+

@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Actors.IncrementalSync;
 using DataWarehouse.Domain.Entities.AllinAll;
+using DataWarehouse.Domain.Entities.Processes.IGenericDto;
+using DataWarehouse.Domain.Helpers;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 
@@ -24,6 +26,41 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 {
     public DataWarehouseDbContext(DbContextOptions<DataWarehouseDbContext> options) : base(options)
     {
+    }
+
+    private void ApplyVatCalculations()
+    {
+        var orderItemEntries = ChangeTracker.Entries<IOrderItem>()
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+        foreach (var entry in orderItemEntries)
+        {
+            VatCalculationHelper.Apply(entry.Entity);
+        }
+    }
+
+    public override int SaveChanges()
+    {
+        ApplyVatCalculations();
+        return base.SaveChanges();
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        ApplyVatCalculations();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ApplyVatCalculations();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        ApplyVatCalculations();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
 
@@ -70,6 +107,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .HasForeignKey(po => po.UserId)
       .HasPrincipalKey(w => w.Id)
       .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.PurchaseOrders)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         #endregion
 
@@ -126,6 +169,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         .HasForeignKey(po => po.UserId)
         .HasPrincipalKey(w => w.Id)
         .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.ReceiptPurchaseOrders)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
         // Good return 
@@ -185,6 +234,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
      .HasForeignKey(o => o.ItemId)
      .HasPrincipalKey(e => e.ItemId)
      .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.GoodsReturnOrders)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
         // Sales Order with items and warehouse and customer
@@ -241,6 +296,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .HasForeignKey(po => po.UserId)
       .HasPrincipalKey(w => w.Id)
       .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.SalesOrders)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         #endregion
 
@@ -320,6 +381,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .HasPrincipalKey(w => w.Id)
       .OnDelete(DeleteBehavior.NoAction);
 
+        builder.Entity<Reason>()
+            .HasMany(r => r.DeliveryNoteOrders)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
+
         #endregion
 
         // Sales return 
@@ -386,6 +453,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
      .HasForeignKey(o => o.ItemId)
      .HasPrincipalKey(e => e.ItemId)
      .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.SalesReturnOrders)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
       
@@ -451,6 +524,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
             .HasPrincipalKey(po => po.ProductionOrderId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<Reason>()
+            .HasMany(r => r.ProductionOrders)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
+
 
         // indexex
         // في الـ Migration
@@ -498,6 +577,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .HasForeignKey(po => po.UserId)
       .HasPrincipalKey(w => w.Id)
       .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.CountStocks)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
         // Quantity Adjustment Stock with items and warehouse
@@ -537,6 +622,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .HasForeignKey(po => po.UserId)
       .HasPrincipalKey(w => w.Id)
       .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.QuantityAdjustmentStocks)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
 
@@ -584,6 +675,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .HasForeignKey(po => po.UserId)
       .HasPrincipalKey(w => w.Id)
       .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.TransferredRequests)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         // request with transferred
         builder.Entity<TransferredRequest>()
@@ -680,6 +777,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .HasForeignKey(po => po.UserId)
       .HasPrincipalKey(w => w.Id)
       .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.ReceivedStocks)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
         #endregion
 
         // Transfer With items and warehouse
@@ -725,6 +828,12 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .HasForeignKey(po => po.UserId)
       .HasPrincipalKey(w => w.Id)
       .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Reason>()
+            .HasMany(r => r.TransferredStocks)
+            .WithOne(o => o.Reason)
+            .HasForeignKey(o => o.ReasonId)
+            .OnDelete(DeleteBehavior.NoAction);
 
 
         #endregion
@@ -801,6 +910,60 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         .HasPrincipalKey(i => i.ItemId)
         .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<ItemPrice>()
+        .ToTable("ItemPrices");
+
+        builder.Entity<ItemUomPrice>()
+        .ToTable("ItemUomPrices");
+
+        builder.Entity<Item>()
+        .HasMany(i => i.ItemPrices)
+        .WithOne(d => d.Item)
+        .HasForeignKey(d => d.ItemId)
+        .HasPrincipalKey(i => i.ItemId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ItemPrice>()
+        .HasMany(i => i.UomPrices)
+        .WithOne(d => d.ItemPrice)
+        .HasForeignKey(d => d.ItemPriceId)
+        .HasPrincipalKey(i => i.ItemPriceId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ItemPrice>()
+        .HasIndex(x => new { x.ItemId, x.PriceList })
+        .IsUnique();
+
+        builder.Entity<ItemUomPrice>()
+        .HasIndex(x => new { x.ItemPriceId, x.UoMEntry })
+        .IsUnique();
+
+        builder.Entity<ItemPrice>()
+        .Property(x => x.Price)
+        .HasPrecision(18, 6);
+
+    
+        builder.Entity<ItemPrice>()
+        .Property(x => x.Factor)
+        .HasPrecision(18, 6);
+
+        builder.Entity<ItemUomPrice>()
+        .Property(x => x.ReduceBy)
+        .HasPrecision(18, 6);
+
+        builder.Entity<ItemUomPrice>()
+        .Property(x => x.Price)
+        .HasPrecision(18, 6);
+
+        builder.Entity<ItemPrice>()
+        .Property(x => x.Currency)
+        .HasMaxLength(10);
+
+        builder.Entity<ItemUomPrice>()
+        .Property(x => x.Currency)
+        .HasMaxLength(10);
+
+   
         builder.Entity<ItemBarCode>()
          .HasMany(i => i.DynamicBarCodes)
          .WithOne(d => d.ItemBarCode)
@@ -1112,6 +1275,13 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
        .HasPrincipalKey(i => i.CompanyId)
        .OnDelete(DeleteBehavior.NoAction);
 
+        builder.Entity<Company>()
+        .HasMany(i => i.Reasons)
+        .WithOne(s => s.Company)
+        .HasForeignKey(s => s.CompanyId)
+        .HasPrincipalKey(i => i.CompanyId)
+        .OnDelete(DeleteBehavior.NoAction);
+
         builder.Entity<CompanyUser>()
            .HasOne(us => us.User)
            .WithOne(u => u.CompanyUser)
@@ -1199,6 +1369,8 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     public DbSet<WarehouseItem> WarehouseItems { get; set; }
 
     public DbSet<Item> Items { get; set; }
+    public DbSet<ItemPrice> ItemPrices { get; set; }
+    public DbSet<ItemUomPrice> ItemUomPrices { get; set; }
     public DbSet<BinLocation> BinLocations { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<SupplierItem> SupplierItems { get; set; }
@@ -1231,6 +1403,7 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
     // attachements
     public DbSet<DocumentAttachment> DocumentAttachments { get; set; }
+    public DbSet<Reason> Reasons { get; set; }
 
     // Purchase Order
     public DbSet<ProductionOrder> ProductionOrders { get; set; }

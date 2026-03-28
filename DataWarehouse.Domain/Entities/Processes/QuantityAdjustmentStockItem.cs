@@ -17,10 +17,14 @@ namespace DataWarehouse.Domain.Entities.Processes
         public decimal Quantity { get; set; }
         public int UoMEntry { get; set; }
         public string? BarCode { get; set; }
+        public GeneralItemStatus Status { get; set; }
 
         // Pending, Planned, Released, Received, Closed, Failed
-        public GeneralItemStatus Status { get; set; }
         public decimal? UnitPrice { get; set; }
+        public decimal? VatPercent { get; set; }
+        public decimal? VatAmount { get; set; }
+        public decimal? LineTotalBeforeVat { get; set; }
+        public decimal? LineTotalAfterVat { get; set; }
         public string? ErrorMessage { get; set; }
         public string? Comment { get; set; }
         public int? LineNum { get; set; }
@@ -40,6 +44,5 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int ItemId { get; set; }
         public Item Item { get; set; }
         public ICollection<QuantityAdjustmentStockBatch> QuantityAdjustmentStockBatches { get; set; } = new List<QuantityAdjustmentStockBatch>();
-
     }
 }

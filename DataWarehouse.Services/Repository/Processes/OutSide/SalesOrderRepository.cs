@@ -1,4 +1,4 @@
-Ôªøusing DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Actors;
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
@@ -17,6 +17,7 @@ using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using DataWarehouse.Services.Repository.SapRepo;
 using DataWarehouse.Services.Repository.Processes;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -35,6 +36,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
     private readonly UserManager<ApplicationUser> userManager;
     private readonly IApprovalRepository approval;
     private readonly ISapSettingsRepository sap;
+    private readonly ReasonValidationService reasonValidationService;
 
     public SalesOrderRepository(
         IBaseProcessesRepository<SalesOrder> baseProcesses,
@@ -42,6 +44,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         UserManager<ApplicationUser> userManager,
         IApprovalRepository approval,
         ISapSettingsRepository sap,
+        ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
@@ -49,6 +52,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         this.userManager = userManager;
         this.approval = approval;
         this.sap = sap;
+        this.reasonValidationService = reasonValidationService;
     }
     public async Task<GeneralResponse<PagedResult<WarehouseItemDto>>> GetByWarehouseIdAsync(
    int warehouseId,
@@ -65,7 +69,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
         var sapId = await sapCache.Get();
 
-        // 1) Ÿáÿßÿ™ ÿ®ŸäÿßŸÜÿßÿ™ ÿßŸÑŸÖÿ≥ÿ™ŸàÿØÿπ ŸÖÿ±ÿ© Ÿàÿßÿ≠ÿØÿ©
+        // 1) Â«  »Ì«‰«  «·„” Êœ⁄ „—… Ê«Õœ…
         var warehouse = await _context.Warehouses
             .AsNoTracking()
             .Where(w => w.WarehouseId == warehouseId)
@@ -86,7 +90,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
         search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
 
-        // 2) Left join Items ŸÖÿπ WarehouseItems (ŸÑŸÜŸÅÿ≥ ÿßŸÑŸÖÿ≥ÿ™ŸàÿØÿπ ŸÅŸÇÿ∑)
+        // 2) Left join Items „⁄ WarehouseItems (·‰›” «·„” Êœ⁄ ›ﬁÿ)
         var query =
     from i in _context.Items.AsNoTracking().Where(it => it.SapId == sapId)
     join wi in _context.WarehouseItems.AsNoTracking()
@@ -138,7 +142,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
     public async Task<GeneralResponse<IEnumerable<WarehouseItemDto>>> GetItemForSalesByWarehouseIdAsync(int warehouseId)
     {
         var sapId = await sapCache.Get();
-        // 1) Ÿáÿßÿ™ ÿ®ŸäÿßŸÜÿßÿ™ ÿßŸÑŸÖÿ≥ÿ™ŸàÿØÿπ ŸÖÿ±ÿ© Ÿàÿßÿ≠ÿØÿ©
+        // 1) Â«  »Ì«‰«  «·„” Êœ⁄ „—… Ê«Õœ…
         var warehouse = await _context.Warehouses
             .AsNoTracking()
             .Where(w => w.WarehouseId == warehouseId)
@@ -148,7 +152,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         if (warehouse == null)
             return GeneralResponse<IEnumerable<WarehouseItemDto>>.SuccessResponse(Enumerable.Empty<WarehouseItemDto>());
 
-        // 2) Left join Items ŸÖÿπ WarehouseItems (ŸÑŸÜŸÅÿ≥ ÿßŸÑŸÖÿ≥ÿ™ŸàÿØÿπ ŸÅŸÇÿ∑)
+        // 2) Left join Items „⁄ WarehouseItems (·‰›” «·„” Êœ⁄ ›ﬁÿ)
         var query =
             from i in _context.Items.AsNoTracking().Where(it => it.SapId == sapId)
             join wi in _context.WarehouseItems.AsNoTracking()
@@ -158,7 +162,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             where wi == null && i.SalesItem && i.Valid
             select new WarehouseItemDto
             {
-                WarehouseItemId = 0,              // ŸÖŸÅŸäÿ¥ row
+                WarehouseItemId = 0,              // „›Ì‘ row
                 ItemId = i.ItemId,
                 WarehouseId = warehouse.WarehouseId,
                 ItemName = i.ItemName,
@@ -194,18 +198,18 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         var totalRecords = await query.CountAsync(cancellationToken);
 
         var data = await query
-             .OrderByDescending(so => so.SalesOrderId) // ŸÖŸáŸÖ ŸÑÿ´ÿ®ÿßÿ™ ÿßŸÑŸÄ pagination
+             .OrderByDescending(so => so.SalesOrderId) // „Â„ ·À»«  «·‹ pagination
              .Skip((pageNumber - 1) * pageSize)
              .Take(pageSize)
              .Select(iw => new
              {
                  Order = iw,
-                 // ŸáŸÑ ŸÅŸäŸá progress ÿ£ÿµŸÑÿßŸãÿü
+                 // Â· ›ÌÂ progress √’·«ø
                  HasProgress = processQuery.Any(p => p.ReferenceId == iw.SalesOrderId),
-                 // ÿ¢ÿÆÿ± Status (ŸÑŸà ŸÖŸàÿ¨ŸàÿØ)
+                 // ¬Œ— Status (·Ê „ÊÃÊœ)
                  LatestStatus = processQuery
                 .Where(p => p.ReferenceId == iw.SalesOrderId)
-                .OrderByDescending(p => p.ProcessItemIsProgressId) // ÿ£Ÿà CreatedAt ŸÑŸà ÿπŸÜÿØŸÉ
+                .OrderByDescending(p => p.ProcessItemIsProgressId) // √Ê CreatedAt ·Ê ⁄‰œﬂ
                 .Select(p => (ProcessStatus?)p.Status)
                 .FirstOrDefault(),
 
@@ -218,8 +222,10 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
              PostingDate = x.Order.PostingDate,
              SalesOrderId = x.Order.SalesOrderId,
              Status = x.Order.Status.ToString(),
-             Comment = x.Order.Comment,
-             UserId = x.Order.UserId,
+           Comment = x.Order.Comment,
+           ReasonId = x.Order.ReasonId,
+           ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
+           UserId = x.Order.UserId,
              WarehouseId = x.Order.WarehouseId,
           CustomerName = x.Order.Customer.CustomerName,
           ItemCount = x.Order.SalesOrderItems.Count(),
@@ -257,13 +263,13 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             .Include(e => e.Customer)
             .Where(e => e.WarehouseId == warehouseId);
 
-        // üîπ Customer Filter
+        // ?? Customer Filter
         if (customerId.HasValue)
         {
             query = query.Where(e => e.CustomerId == customerId);
         }
 
-        // üîπ Filtering
+        // ?? Filtering
         if (!string.IsNullOrEmpty(status))
         {
             if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
@@ -272,21 +278,21 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             }
         }
 
-        // üîπ Posting Date Filter
+        // ?? Posting Date Filter
         if (postingDate.HasValue)
         {
             var postDate = postingDate.Value.Date;
             query = query.Where(e => e.PostingDate.Date == postDate);
         }
 
-        // üîπ Due Date Filter
+        // ?? Due Date Filter
         if (DueDate.HasValue)
         {
             var dueDate = DueDate.Value.Date;
             query = query.Where(e => e.DueDate.Date == dueDate);
         }
 
-        // üîπ Live Status Filter (matching Purchase logic as much as Sales model allows)
+        // ?? Live Status Filter (matching Purchase logic as much as Sales model allows)
         //if (!string.IsNullOrEmpty(liveStatus))
         //{
         //    // In Sales code we only have SalesReturnOrder.
@@ -317,10 +323,10 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             {
                 Order = iw,
 
-                // ŸáŸÑ ŸÅŸäŸá progress ÿ£ÿµŸÑÿßŸãÿü
+                // Â· ›ÌÂ progress √’·«ø
                 HasProgress = processQuery.Any(p => p.ReferenceId == iw.SalesOrderId),
 
-                // ÿ¢ÿÆÿ± Status (ŸÑŸà ŸÖŸàÿ¨ŸàÿØ)
+                // ¬Œ— Status (·Ê „ÊÃÊœ)
                 LatestStatus = processQuery
                     .Where(p => p.ReferenceId == iw.SalesOrderId)
                     .OrderByDescending(p => p.ProcessItemIsProgressId)
@@ -334,6 +340,8 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
                 SalesOrderId = x.Order.SalesOrderId,
                 Status = x.Order.Status.ToString(),
                 Comment = x.Order.Comment,
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
                 UserId = x.Order.UserId,
                 WarehouseId = x.Order.WarehouseId,
 
@@ -342,16 +350,16 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
                 ItemCount = x.Order.SalesOrderItems.Count(),
 
-                // ‚úÖ Special fields (Return)
+                // ? Special fields (Return)
              //   IsReturn = x.Order.SalesReturnOrder != null,
                 //ReturnOrderId = x.Order.SalesReturnOrder != null
                 //    ? x.Order.SalesReturnOrder.SalesReturnOrderId
                 //    : null,
 
-                // ‚úÖ Ÿàÿ¨ŸàÿØ progress
+                // ? ÊÃÊœ progress
                 Approval = x.HasProgress,
 
-                // ‚úÖ ÿßÿ≥ŸÖ ÿßŸÑÿ≠ÿßŸÑÿ© ÿßŸÑÿ≠ÿßŸÑŸäÿ© (ÿ¢ÿÆÿ± Status)
+                // ? «”„ «·Õ«·… «·Õ«·Ì… (¬Œ— Status)
                 ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
             })
             .ToListAsync(cancellationToken);
@@ -391,6 +399,8 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             WarehouseId = res.WarehouseId,
             CustomerName = res.Customer.CustomerName,
             CustomerId = res.CustomerId,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null,
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
             ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
@@ -409,7 +419,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
     public async Task<GeneralResponse<SalesOrderDTO>> AddSalesOrderByWarehouseIdAsync(string userId, AddSalesOrderDTO dto, CancellationToken cancellationToken = default)
     {
-
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Sales);
         var customer = await _context.Customers.FirstOrDefaultAsync(p => p.CustomerId == dto.CustomerId);
 
         if (customer == null)
@@ -426,13 +436,14 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             WarehouseId = dto.WarehouseId,
             Comment = dto.Comment,
             CustomerId = dto.CustomerId,
+            ReasonId = dto.ReasonId
         };
 
 
         var res = await AddAsync(mapping);
         await SaveChangesAsync();
 
-        // ‚úÖ ÿ¥ÿ∫ŸÑ ÿßŸÑŸÄ Approval Workflow ŸÑŸà ŸÖÿ¥ Draft
+        // ? ‘€· «·‹ Approval Workflow ·Ê „‘ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -452,7 +463,9 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             CustomerId = res.CustomerId,
-            Comment = res.Comment
+            Comment = res.Comment,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null
         };
 
 
@@ -479,6 +492,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
 
     public async Task<GeneralResponse<SalesOrderDTO>> UpdateSalesOrderAsync(string userId, int salesOrderId, UpdateSalesOrderDTO dto,CancellationToken cancellationToken=default)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Sales);
         var entity = await _context.SalesOrders.FirstOrDefaultAsync(e => e.SalesOrderId == dto.SalesOrderId);
 
         if (entity == null)
@@ -497,7 +511,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             return GeneralResponse<SalesOrderDTO>.FailResponse( "You cannot edit this order because its approval status is 'Approved' and all approval steps have been completed.");
 
 
-        // üëá ÿßŸÑÿ™ÿπÿØŸäŸÑ ÿßŸÑÿ∞ŸÉŸäÿå ÿÆÿßÿµŸäÿ© ÿÆÿßÿµŸäÿ©
+        // ?? «· ⁄œÌ· «·–ﬂÌ° Œ«’Ì… Œ«’Ì…
         if (dto.PostingDate.HasValue && entity.PostingDate != dto.PostingDate.Value)
             entity.PostingDate = dto.PostingDate.Value;
 
@@ -520,6 +534,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
         if (!string.IsNullOrWhiteSpace(dto.Comment) && entity.Comment != dto.Comment)
             entity.Comment = dto.Comment;
 
+        entity.ReasonId = dto.ReasonId;
 
         if (entity.UserId != userId)
             entity.UserId = userId;
@@ -553,7 +568,9 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             CustomerId = entity.CustomerId,
-            Comment = entity.Comment
+            Comment = entity.Comment,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
        
@@ -582,7 +599,7 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
 
-        // Snapshot ŸÇÿ®ŸÑ ÿßŸÑÿ≠ÿ∞ŸÅ ÿπŸÑÿ¥ÿßŸÜ ŸÜÿ±ÿ¨ÿπŸá ŸÅŸä ÿßŸÑŸÄ response
+        // Snapshot ﬁ»· «·Õ–› ⁄·‘«‰ ‰—Ã⁄Â ›Ì «·‹ response
         var result = new SalesOrderDTO
         {
             SalesOrderId = entity.SalesOrderId,
@@ -592,10 +609,12 @@ public class SalesOrderRepository : BaseRepository<SalesOrder>, ISalesOrderRepos
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             CustomerId = entity.CustomerId,
-            Comment = entity.Comment
+            Comment = entity.Comment,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
-        // ŸÑŸà ÿπŸÜÿØŸÉ ÿ™ŸÅÿßÿµŸäŸÑ ŸàŸÖŸÅŸäÿ¥ Cascade Delete Ÿáÿ™ÿ≠ÿ™ÿßÿ¨ ÿ™ŸÖÿ≥ÿ≠Ÿáÿß ÿßŸÑÿ£ŸàŸÑ ŸáŸÜÿß
+        // ·Ê ⁄‰œﬂ  ›«’Ì· Ê„›Ì‘ Cascade Delete Â Õ «Ã  „”ÕÂ« «·√Ê· Â‰«
         _context.SalesOrders.Remove(entity);
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -696,7 +715,9 @@ GetItemsByWarehouseIdAsync(int warehouseId)
                     UserId = so.UserId,
                     WarehouseId = so.WarehouseId,
                     CustomerId = so.CustomerId,
-                    Comment = so.Comment
+                    Comment = so.Comment,
+                    ReasonId = so.ReasonId,
+                    ReasonName = so.Reason != null ? so.Reason.Name : null
                 }).ToListAsync();
 
             return GeneralResponse<IEnumerable<SalesOrderDTO>>.SuccessResponse(query);
@@ -755,7 +776,7 @@ GetItemsByWarehouseIdAsync(int warehouseId)
     //    var query = _context.SalesOrders
     //       .AsNoTracking().Where(e => e.WarehouseId == (warehouseId == null ? yourWarehouse.WarehouseId : warehouseId));
 
-    //    // üîπ Filtering
+    //    // ?? Filtering
 
     //    if (!string.IsNullOrEmpty(status))
     //    {
@@ -765,14 +786,14 @@ GetItemsByWarehouseIdAsync(int warehouseId)
     //        }
     //    }
 
-    //    // üîπ Posting Date Filter
+    //    // ?? Posting Date Filter
     //    if (postingDate.HasValue)
     //    {
     //        var postDate = postingDate.Value.Date;
     //        query = query.Where(e => e.PostingDate.Date == postDate);
     //    }
 
-    //    // üîπ Due Date Filter
+    //    // ?? Due Date Filter
     //    if (DueDate.HasValue)
     //    {
     //        var dueDate = DueDate.Value.Date;
@@ -801,7 +822,7 @@ GetItemsByWarehouseIdAsync(int warehouseId)
     //            Customer = iw.Customer,
     //            IsReturn = iw.SalesReturnOrder == null ? false : (iw.SalesReturnOrder == null ? false : true),
     //            ReturnOrderId = iw.SalesReturnOrder == null ? null : (iw.SalesReturnOrder == null ? null : iw.SalesReturnOrder.SalesReturnOrderId),
-    //             // ‚úÖ ÿßŸÑÿ≠ÿßŸÑÿ© ÿßŸÑŸÖÿ∑ŸÑŸàÿ®ÿ©
+    //             // ? «·Õ«·… «·„ÿ·Ê»…
     //         Approval = _context.ProcessItemIsProgresses
     //        .Any(p =>
     //            p.ProcessType == ProcessType.Sales &&
@@ -824,3 +845,4 @@ GetItemsByWarehouseIdAsync(int warehouseId)
 
 
 }
+

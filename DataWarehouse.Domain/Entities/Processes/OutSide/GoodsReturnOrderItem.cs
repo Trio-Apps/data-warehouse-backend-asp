@@ -22,6 +22,10 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         // Pending, Planned, Released, Received, Closed, Failed
         public GeneralItemStatus Status { get; set; }
         public decimal? UnitPrice { get; set; }
+        public decimal? VatPercent { get; set; }
+        public decimal? VatAmount { get; set; }
+        public decimal? LineTotalBeforeVat { get; set; }
+        public decimal? LineTotalAfterVat { get; set; }
         public string? ErrorMessage { get; set; }
         public string? Comment { get; set; }
         public int? LineNum { get; set; }
@@ -44,6 +48,5 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public Item Item { get; set; }
 
         public ICollection<GoodsReturnOrderBatch> GoodsReturnOrderBatches { get; set; } = new List<GoodsReturnOrderBatch>();
-
     }
 }

@@ -22,6 +22,7 @@ namespace DataWarehouse.Core.DTOs.Processes
 
         public string? Comment { get; set; }
         public string? WarehouseCode { get; set; }
+        public string? WarehouseName { get; set; }
 
         public string? ErrorMessage { get; set; }
 

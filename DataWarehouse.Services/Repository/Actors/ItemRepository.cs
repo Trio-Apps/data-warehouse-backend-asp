@@ -21,7 +21,6 @@ public class ItemRepository : BaseRepository<Item>, IItemRepository
     //GetItemsByWarehouseIdWithItemCodeAndName
     public async Task<GeneralResponse<PagedResult<ItemResponseDTO>>>
       GetItemsWithItemCodeAndName(
-         
           string? itemCode,
           string? itemName,
           int pageNumber,
@@ -104,5 +103,67 @@ public class ItemRepository : BaseRepository<Item>, IItemRepository
     public async Task<IEnumerable<Item>> GetByItemGroupAsync(string itemGroup)
     {
         return await Query().Where(i => i.ItemGroup == itemGroup).ToListAsync();
+    }
+
+    public async Task<List<ItemPriceWithUomResponse>> GetItemPricesWithUomsAsync(int itemId)
+    {
+        var itemPrices = await _context.ItemPrices
+            .AsNoTracking()
+            .Where(p => p.ItemId == itemId)
+            .Include(p => p.UomPrices)
+            .OrderBy(p => p.PriceList)
+            .ToListAsync();
+
+        if (itemPrices.Count == 0)
+        {
+            return new List<ItemPriceWithUomResponse>();
+        }
+
+        var itemUomGroups = await _context.ItemUomGroups
+            .AsNoTracking()
+            .Where(g => g.ItemId == itemId)
+            .Select(g => new { g.UomEntry, g.UomCode })
+            .ToListAsync();
+
+        var uomCodeByEntry = itemUomGroups
+            .GroupBy(g => g.UomEntry)
+            .ToDictionary(g => g.Key, g => g.First().UomCode);
+
+        var totalRows = itemPrices.Count + itemPrices.Sum(p => p.UomPrices.Count);
+        var result = new List<ItemPriceWithUomResponse>(totalRows);
+
+        foreach (var itemPrice in itemPrices)
+        {
+            if (itemPrice.Price != null)
+            {
+                result.Add(new ItemPriceWithUomResponse
+                {
+                    ItemPriceId = itemPrice.ItemPriceId,
+                    PriceList = itemPrice.PriceList,
+                    Price = itemPrice.Price,
+                    Currency = itemPrice.Currency,
+                    UoMEntry = null,
+                    UomCode = null
+                });
+
+                foreach (var uomPrice in itemPrice.UomPrices)
+                {
+                    uomCodeByEntry.TryGetValue(uomPrice.UoMEntry, out var uomCode);
+
+                    result.Add(new ItemPriceWithUomResponse
+                    {
+                        ItemPriceId = itemPrice.ItemPriceId,
+                        PriceList = uomPrice.PriceList,
+                        Price = uomPrice.Price,
+                        Currency = uomPrice.Currency,
+                        UoMEntry = uomPrice.UoMEntry,
+                        UomCode = uomCode
+                    });
+                }
+            }
+         
+        }
+
+        return result;
     }
 }

@@ -7,6 +7,8 @@ namespace DataWarehouse.Core.DTOs.Processes;
 public class TransferredRequestDTO : GeneralOrderDto
 {
     public int TransferredRequestId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
 
     public DateTime? PostingDate { get; set; }
@@ -35,6 +37,7 @@ public class AddTransferredRequestDTO : AddGeneralOrderDto
     [Required(ErrorMessage = "Destination Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
     public int DistinationWarehouseId { get; set; }
+    public int? ReasonId { get; set; }
 }
 
 public class UpdateTransferredRequestDTO : UpdateGeneralOrderDto
@@ -47,6 +50,7 @@ public class UpdateTransferredRequestDTO : UpdateGeneralOrderDto
     [Required(ErrorMessage = "Destination Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Destination Warehouse ID must be greater than 0")]
     public int DistinationWarehouseId { get; set; }
+    public int? ReasonId { get; set; }
 
 }
 
@@ -86,12 +90,16 @@ public class UpdateTransferredRequestItemDTO
 
     [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
     public decimal? UnitPrice { get; set; }
+    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
+    public decimal? LineTotalBeforeVat { get; set; }
+    public decimal? LineTotalAfterVat { get; set; }
 }
 
 public class AddTransferredRequestItemCreateRequest
 {
     public DynamicBarcodesDto? Barcode { get; set; }
-    public AddTransferredRequestItemDTO? Item { get; set; }
+    public AddGeneralItemDto? Item { get; set; }
 }
 
 public class TransferredRequestBatchDTO

@@ -5,16 +5,14 @@ using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.BarCode;
-using DataWarehouse.Domain.Entities.Processes.BulkProductions;
-using DataWarehouse.Domain.Enums;
 using DataWarehouse.SAP.Enums;
 using DataWarehouse.SAP.Interfaces.Actors;
 using DataWarehouse.SAP.Interfaces.Based;
 using DataWarehouse.SAP.Models.Actors;
-using DataWarehouse.Services.Repository.SapRepo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Polly;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using static DataWarehouse.SAP.Models.Actors.ItemSapModel;
@@ -39,10 +37,12 @@ namespace Dataitem.SAP.Repositories.Actors
             _context = context;
         }
 
+
         public async Task<string> SyncItemsAsync(int sapId)
         {
             var state = await _syncRepo.GetLastSyncPaginationSkipAsync(sapId, EntitiesName.item.ToString());
             int skip = state;
+
 
 
             var lastSync = await _syncRepo.GetLastSyncDateAsync(sapId, EntitiesName.item.ToString());
@@ -116,24 +116,23 @@ namespace Dataitem.SAP.Repositories.Actors
             if (sapItems == null || sapItems.Count == 0)
                 return 0;
 
-            // ✅ keys مرة واحدة
-            var codes = sapItems.Select(s => s.ItemCode).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
+            var codes = sapItems
+                .Select(s => s.ItemCode)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Distinct()
+                .ToList();
 
-            // ✅ هات الموجود مرة واحدة (Tracked عشان updates)
             var existingItems = await _context.Items
                 .Where(i => i.SapId == sapId && codes.Contains(i.ItemCode))
                 .ToListAsync();
 
-
             var existingByCode = existingItems.ToDictionary(x => x.ItemCode, x => x);
-
 
             var itemsToAdd = new List<Item>(capacity: Math.Max(16, sapItems.Count));
             var itemWarehouses = new List<SapItemWarehouseDtoResponse>(capacity: sapItems.Count);
             var itemBarCodes = new List<ItemBarCodesDtoResponse>(capacity: sapItems.Count);
+            var itemPrices = new List<SapItemPricesDtoResponse>(capacity: sapItems.Count);
 
-
-            // ✅ تسريع EF أثناء الدفعة
             var prevAutoDetect = _context.ChangeTracker.AutoDetectChangesEnabled;
             _context.ChangeTracker.AutoDetectChangesEnabled = false;
 
@@ -148,9 +147,7 @@ namespace Dataitem.SAP.Repositories.Actors
                         .OrderBy(p => p.PriceList)
                         .LastOrDefault()?.Price ?? 0;
 
-
-
-                    logger.LogInformation("One Item From Sap. sap={sap}",sap.ItemCode);
+                    logger.LogInformation("One Item From Sap. sap={sap}", sap.ItemCode);
 
                     if (existingByCode.TryGetValue(sap.ItemCode, out var existingItem))
                     {
@@ -186,17 +183,13 @@ namespace Dataitem.SAP.Repositories.Actors
                             InventoryItem = sap.InventoryItem == "tYES",
                             SalesItem = sap.SalesItem == "tYES",
                             PurchaseItem = sap.PurchaseItem == "tYES",
-
                         });
                     }
 
-
-                    // ✅ (1) Warehouses: خزن “Sparse” فقط (اللي له معنى)
-                    var sparseWh = (sap.ItemWarehouseInfoCollection)
+                    var sparseWh = sap.ItemWarehouseInfoCollection
                         .Where(w =>
                             !string.IsNullOrWhiteSpace(w.WarehouseCode) &&
-                            ((w.InStock ?? 0m) != 0m || (w.MinimalStock ?? 0m) != 0m)
-                        )
+                            ((w.InStock ?? 0m) != 0m || (w.MinimalStock ?? 0m) != 0m))
                         .ToList();
 
                     itemWarehouses.Add(new SapItemWarehouseDtoResponse
@@ -205,36 +198,33 @@ namespace Dataitem.SAP.Repositories.Actors
                         ItemWarehouseInfoCollection = sparseWh
                     });
 
-                    // ✅ (2) Barcodes (برضه ممكن تعملها Sparse لو كبيرة)
                     itemBarCodes.Add(new ItemBarCodesDtoResponse
                     {
                         ItemCode = sap.ItemCode,
                         ItemBarCodeCollection = sap.ItemBarCodeCollection
+                    });
+
+                    itemPrices.Add(new SapItemPricesDtoResponse
+                    {
+                        ItemCode = sap.ItemCode,
+                        ItemPrices = sap.ItemPrices ?? new List<SapItemPriceDto>()
                     });
                 }
 
                 if (itemsToAdd.Count > 0)
                     await _context.Items.AddRangeAsync(itemsToAdd);
 
-               
-                // ✅ Save مرة واحدة للعناصر (عشان IDs تبقى موجودة)
                 await _context.SaveChangesAsync();
 
-                // ✅ Upsert Warehouses/Barcodes
                 await UpsertItemWarehouseAsync(sapId, itemWarehouses);
                 await UpsertItemBarCodeAsync(sapId, itemBarCodes);
+                await UpsertItemPricesAsync(sapId, itemPrices);
 
-
-                // ✅ تحديث pagination
-              //  await _syncRepo.UpdateLastSyncPaginationSkipAsync(sapId, EntitiesName.item.ToString(), nextSkip);
                 var row = await _context.SapSyncPaginations
-                .FirstOrDefaultAsync(x => x.SapId == sapId && x.EntityName == EntitiesName.item.ToString());
+                    .FirstOrDefaultAsync(x => x.SapId == sapId && x.EntityName == EntitiesName.item.ToString());
 
                 row.Skip = nextSkip;
-
-                // ✅ علّم التغيير يدويًا
                 _context.Entry(row).Property(x => x.Skip).IsModified = true;
-
 
                 await _context.SaveChangesAsync();
 
@@ -245,7 +235,6 @@ namespace Dataitem.SAP.Repositories.Actors
                 _context.ChangeTracker.AutoDetectChangesEnabled = prevAutoDetect;
             }
         }
-
         private async Task UpsertItemWarehouseAsync(int sapId, ICollection<SapItemWarehouseDtoResponse> itemWarehouses)
         {
             // لو الدفعة Sparse ومفيهاش warehouses أصلاً، متعملش حاجة
@@ -368,6 +357,121 @@ namespace Dataitem.SAP.Repositories.Actors
             }
         }
 
+        private async Task UpsertItemPricesAsync(int sapId, ICollection<SapItemPricesDtoResponse> itemPrices)
+        {
+            if (itemPrices == null || itemPrices.Count == 0)
+                return;
+
+            var relevant = itemPrices
+                .Where(x => !string.IsNullOrWhiteSpace(x.ItemCode) &&
+                            x.ItemPrices != null &&
+                            x.ItemPrices.Count > 0)
+                .ToList();
+
+            if (relevant.Count == 0)
+                return;
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var itemCodes = relevant
+                    .Select(x => x.ItemCode)
+                    .Distinct()
+                    .ToList();
+
+                var items = await _context.Items
+                    .Where(x => x.SapId == sapId && itemCodes.Contains(x.ItemCode))
+                    .ToDictionaryAsync(x => x.ItemCode, x => x);
+
+                var itemIds = items.Values
+                    .Select(x => x.ItemId)
+                    .Distinct()
+                    .ToList();
+
+                var existingItemPrices = await _context.ItemPrices
+                    .Where(x => itemIds.Contains(x.ItemId))
+                    .Include(x => x.UomPrices)
+                    .ToListAsync();
+
+                if (existingItemPrices.Count > 0)
+                {
+                    var existingUomPrices = existingItemPrices
+                        .SelectMany(x => x.UomPrices)
+                        .ToList();
+
+                    if (existingUomPrices.Count > 0)
+                        _context.ItemUomPrices.RemoveRange(existingUomPrices);
+
+                    _context.ItemPrices.RemoveRange(existingItemPrices);
+                    await _context.SaveChangesAsync();
+                }
+
+                var newItemPrices = new List<DataWarehouse.Domain.Entities.Actors.ItemPrice>(capacity: 1024);
+
+                var prevAutoDetect = _context.ChangeTracker.AutoDetectChangesEnabled;
+                _context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+                try
+                {
+                    foreach (var itemPriceDto in relevant)
+                    {
+                        if (!items.TryGetValue(itemPriceDto.ItemCode, out var item))
+                            continue;
+
+                        foreach (var sapPrice in itemPriceDto.ItemPrices)
+                        {
+                            var newItemPrice = new DataWarehouse.Domain.Entities.Actors.ItemPrice
+                            {
+                                ItemId = item.ItemId,
+                                PriceList = sapPrice.PriceList,
+                                Price = sapPrice.Price,
+                                Currency = sapPrice.Currency ?? string.Empty,
+                              
+                                BasePriceList = sapPrice.BasePriceList,
+                                Factor = sapPrice.Factor,
+                                UomPrices = new List<ItemUomPrice>()
+                            };
+
+                            if (sapPrice.UoMPrices != null && sapPrice.UoMPrices.Count > 0)
+                            {
+                                foreach (var sapUom in sapPrice.UoMPrices)
+                                {
+                                    newItemPrice.UomPrices.Add(new ItemUomPrice
+                                    {
+                                        PriceList = sapUom.PriceList,
+                                        UoMEntry = sapUom.UoMEntry,
+                                        ReduceBy = sapUom.ReduceBy,
+                                        Price = sapUom.Price,
+                                        Currency = sapUom.Currency ?? string.Empty,
+                                      
+                                        Auto = string.Equals(sapUom.Auto, "tYES", StringComparison.OrdinalIgnoreCase)
+                                    });
+                                }
+                            }
+
+                            newItemPrices.Add(newItemPrice);
+                        }
+                    }
+
+                    if (newItemPrices.Count > 0)
+                        await _context.ItemPrices.AddRangeAsync(newItemPrices);
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                finally
+                {
+                    _context.ChangeTracker.AutoDetectChangesEnabled = prevAutoDetect;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                logger.LogError(ex, "Error upserting item prices for SapId: {SapId}", sapId);
+                throw;
+            }
+        }
         private async Task UpsertItemBarCodeAsync(int sapId, ICollection<ItemBarCodesDtoResponse> itemBarCodes)
         {
             if (itemBarCodes == null || !itemBarCodes.Any())

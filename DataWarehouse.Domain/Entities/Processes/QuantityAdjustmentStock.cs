@@ -23,6 +23,7 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int? DocNum { get; set; }
         public string? DocType { get; set; }
         public string? ErrorMessage { get; set; }
+        public int? ReasonId { get; set; }
 
 
         [NotMapped]
@@ -36,8 +37,10 @@ namespace DataWarehouse.Domain.Entities.Processes
         // Navigation
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
+        public Reason? Reason { get; set; }
         public int WarehouseId { get; set; }
         public Warehouse Warehouse { get; set; }
         public ICollection<QuantityAdjustmentStockItem> QuantityAdjustmentStockItems { get; set; } = new List<QuantityAdjustmentStockItem>();
     }
+    
 }

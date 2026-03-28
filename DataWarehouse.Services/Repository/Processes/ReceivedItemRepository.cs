@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
@@ -37,6 +37,10 @@ public class ReceivedItemRepository : BaseRepository<ReceivedItem>, IReceivedIte
                 UoMEntry = e.UoMEntry,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 ErrorMessage = e.ErrorMessage,
                 Status = e.Status.ToString(),
                 Comment = e.Comment,
@@ -87,6 +91,10 @@ public class ReceivedItemRepository : BaseRepository<ReceivedItem>, IReceivedIte
                 UoMEntry = e.UoMEntry,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 ErrorMessage = e.ErrorMessage,
                 Status = e.Status.ToString(),
                 Comment = e.Comment,
@@ -145,6 +153,10 @@ public class ReceivedItemRepository : BaseRepository<ReceivedItem>, IReceivedIte
             UoMEntry = res.Data.UoMEntry,
             BarCode = res.Data.BarCode,
             UnitPrice = res.Data.UnitPrice,
+            VatPercent = res.Data.VatPercent,
+            VatAmount = res.Data.VatAmount,
+            LineTotalBeforeVat = res.Data.LineTotalBeforeVat,
+            LineTotalAfterVat = res.Data.LineTotalAfterVat,
             ErrorMessage = res.Data.ErrorMessage,
             Status = res.Data.Status.ToString(),
             Comment = res.Data.Comment,
@@ -237,6 +249,14 @@ public class ReceivedItemRepository : BaseRepository<ReceivedItem>, IReceivedIte
             BarCode = transferredItem.BarCode,
             UnitPrice = transferredItem.UnitPrice,
 
+            VatPercent = transferredItem.VatPercent,
+
+            VatAmount = transferredItem.VatAmount,
+
+            LineTotalBeforeVat = transferredItem.LineTotalBeforeVat,
+
+            LineTotalAfterVat = transferredItem.LineTotalAfterVat,
+
             // status like your planned logic
             Status = GeneralItemStatus.Planned,
             ErrorMessage = null,
@@ -293,6 +313,10 @@ public class ReceivedItemRepository : BaseRepository<ReceivedItem>, IReceivedIte
             UoMEntry = finalItem.UoMEntry,
             BarCode = finalItem.BarCode,
             UnitPrice = finalItem.UnitPrice,
+            VatPercent = finalItem.VatPercent,
+            VatAmount = finalItem.VatAmount,
+            LineTotalBeforeVat = finalItem.LineTotalBeforeVat,
+            LineTotalAfterVat = finalItem.LineTotalAfterVat,
             ErrorMessage = finalItem.ErrorMessage,
             ReceivedStockId = finalItem.ReceivedStockId,
             TransferredItemId = finalItem.TransferredItemId,
@@ -398,6 +422,10 @@ public class ReceivedItemRepository : BaseRepository<ReceivedItem>, IReceivedIte
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             ErrorMessage = entity.ErrorMessage,
             ReceivedStockId = entity.ReceivedStockId,
             TransferredItemId = entity.TransferredItemId,
@@ -491,6 +519,10 @@ public class ReceivedItemRepository : BaseRepository<ReceivedItem>, IReceivedIte
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             ErrorMessage = entity.ErrorMessage,
             Status = entity.Status.ToString(),
             Comment = entity.Comment,

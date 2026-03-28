@@ -1,4 +1,4 @@
-ï»¿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
@@ -13,6 +13,7 @@ using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using DataWarehouse.Services.Repository.Processes;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -28,20 +29,23 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 {
     private readonly IBaseProcessesRepository<ReceiptPurchaseOrder> baseProcesses;
     private readonly IApprovalRepository approval;
+    private readonly ReasonValidationService reasonValidationService;
 
     public ReceiptPurchaseOrderRepository(
         IBaseProcessesRepository<ReceiptPurchaseOrder> baseProcesses,
         IApprovalRepository approval,
+        ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        this.reasonValidationService = reasonValidationService;
     }
 
 
     public async Task<IEnumerable<ReceiptPurchaseOrder>> GetByWarehouseIdAsync(int warehouseId)
     {
-        return await Query().Where(rpo => rpo.WarehouseId == warehouseId).ToListAsync();
+        return await Query().Include(rpo => rpo.Reason).Where(rpo => rpo.WarehouseId == warehouseId).ToListAsync();
     }
 
     public async Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize)
@@ -52,6 +56,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         var query = _context.ReceiptPurchaseOrders
             .AsNoTracking()
+            .Include(rpo => rpo.Reason)
             .Where(rpo => rpo.WarehouseId == warehouseId);
 
         var totalRecords = await query.CountAsync();
@@ -70,6 +75,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
                 PurchaseOrderId = iw.PurchaseOrderId,
                 SupplierId = iw.SupplierId,
                 ErrorMessage= iw.ErrorMessage,
+                ReasonId = iw.ReasonId,
+                ReasonName = iw.Reason != null ? iw.Reason.Name : null,
             })
             .ToListAsync();
 
@@ -92,9 +99,10 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         var query = _context.ReceiptPurchaseOrders
             .AsNoTracking().Include(e => e.ReceiptPurchaseOrderItems)
+            .Include(e => e.Reason)
             .Where(po => po.WarehouseId == warehouseId);
 
-        // ðŸ”¹ Filtering
+        // ?? Filtering
 
 
         if (supplierId.HasValue)
@@ -109,14 +117,14 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             }
         }
 
-        // ðŸ”¹ Posting Date Filter
+        // ?? Posting Date Filter
         if (postingDate.HasValue)
         {
             var postDate = postingDate.Value.Date;
             query = query.Where(e => e.PostingDate.Date == postDate);
         }
 
-        // ðŸ”¹ Due Date Filter
+        // ?? Due Date Filter
         if (DueDate.HasValue)
         {
             var dueDate = DueDate.Value.Date;
@@ -132,7 +140,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         }
 
-        query = query.OrderByDescending(e => e.CreatedAt); // ØªØ£ÙƒØ¯ Ù‡Ù†Ø§
+        query = query.OrderByDescending(e => e.CreatedAt); // ÊÃßÏ åäÇ
 
         // Approved references subquery (for Sales process only)
         var processQuery = _context.ProcessItemIsProgresses
@@ -148,13 +156,13 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
          {
              Order = iw,
 
-             // Ù‡Ù„ ÙÙŠÙ‡ progress Ø£ØµÙ„Ø§Ù‹ØŸ
+             // åá Ýíå progress ÃÕáÇð¿
              HasProgress = processQuery.Any(p => p.ReferenceId == iw.PurchaseOrderId),
 
-             // Ø¢Ø®Ø± Status (Ù„Ùˆ Ù…ÙˆØ¬ÙˆØ¯)
+             // ÂÎÑ Status (áæ ãæÌæÏ)
              LatestStatus = processQuery
                  .Where(p => p.ReferenceId == iw.ReceiptPurchaseOrderId)
-                 .OrderByDescending(p => p.ProcessItemIsProgressId) // Ø£Ùˆ CreatedAt Ù„Ùˆ Ø¹Ù†Ø¯Ùƒ
+                 .OrderByDescending(p => p.ProcessItemIsProgressId) // Ãæ CreatedAt áæ ÚäÏß
                  .Select(p => (ProcessStatus?)p.Status)
                  .FirstOrDefault()
          })
@@ -171,10 +179,10 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
              SupplierName = x.Order.Supplier.SupplierName,
              ItemCount = x.Order.ReceiptPurchaseOrderItems.Count(),
 
-             // âœ… ÙˆØ¬ÙˆØ¯ progx.Orders
+             // ? æÌæÏ progx.Orders
              Approval = x.HasProgress,
 
-             // âœ… Ø§Ø³Ù… Ø§Ù„Ø­Ø§Ù„Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ© (Ø¢Ø®Ø± Status)
+             // ? ÇÓã ÇáÍÇáÉ ÇáÍÇáíÉ (ÂÎÑ Status)
              ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
 
 
@@ -183,6 +191,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
              CreatedAt = x.Order.CreatedAt,
              SupplierId = x.Order.SupplierId,
              ErrorMessage = x.Order.ErrorMessage,
+             ReasonId = x.Order.ReasonId,
+             ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
            
              IsReturn = x.Order.GoodsReturnOrder != null,
              ReturnOrderId = x.Order.GoodsReturnOrder != null ? x.Order.GoodsReturnOrder.GoodsReturnOrderId : null,
@@ -204,6 +214,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     {
         var res = await _context.ReceiptPurchaseOrders.Include(r => r.GoodsReturnOrder)
             .Include(r=>r.Supplier)
+            .Include(r => r.Reason)
             .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == receiptOrderId);
 
         if (res == null)
@@ -226,6 +237,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             SupplierName =res.Supplier.SupplierName,
            SupplierCode = res.Supplier.SupplierCode,
             ErrorMessage = res.ErrorMessage,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null,
 
             Comment = res.Comment,
             CanApprove = approvalModel.CanApprove,
@@ -243,6 +256,14 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
    // without reference
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderAsync(string userId, AddReceiptPurchaseOrderWithoutRefDTO dto)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Receipt);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse(ex.Message);
+        }
 
         var suppler = await _context.Suppliers.FirstOrDefaultAsync(p => p.SupplierId == dto.SupplierId);
 
@@ -261,13 +282,14 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             WarehouseId = dto.WarehouseId,
             Comment = dto.Comment,
             SupplierId = dto.SupplierId,
+            ReasonId = dto.ReasonId,
         };
 
 
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
 
-        // âœ… Ø´ØºÙ„ Ø§Ù„Ù€ Approval Workflow Ù„Ùˆ Ù…Ø´ Draft
+        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -283,6 +305,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             UserId = res.UserId,
             WarehouseId = res.WarehouseId,
             SupplierId = res.SupplierId,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null,
         };
 
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(model);
@@ -290,6 +314,14 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderByPurchaseOrderIdAsync(string userId, AddReceiptPurchaseOrderDTO dto)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Receipt);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse(ex.Message);
+        }
 
         var purchaseOrder = await _context.PurchaseOrders.Include(p=>p.ReceiptPurchaseOrder).FirstOrDefaultAsync(p=>p.PurchaseOrderId == dto.PurchaseOrderId);
 
@@ -314,13 +346,14 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             WarehouseId = purchaseOrder.WarehouseId,
             Comment = dto.Comment,
             SupplierId = purchaseOrder.SupplierId,
-            PurchaseOrderId = dto.PurchaseOrderId
+            PurchaseOrderId = dto.PurchaseOrderId,
+            ReasonId = dto.ReasonId
         };
 
         var res = await AddAsync(mapping);
         await SaveChangesAsync();
 
-        // âœ… Ø´ØºÙ„ Ø§Ù„Ù€ Approval Workflow Ù„Ùˆ Ù…Ø´ Draft
+        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -341,7 +374,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             WarehouseId = res.WarehouseId,
             PurchaseOrderId = res.PurchaseOrderId,
             SupplierId = purchaseOrder.SupplierId,
-            Comment = res.Comment
+            Comment = res.Comment,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null
         };
 
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(model);
@@ -351,9 +386,18 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     string userId,
     AddReceiptPurchaseOrderDTO dto)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Receipt);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse(ex.Message);
+        }
+
         var purchaseOrder = await _context.PurchaseOrders
             .Include(p => p.ReceiptPurchaseOrder)
-            .Include(p => p.PurchaseOrderItems) // âœ… Ù‡Ø§Øª items
+            .Include(p => p.PurchaseOrderItems) // ? åÇÊ items
             .FirstOrDefaultAsync(p => p.PurchaseOrderId == dto.PurchaseOrderId);
 
         if (purchaseOrder == null)
@@ -379,8 +423,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             Comment = dto.Comment,
             SupplierId = purchaseOrder.SupplierId,
             PurchaseOrderId = dto.PurchaseOrderId,
+            ReasonId = dto.ReasonId,
 
-            // âœ… Copy PO items -> Receipt PO items
+            // ? Copy PO items -> Receipt PO items
             ReceiptPurchaseOrderItems = purchaseOrder.PurchaseOrderItems.Select(poi => new ReceiptPurchaseOrderItem
             {
                 ItemId = poi.ItemId,
@@ -389,7 +434,15 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
                 BarCode = poi.BarCode,
                 UnitPrice = poi.UnitPrice,
 
-                // Ù…Ù†Ø·Ù‚ Ø§Ù„Ø³ØªØ§ØªØ³: Ù„Ø³Ù‡ Ø§Ù„Ø§Ø³ØªÙ„Ø§Ù… Ù…Ø§ ØªÙ…Ø´
+                VatPercent = poi.VatPercent,
+
+                VatAmount = poi.VatAmount,
+
+                LineTotalBeforeVat = poi.LineTotalBeforeVat,
+
+                LineTotalAfterVat = poi.LineTotalAfterVat,
+
+                // ãäØÞ ÇáÓÊÇÊÓ: áÓå ÇáÇÓÊáÇã ãÇ ÊãÔ
                 Status = GeneralItemStatus.Planned,
 
                 // optional
@@ -401,7 +454,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         await _context.ReceiptPurchaseOrders.AddAsync(receipt);
         await SaveChangesAsync();
 
-        // âœ… Ø´ØºÙ„ Ø§Ù„Ù€ Approval Workflow Ù„Ùˆ Ù…Ø´ Draft
+        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -422,7 +475,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             WarehouseId = receipt.WarehouseId,
             PurchaseOrderId = receipt.PurchaseOrderId,
             SupplierId = receipt.SupplierId,
-            Comment = receipt.Comment
+            Comment = receipt.Comment,
+            ReasonId = receipt.ReasonId,
+            ReasonName = receipt.Reason != null ? receipt.Reason.Name : null
         };
 
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(model);
@@ -430,6 +485,15 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderDTO dto)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Receipt);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse(ex.Message);
+        }
+
         var entity = await _context.ReceiptPurchaseOrders.FirstOrDefaultAsync(e => e.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
 
         if (entity.ReceiptPurchaseOrderId != receiptPurchaseOrderId)
@@ -462,6 +526,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         if (dto.SupplierId.HasValue)
             entity.SupplierId = dto.SupplierId.Value;
+        entity.ReasonId = dto.ReasonId;
 
         entity.UserId = userId;
         if (dto.Comment != null)
@@ -499,7 +564,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             WarehouseId = entity.WarehouseId,
             PurchaseOrderId = entity.PurchaseOrderId,
             SupplierId = entity.SupplierId,
-            Comment = entity.Comment
+            Comment = entity.Comment,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(result);
@@ -527,7 +594,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
 
-        // Snapshot Ù‚Ø¨Ù„ Ø§Ù„Ø­Ø°Ù Ø¹Ù„Ø´Ø§Ù† Ù†Ø±Ø¬Ø¹Ù‡ ÙÙŠ Ø§Ù„Ù€ response
+        // Snapshot ÞÈá ÇáÍÐÝ ÚáÔÇä äÑÌÚå Ýí ÇáÜ response
         var result = new ReceiptPurchaseOrderDTO
         {
             ReceiptPurchaseOrderId = entity.ReceiptPurchaseOrderId,
@@ -537,10 +604,12 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             SupplierId = entity.SupplierId,
-            Comment = entity.Comment
+            Comment = entity.Comment,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
-        // Ù„Ùˆ Ø¹Ù†Ø¯Ùƒ ØªÙØ§ØµÙŠÙ„ ÙˆÙ…ÙÙŠØ´ Cascade Delete Ù‡ØªØ­ØªØ§Ø¬ ØªÙ…Ø³Ø­Ù‡Ø§ Ø§Ù„Ø£ÙˆÙ„ Ù‡Ù†Ø§
+        // áæ ÚäÏß ÊÝÇÕíá æãÝíÔ Cascade Delete åÊÍÊÇÌ ÊãÓÍåÇ ÇáÃæá åäÇ
         _context.ReceiptPurchaseOrders.Remove(entity);
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -560,6 +629,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetByPurchaseOrderIdAsync(string userId, int purchaseOrderId)
     {
         var res = await _context.ReceiptPurchaseOrders.Include(r=>r.GoodsReturnOrder)
+            .Include(r => r.Reason)
             .FirstOrDefaultAsync(rpo => rpo.PurchaseOrderId == purchaseOrderId);
 
         if (res == null)
@@ -579,6 +649,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             PurchaseOrderId = res.PurchaseOrderId,
             SupplierId = res.SupplierId,
             Comment= res.Comment,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null,
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
             ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
@@ -620,7 +692,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
                     PurchaseOrderId = p.PurchaseOrderId,
                     ReceiptPurchaseOrderId = p.ReceiptPurchaseOrderId,
                     Comment = p.Comment,
-                    SupplierId = p.SupplierId,    
+                    SupplierId = p.SupplierId,
+                    ReasonId = p.ReasonId,
+                    ReasonName = p.Reason != null ? p.Reason.Name : null,
                     Status = p.Status.ToString(),
                     // string = enum
                     UserId = p.UserId,
@@ -637,12 +711,12 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
     public async Task<IEnumerable<ReceiptPurchaseOrder>> GetByUserIdAsync(string userId)
     {
-        return await Query().Where(rpo => rpo.UserId == userId).ToListAsync();
+        return await Query().Include(rpo => rpo.Reason).Where(rpo => rpo.UserId == userId).ToListAsync();
     }
 
     public async Task<ReceiptPurchaseOrder?> GetWithItemsAsync(int receiptPurchaseOrderId)
     {
-        return await QueryIncluding(false, rpo => rpo.ReceiptPurchaseOrderItems)
+        return await QueryIncluding(false, rpo => rpo.ReceiptPurchaseOrderItems, rpo => rpo.Reason)
             .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == receiptPurchaseOrderId);
     }
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetWithItemsAndBatchesAsync(int receiptPurchaseOrderId)
@@ -663,6 +737,8 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
          SupplierId = r.SupplierId,
          SupplierName = r.Supplier.SupplierName,
          WarehouseCode = r.Warehouse.WarehouseCode,
+         ReasonId = r.ReasonId,
+         ReasonName = r.Reason != null ? r.Reason.Name : null,
 
          Items = r.ReceiptPurchaseOrderItems.Select(i => new ReceiptPurchaseOrderItemDTO
          {
@@ -671,6 +747,10 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
              UoMEntry = i.UoMEntry,
              BarCode = i.BarCode,
              UnitPrice = i.UnitPrice,
+             VatPercent = i.VatPercent,
+             VatAmount = i.VatAmount,
+             LineTotalBeforeVat = i.LineTotalBeforeVat,
+             LineTotalAfterVat = i.LineTotalAfterVat,
              ErrorMessage = i.ErrorMessage,
              Comment = i.Comment,
              ReceiptPurchaseOrderId = i.ReceiptPurchaseOrderId,
@@ -698,24 +778,24 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
     public async Task<ReceiptPurchaseOrder?> GetWithPurchaseOrderAsync(int receiptPurchaseOrderId)
     {
-        return await QueryIncluding(false, rpo => rpo.PurchaseOrder)
+        return await QueryIncluding(false, rpo => rpo.PurchaseOrder, rpo => rpo.Reason)
             .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == receiptPurchaseOrderId);
     }
 
     public async Task<ReceiptPurchaseOrder?> GetWithWarehouseAsync(int receiptPurchaseOrderId)
     {
-        return await QueryIncluding(false, rpo => rpo.Warehouse)
+        return await QueryIncluding(false, rpo => rpo.Warehouse, rpo => rpo.Reason)
             .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == receiptPurchaseOrderId);
     }
 
     public async Task<IEnumerable<ReceiptPurchaseOrder>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
-        return await Query().Where(rpo => rpo.CreatedAt >= startDate && rpo.CreatedAt <= endDate).ToListAsync();
+        return await Query().Include(rpo => rpo.Reason).Where(rpo => rpo.CreatedAt >= startDate && rpo.CreatedAt <= endDate).ToListAsync();
     }
 
     public async Task<IEnumerable<ReceiptPurchaseOrder>> GetPendingReceiptsAsync()
     {
-        return await Query().Where(rpo => rpo.Status == GeneralStatus.Processing).ToListAsync();
+        return await Query().Include(rpo => rpo.Reason).Where(rpo => rpo.Status == GeneralStatus.Processing).ToListAsync();
     }
     //public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderWithoutRefAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderWithoutRefDTO dto)
     //{
@@ -793,3 +873,4 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     //}
 
 }
+

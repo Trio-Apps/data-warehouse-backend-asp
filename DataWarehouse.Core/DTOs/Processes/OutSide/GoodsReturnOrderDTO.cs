@@ -1,4 +1,4 @@
-using DataWarehouse.Domain.Entities.Actors;
+﻿using DataWarehouse.Domain.Entities.Actors;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,6 +8,8 @@ namespace DataWarehouse.Core.DTOs.Processes.OutSide;
 public class GoodsReturnOrderDTO : GeneralOrderDto
 {
     public int GoodsReturnOrderId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
 
     [Required(ErrorMessage = "Supplier ID is required")]
@@ -33,6 +35,7 @@ public class AddGoodsReturnOrderModel
     public int ReceiptPurchaseOrderId { get; set; }
 
     public string? Comment { get; set; }
+    public int? ReasonId { get; set; }
 }
 
 public class AddGoodsReturnOrderDTO : AddGeneralOrderDto
@@ -43,6 +46,7 @@ public class AddGoodsReturnOrderDTO : AddGeneralOrderDto
 
     [Required(ErrorMessage = "PostingDate is required")]
     public DateTime PostingDate { get; set; }
+    public int? ReasonId { get; set; }
 
 }
 
@@ -65,6 +69,7 @@ public class AddGoodsReturnOrderWithoutRefDTO
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
+    public int? ReasonId { get; set; }
 }
 
 public class UpdateGoodsReturnOrderDTO
@@ -78,6 +83,7 @@ public class UpdateGoodsReturnOrderDTO
 
     public int? SupplierId { get; set; }
     public bool IsDraft { get; set; }
+    public int? ReasonId { get; set; }
 
 }
 
@@ -93,9 +99,14 @@ public class GoodsReturnOrderItemDTO
     public int UoMEntry { get; set; }
 
     public string? BarCode { get; set; }
+    public decimal? UnitPrice { get; set; }
 
     [Range(0, double.MaxValue, ErrorMessage = "Unit Price must be zero or greater")]
-    public decimal? UnitPrice { get; set; }
+    
+    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
+    public decimal? LineTotalBeforeVat { get; set; }
+    public decimal? LineTotalAfterVat { get; set; }
 
     public string? ErrorMessage { get; set; }
 
@@ -146,6 +157,12 @@ public class UpdateGoodsReturnOrderItemDTO
 
     [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
     public decimal? Quantity { get; set; }
+
+    public decimal? UnitPrice { get; set; }
+    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
+    public decimal? LineTotalBeforeVat { get; set; }
+    public decimal? LineTotalAfterVat { get; set; }
 
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }

@@ -1,5 +1,6 @@
 ﻿using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.Auth;
+using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using System;
@@ -21,15 +22,18 @@ namespace DataWarehouse.Domain.Entities.Processes.BulkProductions
         public DateTime PostingDate { get; set; }
         public DateTime DueDate { get; set; }
         public string? Remarks { get; set; }
+        public int? ReasonId { get; set; }
 
 
         // Navigation
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
+        public Reason? Reason { get; set; }
         public int WarehouseId { get; set; }
         public Warehouse Warehouse { get; set; }
         public ICollection<ProductionOrderItem> ProductionOrderItems { get; set; }
             = new List<ProductionOrderItem>();
+
         public ICollection<ProductionHeaderBatch> ProductionHeaderBatches { get; set; }
             = new List<ProductionHeaderBatch>();
 

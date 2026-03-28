@@ -8,6 +8,8 @@ namespace DataWarehouse.Core.DTOs.Processes.OutSide;
 public class DeliveryNoteOrderDTO : GeneralOrderDto
 {
     public int DeliveryNoteOrderId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
     [Required(ErrorMessage = "Customer ID is required")]
     public int CustomerId { get; set; }
@@ -29,6 +31,7 @@ public class AddDeliveryNoteOrderDTO : AddGeneralOrderDto
 
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }
+    public int? ReasonId { get; set; }
 
   
 
@@ -50,6 +53,7 @@ public class AddDeliveryNoteOrderWithoutRefDTO : AddGeneralOrderDto
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
+    public int? ReasonId { get; set; }
 }
 
 // 4. Update DTO
@@ -62,6 +66,7 @@ public class UpdateDeliveryNoteOrderDTO
     public DateTime? DueDate { get; set; }
     public string? Comment { get; set; }
     public int? CustomerId { get; set; }
+    public int? ReasonId { get; set; }
     public bool IsDraft { get; set; }
 }
 

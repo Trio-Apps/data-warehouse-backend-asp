@@ -60,6 +60,10 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
                 PurchaseOrderId = e.PurchaseOrderId,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 UoMEntry = e.UoMEntry,
                 UnitName = e.Item.ItemUomGroups
                     .Where(i => i.UomEntry == e.UoMEntry)
@@ -106,6 +110,10 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO
             PurchaseOrderId = e.PurchaseOrderId,
             BarCode = e.BarCode,
             UnitPrice = e.UnitPrice,
+            VatPercent = e.VatPercent,
+            VatAmount = e.VatAmount,
+            LineTotalBeforeVat = e.LineTotalBeforeVat,
+            LineTotalAfterVat = e.LineTotalAfterVat,
             UoMEntry = e.UoMEntry,
             UnitName = e.Item.ItemUomGroups
                 .Where(i => i.UomEntry == e.UoMEntry)
@@ -322,6 +330,10 @@ public async Task<GeneralResponse<PurchaseOrderItemDTO>> AddPurchaseItemByPurcha
     //               PurchaseOrderId = e.PurchaseOrderId,
     //               BarCode = e.BarCode,
     //               UnitPrice = e.UnitPrice,
+    //VatPercent = e.VatPercent,
+    //VatAmount = e.VatAmount,
+    //LineTotalBeforeVat = e.LineTotalBeforeVat,
+    //LineTotalAfterVat = e.LineTotalAfterVat,
     //               UoMEntry = e.UoMEntry,
     //               UnitName = e.Item.ItemUomGroups
     //                   .Where(i => i.UomEntry == e.UoMEntry)

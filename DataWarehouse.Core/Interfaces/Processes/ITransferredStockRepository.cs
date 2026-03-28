@@ -25,16 +25,7 @@ public interface ITransferredStockRepository : IBaseRepository<TransferredStock>
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default);
-     Task<GeneralResponse<PagedResult<TransferredStockDTO>>> GetByWarehouseIdAsDestinationWarehouseAndStatusAndDateWithPaginationForDashboardAsync(
-      int warehouseId,
-      string userId,
-      int? transferredWarehouseId,
-      DateTime? postingDate,
-      DateTime? dueDate,
-      string? status,
-      int pageNumber,
-      int pageSize,
-      CancellationToken cancellationToken = default);
+    
     Task<GeneralResponse<TransferredStockDTO>> GetTransferredStockByIdAsync(
         string userId, int transferredStockId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<TransferredStockDTO>> GetByTransferredRequestIdAsync(int transferredRequestId);
@@ -58,4 +49,16 @@ public interface ITransferredStockRepository : IBaseRepository<TransferredStock>
     Task<TransferredStock?> GetWithWarehousesAsync(int transferredStockId);
     Task<IEnumerable<TransferredStock>> GetPendingTransfersAsync();
     Task<IEnumerable<TransferredStock>> GetByDateRangeAsync(System.DateTime startDate, System.DateTime endDate);
+
+
+    //Task<GeneralResponse<PagedResult<TransferredStockDTO>>> GetByWarehouseIdAsDestinationWarehouseAndStatusAndDateWithPaginationForDashboardAsync(
+    //     int warehouseId,
+    //     string userId,
+    //     int? transferredWarehouseId,
+    //     DateTime? postingDate,
+    //     DateTime? dueDate,
+    //     string? status,
+    //     int pageNumber,
+    //     int pageSize,
+    //     CancellationToken cancellationToken = default);
 }

@@ -1,6 +1,8 @@
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
+using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
@@ -8,19 +10,26 @@ using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataWarehouse.Services.Repository.Processes;
 
 public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepository
 {
-    private readonly IApprovalRepository approval;
+    private readonly DataWarehouse.Core.Interfaces.IsProgress.IApprovalRepository approval;
+    private readonly IBaseProcessesRepository<CountStock> baseProcesses;
+    private readonly ReasonValidationService reasonValidationService;
 
     public CountStockRepository(
-        IApprovalRepository approval,
+        DataWarehouse.Core.Interfaces.IsProgress.IApprovalRepository approval,
+        IBaseProcessesRepository<CountStock> baseProcesses,
+        ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.approval = approval;
+        this.baseProcesses = baseProcesses;
+        this.reasonValidationService = reasonValidationService;
     }
 
     public async Task<IEnumerable<CountStock>> GetByWarehouseIdAsync(int warehouseId)
@@ -58,6 +67,9 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
                 PostingDate = x.PostingDate,
                 Mode = x.DocType,
                 WarehouseId = x.WarehouseId,
+                 ErrorMessage =x.ErrorMessage,
+                ReasonId = x.ReasonId,
+                ReasonName = x.Reason != null ? x.Reason.Name : null,
                 CountStockItems = null
             })
             .ToListAsync();
@@ -74,6 +86,7 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
 
     public async Task<GeneralResponse<CountStockDTO>> AddCountStockByWarehouseIdAsync(string userId, AddCountStockDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Counting);
         var warehouseExists = await _context.Warehouses
             .AsNoTracking()
             .AnyAsync(w => w.WarehouseId == dto.WarehouseId);
@@ -87,9 +100,11 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
             PostingDate = dto.PostingDate,
             DocType = NormalizeMode(dto.Mode),
             CreatedAt = DateTime.UtcNow,
+           
             UserId = userId,
             WarehouseId = dto.WarehouseId,
-            Comment = dto.Comment
+            Comment = dto.Comment,
+            ReasonId = dto.ReasonId
         };
 
         await _context.CountStocks.AddAsync(entity);
@@ -116,6 +131,7 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
 
     public async Task<GeneralResponse<CountStockDTO>> UpdateCountStockAsync(string userId, int countStockId, UpdateCountStockDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Counting);
         var entity = await _context.CountStocks
             .FirstOrDefaultAsync(x => x.CountStockId == countStockId);
 
@@ -149,6 +165,8 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
 
         if (!string.IsNullOrWhiteSpace(userId) && entity.UserId != userId)
             entity.UserId = userId;
+
+        entity.ReasonId = dto.ReasonId;
 
         await _context.SaveChangesAsync();
 
@@ -206,7 +224,9 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
                 CreatedAt = x.CreatedAt,
                 PostingDate = x.PostingDate,
                 Mode = x.DocType,
-                WarehouseId = x.WarehouseId
+                WarehouseId = x.WarehouseId,
+                ReasonId = x.ReasonId,
+                ReasonName = x.Reason != null ? x.Reason.Name : null
             })
             .ToListAsync();
 
@@ -293,6 +313,16 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
         return GeneralResponse<CountStockDTO>.SuccessResponse(MapToDto(entity, includeItems: true));
     }
 
+    public async Task<GeneralResponse<DataWarehouse.Core.DTOs.Approval.ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int countStockId)
+    {
+        return await baseProcesses.RevertPartiallyFailedStatusToProcessingAsync<CountStock>(
+            countStockId,
+            ProcessType.Counting,
+            x => x.CountStockId == countStockId,
+            _context.CountStocks
+        );
+    }
+
     private static CountStockDTO MapToDto(CountStock entity, bool includeItems = false)
     {
         return new CountStockDTO
@@ -305,6 +335,8 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
             PostingDate = entity.PostingDate,
             Mode = entity.DocType,
             WarehouseId = entity.WarehouseId,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null,
             CountStockItems = includeItems
                 ? entity.CountStockItem.Select(item => new CountStockItemDTO
                 {
@@ -315,6 +347,10 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
                     UoMEntry = item.UoMEntry,
                     BarCode = item.BarCode,
                     UnitPrice = item.UnitPrice,
+                    VatPercent = item.VatPercent,
+                    VatAmount = item.VatAmount,
+                    LineTotalBeforeVat = item.LineTotalBeforeVat,
+                    LineTotalAfterVat = item.LineTotalAfterVat,
                     Comment = item.Comment,
                     CountStockId = item.CountStockId,
                     ItemId = item.ItemId,
@@ -331,3 +367,5 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
             : "Counting";
     }
 }
+
+

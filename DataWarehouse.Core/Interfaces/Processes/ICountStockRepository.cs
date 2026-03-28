@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Based;
@@ -23,4 +24,5 @@ public interface ICountStockRepository : IBaseRepository<CountStock>
     Task<IEnumerable<CountStock>> GetPendingCountsAsync();
     Task<IEnumerable<CountStock>> GetByDateRangeAsync(System.DateTime startDate, System.DateTime endDate);
     Task<GeneralResponse<CountStockDTO>> SubmitCountStockAsync(string userId, int countStockId, string? note = null);
+    Task<GeneralResponse<DataWarehouse.Core.DTOs.Approval.ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int countStockId);
 }

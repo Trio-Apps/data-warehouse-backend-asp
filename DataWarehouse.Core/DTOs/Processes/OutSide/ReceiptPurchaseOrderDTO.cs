@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs.BarCode;
+ï»¿using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Validations;
 using System;
@@ -10,6 +10,8 @@ namespace DataWarehouse.Core.DTOs.Processes.OutSide;
 public class ReceiptPurchaseOrderDTO : GeneralOrderDto
 {
     public int ReceiptPurchaseOrderId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
    
 
@@ -49,6 +51,7 @@ public class AddReceiptPurchaseOrderDTO
     //public int WarehouseId { get; set; }
 
     public bool IsDraft { get; set; }
+    public int? ReasonId { get; set; }
 
     //[Required(ErrorMessage = "Supplier ID is required")]
     //public int SupplierId { get; set; }
@@ -75,6 +78,7 @@ public class AddReceiptPurchaseOrderWithoutRefDTO
 
     [Required(ErrorMessage = "Supplier ID is required")]
     public int SupplierId { get; set; }
+    public int? ReasonId { get; set; }
 }
 
 public class UpdateReceiptPurchaseOrderDTO
@@ -89,6 +93,7 @@ public class UpdateReceiptPurchaseOrderDTO
 
     public string? Comment { get; set; }
     public bool IsDraft { get; set; }
+    public int? ReasonId { get; set; }
 }
 
 public class UpdateReceiptPurchaseOrderWithoutRefDTO
@@ -103,6 +108,7 @@ public class UpdateReceiptPurchaseOrderWithoutRefDTO
     public string? Comment { get; set; }
 
     public bool IsDraft { get; set; }
+    public int? ReasonId { get; set; }
 }
 public class ReceiptPurchaseOrderItemDTO : GeneralItemDto
 {
@@ -118,7 +124,10 @@ public class ReceiptPurchaseOrderItemDTO : GeneralItemDto
     public string? BarCode { get; set; }
 
     [Range(0, double.MaxValue, ErrorMessage = "Unit Price must be zero or greater")]
-    public decimal? UnitPrice { get; set; }
+        public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
+    public decimal? LineTotalBeforeVat { get; set; }
+    public decimal? LineTotalAfterVat { get; set; }
 
     public string? ErrorMessage { get; set; }
 
@@ -126,7 +135,7 @@ public class ReceiptPurchaseOrderItemDTO : GeneralItemDto
 
     public string? UnitName { get; set; }
 
-    // Relations (IDs only – ÕÍ ááÜ DTO)
+    // Relations (IDs only ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ DTO)
     [Required(ErrorMessage = "ReceiptPurchaseOrderId is required")]
     public int ReceiptPurchaseOrderId { get; set; }
 

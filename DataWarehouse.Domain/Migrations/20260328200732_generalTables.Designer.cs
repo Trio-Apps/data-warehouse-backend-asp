@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataWarehouse.Domain.Migrations
 {
     [DbContext(typeof(DataWarehouseDbContext))]
-    [Migration("20260324091230_addNewField")]
-    partial class addNewField
+    [Migration("20260328200732_generalTables")]
+    partial class generalTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -121,6 +121,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<string>("Phone")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("PriceListNum")
+                        .HasColumnType("int");
 
                     b.Property<int>("SapId")
                         .HasColumnType("int");
@@ -309,6 +312,83 @@ namespace DataWarehouse.Domain.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.ItemPrice", b =>
+                {
+                    b.Property<int>("ItemPriceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ItemPriceId"));
+
+                    b.Property<int?>("BasePriceList")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Currency")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<decimal?>("Factor")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Price")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<int>("PriceList")
+                        .HasColumnType("int");
+
+                    b.HasKey("ItemPriceId");
+
+                    b.HasIndex("ItemId", "PriceList")
+                        .IsUnique();
+
+                    b.ToTable("ItemPrices", (string)null);
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.ItemUomPrice", b =>
+                {
+                    b.Property<int>("ItemUomPriceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ItemUomPriceId"));
+
+                    b.Property<bool?>("Auto")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Currency")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("ItemPriceId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Price")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<int>("PriceList")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("ReduceBy")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<int>("UoMEntry")
+                        .HasColumnType("int");
+
+                    b.HasKey("ItemUomPriceId");
+
+                    b.HasIndex("ItemPriceId", "UoMEntry")
+                        .IsUnique();
+
+                    b.ToTable("ItemUomPrices", (string)null);
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Supplier", b =>
                 {
                     b.Property<int>("SupplierId")
@@ -334,6 +414,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<string>("Phone")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("PriceListNum")
+                        .HasColumnType("int");
 
                     b.Property<int>("SapId")
                         .HasColumnType("int");
@@ -1124,6 +1207,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Remarks")
                         .HasColumnType("nvarchar(max)");
 
@@ -1138,6 +1224,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ProductionOrderId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("UserId");
 
@@ -1254,6 +1342,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -1265,6 +1356,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CountStockId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("UserId");
 
@@ -1332,6 +1425,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -1343,6 +1442,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("CountStockItemId");
 
@@ -1478,6 +1583,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -1492,6 +1603,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("DeliveryNoteItemId");
 
@@ -1539,6 +1656,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("SalesOrderId")
                         .HasColumnType("int");
 
@@ -1555,6 +1675,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("DeliveryNoteOrderId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("SalesOrderId");
 
@@ -1597,6 +1719,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ReceiptPurchaseOrderId")
                         .HasColumnType("int");
 
@@ -1614,6 +1739,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("GoodsReturnOrderId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("ReceiptPurchaseOrderId")
                         .IsUnique()
@@ -1694,6 +1821,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -1708,6 +1841,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("GoodsReturnOrderItemId");
 
@@ -1742,6 +1881,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("PurchaseOrderId")
                         .HasColumnType("int");
 
@@ -1756,6 +1901,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("PurchaseOrderItemId");
 
@@ -1801,6 +1952,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("PurchaseOrderId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -1819,6 +1973,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("PurchaseOrderId")
                         .IsUnique()
                         .HasFilter("[PurchaseOrderId] IS NOT NULL");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("SupplierId");
 
@@ -1885,6 +2041,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int?>("PurchaseOrderItemId")
                         .HasColumnType("int");
 
@@ -1902,6 +2064,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ReceiptPurchaseOrderItemId");
 
@@ -1951,6 +2119,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int>("SapId")
                         .HasColumnType("int");
 
@@ -1966,6 +2137,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("SalesOrderId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("SapId");
 
@@ -2029,6 +2202,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -2043,6 +2222,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("SalesOrderItemId");
 
@@ -2091,6 +2276,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -2108,6 +2296,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("DeliveryNoteOrderId")
                         .IsUnique()
                         .HasFilter("[DeliveryNoteOrderId] IS NOT NULL");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("UserId");
 
@@ -2179,6 +2369,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -2193,6 +2389,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("SalesReturnOrderItemId");
 
@@ -2288,11 +2490,23 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<int>("SupplierId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("TotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("TotalVat")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -2302,6 +2516,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("PurchaseOrderId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("SupplierId");
 
@@ -2344,6 +2560,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime?>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -2355,6 +2574,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("QuantityAdjustmentStockId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("UserId");
 
@@ -2419,6 +2640,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -2434,6 +2661,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("QuantityAdjustmentStockItemId");
 
                     b.HasIndex("ItemId");
@@ -2441,6 +2674,34 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasIndex("QuantityAdjustmentStockId");
 
                     b.ToTable("QuantityAdjustmentStockItems");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.Reason", b =>
+                {
+                    b.Property<int>("ReasonId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReasonId"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProcessType")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReasonId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("Reasons");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedItem", b =>
@@ -2466,6 +2727,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -2483,6 +2750,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ReceivedItemId");
 
@@ -2523,6 +2796,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int>("SourceWarehouseId")
                         .HasColumnType("int");
 
@@ -2540,6 +2816,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ReceivedStockId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("SourceWarehouseId");
 
@@ -2617,7 +2895,16 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("ReceivedQuantity")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Status")
@@ -2634,6 +2921,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("TransferredItemId");
 
@@ -2681,6 +2974,9 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime?>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -2694,6 +2990,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("TransferredRequestId");
 
                     b.HasIndex("DistinationWarehouseId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("UserId");
 
@@ -2758,6 +3056,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<int?>("LineNum")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("LineTotalAfterVat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("LineTotalBeforeVat")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -2772,6 +3076,12 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<int>("UoMEntry")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("VatAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("VatPercent")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("TransferredRequestItemId");
 
@@ -2817,6 +3127,12 @@ namespace DataWarehouse.Domain.Migrations
                     b.Property<DateTime?>("PostingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReasonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReceivingStatus")
+                        .HasColumnType("int");
+
                     b.Property<string>("Reference")
                         .HasColumnType("nvarchar(max)");
 
@@ -2836,6 +3152,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasKey("TransferredStockId");
 
                     b.HasIndex("DistinationWarehouseId");
+
+                    b.HasIndex("ReasonId");
 
                     b.HasIndex("TransferredRequestId")
                         .IsUnique()
@@ -2869,6 +3187,9 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("ReceivedQuantity")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TransferredItemId")
@@ -3086,6 +3407,28 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Sap");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.ItemPrice", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
+                        .WithMany("ItemPrices")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.ItemUomPrice", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Actors.ItemPrice", "ItemPrice")
+                        .WithMany("UomPrices")
+                        .HasForeignKey("ItemPriceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ItemPrice");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Supplier", b =>
@@ -3395,6 +3738,11 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", b =>
                 {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("ProductionOrders")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("ProductionOrders")
                         .HasForeignKey("UserId")
@@ -3406,6 +3754,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Reason");
 
                     b.Navigation("User");
 
@@ -3444,6 +3794,11 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.CountStock", b =>
                 {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("CountStocks")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("CountStocks")
                         .HasForeignKey("UserId")
@@ -3455,6 +3810,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Reason");
 
                     b.Navigation("User");
 
@@ -3554,6 +3911,11 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("DeliveryNoteOrders")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.SalesOrder", "SalesOrder")
                         .WithMany("DeliveryNoteOrders")
                         .HasForeignKey("SalesOrderId")
@@ -3573,6 +3935,8 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("Customer");
 
+                    b.Navigation("Reason");
+
                     b.Navigation("SalesOrder");
 
                     b.Navigation("User");
@@ -3582,6 +3946,11 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrder", b =>
                 {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("GoodsReturnOrders")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", "ReceiptPurchaseOrder")
                         .WithOne("GoodsReturnOrder")
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.GoodsReturnOrder", "ReceiptPurchaseOrderId")
@@ -3604,6 +3973,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Reason");
 
                     b.Navigation("ReceiptPurchaseOrder");
 
@@ -3684,6 +4055,11 @@ namespace DataWarehouse.Domain.Migrations
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", "PurchaseOrderId")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("ReceiptPurchaseOrders")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Supplier", "Supplier")
                         .WithMany("ReceiptPurchaseOrders")
                         .HasForeignKey("SupplierId")
@@ -3703,6 +4079,8 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("PurchaseOrder");
+
+                    b.Navigation("Reason");
 
                     b.Navigation("Supplier");
 
@@ -3756,6 +4134,11 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("SalesOrders")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.AllinAll.Sap", "Sap")
                         .WithMany("SalesOrders")
                         .HasForeignKey("SapId")
@@ -3774,6 +4157,8 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
+
+                    b.Navigation("Reason");
 
                     b.Navigation("Sap");
 
@@ -3825,6 +4210,11 @@ namespace DataWarehouse.Domain.Migrations
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.SalesReturnOrder", "DeliveryNoteOrderId")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("SalesReturnOrders")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("SalesReturnOrders")
                         .HasForeignKey("UserId")
@@ -3840,6 +4230,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("DeliveryNoteOrder");
+
+                    b.Navigation("Reason");
 
                     b.Navigation("User");
 
@@ -3914,6 +4306,11 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.PurchaseOrder", b =>
                 {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("PurchaseOrders")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Supplier", "Supplier")
                         .WithMany("PurchaseOrders")
                         .HasForeignKey("SupplierId")
@@ -3932,6 +4329,8 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.Navigation("Reason");
+
                     b.Navigation("Supplier");
 
                     b.Navigation("User");
@@ -3941,6 +4340,11 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock", b =>
                 {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("QuantityAdjustmentStocks")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("QuantityAdjustmentStocks")
                         .HasForeignKey("UserId")
@@ -3952,6 +4356,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Reason");
 
                     b.Navigation("User");
 
@@ -3988,6 +4394,17 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("QuantityAdjustmentStock");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.Reason", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.AllinAll.Company", "Company")
+                        .WithMany("Reasons")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedItem", b =>
                 {
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Item", "Item")
@@ -4016,6 +4433,11 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedStock", b =>
                 {
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("ReceivedStocks")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Warehouse", "SourceWarehouse")
                         .WithMany("SourceReceivedStocks")
                         .HasForeignKey("SourceWarehouseId")
@@ -4038,6 +4460,8 @@ namespace DataWarehouse.Domain.Migrations
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Reason");
 
                     b.Navigation("SourceWarehouse");
 
@@ -4100,6 +4524,11 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("TransferredRequests")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("TransferredRequests")
                         .HasForeignKey("UserId")
@@ -4113,6 +4542,8 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("DistinationWarehouse");
+
+                    b.Navigation("Reason");
 
                     b.Navigation("User");
 
@@ -4157,6 +4588,11 @@ namespace DataWarehouse.Domain.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
+                        .WithMany("TransferredStocks")
+                        .HasForeignKey("ReasonId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.TransferredRequest", "TransferredRequest")
                         .WithOne("TransferredStock")
                         .HasForeignKey("DataWarehouse.Domain.Entities.Processes.TransferredStock", "TransferredRequestId")
@@ -4175,6 +4611,8 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("DistinationWarehouse");
+
+                    b.Navigation("Reason");
 
                     b.Navigation("TransferredRequest");
 
@@ -4273,6 +4711,8 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Navigation("ItemBarCodes");
 
+                    b.Navigation("ItemPrices");
+
                     b.Navigation("ItemUomGroups");
 
                     b.Navigation("ProductionOrderItems");
@@ -4296,6 +4736,11 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("TransferredRequestItems");
 
                     b.Navigation("WarehouseItems");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.ItemPrice", b =>
+                {
+                    b.Navigation("UomPrices");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Actors.Supplier", b =>
@@ -4357,6 +4802,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("ProcessSettingApprovals");
 
                     b.Navigation("ProcessesTypes");
+
+                    b.Navigation("Reasons");
 
                     b.Navigation("Roles");
 
@@ -4588,6 +5035,33 @@ namespace DataWarehouse.Domain.Migrations
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStockItem", b =>
                 {
                     b.Navigation("QuantityAdjustmentStockBatches");
+                });
+
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.Reason", b =>
+                {
+                    b.Navigation("CountStocks");
+
+                    b.Navigation("DeliveryNoteOrders");
+
+                    b.Navigation("GoodsReturnOrders");
+
+                    b.Navigation("ProductionOrders");
+
+                    b.Navigation("PurchaseOrders");
+
+                    b.Navigation("QuantityAdjustmentStocks");
+
+                    b.Navigation("ReceiptPurchaseOrders");
+
+                    b.Navigation("ReceivedStocks");
+
+                    b.Navigation("SalesOrders");
+
+                    b.Navigation("SalesReturnOrders");
+
+                    b.Navigation("TransferredRequests");
+
+                    b.Navigation("TransferredStocks");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.ReceivedItem", b =>

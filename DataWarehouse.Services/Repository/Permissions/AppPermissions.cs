@@ -198,7 +198,14 @@ namespace DataWarehouse.Services.Repository.Permissions
         public const string Approvals_Action = "Approvals.Action";
         #endregion
         #endregion
+        public const string Reason_Create = "Reason.Create";
+        public const string Reason_Edit = "Reason.Edit";
+        public const string Reason_Delete = "Reason.Delete";
+        public const string Reason_Get = "Reason.Get";
+        #region Reason
 
+
+        #endregion
         public static readonly PermissionSeed[] All =
         {
         #region Auth
@@ -360,10 +367,20 @@ new(AppPermissions.ApprovalSteps_Create, "Create Approval Step", "ApprovalSteps"
 new(AppPermissions.ApprovalSteps_Edit,   "Edit Approval Step",   "ApprovalSteps"),
 new(AppPermissions.ApprovalSteps_Delete, "Delete Approval Step", "ApprovalSteps"),
 new(AppPermissions.ApprovalSteps_Get,    "Get Approval Steps",   "ApprovalSteps"),
+            #endregion
+
+            #region Reason
+
+
+
+new(AppPermissions.Reason_Create, "Create Reason", "Reason"),
+new(AppPermissions.Reason_Edit,   "Edit Reason",   "Reason"),
+new(AppPermissions.Reason_Delete, "Delete Reason", "Reason"),
+new(AppPermissions.Reason_Get,    "Get Reasons",   "Reason"),
 #endregion
 
-        #region ProcessApprovals
-        new (AppPermissions.ProcessApprovals_Create, "Create Process Approval", "ProcessApprovals"),
+            #region ProcessApprovals
+            new (AppPermissions.ProcessApprovals_Create, "Create Process Approval", "ProcessApprovals"),
 new (AppPermissions.ProcessApprovals_Edit,   "Edit Process Approval",   "ProcessApprovals"),
 new (AppPermissions.ProcessApprovals_Delete, "Delete Process Approval", "ProcessApprovals"),
 new (AppPermissions.ProcessApprovals_Get,    "Get Process Approvals",   "ProcessApprovals"),

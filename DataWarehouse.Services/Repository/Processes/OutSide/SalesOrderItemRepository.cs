@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
@@ -56,6 +56,10 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
                 SalesOrderId = e.SalesOrderId,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 UoMEntry = e.UoMEntry,
                 UnitName = e.Item.ItemUomGroups
                     .Where(i => i.UomEntry == e.UoMEntry)
@@ -101,6 +105,10 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
                 SalesOrderId = e.SalesOrderId,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 UoMEntry = e.UoMEntry,
                 UnitName = e.Item.ItemUomGroups
                     .Where(i => i.UomEntry == e.UoMEntry)
@@ -150,6 +158,10 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
             UoMEntry = res.Data.UoMEntry,
             BarCode = res.Data.BarCode,
             UnitPrice = res.Data.UnitPrice,
+            VatPercent = res.Data.VatPercent,
+            VatAmount = res.Data.VatAmount,
+            LineTotalBeforeVat = res.Data.LineTotalBeforeVat,
+            LineTotalAfterVat = res.Data.LineTotalAfterVat,
             ErrorMessage = res.Data.ErrorMessage
         };
 
@@ -400,6 +412,10 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
     //        UoMEntry = res.UoMEntry,
     //        BarCode = res.BarCode,
     //        UnitPrice = res.UnitPrice,
+    //VatPercent = res.VatPercent,
+    //VatAmount = res.VatAmount,
+    //LineTotalBeforeVat = res.LineTotalBeforeVat,
+    //LineTotalAfterVat = res.LineTotalAfterVat,
     //        ErrorMessage = res.ErrorMessage
     //    };
 

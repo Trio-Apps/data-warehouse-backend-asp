@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
@@ -52,6 +52,10 @@ public class QuantityAdjustmentStockItemRepository : BaseRepository<QuantityAdju
                     .FirstOrDefault(),
                 BarCode = x.BarCode,
                 UnitPrice = x.UnitPrice,
+                VatPercent = x.VatPercent,
+                VatAmount = x.VatAmount,
+                LineTotalBeforeVat = x.LineTotalBeforeVat,
+                LineTotalAfterVat = x.LineTotalAfterVat,
                 ErrorMessage = x.ErrorMessage,
                 Status = x.Status.ToString()
             });
@@ -95,6 +99,10 @@ public class QuantityAdjustmentStockItemRepository : BaseRepository<QuantityAdju
                     .FirstOrDefault(),
                 BarCode = x.BarCode,
                 UnitPrice = x.UnitPrice,
+                VatPercent = x.VatPercent,
+                VatAmount = x.VatAmount,
+                LineTotalBeforeVat = x.LineTotalBeforeVat,
+                LineTotalAfterVat = x.LineTotalAfterVat,
                 ErrorMessage = x.ErrorMessage,
                 Status = x.Status.ToString()
             },
@@ -132,6 +140,10 @@ public class QuantityAdjustmentStockItemRepository : BaseRepository<QuantityAdju
             UoMEntry = res.Data.UoMEntry,
             BarCode = res.Data.BarCode,
             UnitPrice = res.Data.UnitPrice,
+            VatPercent = res.Data.VatPercent,
+            VatAmount = res.Data.VatAmount,
+            LineTotalBeforeVat = res.Data.LineTotalBeforeVat,
+            LineTotalAfterVat = res.Data.LineTotalAfterVat,
             ErrorMessage = res.Data.ErrorMessage,
             Status = res.Data.Status.ToString()
         });
@@ -162,6 +174,10 @@ public class QuantityAdjustmentStockItemRepository : BaseRepository<QuantityAdju
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             ErrorMessage = entity.ErrorMessage,
             Status = entity.Status.ToString()
         });
@@ -190,6 +206,10 @@ public class QuantityAdjustmentStockItemRepository : BaseRepository<QuantityAdju
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             ErrorMessage = entity.ErrorMessage,
             Status = entity.Status.ToString()
         });

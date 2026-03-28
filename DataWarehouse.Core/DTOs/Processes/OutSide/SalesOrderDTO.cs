@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs.Actors;
+﻿using DataWarehouse.Core.DTOs.Actors;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Domain.Entities.Actors;
 using System;
@@ -10,6 +10,8 @@ namespace DataWarehouse.Core.DTOs.Processes.OutSide;
 public class SalesOrderDTO : GeneralOrderDto
 {
     public int SalesOrderId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
     [Required(ErrorMessage = "Customer ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Customer ID must be greater than 0")]
     public int CustomerId { get; set; }
@@ -29,6 +31,7 @@ public class AddSalesOrderDTO : AddGeneralOrderDto
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
+    public int? ReasonId { get; set; }
 }
 
 public class UpdateSalesOrderDTO : UpdateGeneralOrderDto
@@ -36,33 +39,18 @@ public class UpdateSalesOrderDTO : UpdateGeneralOrderDto
     public int SalesOrderId { get; set; }
     [Required(ErrorMessage = "Customer ID is required")]
     public int? CustomerId { get; set; }
+    public int? ReasonId { get; set; }
  
 }
 
-public class SalesOrderItemDTO 
-{
+public class SalesOrderItemDTO : GeneralItemDto
+{ 
     public int SalesOrderItemId { get; set; }
 
-    [Required(ErrorMessage = "Planned Quantity is required")]
-    [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
-    public decimal Quantity { get; set; }
+ 
 
-    [Required(ErrorMessage = "Status is required")]
-    public string Status { get; set; } // SalesItemStatus enum
-
-    [StringLength(500, ErrorMessage = "Error Message cannot exceed 500 characters")]
-    public string? ErrorMessage { get; set; }
-
-    public int UoMEntry { get; set; }
-    public string? UnitName { get; set; }
-    public string? BarCode { get; set; }
-
-    public decimal? UnitPrice { get; set; }
-   public string? ItemCode { get; set; }
-
-   public int ItemId { get; set; }
-    public string? ItemName { get; set; }
-
+    
+ 
 
     [Required(ErrorMessage = "Sales Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order ID must be greater than 0")]
@@ -96,6 +84,12 @@ public class UpdateSalesOrderItemDTO
     [Range(0.01, double.MaxValue, ErrorMessage = "Planned Quantity must be greater than 0")]
     public decimal? Quantity { get; set; }
 
+    public decimal? UnitPrice { get; set; }
+    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
+    public decimal? LineTotalBeforeVat { get; set; }
+    public decimal? LineTotalAfterVat { get; set; }
+
     [Required(ErrorMessage = "Unit is required")]
     public int UoMEntry { get; set; }
 }
@@ -110,6 +104,8 @@ public class AddSalesOrderItemCreateRequest
 public class SalesOrderResponseDTO
 {
     public int SalesOrderId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
     public decimal TotalSalesPrice { get; set; }
     public string Status { get; set; }
     public string? LiveStatus { get; set; }

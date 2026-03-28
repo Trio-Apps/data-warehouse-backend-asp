@@ -17,6 +17,7 @@ using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using DataWarehouse.Services.Repository.Processes;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Net.NetworkInformation;
@@ -36,8 +37,9 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
     private readonly ISapCache sapCache;
     private readonly ISapSettingsRepository sap;
     private readonly IProcessesTypesDateRepository processes;
+    private readonly ReasonValidationService reasonValidationService;
 
-    public PurchaseOrderRepository(IDocumentAttachmentRepository document, ILogger<PurchaseOrderRepository> logger, IBaseProcessesRepository<PurchaseOrder> baseProcesses, IProcessItemIsProgressRepository progressRepository, IApprovalRepository approval, ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, DataWarehouseDbContext context) : base(context)
+    public PurchaseOrderRepository(IDocumentAttachmentRepository document, ILogger<PurchaseOrderRepository> logger, IBaseProcessesRepository<PurchaseOrder> baseProcesses, IProcessItemIsProgressRepository progressRepository, IApprovalRepository approval, ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, ReasonValidationService reasonValidationService, DataWarehouseDbContext context) : base(context)
     {
         this.document = document;
         this.logger = logger;
@@ -47,6 +49,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         this.sapCache = sapCache;
         this.sap = sap;
         this.processes = processes;
+        this.reasonValidationService = reasonValidationService;
     }
 
     public async Task<IEnumerable<PurchaseOrder>> GetByWarehouseIdAsync(int warehouseId)
@@ -83,7 +86,9 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 WarehouseId = warehouseId,
                 SupplierName = iw.Supplier.SupplierName,
                 Supplier = iw.Supplier,
-                IsReceipt = iw.ReceiptPurchaseOrder == null ? false : true
+                IsReceipt = iw.ReceiptPurchaseOrder == null ? false : true,
+                ReasonId = iw.ReasonId,
+                ReasonName = iw.Reason != null ? iw.Reason.Name : null
             })
             .ToListAsync();
 
@@ -184,7 +189,9 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
              WarehouseId = x.Order.WarehouseId,
              SupplierName = x.Order.Supplier.SupplierName,
              Supplier = x.Order.Supplier,
-             ErrorMessage = x.Order.ErrorMessage,
+              ErrorMessage = x.Order.ErrorMessage,
+             ReasonId = x.Order.ReasonId,
+             ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
 
              ItemCount = x.Order.PurchaseOrderItems.Count(),
              // ✅ وجود progress
@@ -251,6 +258,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             
             SupplierId = res.SupplierId,
             SupplierCode = res.Supplier.SupplierCode,
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null,
 
 
             // ✅ Approval fields (same shape as sales)
@@ -306,6 +315,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
        string userId,
        AddPurchaseOrderDTO dto)
     {
+     //   await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Purchase);
+
     //    await using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -328,6 +339,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 WarehouseId = dto.WarehouseId,
                 Comment = dto.Comment,
                 SupplierId = dto.SupplierId,
+                ReasonId = dto.ReasonId,
             };
 
 
@@ -373,7 +385,9 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 PurchaseOrderId = res.PurchaseOrderId,
                 DueDate = res.DueDate,
                 PostingDate = res.PostingDate,
-                Status = res.Status.ToString()
+                Status = res.Status.ToString(),
+                ReasonId = res.ReasonId,
+                ReasonName = res.Reason != null ? res.Reason.Name : null
             };
 
             return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(model);
@@ -448,6 +462,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
        int productionId,
        UpdatePurchaseOrderDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Purchase);
+
         // 1) Get existing entity
         var entity = await _context.PurchaseOrders
             .FirstOrDefaultAsync(e => e.PurchaseOrderId == dto.PurchaseOrderId);
@@ -485,6 +501,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
             entity.SupplierId = dto.SupplierId.Value;
         }
+
+        entity.ReasonId = dto.ReasonId;
 
         if (!dto.IsDraft)
         {
@@ -525,7 +543,9 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             PostingDate = entity.PostingDate,
             DueDate = entity.DueDate,
             SupplierId = entity.SupplierId,
-            Status = entity.Status.ToString()
+            Status = entity.Status.ToString(),
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
         return GeneralResponse<PurchaseOrderDTO>.SuccessResponse(result);
@@ -563,7 +583,9 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
             WarehouseId = entity.WarehouseId,
             SupplierId = entity.SupplierId,
 
-            Comment = entity.Comment
+            Comment = entity.Comment,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
         // لو عندك تفاصيل ومفيش Cascade Delete هتحتاج تمسحها الأول هنا
@@ -633,6 +655,8 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 UserId = p.UserId,
 
                 WarehouseId = p.WarehouseId,
+                ReasonId = p.ReasonId,
+                ReasonName = p.Reason != null ? p.Reason.Name : null,
 
             }).ToListAsync();
 

@@ -1,4 +1,4 @@
-using DataWarehouse.Domain.Entities.Processes;
+﻿using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
@@ -77,6 +77,7 @@ internal static class OrderDuplicationHelper
             WarehouseId = source.WarehouseId,
             SupplierId = source.SupplierId,
             PurchaseOrderId = source.PurchaseOrderId,
+            ReasonId = source.ReasonId,
             ReceiptPurchaseOrderItems = source.ReceiptPurchaseOrderItems
                 .OrderBy(x => x.LineNum ?? int.MaxValue)
                 .ThenBy(x => x.ReceiptPurchaseOrderItemId)
@@ -104,6 +105,7 @@ internal static class OrderDuplicationHelper
             WarehouseId = source.WarehouseId,
             SupplierId = source.SupplierId,
             ReceiptPurchaseOrderId = source.ReceiptPurchaseOrderId,
+            ReasonId = source.ReasonId,
             GoodsReturnOrderItems = source.GoodsReturnOrderItems
                 .OrderBy(x => x.LineNum ?? int.MaxValue)
                 .ThenBy(x => x.GoodsReturnOrderItemId)
@@ -158,6 +160,7 @@ internal static class OrderDuplicationHelper
             WarehouseId = source.WarehouseId,
             CustomerId = source.CustomerId,
             DeliveryNoteOrderId = source.DeliveryNoteOrderId,
+            ReasonId = source.ReasonId,
             SalesReturnOrderItems = source.SalesReturnOrderItems
                 .OrderBy(x => x.LineNum ?? int.MaxValue)
                 .ThenBy(x => x.SalesReturnOrderItemId)
@@ -259,6 +262,7 @@ internal static class OrderDuplicationHelper
             DocType = source.DocType,
             UserId = userId,
             WarehouseId = source.WarehouseId,
+            ReasonId = source.ReasonId,
             QuantityAdjustmentStockItems = source.QuantityAdjustmentStockItems
                 .OrderBy(x => x.LineNum ?? int.MaxValue)
                 .ThenBy(x => x.QuantityAdjustmentStockItemId)
@@ -325,6 +329,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         LineNum = source.LineNum,
         ItemId = source.ItemId
@@ -337,6 +345,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         LineNum = source.LineNum,
         ItemId = source.ItemId,
@@ -353,6 +365,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         Comment = source.Comment,
         LineNum = source.LineNum,
@@ -371,6 +387,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         Comment = source.Comment,
         LineNum = source.LineNum,
@@ -389,6 +409,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         LineNum = source.LineNum,
         ItemId = source.ItemId,
@@ -406,6 +430,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         LineNum = source.LineNum,
         ItemId = source.ItemId,
@@ -423,6 +451,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         Comment = source.Comment,
         LineNum = source.LineNum,
@@ -440,6 +472,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         Comment = source.Comment,
         LineNum = source.LineNum,
@@ -458,6 +494,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         Comment = source.Comment,
         LineNum = source.LineNum,
@@ -475,6 +515,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         Comment = source.Comment,
         LineNum = source.LineNum,
@@ -492,6 +536,10 @@ internal static class OrderDuplicationHelper
         BarCode = source.BarCode,
         Status = GeneralItemStatus.Planned,
         UnitPrice = source.UnitPrice,
+        VatPercent = source.VatPercent,
+        VatAmount = source.VatAmount,
+        LineTotalBeforeVat = source.LineTotalBeforeVat,
+        LineTotalAfterVat = source.LineTotalAfterVat,
         ErrorMessage = null,
         Comment = source.Comment,
         LineNum = source.LineNum,
