@@ -40,7 +40,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public int? ReasonId { get; set; }
 
         // Navigation
-        public string? UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         public ApplicationUser? User { get; set; }
         public Reason? Reason { get; set; }
         public int WarehouseId { get; set; }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataWarehouse.Domain.Migrations
 {
     [DbContext(typeof(DataWarehouseDbContext))]
-    [Migration("20260328200732_generalTables")]
+    [Migration("20260328212544_generalTables")]
     partial class generalTables
     {
         /// <inheritdoc />
@@ -1160,6 +1160,56 @@ namespace DataWarehouse.Domain.Migrations
                     b.ToTable("ProcessSettingApprovals");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Notifications.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProcessType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReferenceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
                 {
                     b.Property<int>("ProductionHeaderBatchId")
@@ -2129,6 +2179,7 @@ namespace DataWarehouse.Domain.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("WarehouseId")
@@ -3725,6 +3776,17 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Notifications.Notification", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
                 {
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", "ProductionOrder")
@@ -4148,7 +4210,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
                         .WithMany("SalesOrders")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("DataWarehouse.Domain.Entities.Actors.Warehouse", "Warehouse")
                         .WithMany("SalesOrders")
@@ -4857,6 +4920,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("DeliveryNoteOrders");
 
                     b.Navigation("GoodsReturnOrders");
+
+                    b.Navigation("Notifications");
 
                     b.Navigation("ProcessApprovals");
 

@@ -18,6 +18,7 @@ using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Helpers;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
+using DataWarehouse.Domain.Entities.Notifications;
 
 namespace DataWarehouse.Domain.Context;
 
@@ -1498,6 +1499,10 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
     #region company
     public DbSet<Company> Companies { get; set; }
     public DbSet<CompanyUser> CompanyUsers { get; set; }
+    #endregion
+
+    #region Notifications
+    public DbSet<Notification> Notifications { get; set; }
     #endregion
 
 

@@ -25,7 +25,6 @@ namespace DataWarehouse.Domain.Entities.Processes
         public string? ErrorMessage { get; set; }
         public int? ReasonId { get; set; }
 
-
         [NotMapped]
         public int Id
         {

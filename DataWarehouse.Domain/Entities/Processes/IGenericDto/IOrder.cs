@@ -11,6 +11,7 @@ namespace DataWarehouse.Domain.Entities.Processes.IGenericDto
     {
         int Id { get; }
         int WarehouseId { get; }
+        string UserId { get; set; }
        GeneralStatus Status { get; set; }
 
     }
