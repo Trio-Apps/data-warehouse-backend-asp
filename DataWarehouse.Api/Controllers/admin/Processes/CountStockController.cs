@@ -1,5 +1,6 @@
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Processes;
+using DataWarehouse.Core.Interfaces.Queue;
 using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
@@ -14,13 +15,16 @@ namespace DataWarehouse.Api.Controllers.admin.Processes;
 public class CountStockController : ControllerBase
 {
     private readonly ICountStockRepository _repository;
+    private readonly ISapJobQueuer jobQueuer;
     private readonly ILogger<CountStockController> _logger;
 
     public CountStockController(
         ICountStockRepository repository,
+        ISapJobQueuer jobQueuer,
         ILogger<CountStockController> logger)
     {
         _repository = repository;
+        this.jobQueuer = jobQueuer;
         _logger = logger;
     }
 
@@ -104,7 +108,18 @@ public class CountStockController : ControllerBase
         return Ok(created);
     }
 
-    [HttpPut("{id}")]
+    [HttpPost("{id}/duplicate")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Counting_Create}")]
+    public async Task<IActionResult> Duplicate(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
+        var res = await _repository.DuplicateCountStockAsync(userId, id);
+        if (!res.Success)
+            return BadRequest(res);
+        return Ok(res);
+    }    [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Counting_Edit}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateCountStockDTO dto)
     {
@@ -129,6 +144,20 @@ public class CountStockController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var res = await _repository.SubmitCountStockAsync(userId, id, request?.Note);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpPatch("{id}/revert-partially-failed")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Counting_Edit}")]
+    public async Task<IActionResult> RevertPartiallyFailedStatus(int id)
+    {
+        var res = await _repository.RevertPartiallyFailedStatusToProcessingAsync(id);
+
+        await jobQueuer.DistributionOrders(res.Data);
+
         if (!res.Success)
             return BadRequest(res);
 

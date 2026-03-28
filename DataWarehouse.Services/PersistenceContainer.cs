@@ -1,4 +1,5 @@
 using DataWarehouse.Core.DTOs.Auth;
+using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Actors;
 using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Core.Interfaces.Based;
@@ -11,6 +12,7 @@ using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Sync;
 using DataWarehouse.Core.IServices.Actors;
+using DataWarehouse.Core.IServices.Processes;
 using DataWarehouse.Core.IServices.Auth;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Services.Repository.Actors;
@@ -28,6 +30,7 @@ using DataWarehouse.Services.Repository.SapRepo;
 using DataWarehouse.Services.Repository.Sync;
 using DataWarehouse.Services.Services.Actors;
 using DataWarehouse.Services.Services.Auth;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -68,14 +71,18 @@ namespace DataWarehouse.Services
             #endregion
 
             #region Processes Repositories
+            services.AddScoped<ReasonValidationService>();
+            services.AddScoped<IReasonRepository, ReasonRepository>();
             services.AddScoped<ICountStockRepository, CountStockRepository>();
             services.AddScoped<IQuantityAdjustmentStockRepository, QuantityAdjustmentStockRepository>();
             services.AddScoped<IReceivedStockRepository, ReceivedStockRepository>();
+            services.AddScoped<IReceivedTransferredRepository, ReceivedTransferredRepository>();
             services.AddScoped<ITransferredStockRepository, TransferredStockRepository>();
             services.AddScoped<ITransferredRequestOrderRepository, TransferredRequestOrderRepository>();
             services.AddScoped<IProcessesTypesDateRepository, ProcessesTypesDateRepository>();
             services.AddScoped<IReceiptPurchaseOrderBatchRepository, ReceiptPurchaseOrderBatchRepository>();
             services.AddScoped<IDocumentSearchRepository, DocumentSearchRepository>();
+            services.AddScoped<IReceivedTransferredRepository, ReceivedTransferredRepository>();
             #endregion
 
             #region Processes OutSide Repositories
@@ -222,6 +229,10 @@ namespace DataWarehouse.Services
             services.AddScoped<IUserWarehousesService, UserWarehousesService>();
             services.AddScoped<ISupplierItemService, SupplierItemService>();
             services.AddScoped<ISapSyncStatusFrontService, SapSyncStatusFrontService>();
+            #endregion
+
+            #region Processes Services
+            services.AddScoped<IReasonService, ReasonService>();
             #endregion
             // Json
             //services.AddControllers().AddJsonOptions(

@@ -18,6 +18,7 @@ namespace DataWarehouse.Api
         private readonly ISapDeliveryNoteService deliveryNoteService;
         private readonly ISapSalesReturnService salesReturnService;
         private readonly ISapQuantityAdjustmentService quantityAdjustmentService;
+        private readonly ISapCountingStockService countingStockService;
         private readonly ISapTransferredRequestService transferredRequestService;
         private readonly ISapTransferredStockService transferredStockService;
         private readonly ILogger<SapJobQueuer> logger;
@@ -30,6 +31,7 @@ namespace DataWarehouse.Api
             ISapDeliveryNoteService deliveryNoteService,
             ISapSalesReturnService salesReturnService,
             ISapQuantityAdjustmentService quantityAdjustmentService,
+            ISapCountingStockService countingStockService,
             ISapTransferredRequestService transferredRequestService,
             ISapTransferredStockService transferredStockService,
             ILogger<SapJobQueuer> logger)
@@ -41,6 +43,7 @@ namespace DataWarehouse.Api
             this.deliveryNoteService = deliveryNoteService;
             this.salesReturnService = salesReturnService;
             this.quantityAdjustmentService = quantityAdjustmentService;
+            this.countingStockService = countingStockService;
             this.transferredRequestService = transferredRequestService;
             this.transferredStockService = transferredStockService;
             this.logger = logger;
@@ -78,6 +81,10 @@ namespace DataWarehouse.Api
 
                 case var x when x == ProcessType.QuantityAdjustment.ToString():
                     EnqueueQuantityAdjustment(res.ReferenceId);
+                    break;
+
+                case var x when x == ProcessType.Counting.ToString():
+                    EnqueueCounting(res.ReferenceId);
                     break;
 
                 case var x when x == ProcessType.TransferredRequest.ToString():
@@ -144,6 +151,14 @@ namespace DataWarehouse.Api
             logger.LogInformation("Enqueued QuantityAdjustment SAP job. OrderId={OrderId}, JobId={JobId}", orderId, jobId);
             return jobId;
         }
+
+        public string EnqueueCounting(int orderId)
+        {
+            var jobId = jobs.Enqueue<SapJobQueuer>(x => x.PushCountingToSapAsync(orderId));
+            logger.LogInformation("Enqueued Counting SAP job. OrderId={OrderId}, JobId={JobId}", orderId, jobId);
+            return jobId;
+        }
+
 
         public string EnqueueTransferredRequest(int orderId)
         {
@@ -237,6 +252,7 @@ namespace DataWarehouse.Api
             logger.LogInformation("SalesReturn document pushed to SAP successfully. OrderId={OrderId}", orderId);
         }
 
+      
         [Queue("sap")]
         [AutomaticRetry(Attempts = 5, DelaysInSeconds = new[] { 10, 30, 60, 120, 300 })]
         public async Task PushQuantityAdjustmentToSapAsync(int orderId)
@@ -250,6 +266,21 @@ namespace DataWarehouse.Api
 
             logger.LogInformation("QuantityAdjustment document pushed to SAP successfully. OrderId={OrderId}", orderId);
         }
+
+        [Queue("sap")]
+        [AutomaticRetry(Attempts = 5, DelaysInSeconds = new[] { 10, 30, 60, 120, 300 })]
+        public async Task PushCountingToSapAsync(int orderId)
+        {
+            using var connection = JobStorage.Current.GetConnection();
+            using var distributedLock = connection.AcquireDistributedLock($"sap-counting-{orderId}", TimeSpan.FromMinutes(10));
+
+            logger.LogInformation("Start pushing Counting document to SAP. OrderId={OrderId}", orderId);
+
+            await countingStockService.SyncCountingStockAsync(orderId);
+
+            logger.LogInformation("Counting document pushed to SAP successfully. OrderId={OrderId}", orderId);
+        }
+
 
         [Queue("sap")]
         [AutomaticRetry(Attempts = 5, DelaysInSeconds = new[] { 10, 30, 60, 120, 300 })]

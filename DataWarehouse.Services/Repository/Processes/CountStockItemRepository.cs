@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
@@ -45,6 +45,10 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
                 UoMEntry = x.UoMEntry,
                 BarCode = x.BarCode,
                 UnitPrice = x.UnitPrice,
+                VatPercent = x.VatPercent,
+                VatAmount = x.VatAmount,
+                LineTotalBeforeVat = x.LineTotalBeforeVat,
+                LineTotalAfterVat = x.LineTotalAfterVat,
                 Comment = x.Comment
             })
             .ToListAsync();
@@ -84,6 +88,10 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
                 UoMEntry = x.UoMEntry,
                 BarCode = x.BarCode,
                 UnitPrice = x.UnitPrice,
+                VatPercent = x.VatPercent,
+                VatAmount = x.VatAmount,
+                LineTotalBeforeVat = x.LineTotalBeforeVat,
+                LineTotalAfterVat = x.LineTotalAfterVat,
                 Comment = x.Comment
             },
             orderByDescSelector: x => x.CountStockItemId,
@@ -136,6 +144,10 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             Comment = entity.Comment
         });
     }
@@ -174,6 +186,10 @@ public class CountStockItemRepository : BaseRepository<CountStockItem>, ICountSt
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             Comment = entity.Comment
         });
     }

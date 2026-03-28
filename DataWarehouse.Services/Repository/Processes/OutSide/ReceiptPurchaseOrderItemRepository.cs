@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
@@ -41,6 +41,10 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
             UoMEntry = e.UoMEntry,
             BarCode = e.BarCode,
             UnitPrice = e.UnitPrice,
+            VatPercent = e.VatPercent,
+            VatAmount = e.VatAmount,
+            LineTotalBeforeVat = e.LineTotalBeforeVat,
+            LineTotalAfterVat = e.LineTotalAfterVat,
             ErrorMessage = e.ErrorMessage,
             UnitName = e.Item.ItemUomGroups.FirstOrDefault(i => i.UomEntry == e.UoMEntry).UomCode,
             Comment = e.Comment, 
@@ -118,6 +122,10 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
             UoMEntry = res.Data.UoMEntry,
             BarCode = res.Data.BarCode,
             UnitPrice = res.Data.UnitPrice,
+            VatPercent = res.Data.VatPercent,
+            VatAmount = res.Data.VatAmount,
+            LineTotalBeforeVat = res.Data.LineTotalBeforeVat,
+            LineTotalAfterVat = res.Data.LineTotalAfterVat,
             ErrorMessage = res.Data.ErrorMessage
         };
 

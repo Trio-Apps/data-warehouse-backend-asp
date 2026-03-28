@@ -57,12 +57,15 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                 .Include(o => o.TransferredItems)
                     .ThenInclude(i => i.TransferredStockBatches)
                 .Where(o =>
-                    o.Status == GeneralStatus.Processing &&
+                    o.Status == GeneralStatus.Processing && o.ReceivingStatus == ReceivingStatus.Completed &&
                     approvedIdsQuery.Contains(o.TransferredStockId))
                 .FirstOrDefaultAsync(o => o.TransferredStockId == transferredStockId);
 
+
+
             if (order == null)
                 return "This transferred stock must be Approved to send it to Sap";
+
 
             var sapId = order.Warehouse?.SapId ?? 0;
             if (sapId <= 0)
@@ -238,7 +241,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                         FromWarehouseCode = order.Warehouse.WarehouseCode,
                         WarehouseCode = order.DistinationWarehouse.WarehouseCode,
                         UoMEntry = line.UoMEntry > 0 ? line.UoMEntry : null,
-                        BarCode = line.BarCode,
+                       // Barcode = line.BarCode,
                         UnitPrice = line.UnitPrice,
                         BatchNumbers = new List<SapBatchNumberDto>()
                     };
@@ -264,7 +267,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
                     sapDto.StockTransferLines.Add(sapLine);
                 }
 
-                var response = await _sap.AddSapAsync(sapId, "InventoryTransfers", sapDto);
+                var response = await _sap.AddSapAsync(sapId, "StockTransfers", sapDto);
 
                 _logger.LogInformation("InventoryTransfer synced {Id}", order.TransferredStockId);
 
@@ -305,7 +308,7 @@ namespace DataWarehouse.SAP.Repositories.Proccesses
             //public int? BaseLine { get; set; }
 
             public int? UoMEntry { get; set; }
-            public string? BarCode { get; set; }
+            //public string? Barcode { get; set; }
             public decimal? UnitPrice { get; set; }
 
             public List<SapBatchNumberDto>? BatchNumbers { get; set; }

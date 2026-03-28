@@ -18,6 +18,7 @@ public interface IGoodsReturnOrderRepository : IBaseRepository<GoodsReturnOrder>
     Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderByReceiptPurchaseOrderIdAsync(string userId, AddGoodsReturnOrderModel dto);
     Task<GeneralResponse<GoodsReturnOrderDTO>> AddGoodsReturnOrderAsync(string userId, AddGoodsReturnOrderDTO dto);
     Task<GeneralResponse<GoodsReturnOrderDTO>> UpdateGoodsReturnOrderAsync(string userId, int goodsReturnOrderId, UpdateGoodsReturnOrderDTO dto);
+    Task<GeneralResponse<GoodsReturnOrderDTO>> DuplicateGoodsReturnOrderAsync(string userId, int goodsReturnOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int goodsReturnOrderId);
     Task<GeneralResponse<GoodsReturnOrderDTO>> DeleteGoodsReturnOrderAsync(
    int GoodsReturnOrderId,

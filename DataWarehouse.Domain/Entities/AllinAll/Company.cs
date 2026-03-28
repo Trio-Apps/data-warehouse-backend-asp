@@ -19,6 +19,7 @@ namespace DataWarehouse.Domain.Entities.AllinAll
         public ICollection<CompanyUser> CompanyUsers { get; set; } = new List<CompanyUser>();
         public ICollection<Sap> Saps { get; set; } = new List<Sap>();
         public ICollection<BarCodeSetting> BarCodeSettings { get; set; } = new List<BarCodeSetting>();
+        public ICollection<Reason> Reasons { get; set; } = new List<Reason>();
         public ICollection<ProcessesType> ProcessesTypes { get; set; } = new List<ProcessesType>();
         public ICollection<ApprovalStep> ApprovalSteps { get; set; } = new List<ApprovalStep>();
         public ICollection<ApplicationRole> Roles { get; set; } = new HashSet<ApplicationRole>();

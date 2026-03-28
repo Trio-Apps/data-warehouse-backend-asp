@@ -10,6 +10,7 @@ using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -23,19 +24,23 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
 {
     private readonly IBaseProcessesRepository<QuantityAdjustmentStock> baseProcesses;
     private readonly IApprovalRepository approval;
+    private readonly ReasonValidationService reasonValidationService;
 
     public QuantityAdjustmentStockRepository(
         IBaseProcessesRepository<QuantityAdjustmentStock> baseProcesses,
         IApprovalRepository approval,
+        ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        this.reasonValidationService = reasonValidationService;
     }
 
     public async Task<IEnumerable<QuantityAdjustmentStock>> GetByWarehouseIdAsync(int warehouseId)
     {
         return await Query()
+            .Include(x => x.Reason)
             .Where(x => x.WarehouseId == warehouseId)
             .ToListAsync();
     }
@@ -48,6 +53,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
 
         var query = _context.QuantityAdjustmentStocks
             .AsNoTracking()
+            .Include(x => x.Reason)
             .Where(x => x.WarehouseId == warehouseId);
 
         var processQuery = _context.ProcessItemIsProgresses
@@ -82,6 +88,8 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
                 WarehouseCode = x.Order.Warehouse.WarehouseCode,
                 CreatedAt = x.Order.CreatedAt,
                 ItemCount = x.Order.QuantityAdjustmentStockItems.Count(),
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
                 Approval = x.HasProgress,
                 ErrorMessage = x.Order.ErrorMessage,
                 ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
@@ -109,6 +117,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
             .AsNoTracking()
             .Include(x => x.QuantityAdjustmentStockItems)
             .Include(x => x.Warehouse)
+            .Include(x => x.Reason)
             .Where(x => x.WarehouseId == warehouseId);
 
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<GeneralStatus>(status, true, out var statusEnum))
@@ -163,6 +172,8 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
                 WarehouseCode = x.Order.Warehouse.WarehouseCode,
                 CreatedAt = x.Order.CreatedAt,
                 ItemCount = x.Order.QuantityAdjustmentStockItems.Count(),
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
                 Approval = x.HasProgress,
                 ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
             })
@@ -184,6 +195,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
         var entity = await _context.QuantityAdjustmentStocks
             .Include(x => x.Warehouse)
             .Include(x => x.QuantityAdjustmentStockItems)
+            .Include(x => x.Reason)
             .FirstOrDefaultAsync(x => x.QuantityAdjustmentStockId == quantityAdjustmentStockId, cancellationToken);
 
         if (entity == null)
@@ -203,6 +215,8 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
             WarehouseCode = entity.Warehouse.WarehouseCode,
             CreatedAt = entity.CreatedAt,
             ItemCount = entity.QuantityAdjustmentStockItems.Count(),
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null,
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
             ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
@@ -218,6 +232,15 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
     public async Task<GeneralResponse<QuantityAdjustmentStockDTO>> AddQuantityAdjustmentStockByWarehouseIdAsync(
         string userId, AddQuantityAdjustmentStockDTO dto, CancellationToken cancellationToken = default)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.QuantityAdjustment);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<QuantityAdjustmentStockDTO>.FailResponse(ex.Message);
+        }
+
         var warehouse = await _context.Warehouses
             .AsNoTracking()
             .FirstOrDefaultAsync(w => w.WarehouseId == dto.WarehouseId, cancellationToken);
@@ -233,7 +256,8 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
             CreatedAt = DateTime.UtcNow,
             UserId = userId,
             WarehouseId = dto.WarehouseId,
-            Comment = dto.Comment
+            Comment = dto.Comment,
+            ReasonId = dto.ReasonId
         };
 
         var saved = await AddAsync(entity);
@@ -257,13 +281,24 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
             UserId = saved.UserId,
             WarehouseId = saved.WarehouseId,
             Comment = saved.Comment,
-            CreatedAt = saved.CreatedAt
+            CreatedAt = saved.CreatedAt,
+            ReasonId = saved.ReasonId,
+            ReasonName = saved.Reason != null ? saved.Reason.Name : null
         });
     }
 
     public async Task<GeneralResponse<QuantityAdjustmentStockDTO>> UpdateQuantityAdjustmentStockAsync(
         string userId, int quantityAdjustmentStockId, UpdateQuantityAdjustmentStockDTO dto, CancellationToken cancellationToken = default)
     {
+        try
+        {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.QuantityAdjustment);
+        }
+        catch (Exception ex)
+        {
+            return GeneralResponse<QuantityAdjustmentStockDTO>.FailResponse(ex.Message);
+        }
+
         var entity = await _context.QuantityAdjustmentStocks
             .FirstOrDefaultAsync(x => x.QuantityAdjustmentStockId == quantityAdjustmentStockId, cancellationToken);
 
@@ -288,6 +323,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
 
         if (!string.IsNullOrWhiteSpace(dto.Comment) && entity.Comment != dto.Comment)
             entity.Comment = dto.Comment;
+        entity.ReasonId = dto.ReasonId;
 
         if (entity.UserId != userId)
             entity.UserId = userId;
@@ -318,11 +354,29 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             Comment = entity.Comment,
-            CreatedAt = entity.CreatedAt
+            CreatedAt = entity.CreatedAt,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         });
     }
 
-    public async Task<GeneralResponse<QuantityAdjustmentStockDTO>> DeleteQuantityAdjustmentStockAsync(
+    public async Task<GeneralResponse<QuantityAdjustmentStockDTO>> DuplicateQuantityAdjustmentStockAsync(
+        string userId,
+        int quantityAdjustmentStockId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.QuantityAdjustmentStocks
+            .AsNoTracking()
+            .Include(x => x.QuantityAdjustmentStockItems)
+                .ThenInclude(x => x.QuantityAdjustmentStockBatches)
+            .FirstOrDefaultAsync(x => x.QuantityAdjustmentStockId == quantityAdjustmentStockId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<QuantityAdjustmentStockDTO>.FailResponse("not found");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.QuantityAdjustmentStocks.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return await GetWithWarehouseAsync(clone.QuantityAdjustmentStockId, userId, cancellationToken);
+    }    public async Task<GeneralResponse<QuantityAdjustmentStockDTO>> DeleteQuantityAdjustmentStockAsync(
         int quantityAdjustmentStockId, CancellationToken cancellationToken = default)
     {
         var entity = await _context.QuantityAdjustmentStocks
@@ -347,7 +401,9 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
             UserId = entity.UserId,
             WarehouseId = entity.WarehouseId,
             Comment = entity.Comment,
-            CreatedAt = entity.CreatedAt
+            CreatedAt = entity.CreatedAt,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
         _context.QuantityAdjustmentStocks.Remove(entity);
@@ -401,7 +457,9 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
                 UserId = x.UserId,
                 WarehouseId = x.WarehouseId,
                 Comment = x.Comment,
-                CreatedAt = x.CreatedAt
+                CreatedAt = x.CreatedAt,
+                ReasonId = x.ReasonId,
+                ReasonName = x.Reason != null ? x.Reason.Name : null
             })
             .ToListAsync();
 
@@ -410,7 +468,8 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
 
     public async Task<QuantityAdjustmentStock?> GetWithItemsAsync(int quantityAdjustmentStockId)
     {
-        return await QueryIncluding(false, x => x.QuantityAdjustmentStockItems)
+        return await QueryIncluding(false, x => x.QuantityAdjustmentStockItems, x => x.Reason)
             .FirstOrDefaultAsync(x => x.QuantityAdjustmentStockId == quantityAdjustmentStockId);
     }
 }
+

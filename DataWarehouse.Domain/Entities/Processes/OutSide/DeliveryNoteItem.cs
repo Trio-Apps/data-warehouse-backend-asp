@@ -16,6 +16,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public int DeliveryNoteItemId { get; set; }
         public decimal Quantity { get; set; }
         public int UoMEntry { get; set; }
+        public string? BarCode { get; set; }
 
         [NotMapped]
         public int OrderId
@@ -24,10 +25,13 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
             set => DeliveryNoteOrderId = value;
         }
 
-        public string? BarCode { get; set; }
-        // Pending, Planned, Released, Received, Closed, Failed
         public GeneralItemStatus Status { get; set; }
+        // Pending, Planned, Released, Received, Closed, Failed
         public decimal? UnitPrice { get; set; }
+        public decimal? VatPercent { get; set; }
+        public decimal? VatAmount { get; set; }
+        public decimal? LineTotalBeforeVat { get; set; }
+        public decimal? LineTotalAfterVat { get; set; }
         public string? ErrorMessage { get; set; }
         public int? LineNum { get; set; }
 

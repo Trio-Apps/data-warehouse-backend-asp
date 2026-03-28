@@ -200,7 +200,16 @@ public class ReceiptPurchaseOrderController : ControllerBase
 
         return Ok(created);
     }
-    [HttpPut("{id}")]
+    [HttpPost("{id}/duplicate")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Create}")]
+    public async Task<IActionResult> Duplicate(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var res = await _repository.DuplicateReceiptPurchaseOrderAsync(userId, id);
+        if (!res.Success)
+            return BadRequest(res);
+        return Ok(res);
+    }    [HttpPut("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Edit}")]
 
     public async Task<IActionResult> Update(int id, [FromBody] UpdateReceiptPurchaseOrderDTO dto)

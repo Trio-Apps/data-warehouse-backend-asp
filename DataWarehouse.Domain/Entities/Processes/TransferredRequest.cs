@@ -27,6 +27,7 @@ public class TransferredRequest : IOrder
         public int? DocEntry { get; set; }
         public int? DocNum { get; set; }
         public string? DocType { get; set; }
+        public int? ReasonId { get; set; }
 
         [NotMapped]
         public int Id
@@ -39,6 +40,7 @@ public class TransferredRequest : IOrder
         // Navigation
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
+        public Reason? Reason { get; set; }
 
         public int WarehouseId { get; set; }
         public Warehouse Warehouse { get; set; }

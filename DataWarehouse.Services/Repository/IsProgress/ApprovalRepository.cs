@@ -6,6 +6,7 @@ using DataWarehouse.Core.Interfaces.Queue;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Auth;
 using DataWarehouse.Domain.Entities.IsProgress;
+using DataWarehouse.Domain.Entities.Notifications;
 using DataWarehouse.Domain.Enums.Approval;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -228,6 +229,13 @@ namespace DataWarehouse.Services.Repository.IsProgress
 
             await _context.SaveChangesAsync();
 
+            await CreateProcessNotificationAsync(
+                process.ProcessType,
+                process.ReferenceId,
+                "Approved",
+                $"{FormatProcessType(process.ProcessType)} تمت الموافقة",
+                $"{FormatProcessType(process.ProcessType)} رقم {process.ReferenceId} تمت الموافقة عليه.");
+
             return GeneralResponse<ProcessApprovalDto>.SuccessResponse(new ProcessApprovalDto
             {
                 ProcessApprovalId = approval.ProcessApprovalId,
@@ -319,6 +327,14 @@ namespace DataWarehouse.Services.Repository.IsProgress
             _context.ProcessItemIsProgresses.Update(process);
 
             await _context.SaveChangesAsync();
+
+            await CreateProcessNotificationAsync(
+                process.ProcessType,
+                process.ReferenceId,
+                "Rejected",
+                $"{FormatProcessType(process.ProcessType)} تم الرفض",
+                $"{FormatProcessType(process.ProcessType)} رقم {process.ReferenceId} تم رفضه.");
+
             return GeneralResponse<ProcessApprovalDto>.SuccessResponse(new ProcessApprovalDto
             {
                 ProcessApprovalId = approval.ProcessApprovalId,
@@ -612,6 +628,78 @@ namespace DataWarehouse.Services.Repository.IsProgress
          p.ReferenceId == OrderId)
      .OrderByDescending(p => p.ProcessItemIsProgressId) // آخر حالة
      .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        private async Task CreateProcessNotificationAsync(
+            ProcessType processType,
+            int referenceId,
+            string actionType,
+            string title,
+            string message)
+        {
+            var userId = await GetOrderOwnerUserIdAsync(processType, referenceId);
+            if (string.IsNullOrWhiteSpace(userId))
+                return;
+
+            await _context.Notifications.AddAsync(new Notification
+            {
+                UserId = userId,
+                Title = title,
+                Message = message,
+                ActionType = actionType switch
+                {
+                    "Approved" => "تمت الموافقة",
+                    "Rejected" => "تم الرفض",
+                    _ => actionType
+                },
+                DocumentType = FormatProcessType(processType),
+                ProcessType = processType.ToString(),
+                ReferenceId = referenceId,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task<string?> GetOrderOwnerUserIdAsync(ProcessType processType, int referenceId)
+        {
+            return processType switch
+            {
+                ProcessType.Purchase => await _context.PurchaseOrders.Where(x => x.PurchaseOrderId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.Sales => await _context.SalesOrders.Where(x => x.SalesOrderId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.SalesReturn => await _context.SalesReturnOrders.Where(x => x.SalesReturnOrderId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.Receipt => await _context.ReceiptPurchaseOrders.Where(x => x.ReceiptPurchaseOrderId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.GoodsReturn => await _context.GoodsReturnOrders.Where(x => x.GoodsReturnOrderId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.Production => await _context.ProductionOrders.Where(x => x.ProductionOrderId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.Transferred => await _context.TransferredStocks.Where(x => x.TransferredStockId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.Received => await _context.ReceivedStocks.Where(x => x.ReceivedStockId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.Counting => await _context.CountStocks.Where(x => x.CountStockId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.DeliveryNote => await _context.DeliveryNoteOrders.Where(x => x.DeliveryNoteOrderId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.TransferredRequest => await _context.TransferredRequests.Where(x => x.TransferredRequestId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                ProcessType.QuantityAdjustment => await _context.QuantityAdjustmentStocks.Where(x => x.QuantityAdjustmentStockId == referenceId).Select(x => x.UserId).FirstOrDefaultAsync(),
+                _ => null
+            };
+        }
+
+        private static string FormatProcessType(ProcessType processType)
+        {
+            return processType switch
+            {
+                ProcessType.GoodsReturn => "أمر مرتجع المشتريات",
+                ProcessType.SalesReturn => "أمر المرتجع",
+                ProcessType.DeliveryNote => "أمر التسليم",
+                ProcessType.TransferredRequest => "طلب تحويل",
+                ProcessType.QuantityAdjustment => "أمر تسوية الكمية",
+                ProcessType.Received => "أمر الاستلام المخزني",
+                ProcessType.Transferred => "أمر التحويل",
+                ProcessType.Counting => "أمر الجرد",
+                ProcessType.Receipt => "أمر الاستلام",
+                ProcessType.Purchase => "أمر الشراء",
+                ProcessType.Sales => "أمر البيع",
+                ProcessType.Production => "أمر الإنتاج",
+                _ => processType.ToString()
+            };
         }
     }
 }

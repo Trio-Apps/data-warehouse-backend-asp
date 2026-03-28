@@ -1,4 +1,4 @@
-Ôªøusing DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
@@ -14,7 +14,9 @@ using DataWarehouse.Domain.Entities.Processes.BulkProductions;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.Processes;
 using DataWarehouse.Services.Repository.SapRepo;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -29,18 +31,21 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
     private readonly ISapCache sapCache;
     private readonly IProcessesTypesDateRepository processes;
     private readonly IApprovalRepository approval;
+    private readonly ReasonValidationService reasonValidationService;
 
     public ProductionOrderRepository(
         IBaseProcessesRepository<ProductionOrder> baseProcesses,
         ISapCache sapCache,
         IProcessesTypesDateRepository processes,
         IApprovalRepository approval,
+        ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.sapCache = sapCache;
         this.processes = processes;
         this.approval = approval;
+        this.reasonValidationService = reasonValidationService;
     }
 
 
@@ -63,7 +68,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             .AsNoTracking()
             .Where(p => p.ProcessType == ProcessType.Production);
 
-        // üîπ Filtering
+        // ?? Filtering
 
 
        
@@ -91,6 +96,8 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
                 ProductionOrderId = x.Order.ProductionOrderId,
                 Remarks = x.Order.Remarks,
                 Status = x.Order.Status.ToString(),
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
                 UserId = x.Order.UserId,
                 WarehouseId = warehouseId,
                 NumberOfProductionItem = x.Order.ProductionOrderItems.Count(),
@@ -133,6 +140,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
     public async Task<GeneralResponse<ProductionOrderDTO>> AddProductionOrderByWarehouseIdAsync(string userId,
            AddProductionOrderDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Production);
        // var sapId = await sapCache.Get();
 
       //  var checkValidDate = await ValidateBusinessDatesAsync(dto.PostingDate,dto.DueDate);
@@ -149,10 +157,11 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             PostingDate = dto.PostingDate,
             
              DueDate = dto.DueDate,
-              CreatedAt = DateTime.UtcNow,
+                 CreatedAt = DateTime.UtcNow,
                UserId = userId, 
                 WarehouseId =dto.WarehouseId,
-                 Remarks = dto.Remarks,     
+                 Remarks = dto.Remarks,
+                 ReasonId = dto.ReasonId,
         };
 
         var res = await AddAsync(mapping);
@@ -163,8 +172,10 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
              ProductionOrderId = res.ProductionOrderId,
             DueDate = res.DueDate,
              PostingDate = res.PostingDate, 
-            Status = res.Status.ToString() // <-- ŸáŸÜÿß ÿ®ŸÜÿ≠ŸàŸÑ ÿßŸÑŸÄ enum ŸÑ string
-            
+            Status = res.Status.ToString(), // <-- Â‰« »‰ÕÊ· «·‹ enum · string
+            ReasonId = res.ReasonId,
+            ReasonName = res.Reason != null ? res.Reason.Name : null
+             
         };
 
         return GeneralResponse<ProductionOrderDTO>.SuccessResponse(model);
@@ -190,6 +201,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         {
             foreach (var dto in dtos)
             {
+                // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Production);
                 var mapping = new ProductionOrder
                 {
                     Status = GeneralStatus.Draft,
@@ -199,6 +211,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
                     UserId = userId,
                     WarehouseId = dto.WarehouseId,
                     Remarks = dto.Remarks,
+                    ReasonId = dto.ReasonId,
                 };
 
                 var res = await AddAsync(mapping);
@@ -211,7 +224,9 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
                     Status = res.Status.ToString(),
                     UserId = res.UserId,
                     WarehouseId = res.WarehouseId,
-                    Remarks = res.Remarks
+                    Remarks = res.Remarks,
+                    ReasonId = res.ReasonId,
+                    ReasonName = res.Reason != null ? res.Reason.Name : null
                 });
             }
 
@@ -230,7 +245,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
       DateTime postingDate,
       DateTime dueDate)
     {
-        // 1Ô∏è‚É£ ÿ¨Ÿäÿ® ÿßŸÑŸÄ valid business dates
+        // 1?? ÃÌ» «·‹ valid business dates
         var validBusinessDates = await processes.GetByProcessesTypeForProductionAsync();
 
         // If business dates are not configured yet, do not block editing/saving.
@@ -240,17 +255,17 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             return (true, "No business dates configured. Validation skipped.");
         }
 
-        // 2Ô∏è‚É£ ÿ≠ŸàŸÑ ŸÑŸÄ DateOnly
+        // 2?? ÕÊ· ·‹ DateOnly
         var postingDateOnly = DateOnly.FromDateTime(postingDate);
         var dueDateOnly = DateOnly.FromDateTime(dueDate);
 
-        // 3Ô∏è‚É£ ÿ™ÿ¥ŸäŸÉ PostingDate
+        // 3??  ‘Ìﬂ PostingDate
         var isPostingDateValid = validBusinessDates.Any(d => d.PostingDate == postingDateOnly);
 
-        // 4Ô∏è‚É£ ÿ™ÿ¥ŸäŸÉ DueDate
+        // 4??  ‘Ìﬂ DueDate
         var isDueDateValid = validBusinessDates.Any(d => d.DueDate == dueDateOnly);
 
-        // 5Ô∏è‚É£ ÿ±ÿ¨ÿπ ÿßŸÑŸÜÿ™Ÿäÿ¨ÿ© ŸÖÿπ ÿ±ÿ≥ÿßŸÑÿ© Ÿàÿßÿ∂ÿ≠ÿ©
+        // 5?? —Ã⁄ «·‰ ÌÃ… „⁄ —”«·… Ê«÷Õ…
         if (!isPostingDateValid && !isDueDateValid)
         {
             return (false, "Both PostingDate and DueDate are not valid business dates");
@@ -271,8 +286,8 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
     // update
     public async Task<GeneralResponse<ProductionOrderDTO>> UpdateProductionOrderAsync(string userId,int productionId, UpdateProductionOrderDTO dto)
     {
-
-        // 1Ô∏è‚É£ Get existing Company auth (record ÿßŸÑŸàÿ≠ŸäÿØ)
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Production);
+        // 1?? Get existing Company auth (record «·ÊÕÌœ)
         var entity = await _context.ProductionOrders.FirstOrDefaultAsync(e => e.ProductionOrderId == productionId);
 
         if (entity == null)
@@ -294,25 +309,28 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             return GeneralResponse<ProductionOrderDTO>.FailResponse($"{checkValidDate.Message}");
 
 
-        // 2Ô∏è‚É£ Update fields
+        // 2?? Update fields
 
 
         entity.DueDate = dto.DueDate;
          entity.PostingDate = dto.PostingDate;
         entity.UserId  = userId;
+        entity.ReasonId = dto.ReasonId;
         
        // Company.IsActive = dto.IsActive;
 
-        // 3Ô∏è‚É£ Save changes
+        // 3?? Save changes
         await _context.SaveChangesAsync();
 
-        // 4Ô∏è‚É£ Map to DTO
+        // 4?? Map to DTO
         var result = new ProductionOrderDTO
         {
             ProductionOrderId = entity.ProductionOrderId,
             DueDate = entity.DueDate,
             PostingDate = entity.PostingDate,
-            Status = entity.Status.ToString() // <-- ŸáŸÜÿß ÿ®ŸÜÿ≠ŸàŸÑ ÿßŸÑŸÄ enum ŸÑ string
+            Status = entity.Status.ToString(), // <-- Â‰« »‰ÕÊ· «·‹ enum · string
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
         return GeneralResponse<ProductionOrderDTO>.SuccessResponse(result);
@@ -400,11 +418,43 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             Remarks = order.Remarks,
             UserId = order.UserId,
             WarehouseId = order.WarehouseId,
-            NumberOfProductionItem = order.ProductionOrderItems.Count
+            NumberOfProductionItem = order.ProductionOrderItems.Count,
+            ReasonId = order.ReasonId,
+            ReasonName = order.Reason != null ? order.Reason.Name : null
         });
     }
 
-    public async Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId)
+    public async Task<GeneralResponse<ProductionOrderDTO>> DuplicateProductionOrderAsync(
+        string userId,
+        int productionOrderId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.ProductionOrders
+            .AsNoTracking()
+            .Include(x => x.ProductionOrderItems)
+            .Include(x => x.ProductionHeaderBatches)
+            .FirstOrDefaultAsync(x => x.ProductionOrderId == productionOrderId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("not found");
+        if (!await UserHasWarehouseAccessAsync(userId, source.WarehouseId))
+            return GeneralResponse<ProductionOrderDTO>.FailResponse("You don't have access to this warehouse.");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.ProductionOrders.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return GeneralResponse<ProductionOrderDTO>.SuccessResponse(new ProductionOrderDTO
+        {
+            ProductionOrderId = clone.ProductionOrderId,
+            PostingDate = clone.PostingDate,
+            DueDate = clone.DueDate,
+            Remarks = clone.Remarks,
+            Status = clone.Status.ToString(),
+            UserId = clone.UserId,
+            WarehouseId = clone.WarehouseId,
+            NumberOfProductionItem = clone.ProductionOrderItems.Count,
+            ReasonId = clone.ReasonId,
+            ReasonName = clone.Reason != null ? clone.Reason.Name : null
+        });
+    }    public async Task<IEnumerable<ProductionOrder>> GetByItemIdAsync(int itemId)
     {
         return await QueryIncluding(false, po => po.ProductionOrderItems)
             .Where(po => po.ProductionOrderItems.Any(poi => poi.ItemId == itemId))
@@ -491,7 +541,9 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
                 Status = po.Status.ToString(),
                 UserId = po.UserId,
                 WarehouseId = po.WarehouseId,
-                NumberOfProductionItem = po.ProductionOrderItems.Count()
+                NumberOfProductionItem = po.ProductionOrderItems.Count(),
+                ReasonId = po.ReasonId,
+                ReasonName = po.Reason != null ? po.Reason.Name : null
             })
             .ToListAsync();
 
@@ -641,3 +693,4 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         }
     }
 }
+

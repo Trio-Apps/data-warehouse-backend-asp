@@ -1,4 +1,4 @@
-Ôªøusing System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +15,8 @@ using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Repository.Processes;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
@@ -29,16 +31,19 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
         private readonly IProcessItemIsProgressRepository progress;
         private readonly IApprovalRepository approval;
         private readonly DataWarehouseDbContext _context;
+        private readonly ReasonValidationService reasonValidationService;
 
         public DeliveryNoteOrderRepository(
             IBaseProcessesRepository<DeliveryNoteOrder> baseProcesses,
             IProcessItemIsProgressRepository progress,
             IApprovalRepository approval,
+            ReasonValidationService reasonValidationService,
             DataWarehouseDbContext context) : base(context)
         {
             this.baseProcesses = baseProcesses;
             this.progress = progress;
             this.approval = approval;
+            this.reasonValidationService = reasonValidationService;
             _context = context;
         }
 
@@ -79,7 +84,9 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                     DueDate = dno.DueDate,
                     Status = dno.Status.ToString(),
                     Comment = dno.Comment,
-                    CreatedAt = dno.CreatedAt
+                    CreatedAt = dno.CreatedAt,
+                    ReasonId = dno.ReasonId,
+                    ReasonName = dno.Reason != null ? dno.Reason.Name : null
                 })
                 .ToListAsync();
 
@@ -174,6 +181,8 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                     ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
                IsReturn = x.Order.SalesReturnOrder != null,
                     ReturnOrderId = x.Order.SalesReturnOrder != null ? x.Order.SalesReturnOrder.SalesReturnOrderId : null,
+                    ReasonId = x.Order.ReasonId,
+                    ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
 
                 })
                 .ToListAsync(cancellationToken);
@@ -189,7 +198,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
         }
 
         /// <summary>
-        /// not used (ÿ®ŸÜŸÅÿ≥ ŸÅŸÉÿ±ÿ© ÿßŸÑŸÑŸä ÿπŸÜÿØŸÉ)
+        /// not used (»‰›” ›ﬂ—… «··Ì ⁄‰œﬂ)
         /// </summary>
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> GetWithCustomerAsync(
             int deliveryNoteOrderId, string userId, CancellationToken cancellationToken = default)
@@ -220,6 +229,8 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 WarehouseId = res.WarehouseId,
                 CustomerName = res.Customer.CustomerName,
                 CustomerId = res.CustomerId,
+                ReasonId = res.ReasonId,
+                ReasonName = res.Reason != null ? res.Reason.Name : null,
 
                 CanApprove = approvalModel.CanApprove,
                 ProcessApprovalId = approvalModel.ProcessApprovalId,
@@ -261,6 +272,8 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 DueDate = res.DueDate,
                 PostingDate = res.PostingDate,
                 CreatedAt = res.CreatedAt,
+                ReasonId = res.ReasonId,
+                ReasonName = res.Reason != null ? res.Reason.Name : null,
 
                 CanApprove = approvalModel.CanApprove,
                 ProcessApprovalId = approvalModel.ProcessApprovalId,
@@ -274,14 +287,15 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
         }
 
         /// <summary>
-        /// ÿ•ŸÜÿ¥ÿßÿ° Delivery Note ÿ®ŸÜÿßÿ°Ÿã ÿπŸÑŸâ Sales Order (Parent) + ŸÜÿ≥ÿÆ items
+        /// ≈‰‘«¡ Delivery Note »‰«¡ ⁄·Ï Sales Order (Parent) + ‰”Œ items
         /// </summary>
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> AddDeliveryNoteOrderAndItemsBySalesOrderIdAsync(
             string userId, AddDeliveryNoteOrderDTO dto)
         {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.DeliveryNote);
             var salesOrder = await _context.SalesOrders
-//                .Include(so => so.DeliveryNoteOrder)  // ŸÑŸÑÿ™ÿ≠ŸÇŸÇ ŸáŸÑ ÿßÿ™ÿπŸÖŸÑ DN ŸÇÿ®ŸÑ ŸÉÿØŸá
-                .Include(so => so.SalesOrderItems)    // ŸÑŸÜÿ≥ÿÆ items
+//                .Include(so => so.DeliveryNoteOrder)  // ·· Õﬁﬁ Â· « ⁄„· DN ﬁ»· ﬂœÂ
+                .Include(so => so.SalesOrderItems)    // ·‰”Œ items
                 .FirstOrDefaultAsync(so => so.SalesOrderId == dto.SalesOrderId);
 
             if (salesOrder == null)
@@ -305,6 +319,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 CustomerId = salesOrder.CustomerId,
 
                 Comment = dto.Comment,
+                ReasonId = dto.ReasonId,
 
                 // Reference
                 SalesOrderId = dto.SalesOrderId,
@@ -317,6 +332,14 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                     UoMEntry = soi.UoMEntry,
                     BarCode = soi.BarCode,
                     UnitPrice = soi.UnitPrice,
+
+                    VatPercent = soi.VatPercent,
+
+                    VatAmount = soi.VatAmount,
+
+                    LineTotalBeforeVat = soi.LineTotalBeforeVat,
+
+                    LineTotalAfterVat = soi.LineTotalAfterVat,
 
                     Status = GeneralItemStatus.Planned,
                     ErrorMessage = null
@@ -346,18 +369,21 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 PostingDate = deliveryNote.PostingDate,
                 DueDate = deliveryNote.DueDate,
                 Comment = deliveryNote.Comment,
-                Status = deliveryNote.Status.ToString()
+                Status = deliveryNote.Status.ToString(),
+                ReasonId = deliveryNote.ReasonId,
+                ReasonName = deliveryNote.Reason != null ? deliveryNote.Reason.Name : null
             };
 
             return GeneralResponse<DeliveryNoteOrderDTO>.SuccessResponse(model);
         }
 
         /// <summary>
-        /// ÿ•ŸÜÿ¥ÿßÿ° Delivery Note ÿ®ÿØŸàŸÜ SalesOrder reference
+        /// ≈‰‘«¡ Delivery Note »œÊ‰ SalesOrder reference
         /// </summary>
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> AddDeliveryNoteOrderWithoutRefAsync(
             string userId, AddDeliveryNoteOrderWithoutRefDTO dto)
         {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.DeliveryNote);
             var customer = await _context.Customers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.CustomerId == dto.CustomerId);
@@ -375,8 +401,9 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 WarehouseId = dto.WarehouseId,
                 Comment = dto.Comment,
                 CustomerId = dto.CustomerId,
+                ReasonId = dto.ReasonId,
 
-                // ÿ®ÿØŸàŸÜ ŸÖÿ±ÿ¨ÿπ
+                // »œÊ‰ „—Ã⁄
                 SalesOrderId = null
             };
 
@@ -403,18 +430,39 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 PostingDate = res.PostingDate,
                 DueDate = res.DueDate,
                 Comment = res.Comment,
-                Status = res.Status.ToString()
+                Status = res.Status.ToString(),
+                ReasonId = res.ReasonId,
+                ReasonName = res.Reason != null ? res.Reason.Name : null
             };
 
             return GeneralResponse<DeliveryNoteOrderDTO>.SuccessResponse(model);
         }
 
+        public async Task<GeneralResponse<DeliveryNoteOrderDTO>> DuplicateDeliveryNoteOrderAsync(string userId, int deliveryNoteOrderId, CancellationToken cancellationToken = default)
+        {
+            var source = await _context.DeliveryNoteOrders
+                .AsNoTracking()
+                .Include(x => x.DeliveryNoteItems)
+                    .ThenInclude(x => x.DeliveryNoteBatches)
+                .FirstOrDefaultAsync(x => x.DeliveryNoteOrderId == deliveryNoteOrderId, cancellationToken);
+
+            if (source == null)
+                return GeneralResponse<DeliveryNoteOrderDTO>.FailResponse("Delivery note order not found");
+
+            var clone = OrderDuplicationHelper.Clone(source, userId);
+            await _context.DeliveryNoteOrders.AddAsync(clone, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return await GetDeliveryNoteOrderByIdAsync(userId, clone.DeliveryNoteOrderId, cancellationToken);
+        }
+
         /// <summary>
-        /// ÿ•ŸÜÿ¥ÿßÿ° Delivery Note ÿ®ŸÜÿßÿ°Ÿã ÿπŸÑŸâ SalesOrderId (Reference ŸÅŸÇÿ∑) ÿ®ÿØŸàŸÜ ŸÜÿ≥ÿÆ items
+        /// ≈‰‘«¡ Delivery Note »‰«¡ ⁄·Ï SalesOrderId (Reference ›ﬁÿ) »œÊ‰ ‰”Œ items
         /// </summary>
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> AddDeliveryNoteOrderAsync(
             string userId, AddDeliveryNoteOrderDTO dto)
         {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.DeliveryNote);
             var salesOrder = await _context.SalesOrders
                // .Include(so => so.DeliveryNoteOrder)
                 .FirstOrDefaultAsync(so => so.SalesOrderId == dto.SalesOrderId);
@@ -437,6 +485,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 CustomerId = salesOrder.CustomerId,
 
                 Comment = dto.Comment,
+                ReasonId = dto.ReasonId,
                 SalesOrderId = dto.SalesOrderId
             };
 
@@ -463,7 +512,9 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 PostingDate = res.PostingDate,
                 DueDate = res.DueDate,
                 Comment = res.Comment,
-                Status = res.Status.ToString()
+                Status = res.Status.ToString(),
+                ReasonId = res.ReasonId,
+                ReasonName = res.Reason != null ? res.Reason.Name : null
             };
 
             return GeneralResponse<DeliveryNoteOrderDTO>.SuccessResponse(model);
@@ -472,6 +523,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> UpdateDeliveryNoteOrderAsync(
             string userId, int deliveryNoteOrderId, UpdateDeliveryNoteOrderDTO dto)
         {
+            // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.DeliveryNote);
             var entity = await _context.DeliveryNoteOrders
                 .FirstOrDefaultAsync(e => e.DeliveryNoteOrderId == deliveryNoteOrderId);
 
@@ -481,7 +533,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             if (entity.DeliveryNoteOrderId != deliveryNoteOrderId)
                 return GeneralResponse<DeliveryNoteOrderDTO>.FailResponse("ID mismatch");
 
-            // ‚úÖ ŸÖŸÜÿπ ÿ™ÿπÿØŸäŸÑ Customer ŸÑŸà ÿßŸÑŸÄ DeliveryNote ŸÖÿ®ŸÜŸä ÿπŸÑŸâ SalesOrder
+            // ? „‰⁄  ⁄œÌ· Customer ·Ê «·‹ DeliveryNote „»‰Ì ⁄·Ï SalesOrder
             if (entity.SalesOrderId != null)
             {
                 if (dto.CustomerId.HasValue && dto.CustomerId.Value != entity.CustomerId)
@@ -511,6 +563,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 entity.CustomerId = dto.CustomerId.Value;
 
             entity.Comment = dto.Comment ?? entity.Comment;
+            entity.ReasonId = dto.ReasonId;
 
             if (!dto.IsDraft)
             {
@@ -540,7 +593,9 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 Comment = entity.Comment,
                 Status = entity.Status.ToString(),
                 PostingDate = entity.PostingDate,
-                DueDate = entity.DueDate
+                DueDate = entity.DueDate,
+                ReasonId = entity.ReasonId,
+                ReasonName = entity.Reason != null ? entity.Reason.Name : null
             };
 
             return GeneralResponse<DeliveryNoteOrderDTO>.SuccessResponse(result);
@@ -576,7 +631,9 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 WarehouseId = entity.WarehouseId,
                 CustomerId = entity.CustomerId,
                 SalesOrderId = entity.SalesOrderId,
-                Comment = entity.Comment
+                Comment = entity.Comment,
+                ReasonId = entity.ReasonId,
+                ReasonName = entity.Reason != null ? entity.Reason.Name : null
             };
 
             _context.DeliveryNoteOrders.Remove(entity);
@@ -622,6 +679,8 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 DueDate = res.DueDate,
                 PostingDate = res.PostingDate,
                 Status = res.Status.ToString(),
+                ReasonId = res.ReasonId,
+                ReasonName = res.Reason != null ? res.Reason.Name : null,
 
                 Items = res.DeliveryNoteItems.Select(e => new DeliveryNoteItemDTO
                 {
@@ -636,6 +695,10 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                     DeliveryNoteOrderId = e.DeliveryNoteOrderId,
                     SalesOrderItemId = e.SalesOrderItemId,
                     UnitPrice = e.UnitPrice,
+                    VatPercent = e.VatPercent,
+                    VatAmount = e.VatAmount,
+                    LineTotalBeforeVat = e.LineTotalBeforeVat,
+                    LineTotalAfterVat = e.LineTotalAfterVat,
                     UoMEntry = e.UoMEntry,
                     UnitName = e.Item.ItemUomGroups
                         .Where(i => i.UomEntry == e.UoMEntry)
@@ -700,6 +763,8 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                     DueDate = d.DueDate,
                     Status = d.Status.ToString(),
                     Comment = d.Comment,
+                    ReasonId = d.ReasonId,
+                    ReasonName = d.Reason != null ? d.Reason.Name : null,
 
                     Items = d.DeliveryNoteItems.Select(i => new DeliveryNoteItemDTO
                     {
@@ -708,6 +773,10 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                         UoMEntry = i.UoMEntry,
                         BarCode = i.BarCode,
                         UnitPrice = i.UnitPrice,
+                        VatPercent = i.VatPercent,
+                        VatAmount = i.VatAmount,
+                        LineTotalBeforeVat = i.LineTotalBeforeVat,
+                        LineTotalAfterVat = i.LineTotalAfterVat,
                         ErrorMessage = i.ErrorMessage,
                         Status = i.Status.ToString(),
                         DeliveryNoteOrderId = i.DeliveryNoteOrderId,
@@ -739,3 +808,4 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
         }
     }
 }
+

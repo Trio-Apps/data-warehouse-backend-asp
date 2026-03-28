@@ -1,4 +1,5 @@
-using DataWarehouse.Core.DTOs.Based;
+ï»¿using DataWarehouse.Core.DTOs.Based;
+using DataWarehouse.Core.DTOs.Actors;
 using DataWarehouse.Core.Interfaces.Actors;
 using DataWarehouse.Core.IServices.Actors;
 using DataWarehouse.Domain.Entities.Actors;
@@ -44,13 +45,13 @@ public class ItemController : ControllerBase
       string updateDate,
       int skip,
       int top){
-        // 1?? ÊÍÞÞ ãä ÇáÜ ModelState ááÜ parameters
+        // 1?? ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ModelState ï¿½ï¿½ï¿½ parameters
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        // 2?? ÍÇæá ÊÍæíá ÇáäÕ áÊÇÑíÎ
+        // 2?? ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (!DateTime.TryParseExact(updateDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
         {
             return BadRequest("Invalid date format. Expected format: yyyy-MM-dd");
@@ -59,7 +60,7 @@ public class ItemController : ControllerBase
         // 3?? Pagination + filter
         var items = await _itemRespository.PaginationAsync(x => x.UpdateDate >= date, skip, top);
 
-        // 4?? ÊÍÞÞ áæ ãÝíÔ ÈíÇäÇÊ
+        // 4?? ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (items == null || !items.Data.Data.Any())
         {
             return NotFound("No items found for the given date.");
@@ -77,7 +78,7 @@ public class ItemController : ControllerBase
      int skip,
    int pageSize)
     {
-        // 1?? ÊÍÞÞ ãä ÇáÜ ModelState ááÜ parameters
+        // 1?? ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ModelState ï¿½ï¿½ï¿½ parameters
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -86,7 +87,7 @@ public class ItemController : ControllerBase
         // 3?? Pagination + filter
         var items = await _itemRespository.GetItemsWithItemCodeAndName(itemCode, itemName, skip, pageSize);
 
-        // 4?? ÊÍÞÞ áæ ãÝíÔ ÈíÇäÇÊ
+        // 4?? ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (items == null || !items.Data.Data.Any())
         {
             return NotFound("No items found for the given date.");
@@ -156,5 +157,13 @@ public class ItemController : ControllerBase
 
   
    
+
+    [HttpGet("{id}/prices-with-uoms")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Items_Get}")]
+    public async Task<ActionResult<List<ItemPriceWithUomResponse>>> GetItemPricesWithUoms(int id)
+    {
+        var prices = await _itemRespository.GetItemPricesWithUomsAsync(id);
+        return Ok(prices);
+    }
 }
 

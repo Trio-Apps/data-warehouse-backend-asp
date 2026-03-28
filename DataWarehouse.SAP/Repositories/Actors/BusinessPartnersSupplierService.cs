@@ -44,7 +44,7 @@ public class BusinessPartnersSupplierService : IBusinessPartnersSupplierService
         {
             var url =
                 $"BusinessPartners?$skip={skip}" +
-                $"&$select=CardCode,CardName,CardType,Address,Phone1,EmailAddress,Valid,Frozen" +
+                $"&$select=CardCode,CardName,PriceListNum,CardType,Address,Phone1,EmailAddress,Valid,Frozen" +
                 $"&$orderby=CardCode";
 
             _logger.LogInformation("Fetching BusinessPartners batch. Url: {url}", url);
@@ -171,6 +171,8 @@ public class BusinessPartnersSupplierService : IBusinessPartnersSupplierService
                 Address = bp.Address,                  // Address -> Address
                 IsActive = true,
                 CreatedAt = now,
+                 PriceListNum = bp.PriceListNum,
+                 
 
                 // لو عندك SapId فعلاً في Supplier:
                 SapId = sapId
@@ -215,6 +217,7 @@ public class BusinessPartnersSupplierService : IBusinessPartnersSupplierService
                 Address = bp.Address,                  // Address -> Address
                 IsActive = true,
                 CreatedAt = now,
+                PriceListNum = bp.PriceListNum,
 
                 // لو عندك SapId فعلاً في Customer:
                 SapId = sapId
@@ -243,6 +246,7 @@ public class BusinessPartnerDto
 {
     public string CardCode { get; set; } = "";
     public string CardName { get; set; } = "";
+    public int? PriceListNum { get; set; } = 0;
     public string CardType { get; set; } = "";
     public string Address { get; set; } = "";
     public string Phone1 { get; set; } = "";

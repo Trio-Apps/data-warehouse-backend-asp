@@ -37,30 +37,18 @@ namespace DataWarehouse.SAP.Models.Actors
             public string InventoryItem { get; set; }
             public string Valid { get; set; }
             public string Frozen { get; set; }
-            public ICollection<ItemPrice> ItemPrices { get; set; }
+            public ICollection<SapItemPriceDto> ItemPrices { get; set; }
             public ICollection<SapItemWarehouseDto> ItemWarehouseInfoCollection { get; set; }
             public ICollection<ItemBarCodesDto> ItemBarCodeCollection { get; set; }
             //ItemBarCodeCollection
         }
-        public class ItemPrice
-        {
-            public int PriceList { get; set; }
-            public double? Price { get; set; }
-            public string? Currency { get; set; } = string.Empty;
-           
-            public double? Factor { get; set; }
-            public List<UoMPrice>? UoMPrices { get; set; } = new();
-        }
+     
 
-        public class UoMPrice
-        {
-            // لو JSON فاضي زي المثال يبقى Class فاضي أو ممكن تضيف الحقول المستقبلية
-        }
+      
         public class SapItemWarehouseDtoResponse
         {
             public string ItemCode { get; set; }
             public ICollection<SapItemWarehouseDto> ItemWarehouseInfoCollection { get; set; }
-
         }
 
         public class SapItemWarehouseDto
@@ -68,7 +56,32 @@ namespace DataWarehouse.SAP.Models.Actors
             public string WarehouseCode { get; set; }
             public decimal? MinimalStock { get; set; }
             public decimal? InStock { get; set; }
+        }
+        public class SapItemPricesDtoResponse
+        {
+            public string ItemCode { get; set; } = string.Empty;
+            public ICollection<SapItemPriceDto> ItemPrices { get; set; } = new List<SapItemPriceDto>();
+        }
+        public class SapItemPriceDto
+        {
+            public int PriceList { get; set; }
+            public decimal? Price { get; set; }
+            public string? Currency { get; set; }
             
+            public int? BasePriceList { get; set; }
+            public decimal? Factor { get; set; }
+            public List<SapItemUomPriceDto> UoMPrices { get; set; } = new();
+        }
+
+        public class SapItemUomPriceDto
+        {
+            public int PriceList { get; set; }
+            public int UoMEntry { get; set; }
+            public decimal? ReduceBy { get; set; }
+            public decimal? Price { get; set; }
+            public string? Currency { get; set; }
+            
+            public string? Auto { get; set; }
         }
 
         public class ItemBarCodesDtoResponse

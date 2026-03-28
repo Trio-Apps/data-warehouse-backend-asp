@@ -12,6 +12,7 @@ using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataWarehouse.Services.Repository.Processes;
@@ -21,16 +22,19 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
     private readonly IBaseProcessesRepository<TransferredRequest> baseProcesses;
     private readonly IApprovalRepository approval;
     private readonly ISapCache sapCache;
+    private readonly ReasonValidationService reasonValidationService;
 
     public TransferredRequestOrderRepository(
         IBaseProcessesRepository<TransferredRequest> baseProcesses,
         IApprovalRepository approval,
         ISapCache sapCache,
+        ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
         this.sapCache = sapCache;
+        this.reasonValidationService = reasonValidationService;
     }
     public async Task<GeneralResponse<PagedResult<WarehouseItemDto>>> GetByWarehouseIdAsync(
   int warehouseId,
@@ -46,7 +50,7 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
 
         var sapId = await sapCache.Get();
 
-        // 1) åÇÊ ÈíÇäÇÊ ÇáãÓÊæÏÚ ãÑÉ æÇÍÏÉ
+        // 1) ??? ?????? ???????? ??? ?????
         var warehouse = await _context.Warehouses
             .AsNoTracking()
             .Where(w => w.WarehouseId == warehouseId)
@@ -66,7 +70,7 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
 
         search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
 
-        // 2) Left join Items ãÚ WarehouseItems (áäÝÓ ÇáãÓÊæÏÚ ÝÞØ)
+        // 2) Left join Items ?? WarehouseItems (???? ???????? ???)
         var query =
       from i in _context.Items.AsNoTracking().Where(it => it.SapId == sapId)
       join wi in _context.WarehouseItems.AsNoTracking()
@@ -161,6 +165,8 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
                 ItemCount = x.Order.TransferredRequestItems.Count(),
                 Approval = x.HasProgress,
                 ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
                 TransferredStockId = x.Order.TransferredStock != null ? x.Order.TransferredStock.TransferredStockId : null
             })
             .ToListAsync(cancellationToken);
@@ -256,11 +262,12 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
                 Comment = x.Order.Comment,
                 CreatedAt = x.Order.CreatedAt,
                 ErrorMessage = x.Order.ErrorMessage,
-
                 ItemCount = x.Order.TransferredRequestItems.Count(),
                 WarehouseName = x.Order.Warehouse.WarehouseName,
                 DistinationWarehouseName = x.Order.DistinationWarehouse.WarehouseName,
                 TransferredStockId = x.Order.TransferredStock != null ? x.Order.TransferredStock.TransferredStockId : null,
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
                 Approval = x.HasProgress,
                 ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
             })
@@ -305,6 +312,8 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
             WarehouseName = entity.Warehouse.WarehouseName,
             DistinationWarehouseName = entity.DistinationWarehouse.WarehouseName,
             TransferredStockId = entity.TransferredStock?.TransferredStockId,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null,
             CanApprove = approvalModel.CanApprove,
             ProcessApprovalId = approvalModel.ProcessApprovalId,
             ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
@@ -317,6 +326,7 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
     public async Task<GeneralResponse<TransferredRequestDTO>> AddTransferredRequestByWarehouseIdAsync(
         string userId, AddTransferredRequestDTO dto, CancellationToken cancellationToken = default)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.TransferredRequest);
         var warehouse = await _context.Warehouses.FirstOrDefaultAsync(w => w.WarehouseId == dto.WarehouseId, cancellationToken);
         if (warehouse == null)
             return GeneralResponse<TransferredRequestDTO>.FailResponse("Warehouse is not found");
@@ -335,7 +345,8 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
             UserId = userId,
             WarehouseId = dto.WarehouseId,
             DistinationWarehouseId = dto.DistinationWarehouseId,
-            Comment = dto.Comment
+            Comment = dto.Comment,
+            ReasonId = dto.ReasonId
         };
 
         var result = await AddAsync(entity);
@@ -359,13 +370,16 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
             WarehouseId = result.WarehouseId,
             DistinationWarehouseId = result.DistinationWarehouseId,
             Comment = result.Comment,
-            CreatedAt = result.CreatedAt
+            CreatedAt = result.CreatedAt,
+            ReasonId = result.ReasonId,
+            ReasonName = result.Reason != null ? result.Reason.Name : null
         });
     }
 
     public async Task<GeneralResponse<TransferredRequestDTO>> UpdateTransferredRequestAsync(
         string userId, int transferredRequestId, UpdateTransferredRequestDTO dto, CancellationToken cancellationToken = default)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.TransferredRequest);
         var entity = await _context.TransferredRequests
             .FirstOrDefaultAsync(x => x.TransferredRequestId == dto.TransferredRequestId, cancellationToken);
 
@@ -382,8 +396,10 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
                 "You cannot edit this request because its approval status is 'Approved' and all approval steps have been completed.");
         }
 
-        if (entity.DueDate != dto.DueDate)
-            entity.DueDate = dto.DueDate;
+        if (dto.DueDate.HasValue && entity.DueDate != dto.DueDate.Value)
+        {
+            entity.DueDate = dto.DueDate.Value;
+        }
 
         if (entity.DistinationWarehouseId != dto.DistinationWarehouseId)
         {
@@ -401,6 +417,8 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
 
         if (entity.UserId != userId)
             entity.UserId = userId;
+
+        entity.ReasonId = dto.ReasonId;
 
         if (!dto.IsDraft)
         {
@@ -428,11 +446,29 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
             WarehouseId = entity.WarehouseId,
             DistinationWarehouseId = entity.DistinationWarehouseId,
             Comment = entity.Comment,
-            CreatedAt = entity.CreatedAt
+            CreatedAt = entity.CreatedAt,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         });
     }
 
-    public async Task<GeneralResponse<TransferredRequestDTO>> DeleteTransferredRequestAsync(
+    public async Task<GeneralResponse<TransferredRequestDTO>> DuplicateTransferredRequestAsync(
+        string userId,
+        int transferredRequestId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.TransferredRequests
+            .AsNoTracking()
+            .Include(x => x.TransferredRequestItems)
+                .ThenInclude(x => x.TransferredRequestBatches)
+            .FirstOrDefaultAsync(x => x.TransferredRequestId == transferredRequestId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<TransferredRequestDTO>.FailResponse("not found");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.TransferredRequests.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return await GetWithWarehousesAndApprovalAsync(clone.TransferredRequestId, userId, cancellationToken);
+    }    public async Task<GeneralResponse<TransferredRequestDTO>> DeleteTransferredRequestAsync(
         int transferredRequestId,
         CancellationToken cancellationToken = default)
     {
@@ -462,7 +498,9 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
             WarehouseId = entity.WarehouseId,
             DistinationWarehouseId = entity.DistinationWarehouseId,
             Comment = entity.Comment,
-            CreatedAt = entity.CreatedAt
+            CreatedAt = entity.CreatedAt,
+            ReasonId = entity.ReasonId,
+            ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
         _context.TransferredRequests.Remove(entity);
@@ -555,6 +593,8 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
                 DistinationWarehouseId = x.DistinationWarehouseId,
                 Comment = x.Comment,
                 CreatedAt = x.CreatedAt,
+                ReasonId = x.ReasonId,
+                ReasonName = x.Reason != null ? x.Reason.Name : null,
                 TransferredStockId = x.TransferredStock != null ? x.TransferredStock.TransferredStockId : null
             })
             .ToListAsync();
@@ -589,3 +629,4 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
         return await Query().Where(x => x.CreatedAt >= startDate && x.CreatedAt <= endDate).ToListAsync();
     }
 }
+

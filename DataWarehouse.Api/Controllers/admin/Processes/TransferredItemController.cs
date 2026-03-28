@@ -86,26 +86,12 @@ public class TransferredItemController : ControllerBase
             return BadRequest("item should be sent when barcode is false");
         }
 
-        AddGeneralItemDto? itemDto = null;
-        if (!isBarcode && dto.Item != null)
-        {
-            if (!dto.Item.Quantity.HasValue)
-                return BadRequest("quantity should be sent when barcode is false");
-
-            itemDto = new AddGeneralItemDto
-            {
-                ItemId = dto.Item.ItemId,
-                Quantity = dto.Item.Quantity.Value,
-                UoMEntry = dto.Item.UoMEntry,
-                UnitPrice = null
-            };
-        }
 
         var created = await _repository.AddTransferredItemByTransferredStockIdWithoutRefAsync(
             TransferredStockId,
             isBarcode,
             dto.Barcode,
-            itemDto);
+            dto.Item);
 
         if (!created.Success)
             return BadRequest(created);
@@ -146,22 +132,14 @@ public class TransferredItemController : ControllerBase
 
     [HttpPut("transferred-item/{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Edit}")]
-    public async Task<IActionResult> Update(int id, UpdateTransferredItemDTO dto)
+    public async Task<IActionResult> Update(int id, UpdateGeneralItemDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        dto.TransferredItemId = id;
+      
 
-        var mappedDto = new UpdateGeneralItemDto
-        {
-            Quantity = dto.Quantity,
-            UoMEntry = dto.UoMEntry,
-            Comment = null,
-            UnitPrice = null
-        };
-
-        var res = await _repository.UpdateTransferredItemWithoutRefAsync(id, mappedDto);
+        var res = await _repository.UpdateTransferredItemWithoutRefAsync(id, dto);
 
         if (!res.Success)
             return BadRequest(res);

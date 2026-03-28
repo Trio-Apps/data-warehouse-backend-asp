@@ -34,11 +34,17 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int? DocEntry {  get; set; }
         public int? DocNum {  set; get; }
         public string? DocType { get; set; }
-      
+        public int? ReasonId { get; set; }
+
+        // Header Totals
+        public decimal? TotalBeforeVat { get; set; }
+        public decimal? TotalVat { get; set; }
+        public decimal? TotalAfterVat { get; set; }
 
         // Navigation
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
+        public Reason? Reason { get; set; }
         public int WarehouseId { get; set; }
         public Warehouse Warehouse { get; set; }
 

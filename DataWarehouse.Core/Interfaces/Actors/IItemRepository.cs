@@ -22,4 +22,5 @@ public interface IItemRepository : IBaseRepository<Item>
     Task<Item?> GetWithSupplierItemsAsync(int itemId);
     Task<bool> ExistsByItemCodeAsync(string itemCode);
     Task<IEnumerable<Item>> GetByItemGroupAsync(string itemGroup);
+    Task<List<ItemPriceWithUomResponse>> GetItemPricesWithUomsAsync(int itemId);
 }

@@ -1,4 +1,4 @@
-using DataWarehouse.Core.Interfaces.Processes;
+﻿using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums;

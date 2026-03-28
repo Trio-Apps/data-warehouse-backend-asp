@@ -48,6 +48,10 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                     UoMEntry = e.UoMEntry,
                     BarCode = e.BarCode,
                     UnitPrice = e.UnitPrice,
+                    VatPercent = e.VatPercent,
+                    VatAmount = e.VatAmount,
+                    LineTotalBeforeVat = e.LineTotalBeforeVat,
+                    LineTotalAfterVat = e.LineTotalAfterVat,
                     ErrorMessage = e.ErrorMessage,
                     Status = e.Status.ToString(),
                     DeliveryNoteOrderId = e.DeliveryNoteOrderId,
@@ -85,6 +89,10 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                     UoMEntry = e.UoMEntry,
                     BarCode = e.BarCode,
                     UnitPrice = e.UnitPrice,
+                    VatPercent = e.VatPercent,
+                    VatAmount = e.VatAmount,
+                    LineTotalBeforeVat = e.LineTotalBeforeVat,
+                    LineTotalAfterVat = e.LineTotalAfterVat,
                     ErrorMessage = e.ErrorMessage,
                     Status = e.Status.ToString(),
                     DeliveryNoteOrderId = e.DeliveryNoteOrderId,
@@ -133,6 +141,10 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 UoMEntry = res.Data.UoMEntry,
                 BarCode = res.Data.BarCode,
                 UnitPrice = res.Data.UnitPrice,
+                VatPercent = res.Data.VatPercent,
+                VatAmount = res.Data.VatAmount,
+                LineTotalBeforeVat = res.Data.LineTotalBeforeVat,
+                LineTotalAfterVat = res.Data.LineTotalAfterVat,
                 ErrorMessage = res.Data.ErrorMessage,
                 SalesOrderItemId = res.Data.SalesOrderItemId
             };
@@ -223,6 +235,14 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 BarCode = salesOrderItem.BarCode,
                 UnitPrice = salesOrderItem.UnitPrice,
 
+                VatPercent = salesOrderItem.VatPercent,
+
+                VatAmount = salesOrderItem.VatAmount,
+
+                LineTotalBeforeVat = salesOrderItem.LineTotalBeforeVat,
+
+                LineTotalAfterVat = salesOrderItem.LineTotalAfterVat,
+
                 // status like your planned logic
                 Status = GeneralItemStatus.Planned,
                 ErrorMessage = null
@@ -277,6 +297,10 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 UoMEntry = finalItem.UoMEntry,
                 BarCode = finalItem.BarCode,
                 UnitPrice = finalItem.UnitPrice,
+                VatPercent = finalItem.VatPercent,
+                VatAmount = finalItem.VatAmount,
+                LineTotalBeforeVat = finalItem.LineTotalBeforeVat,
+                LineTotalAfterVat = finalItem.LineTotalAfterVat,
                 ErrorMessage = finalItem.ErrorMessage,
                 DeliveryNoteOrderId = finalItem.DeliveryNoteOrderId,
                 SalesOrderItemId = finalItem.SalesOrderItemId,
@@ -382,6 +406,10 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 UoMEntry = entity.UoMEntry,
                 BarCode = entity.BarCode,
                 UnitPrice = entity.UnitPrice,
+                VatPercent = entity.VatPercent,
+                VatAmount = entity.VatAmount,
+                LineTotalBeforeVat = entity.LineTotalBeforeVat,
+                LineTotalAfterVat = entity.LineTotalAfterVat,
                 ErrorMessage = entity.ErrorMessage,
                 DeliveryNoteOrderId = entity.DeliveryNoteOrderId,
                 SalesOrderItemId = entity.SalesOrderItemId,

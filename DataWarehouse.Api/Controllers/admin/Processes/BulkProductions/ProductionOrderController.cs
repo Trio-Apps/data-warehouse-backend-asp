@@ -108,6 +108,18 @@ public class ProductionOrderController : ControllerBase
         return Ok(created);
     }
 
+    [HttpPost("{id}/duplicate")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Create}")]
+    public async Task<IActionResult> Duplicate(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var res = await _repository.DuplicateProductionOrderAsync(userId, id);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
     [HttpGet("search")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Get}")]
     public async Task<IActionResult> Search(
@@ -162,6 +174,18 @@ public class ProductionOrderController : ControllerBase
     {
         var productionOrders = await _repository.GetPendingOrdersAsync();
         return Ok(productionOrders);
+    }
+
+    [HttpPost("{id}/submit")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Productions_Edit}")]
+    public async Task<IActionResult> Submit(int id, [FromBody] SubmitProductionOrderRequest? request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await _repository.SubmitProductionOrderAsync(userId!, id, request?.Note);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
     }
 
     // commented endpoints left as-is

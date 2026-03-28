@@ -8,6 +8,8 @@ namespace DataWarehouse.Core.DTOs.Processes.BulkProductions;
 public class ProductionOrderDTO
 {
     public int ProductionOrderId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
     [Required(ErrorMessage = "Status is required")]
     public string Status { get; set; } // ProductionStatus enum
@@ -49,12 +51,14 @@ public class AddProductionOrderDTO
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
+    public int? ReasonId { get; set; }
 
 }
 
 public class UpdateProductionOrderDTO
 {
     public int ProductionOrderId { get; set; }
+    public int? ReasonId { get; set; }
 
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }

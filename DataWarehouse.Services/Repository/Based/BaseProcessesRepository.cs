@@ -10,6 +10,7 @@ using DataWarehouse.Core.Interfaces.IsProgress;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.IsProgress;
 using DataWarehouse.Domain.Entities.Processes.IGenericDto;
+using DataWarehouse.Domain.Helpers;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.SapRepo;
@@ -223,7 +224,10 @@ namespace DataWarehouse.Services.Repository.Based
                 model.UnitPrice = dto.UnitPrice ?? item.SalesPrice;
                 model.UoMEntry = dto.UoMEntry;
                 model.Status = GeneralItemStatus.Planned;
+                model.VatPercent = dto.VatPercent;
             }
+
+            VatCalculationHelper.Apply(model);
 
             await itemSet.AddAsync(model);
             await _context.SaveChangesAsync();
@@ -280,6 +284,13 @@ namespace DataWarehouse.Services.Repository.Based
             {
                 entity.UnitPrice = dto.UnitPrice;
             }
+
+            if (dto.VatPercent.HasValue)
+            {
+                entity.VatPercent = dto.VatPercent;
+            }
+
+            VatCalculationHelper.Apply(entity);
 
             await _context.SaveChangesAsync();
 

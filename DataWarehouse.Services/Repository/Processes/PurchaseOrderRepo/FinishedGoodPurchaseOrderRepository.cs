@@ -59,7 +59,7 @@ namespace DataWarehouse.Services.Repository.Processes.PurchaseOrderRepo
             var query =
                 from i in _context.Items.AsNoTracking().Where(it=>it.SapId == sapId)
                 join wi in _context.WarehouseItems.AsNoTracking()
-                        .Where(x => x.WarehouseId == warehouseId )
+                        .Where(x => x.WarehouseId == warehouseId)
                     on i.ItemId equals wi.ItemId into wiGroup
                 from wi in wiGroup.DefaultIfEmpty()
                 where wi == null && i.ProcurementType == "bom_Buy" && i.PurchaseItem && i.Valid

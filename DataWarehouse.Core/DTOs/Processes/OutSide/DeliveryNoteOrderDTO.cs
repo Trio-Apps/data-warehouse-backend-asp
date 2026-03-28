@@ -8,6 +8,8 @@ namespace DataWarehouse.Core.DTOs.Processes.OutSide;
 public class DeliveryNoteOrderDTO : GeneralOrderDto
 {
     public int DeliveryNoteOrderId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
     [Required(ErrorMessage = "Customer ID is required")]
     public int CustomerId { get; set; }
@@ -21,7 +23,7 @@ public class DeliveryNoteOrderDTO : GeneralOrderDto
 }
 
 // 2. Add DTO (With Reference to Sales Order)
-public class AddDeliveryNoteOrderDTO
+public class AddDeliveryNoteOrderDTO : AddGeneralOrderDto
 {
     [Required(ErrorMessage = "Sales Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order ID must be greater than 0")]
@@ -29,35 +31,29 @@ public class AddDeliveryNoteOrderDTO
 
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }
+    public int? ReasonId { get; set; }
 
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
+  
 
-    public string? Comment { get; set; }
-
-    public bool IsDraft { get; set; }
 }
 
 // 3. Add DTO (Direct - Without Sales Order Reference)
-public class AddDeliveryNoteOrderWithoutRefDTO
+public class AddDeliveryNoteOrderWithoutRefDTO : AddGeneralOrderDto
 {
     [Required(ErrorMessage = "Posting Date is required")]
     public DateTime PostingDate { get; set; }
 
-    [Required(ErrorMessage = "Due Date is required")]
-    public DateTime DueDate { get; set; }
-
-    public string? Comment { get; set; }
+  
 
     [Required(ErrorMessage = "Customer Id is required")]
     public int CustomerId { get; set; }
 
-    [Required(ErrorMessage = "IsDraft is required")]
-    public bool IsDraft { get; set; }
+   
 
     [Required(ErrorMessage = "Warehouse ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Warehouse ID must be greater than 0")]
     public int WarehouseId { get; set; }
+    public int? ReasonId { get; set; }
 }
 
 // 4. Update DTO
@@ -70,6 +66,7 @@ public class UpdateDeliveryNoteOrderDTO
     public DateTime? DueDate { get; set; }
     public string? Comment { get; set; }
     public int? CustomerId { get; set; }
+    public int? ReasonId { get; set; }
     public bool IsDraft { get; set; }
 }
 

@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
@@ -26,17 +26,34 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
         this.baseProcesses = baseProcesses;
     }
 
-    public async Task<IEnumerable<TransferredItemDTO>> GetByTransferredItemByTransferredStockIdAsync(int transferredStockId)
+    public async Task<GeneralResponse<IEnumerable<TransferredItemDTO>>> GetByTransferredItemByTransferredStockIdAsync(int transferredStockId)
     {
-        var res = await Query()
-            .Where(ti => ti.TransferredStockId == transferredStockId)
-            .Select(e => new TransferredItemDTO
+        var res = await baseProcesses.GetOrderItemsByOrderIdAsync<
+            TransferredStock,
+            TransferredItem,
+            TransferredItemDTO>(
+            orderId: transferredStockId,
+            orderIdSelector: x => x.TransferredStockId == transferredStockId,
+            orderSet: _context.TransferredStocks,
+            itemSet: _context.TransferredItems,
+            itemFilter: x => x.TransferredStockId == transferredStockId,
+            include: q => q
+                .Include(x => x.Item)
+                  .ThenInclude(i => i.ItemUomGroups)
+                .Include(x => x.TransferredStockBatches)
+,
+            selector: e => new TransferredItemDTO
             {
                 TransferredItemId = e.TransferredItemId,
                 Quantity = e.Quantity,
+                ReceivedQuantity = e.ReceivedQuantity,
                 UoMEntry = e.UoMEntry,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 ErrorMessage = e.ErrorMessage,
                 Status = e.Status.ToString(),
                 TransferredStockId = e.TransferredStockId,
@@ -44,10 +61,13 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
                 ItemId = e.ItemId,
                 ItemCode = e.Item.ItemCode,
                 ItemName = e.Item.ItemName,
-                UnitName = e.Item.ItemUomGroups.FirstOrDefault(i => i.UomEntry == e.UoMEntry)!.UomCode,
+                BatchesCount = e.TransferredStockBatches.Count,
+                UnitName = e.Item.ItemUomGroups
+                    .Where(i => i.UomEntry == e.UoMEntry)
+                    .Select(i => i.UomCode)
+                    .FirstOrDefault(),
                 Comment = e.Comment
-            })
-            .ToListAsync();
+            });
 
         return res;
     }
@@ -55,55 +75,60 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
     public async Task<GeneralResponse<PagedResult<TransferredItemDTO>>> GetByTransferredItemByTransferredStockIdWithPaginationAsync(
         int transferredStockId, string? status, int pageNumber, int pageSize)
     {
-        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-        pageSize = pageSize <= 0 ? 10 : pageSize;
-
-        var query = _context.TransferredItems
-            .AsNoTracking()
-            .Where(ti => ti.TransferredStockId == transferredStockId);
-
-        if (!string.IsNullOrWhiteSpace(status))
-        {
-            if (!Enum.TryParse<GeneralItemStatus>(status, true, out var statusEnum))
-                return GeneralResponse<PagedResult<TransferredItemDTO>>.FailResponse("Invalid status");
-
-            query = query.Where(ti => ti.Status == statusEnum);
-        }
-
-        var totalRecords = await query.CountAsync();
-
-        var data = await query
-            .OrderByDescending(x => x.TransferredItemId)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(e => new TransferredItemDTO
+        var res = await baseProcesses.GetOrderItemsByOrderIdWithPaginationAsync<
+            TransferredStock,
+            TransferredItem,
+            TransferredItemDTO,
+            string,
+            GeneralItemStatus>(
+            orderId: transferredStockId,
+            pageNumber: pageNumber,
+            pageSize: pageSize,
+            status: status,
+            extraSelector: o => o.Status.ToString(),
+            orderIdSelector: o => o.TransferredStockId == transferredStockId,
+            orderSet: _context.TransferredStocks,
+            itemSet: _context.TransferredItems,
+            itemFilter: i => i.TransferredStockId == transferredStockId,
+            include: q => q
+                .Include(x => x.Item)
+                .ThenInclude(i => i.ItemUomGroups)
+                                .Include(x => x.TransferredStockBatches)
+,
+            selector: e => new TransferredItemDTO
             {
                 TransferredItemId = e.TransferredItemId,
                 Quantity = e.Quantity,
+                ReceivedQuantity = e.ReceivedQuantity,
                 UoMEntry = e.UoMEntry,
                 BarCode = e.BarCode,
                 UnitPrice = e.UnitPrice,
+                VatPercent = e.VatPercent,
+                VatAmount = e.VatAmount,
+                LineTotalBeforeVat = e.LineTotalBeforeVat,
+                LineTotalAfterVat = e.LineTotalAfterVat,
                 ErrorMessage = e.ErrorMessage,
                 Status = e.Status.ToString(),
                 TransferredStockId = e.TransferredStockId,
                 TransferredRequestItemId = e.TransferredRequestItemId,
+                BatchesCount = e.TransferredStockBatches.Count,
                 ItemId = e.ItemId,
                 ItemCode = e.Item.ItemCode,
                 ItemName = e.Item.ItemName,
+                UnitName = e.Item.ItemUomGroups
+                    .Where(i => i.UomEntry == e.UoMEntry)
+                    .Select(i => i.UomCode)
+                    .FirstOrDefault(),
                 Comment = e.Comment
-            })
-            .ToListAsync();
+            },
+            orderByDescSelector: x => x.TransferredItemId,
+            itemStatusSelector: x => x.Status);
 
-        return GeneralResponse<PagedResult<TransferredItemDTO>>.SuccessResponse(
-            new PagedResult<TransferredItemDTO>
-            {
-                Data = data,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalRecords = totalRecords
-            });
+        if (!res.Success)
+            return GeneralResponse<PagedResult<TransferredItemDTO>>.FailResponse(res.Message);
+
+        return GeneralResponse<PagedResult<TransferredItemDTO>>.SuccessResponse(res.Data);
     }
-
     public async Task<GeneralResponse<TransferredItemDTO>> AddTransferredItemByTransferredStockIdWithoutRefAsync(
         int transferredStockId,
         bool isBarcode,
@@ -135,6 +160,10 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
             UoMEntry = res.Data.UoMEntry,
             BarCode = res.Data.BarCode,
             UnitPrice = res.Data.UnitPrice,
+            VatPercent = res.Data.VatPercent,
+            VatAmount = res.Data.VatAmount,
+            LineTotalBeforeVat = res.Data.LineTotalBeforeVat,
+            LineTotalAfterVat = res.Data.LineTotalAfterVat,
             ErrorMessage = res.Data.ErrorMessage,
             TransferredRequestItemId = res.Data.TransferredRequestItemId,
             Comment = res.Data.Comment
@@ -222,6 +251,10 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
             UoMEntry = requestItem.UoMEntry,
             BarCode = requestItem.BarCode,
             UnitPrice = requestItem.UnitPrice,
+            VatPercent = requestItem.VatPercent,
+            VatAmount = requestItem.VatAmount,
+            LineTotalBeforeVat = requestItem.LineTotalBeforeVat,
+            LineTotalAfterVat = requestItem.LineTotalAfterVat,
             Status = GeneralItemStatus.Planned,
             ErrorMessage = null,
             Comment = requestItem.Comment,
@@ -275,6 +308,10 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
             UoMEntry = finalItem.UoMEntry,
             BarCode = finalItem.BarCode,
             UnitPrice = finalItem.UnitPrice,
+            VatPercent = finalItem.VatPercent,
+            VatAmount = finalItem.VatAmount,
+            LineTotalBeforeVat = finalItem.LineTotalBeforeVat,
+            LineTotalAfterVat = finalItem.LineTotalAfterVat,
             ErrorMessage = finalItem.ErrorMessage,
             TransferredStockId = finalItem.TransferredStockId,
             TransferredRequestItemId = finalItem.TransferredRequestItemId,
@@ -381,6 +418,10 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             ErrorMessage = entity.ErrorMessage,
             Status = entity.Status.ToString(),
             TransferredStockId = entity.TransferredStockId,
@@ -413,6 +454,10 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
             UoMEntry = entity.UoMEntry,
             BarCode = entity.BarCode,
             UnitPrice = entity.UnitPrice,
+            VatPercent = entity.VatPercent,
+            VatAmount = entity.VatAmount,
+            LineTotalBeforeVat = entity.LineTotalBeforeVat,
+            LineTotalAfterVat = entity.LineTotalAfterVat,
             ErrorMessage = entity.ErrorMessage,
             Status = entity.Status.ToString(),
             TransferredStockId = entity.TransferredStockId,

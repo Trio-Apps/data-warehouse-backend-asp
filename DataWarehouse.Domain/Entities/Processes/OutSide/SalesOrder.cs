@@ -1,6 +1,7 @@
 ﻿using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.AllinAll;
 using DataWarehouse.Domain.Entities.Auth;
+using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Entities.Processes.IGenericDto;
 using DataWarehouse.Domain.Enums;
 using System;
@@ -36,10 +37,12 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public int? DocEntry { get; set; }
         public int? DocNum { set; get; }
         public string? DocType { get; set; }
+        public int? ReasonId { get; set; }
 
         // Navigation
-        public string? UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         public ApplicationUser? User { get; set; }
+        public Reason? Reason { get; set; }
         public int WarehouseId { get; set; }
         public Warehouse Warehouse { get; set; }
 

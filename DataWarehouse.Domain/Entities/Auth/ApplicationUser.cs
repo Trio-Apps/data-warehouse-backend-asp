@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using DataWarehouse.Domain.Entities.Actors.IncrementalSync;
 using DataWarehouse.Domain.Entities.AllinAll;
 using DataWarehouse.Domain.Entities.Processes.BulkProductions;
+using DataWarehouse.Domain.Entities.Notifications;
 
 
 
@@ -68,5 +69,7 @@ public class ApplicationUser : IdentityUser
     // Receipt Good
     public ICollection<ReceiptPurchaseOrder> ReceiptPurchaseOrders { get; set; } = new List<ReceiptPurchaseOrder>();
     public ICollection<GoodsReturnOrder> GoodsReturnOrders { get; set; } = new List<GoodsReturnOrder>();
+
+    public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
 }

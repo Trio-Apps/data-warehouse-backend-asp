@@ -19,14 +19,18 @@ namespace DataWarehouse.Domain.Entities.Processes
         public DateTime DueDate { get; set; }
         public DateTime? PostingDate { get; set; }
         public GeneralStatus Status { get; set; }
+        public  ReceivingStatus ReceivingStatus { get; set; }
 
         public string? Comment { get; set; }
         public string? ErrorMessage { get; set; }
+
+        public string? Reference { get; set; }
 
 
         public int? DocEntry { get; set; }
         public int? DocNum { set; get; }
         public string? DocType { get; set; }
+        public int? ReasonId { get; set; }
 
 
         [NotMapped]
@@ -39,6 +43,7 @@ namespace DataWarehouse.Domain.Entities.Processes
         // Navigation
         public int? TransferredRequestId { get; set; }
         public TransferredRequest? TransferredRequest { get; set; }
+        public Reason? Reason { get; set; }
 
         public ReceivedStock? ReceivedStock { get; set; }
         public string UserId { get; set; }

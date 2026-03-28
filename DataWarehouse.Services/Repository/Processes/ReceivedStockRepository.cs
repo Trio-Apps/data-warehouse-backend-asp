@@ -10,6 +10,7 @@ using DataWarehouse.Domain.Entities.Processes;
 using DataWarehouse.Domain.Enums;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
+using DataWarehouse.Services.Services.Processes;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataWarehouse.Services.Repository.Processes;
@@ -18,16 +19,23 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
 {
     private readonly IBaseProcessesRepository<ReceivedStock> baseProcesses;
     private readonly IApprovalRepository approval;
+    private readonly ReasonValidationService reasonValidationService;
 
     public ReceivedStockRepository(
         IBaseProcessesRepository<ReceivedStock> baseProcesses,
         IApprovalRepository approval,
+        ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        this.reasonValidationService = reasonValidationService;
     }
 
+
+
+
+    #region Received
     public async Task<IEnumerable<ReceivedStock>> GetByWarehouseIdAsync(int warehouseId)
     {
         return await Query()
@@ -66,7 +74,9 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
                 WarehouseCode = rs.Warehouse.WarehouseCode,
                 SourceWarehouseName = rs.SourceWarehouse.WarehouseName,
                 CreatedAt = rs.CreatedAt,
-                ItemCount = rs.ReceivedItems.Count()
+                ItemCount = rs.ReceivedItems.Count(),
+                ReasonId = rs.ReasonId,
+                ReasonName = rs.Reason != null ? rs.Reason.Name : null
             })
             .ToListAsync();
 
@@ -155,7 +165,9 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
                 CreatedAt = x.Order.CreatedAt,
                 ItemCount = x.Order.ReceivedItems.Count(),
                 Approval = x.HasProgress,
-                ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
+                ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null
             })
             .ToListAsync(cancellationToken);
 
@@ -203,6 +215,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         string userId,
         AddReceivedStockDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Received);
         var transferredStock = await _context.TransferredStocks
             .Include(ts => ts.ReceivedStock)
             .FirstOrDefaultAsync(ts => ts.TransferredStockId == dto.TransferredStockId);
@@ -221,6 +234,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
             TransferredStockId = dto.TransferredStockId,
             DueDate = dto.DueDate,
             Comment = dto.Comment,
+            ReasonId = dto.ReasonId,
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
             CreatedAt = DateTime.UtcNow
         };
@@ -244,7 +258,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
       string userId,
       AddReceivedStockWithoutRefDTO dto)
     {
-       
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Received);
         var entity = new ReceivedStock
         {
             UserId = userId,
@@ -252,6 +266,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
             SourceWarehouseId = dto.SourceWarehouseId,
             DueDate = dto.DueDate,
             Comment = dto.Comment,
+            ReasonId = dto.ReasonId,
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
             CreatedAt = DateTime.UtcNow
         };
@@ -277,6 +292,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         string userId,
         AddReceivedStockDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Received);
         var transferredStock = await _context.TransferredStocks
             .Include(ts => ts.ReceivedStock)
             .Include(ts => ts.TransferredItems)
@@ -292,9 +308,9 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         if (transferredStock.TransferredItems == null || !transferredStock.TransferredItems.Any())
             return GeneralResponse<ReceivedStockDTO>.FailResponse("Transferred stock has no items");
 
-     
 
-     
+
+
         var entity = new ReceivedStock
         {
             UserId = userId,
@@ -303,6 +319,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
             TransferredStockId = dto.TransferredStockId,
             DueDate = dto.DueDate,
             Comment = dto.Comment,
+            ReasonId = dto.ReasonId,
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
             CreatedAt = DateTime.UtcNow,
             ReceivedItems = BuildReceivedItemsFromTransferredItems(transferredStock.TransferredItems)
@@ -328,6 +345,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         int receivedStockId,
         UpdateReceivedStockDTO dto)
     {
+        // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Received);
         var entity = await _context.ReceivedStocks
             .FirstOrDefaultAsync(e => e.ReceivedStockId == receivedStockId);
 
@@ -353,6 +371,8 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         if (!string.IsNullOrWhiteSpace(dto.Comment))
             entity.Comment = dto.Comment;
 
+        entity.ReasonId = dto.ReasonId;
+
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -373,7 +393,23 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         return GeneralResponse<ReceivedStockDTO>.SuccessResponse(MapStockToDto(entity));
     }
 
-    public async Task<GeneralResponse<ReceivedStockDTO>> DeleteReceivedStockAsync(
+    public async Task<GeneralResponse<ReceivedStockDTO>> DuplicateReceivedStockAsync(
+        string userId,
+        int receivedStockId,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await _context.ReceivedStocks
+            .AsNoTracking()
+            .Include(x => x.ReceivedItems)
+                .ThenInclude(x => x.ReceivedStockBatches)
+            .FirstOrDefaultAsync(x => x.ReceivedStockId == receivedStockId, cancellationToken);
+        if (source == null)
+            return GeneralResponse<ReceivedStockDTO>.FailResponse("Not Found");
+        var clone = OrderDuplicationHelper.Clone(source, userId);
+        await _context.ReceivedStocks.AddAsync(clone, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return await GetReceivedStockByIdAsync(userId, clone.ReceivedStockId, cancellationToken);
+    }    public async Task<GeneralResponse<ReceivedStockDTO>> DeleteReceivedStockAsync(
         int receivedStockId,
         CancellationToken cancellationToken = default)
     {
@@ -467,6 +503,8 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
                 SourceWarehouseName = s.SourceWarehouse.WarehouseName,
                 CreatedAt = s.CreatedAt,
                 ItemCount = s.ReceivedItems.Count(),
+                ReasonId = s.ReasonId,
+                ReasonName = s.Reason != null ? s.Reason.Name : null,
                 Items = s.ReceivedItems.Select(i => new ReceivedItemDTO
                 {
                     ReceivedItemId = i.ReceivedItemId,
@@ -474,6 +512,10 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
                     UoMEntry = i.UoMEntry,
                     BarCode = i.BarCode,
                     UnitPrice = i.UnitPrice,
+                    VatPercent = i.VatPercent,
+                    VatAmount = i.VatAmount,
+                    LineTotalBeforeVat = i.LineTotalBeforeVat,
+                    LineTotalAfterVat = i.LineTotalAfterVat,
                     ErrorMessage = i.ErrorMessage,
                     Status = i.Status.ToString(),
                     Comment = i.Comment,
@@ -541,6 +583,10 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
                 UoMEntry = transferredItem.UoMEntry,
                 BarCode = transferredItem.BarCode,
                 UnitPrice = transferredItem.UnitPrice,
+                VatPercent = transferredItem.VatPercent,
+                VatAmount = transferredItem.VatAmount,
+                LineTotalBeforeVat = transferredItem.LineTotalBeforeVat,
+                LineTotalAfterVat = transferredItem.LineTotalAfterVat,
                 Status = GeneralItemStatus.Planned,
                 ErrorMessage = null,
                 Comment = transferredItem.Comment,
@@ -565,7 +611,11 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
             WarehouseCode = stock.Warehouse?.WarehouseCode,
             SourceWarehouseName = stock.SourceWarehouse?.WarehouseName,
             CreatedAt = stock.CreatedAt,
-            ItemCount = stock.ReceivedItems?.Count
+            ItemCount = stock.ReceivedItems?.Count,
+            ReasonId = stock.ReasonId,
+            ReasonName = stock.Reason != null ? stock.Reason.Name : null
         };
     }
+    #endregion
 }
+

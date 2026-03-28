@@ -80,23 +80,13 @@ public class TransferredRequestItemController : ControllerBase
         if (isBarcode && dto.Barcode == null)
             return BadRequest("barcode should be sent with dynamic/static barcode type");
 
-        AddGeneralItemDto? itemDto = null;
-        if (!isBarcode && dto.Item != null)
-        {
-            itemDto = new AddGeneralItemDto
-            {
-                ItemId = dto.Item.ItemId,
-                Quantity = dto.Item.Quantity,
-                UoMEntry = dto.Item.UoMEntry,
-                UnitPrice = dto.Item.UnitPrice
-            };
-        }
+     
 
         var created = await _repository.AddTransferredRequestItemByTransferredRequestIdAsync(
             transferredRequestId,
             isBarcode,
             dto.Barcode,
-            itemDto);
+            dto.Item);
 
         if (!created.Success)
             return BadRequest(created);
@@ -106,22 +96,14 @@ public class TransferredRequestItemController : ControllerBase
 
     [HttpPut("transferred-request-item/{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.TransferredRequest_Edit}")]
-    public async Task<IActionResult> Update(int id, UpdateTransferredRequestItemDTO dto)
+    public async Task<IActionResult> Update(int id, UpdateGeneralItemDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        dto.TransferredRequestItemId = id;
+       
 
-        var mappedDto = new UpdateGeneralItemDto
-        {
-            Quantity = dto.Quantity,
-            UoMEntry = dto.UoMEntry,
-            UnitPrice = dto.UnitPrice,
-            Comment = null
-        };
-
-        var res = await _repository.UpdateTransferredRequestItemAsync(id, mappedDto);
+        var res = await _repository.UpdateTransferredRequestItemAsync(id, dto);
         if (!res.Success)
             return BadRequest(res);
 

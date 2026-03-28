@@ -1,4 +1,4 @@
-using DataWarehouse.Core.DTOs;
+﻿using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Based;
@@ -34,6 +34,7 @@ public class TransferredStockBatchRepository : BaseRepository<TransferredStockBa
                 TransferredStockBatchId = b.TransferredStockBatchId,
                 TransferredItemId = b.TransferredItemId,
                 Quantity = b.Quantity,
+                ReceivedQuantity = b.ReceivedQuantity,
                 Comment = b.Comment,
                 BatchNumber = b.BatchNumber,
                 ExpiryDate = b.ExpiryDate
@@ -60,6 +61,7 @@ public class TransferredStockBatchRepository : BaseRepository<TransferredStockBa
                 TransferredStockBatchId = b.TransferredStockBatchId,
                 TransferredItemId = b.TransferredItemId,
                 Quantity = b.Quantity,
+                ReceivedQuantity = b.ReceivedQuantity,
                 Comment = b.Comment,
                 BatchNumber = b.BatchNumber,
                 ExpiryDate = b.ExpiryDate

@@ -61,6 +61,7 @@ namespace DataWarehouse.Domain.Entities.Actors
         // DynamicBarCodeItem
         public ICollection<ItemBarCode> ItemBarCodes { get; set; } = new List<ItemBarCode>();
         public ICollection<ItemUomGroup> ItemUomGroups { get; set; } = new List<ItemUomGroup>();
+        public ICollection<ItemPrice> ItemPrices { get; set; } = new List<ItemPrice>();
 
 
 

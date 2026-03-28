@@ -16,6 +16,7 @@ namespace DataWarehouse.Core.Interfaces.Queue
         Task PushGoodsReturnToSapAsync(int orderId);
         Task PushDeliveryNoteToSapAsync(int orderId);
         Task PushSalesReturnToSapAsync(int orderId);
+        Task PushCountingToSapAsync(int orderId);
 
         Task PushQuantityAdjustmentToSapAsync(int orderId);
         Task PushTransferredRequestToSapAsync(int orderId);

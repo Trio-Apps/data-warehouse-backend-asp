@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -7,6 +7,8 @@ namespace DataWarehouse.Core.DTOs.Processes;
 public class ReceivedStockDTO
 {
     public int ReceivedStockId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
 
     [Required(ErrorMessage = "Status is required")]
     public string Status { get; set; } // GeneralStatus enum
@@ -55,6 +57,7 @@ public class AddReceivedStockDTO
     public DateTime DueDate { get; set; }
 
     public string? Comment { get; set; }
+    public int? ReasonId { get; set; }
 
     public bool IsDraft { get; set; } = true;
 }
@@ -69,6 +72,7 @@ public class AddReceivedStockWithoutRefDTO
     public int SourceWarehouseId { get; set; }
 
     public string? Comment { get; set; }
+    public int? ReasonId { get; set; }
 
     public bool IsDraft { get; set; } = true;
 }
@@ -82,6 +86,7 @@ public class UpdateReceivedStockDTO
 
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
+    public int? ReasonId { get; set; }
 
     public bool IsDraft { get; set; } = true;
 }
@@ -98,9 +103,14 @@ public class ReceivedItemDTO
     public int UoMEntry { get; set; }
 
     public string? BarCode { get; set; }
+    public decimal? UnitPrice { get; set; }
 
     [Range(0, double.MaxValue, ErrorMessage = "Unit Price must be zero or greater")]
-    public decimal? UnitPrice { get; set; }
+    
+    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
+    public decimal? LineTotalBeforeVat { get; set; }
+    public decimal? LineTotalAfterVat { get; set; }
 
     public string? ErrorMessage { get; set; }
 
@@ -145,6 +155,12 @@ public class UpdateReceivedItemDTO
 
     [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
     public decimal? Quantity { get; set; }
+
+    public decimal? UnitPrice { get; set; }
+    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
+    public decimal? LineTotalBeforeVat { get; set; }
+    public decimal? LineTotalAfterVat { get; set; }
 
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
@@ -208,6 +224,8 @@ public class UpdateReceivedStockBatchDTO
 public class ReceivedStockResponseDTO
 {
     public int ReceivedStockId { get; set; }
+    public int? ReasonId { get; set; }
+    public string? ReasonName { get; set; }
     public string Status { get; set; }
     public DateTime DueDate { get; set; }
     public DateTime CreatedAt { get; set; }
