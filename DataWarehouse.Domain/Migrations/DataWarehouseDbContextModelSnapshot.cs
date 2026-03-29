@@ -2017,9 +2017,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasKey("ReceiptPurchaseOrderId");
 
-                    b.HasIndex("PurchaseOrderId")
-                        .IsUnique()
-                        .HasFilter("[PurchaseOrderId] IS NOT NULL");
+                    b.HasIndex("PurchaseOrderId");
 
                     b.HasIndex("ReasonId");
 
@@ -2122,9 +2120,7 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.HasIndex("PurchaseOrderItemId")
-                        .IsUnique()
-                        .HasFilter("[PurchaseOrderItemId] IS NOT NULL");
+                    b.HasIndex("PurchaseOrderItemId");
 
                     b.HasIndex("ReceiptPurchaseOrderId");
 
@@ -2584,6 +2580,9 @@ namespace DataWarehouse.Domain.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuantityAdjustmentStockId"));
 
+                    b.Property<int>("AdjustmentType")
+                        .HasColumnType("int");
+
                     b.Property<string>("Comment")
                         .HasColumnType("nvarchar(max)");
 
@@ -2598,9 +2597,6 @@ namespace DataWarehouse.Domain.Migrations
 
                     b.Property<string>("DocType")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("ErrorMessage")
                         .HasColumnType("nvarchar(max)");
@@ -4110,8 +4106,8 @@ namespace DataWarehouse.Domain.Migrations
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", b =>
                 {
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.PurchaseOrder", "PurchaseOrder")
-                        .WithOne("ReceiptPurchaseOrder")
-                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", "PurchaseOrderId")
+                        .WithMany("ReceiptPurchaseOrders")
+                        .HasForeignKey("PurchaseOrderId")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.Reason", "Reason")
@@ -4168,8 +4164,8 @@ namespace DataWarehouse.Domain.Migrations
                         .IsRequired();
 
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.PurchaseOrderItem", "PurchaseOrderItem")
-                        .WithOne("ReceiptPurchaseOrderItem")
-                        .HasForeignKey("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrderItem", "PurchaseOrderItemId")
+                        .WithMany("ReceiptPurchaseOrderItems")
+                        .HasForeignKey("PurchaseOrderItemId")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", "ReceiptPurchaseOrder")
@@ -5026,7 +5022,7 @@ namespace DataWarehouse.Domain.Migrations
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.PurchaseOrderItem", b =>
                 {
-                    b.Navigation("ReceiptPurchaseOrderItem");
+                    b.Navigation("ReceiptPurchaseOrderItems");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.OutSide.ReceiptPurchaseOrder", b =>
@@ -5086,7 +5082,7 @@ namespace DataWarehouse.Domain.Migrations
                 {
                     b.Navigation("PurchaseOrderItems");
 
-                    b.Navigation("ReceiptPurchaseOrder");
+                    b.Navigation("ReceiptPurchaseOrders");
                 });
 
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.QuantityAdjustmentStock", b =>

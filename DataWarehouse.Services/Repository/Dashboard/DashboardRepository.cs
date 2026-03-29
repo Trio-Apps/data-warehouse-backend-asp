@@ -68,10 +68,10 @@ namespace DataWarehouse.Services.Repository.Dashboard
                 .Where(rs => warehouses.Contains(rs.WarehouseId) && rs.DueDate.Date == today)
                 .CountAsync();
 
-            var quantityAdjustmentsDueToday = await _context.Set<Domain.Entities.Processes.QuantityAdjustmentStock>()
-                .AsNoTracking()
-                .Where(q => warehouses.Contains(q.WarehouseId) && q.DueDate.Date == today)
-                .CountAsync();
+            //var quantityAdjustmentsDueToday = await _context.Set<Domain.Entities.Processes.QuantityAdjustmentStock>()
+            //    .AsNoTracking()
+            //    .Where(q => warehouses.Contains(q.WarehouseId) && q.DueDate.Date == today)
+            //    .CountAsync();
 
             // Sales / returns
             var salesOrdersDueToday = await _context.Set<Domain.Entities.Processes.OutSide.SalesOrder>()
@@ -142,28 +142,28 @@ namespace DataWarehouse.Services.Repository.Dashboard
                 })
                 .ToListAsync();
 
-            var inventoryTasks = await _context.Set<QuantityAdjustmentStock>()
-                .AsNoTracking()
-                .Include(q => q.Warehouse)
-                .Include(q => q.QuantityAdjustmentStockItems)
-                    .ThenInclude(item => item.Item)
-                .Where(q => warehouses.Contains(q.WarehouseId) && q.DueDate.Date == today)
-                .OrderByDescending(q => q.CreatedAt)
-                .Take(8)
-                .Select(q => new DueTodayInventoryTaskDto
-                {
-                    QuantityAdjustmentStockId = q.QuantityAdjustmentStockId,
-                    WarehouseId = q.WarehouseId,
-                    ReferenceNumber = q.DocNum.HasValue ? $"INV-{q.DocNum.Value}" : $"INV-{q.QuantityAdjustmentStockId}",
-                    ItemName = q.QuantityAdjustmentStockItems
-                        .OrderBy(item => item.QuantityAdjustmentStockItemId)
-                        .Select(item => item.Item.ItemName)
-                        .FirstOrDefault(),
-                    WarehouseName = q.Warehouse.WarehouseCode,
-                    DueDate = q.DueDate,
-                    ItemCount = q.QuantityAdjustmentStockItems.Count()
-                })
-                .ToListAsync();
+            //var inventoryTasks = await _context.Set<QuantityAdjustmentStock>()
+            //    .AsNoTracking()
+            //    .Include(q => q.Warehouse)
+            //    .Include(q => q.QuantityAdjustmentStockItems)
+            //        .ThenInclude(item => item.Item)
+            //    .Where(q => warehouses.Contains(q.WarehouseId) && q.DueDate.Date == today)
+            //    .OrderByDescending(q => q.CreatedAt)
+            //    .Take(8)
+            //    .Select(q => new DueTodayInventoryTaskDto
+            //    {
+            //        QuantityAdjustmentStockId = q.QuantityAdjustmentStockId,
+            //        WarehouseId = q.WarehouseId,
+            //        ReferenceNumber = q.DocNum.HasValue ? $"INV-{q.DocNum.Value}" : $"INV-{q.QuantityAdjustmentStockId}",
+            //        ItemName = q.QuantityAdjustmentStockItems
+            //            .OrderBy(item => item.QuantityAdjustmentStockItemId)
+            //            .Select(item => item.Item.ItemName)
+            //            .FirstOrDefault(),
+            //        WarehouseName = q.Warehouse.WarehouseCode,
+            //        DueDate = q.DueDate,
+            //        ItemCount = q.QuantityAdjustmentStockItems.Count()
+            //    })
+            //    .ToListAsync();
 
             var totalDueToday = purchaseOrdersDueToday
                 + deliveryNotesDueToday
@@ -171,7 +171,7 @@ namespace DataWarehouse.Services.Repository.Dashboard
                 + transferredRequestsDueToday
                 + transferredStockDueToday
                 + receivedStockDueToday
-                + quantityAdjustmentsDueToday
+              //  + quantityAdjustmentsDueToday
                 + salesOrdersDueToday
                 + salesReturnOrdersDueToday
                 + receiptPurchaseOrdersDueToday
@@ -185,7 +185,7 @@ namespace DataWarehouse.Services.Repository.Dashboard
                 TransferredRequestsDueToday = transferredRequestsDueToday,
                 TransferredStockDueToday = transferredStockDueToday,
                 ReceivedStockDueToday = receivedStockDueToday,
-                QuantityAdjustmentsDueToday = quantityAdjustmentsDueToday,
+             //   QuantityAdjustmentsDueToday = quantityAdjustmentsDueToday,
                 SalesOrdersDueToday = salesOrdersDueToday,
                 SalesReturnOrdersDueToday = salesReturnOrdersDueToday,
                 ReceiptPurchaseOrdersDueToday = receiptPurchaseOrdersDueToday,
@@ -193,7 +193,7 @@ namespace DataWarehouse.Services.Repository.Dashboard
                 TotalDueToday = totalDueToday,
                 TransferRequests = transferRequests,
                 ProductionOrders = productionOrders,
-                InventoryTasks = inventoryTasks
+              //  InventoryTasks = inventoryTasks
             };
         }
     }

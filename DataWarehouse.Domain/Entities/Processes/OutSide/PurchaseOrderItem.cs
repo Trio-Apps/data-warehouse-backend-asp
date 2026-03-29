@@ -24,6 +24,9 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
 
         public int? LineNum { get; set; }
 
+        [NotMapped]
+        public decimal ExecuteQuantity { get; set; }
+
         // VAT
         public decimal? VatPercent { get; set; }
         public decimal? VatAmount { get; set; }
@@ -44,7 +47,8 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public PurchaseOrder PurchaseOrder { get; set; }
         public Item Item { get; set; }
 
-        public ReceiptPurchaseOrderItem? ReceiptPurchaseOrderItem { get; set; }
+        public ICollection<ReceiptPurchaseOrderItem> ReceiptPurchaseOrderItems { get; set; }
+            = new List<ReceiptPurchaseOrderItem>();
 
      //   public ICollection<PurchaseReceipt> PurchaseReceipts { get; set; } = new List<PurchaseReceipt>();
 

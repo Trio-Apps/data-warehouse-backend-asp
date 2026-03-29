@@ -52,7 +52,8 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int SupplierId { get; set; }
         public Supplier Supplier { get; set; }
 
-        public ReceiptPurchaseOrder? ReceiptPurchaseOrder { get; set; }
+        public ICollection<ReceiptPurchaseOrder> ReceiptPurchaseOrders { get; set; }
+            = new List<ReceiptPurchaseOrder>();
 
         public ICollection<PurchaseOrderItem> PurchaseOrderItems { get; set; }
             = new List<PurchaseOrderItem>();

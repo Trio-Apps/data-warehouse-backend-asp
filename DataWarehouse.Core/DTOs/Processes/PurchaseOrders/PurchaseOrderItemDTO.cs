@@ -15,6 +15,7 @@ public class PurchaseOrderItemDTO : GeneralItemDto
     [Required(ErrorMessage = "Purchase Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Purchase Order ID must be greater than 0")]
     public int PurchaseOrderId { get; set; }
+    public decimal ExecuteQuantity { get; set; }
 
     // public List<PurchaseReceiptDTO>? PurchaseReceipts { get; set; }
 }

@@ -254,7 +254,6 @@ internal static class OrderDuplicationHelper
             Status = GeneralStatus.Draft,
             CreatedAt = DateTime.UtcNow,
             PostingDate = source.PostingDate,
-            DueDate = source.DueDate,
             Comment = source.Comment,
             ErrorMessage = null,
             DocEntry = null,

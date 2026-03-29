@@ -58,13 +58,12 @@ public class QuantityAdjustmentStockController : ControllerBase
         return Ok(res);
     }
 
-    [HttpGet("dashboard/warehouse/status/posting-date/due-date/{warehouseId}/{skip}/{pageSize}")]
+    [HttpGet("dashboard/warehouse/status/posting-date/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Counting_Get}")]
     public async Task<IActionResult> GetByWarehouseIdForDashboard(
         int warehouseId,
         string? status,
         DateTime? postingDate,
-        DateTime? dueDate,
         int skip,
         int pageSize)
     {
@@ -73,7 +72,7 @@ public class QuantityAdjustmentStockController : ControllerBase
             return Unauthorized("User ID not found in token.");
 
         var res = await _repository.GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(
-            warehouseId, userId, postingDate, dueDate, status, skip, pageSize);
+            warehouseId, userId, postingDate, null, status, skip, pageSize);
 
         if (!res.Success)
             return BadRequest(res);

@@ -30,6 +30,7 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
         this.barcodeOrder = barcodeOrder;
     }
 
+
     public async Task<GeneralResponse<IEnumerable<ReceiptPurchaseOrderItemDTO>>> GetByReceiptPurchaseItemByReceiptPurchaseOrderIdAsync(int ReceiptPurchaseOrderId)
     {
         var res = await Query().Where(rpoi => rpoi.ReceiptPurchaseOrderId == ReceiptPurchaseOrderId).Select(e => new ReceiptPurchaseOrderItemDTO
@@ -55,6 +56,7 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
 
         return GeneralResponse<IEnumerable<ReceiptPurchaseOrderItemDTO>>.SuccessResponse(res);    
     }
+
 
     public async Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderItemDTO>>>
         GetByReceiptPurchaseItemByReceiptPurchaseOrderIdWithPaginationAsync(int ReceiptPurchaseOrderId, int pageNumber, int pageSize)
@@ -93,11 +95,38 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
         });
     }
 
-    public async Task<GeneralResponse<ReceiptPurchaseOrderItemDTO>> AddReceiptPurchaseItemByReceiptPurchaseOrderIdAsync(int ReceiptPurchaseOrderid, 
+    public async Task<GeneralResponse<ReceiptPurchaseOrderItemDTO>> AddReceiptPurchaseItemByReceiptPurchaseOrderIdAsync(int ReceiptPurchaseOrderid,
         bool isBarcode
          , DynamicBarcodesDto? barcodeDto,
           AddGeneralItemDto? dto)
     {
+        int? purchaseOrderItemId = null;
+
+        var receiptOrder = await _context.ReceiptPurchaseOrders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.ReceiptPurchaseOrderId == ReceiptPurchaseOrderid);
+
+        if (receiptOrder != null && receiptOrder.PurchaseOrderId.HasValue)
+        {
+            var itemDataRes = await ResolveAddItemDataAsync(receiptOrder.WarehouseId, isBarcode, barcodeDto, dto);
+            if (!itemDataRes.Success)
+                return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(itemDataRes.Message);
+
+            var linkedPurchaseOrderItemResult = await GetAvailablePurchaseOrderItemAsync(
+                receiptOrder.PurchaseOrderId.Value,
+                itemDataRes.Data.ItemId,
+                itemDataRes.Data.UoMEntry,
+                itemDataRes.Data.Quantity);
+
+            if (linkedPurchaseOrderItemResult.IsMatchingPurchaseOrderItemFound && linkedPurchaseOrderItemResult.PurchaseOrderItem == null)
+                return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this purchase order item.");
+
+            if (linkedPurchaseOrderItemResult.PurchaseOrderItem != null)
+            {
+                purchaseOrderItemId = linkedPurchaseOrderItemResult.PurchaseOrderItem.PurchaseOrderItemId;
+            }
+        }
+
         var res = await baseProcesses.AddOrderItemAsync<ReceiptPurchaseOrder, ReceiptPurchaseOrderItem>(
     ReceiptPurchaseOrderid,
     ProcessType.Receipt,
@@ -111,7 +140,13 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
 
         if (!res.Success)
             return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(res.Message);
-        
+
+        if (purchaseOrderItemId.HasValue)
+        {
+            res.Data.PurchaseOrderItemId = purchaseOrderItemId.Value;
+            await _context.SaveChangesAsync();
+        }
+
 
         var modelfin = new ReceiptPurchaseOrderItemDTO
         {
@@ -136,6 +171,67 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
     public async Task<GeneralResponse<ReceiptPurchaseOrderItemDTO>> UpdateReceiptPurchaseItemAsync(int ReceiptPurchaseItemId,
         UpdateGeneralItemDto dto)
     {
+        var entityBeforeUpdate = await _context.ReceiptPurchaseOrderItems
+            .Include(x => x.ReceiptPurchaseOrder)
+            .FirstOrDefaultAsync(x => x.ReceiptPurchaseOrderItemId == ReceiptPurchaseItemId);
+
+        if (entityBeforeUpdate == null)
+            return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse("id is not found");
+
+        if (dto.Quantity.HasValue
+            && entityBeforeUpdate.ReceiptPurchaseOrder != null
+            && entityBeforeUpdate.ReceiptPurchaseOrder.PurchaseOrderId.HasValue)
+        {
+            var purchaseOrderId = entityBeforeUpdate.ReceiptPurchaseOrder.PurchaseOrderId.Value;
+            PurchaseOrderItem? linkedPurchaseOrderItem = null;
+
+            if (entityBeforeUpdate.PurchaseOrderItemId.HasValue)
+            {
+                linkedPurchaseOrderItem = await _context.PurchaseOrderItems
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.PurchaseOrderItemId == entityBeforeUpdate.PurchaseOrderItemId.Value);
+
+                if (linkedPurchaseOrderItem == null)
+                    return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse("purchase order item is not found");
+
+                var executedQuantity = await _context.ReceiptPurchaseOrderItems
+                    .AsNoTracking()
+                    .Where(x => x.PurchaseOrderItemId == linkedPurchaseOrderItem.PurchaseOrderItemId
+                                && x.ReceiptPurchaseOrderItemId != ReceiptPurchaseItemId)
+                    .Select(x => (decimal?)x.Quantity)
+                    .SumAsync() ?? 0m;
+
+                if (executedQuantity + dto.Quantity.Value > linkedPurchaseOrderItem.Quantity)
+                    return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this purchase order item.");
+            }
+            else
+            {
+                var linkedPurchaseOrderItemResult = await GetAvailablePurchaseOrderItemAsync(
+                    purchaseOrderId,
+                    entityBeforeUpdate.ItemId,
+                    entityBeforeUpdate.UoMEntry,
+                    dto.Quantity.Value,
+                    ReceiptPurchaseItemId);
+
+                if (!linkedPurchaseOrderItemResult.IsMatchingPurchaseOrderItemFound)
+                {
+                    linkedPurchaseOrderItem = null;
+                }
+                else if (linkedPurchaseOrderItemResult.PurchaseOrderItem == null)
+                {
+                    return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this purchase order item.");
+                }
+                else
+                {
+                    linkedPurchaseOrderItem = linkedPurchaseOrderItemResult.PurchaseOrderItem;
+                }
+            }
+
+            if (linkedPurchaseOrderItem != null)
+            {
+                entityBeforeUpdate.PurchaseOrderItemId = linkedPurchaseOrderItem.PurchaseOrderItemId;
+            }
+        }
 
         var res = await baseProcesses.UpdateOrderItemAsync<ReceiptPurchaseOrder, ReceiptPurchaseOrderItem>(
        itemIdFromRoute: ReceiptPurchaseItemId,
@@ -148,6 +244,12 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
 
         if (!res.Success)
             return GeneralResponse<ReceiptPurchaseOrderItemDTO>.FailResponse(res.Message);
+
+        if (entityBeforeUpdate.PurchaseOrderItemId.HasValue && res.Data.PurchaseOrderItemId != entityBeforeUpdate.PurchaseOrderItemId)
+        {
+            res.Data.PurchaseOrderItemId = entityBeforeUpdate.PurchaseOrderItemId;
+            await _context.SaveChangesAsync();
+        }
 
         var entity = res.Data;
 
@@ -280,5 +382,68 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
     {
         return await QueryIncluding(false, rpoi => rpoi.Comment)
             .FirstOrDefaultAsync(rpoi => rpoi.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItemId);
+    }
+
+    private async Task<(bool Success, string Message, (int ItemId, int UoMEntry, decimal Quantity) Data)> ResolveAddItemDataAsync(
+        int warehouseId,
+        bool isBarcode,
+        DynamicBarcodesDto? barcodeDto,
+        AddGeneralItemDto? dto)
+    {
+        if (isBarcode)
+        {
+            if (barcodeDto == null)
+                return (false, "Barcode required", default);
+
+            var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
+
+            var res = isDynamic
+                ? await barcodeOrder.GetItemByDynamicBarCodeAsync(warehouseId, barcodeDto)
+                : await barcodeOrder.GetItemByStaticBarCodeAsync(warehouseId, barcodeDto);
+
+            if (!res.Success || res.Data == null)
+                return (false, res.Message, default);
+
+            return (true, "", (res.Data.Id, res.Data.UoMEntry, res.Data.Quantity));
+        }
+
+        if (dto == null)
+            return (false, "DTO required", default);
+
+        return (true, "", (dto.ItemId, dto.UoMEntry, dto.Quantity));
+    }
+
+    private async Task<(PurchaseOrderItem? PurchaseOrderItem, bool IsMatchingPurchaseOrderItemFound)> GetAvailablePurchaseOrderItemAsync(
+        int purchaseOrderId,
+        int itemId,
+        int uoMEntry,
+        decimal requestedQuantity,
+        int? excludeReceiptPurchaseOrderItemId = null)
+    {
+        var purchaseOrderItems = await _context.PurchaseOrderItems
+            .AsNoTracking()
+            .Where(x => x.PurchaseOrderId == purchaseOrderId
+                        && x.ItemId == itemId
+                        && x.UoMEntry == uoMEntry)
+            .OrderBy(x => x.PurchaseOrderItemId)
+            .ToListAsync();
+
+        if (!purchaseOrderItems.Any())
+            return (null, false);
+
+        foreach (var purchaseOrderItem in purchaseOrderItems)
+        {
+            var executedQuantity = await _context.ReceiptPurchaseOrderItems
+                .AsNoTracking()
+                .Where(x => x.PurchaseOrderItemId == purchaseOrderItem.PurchaseOrderItemId
+                            && (!excludeReceiptPurchaseOrderItemId.HasValue || x.ReceiptPurchaseOrderItemId != excludeReceiptPurchaseOrderItemId.Value))
+                .Select(x => (decimal?)x.Quantity)
+                .SumAsync() ?? 0m;
+
+            if (executedQuantity + requestedQuantity <= purchaseOrderItem.Quantity)
+                return (purchaseOrderItem, true);
+        }
+
+        return (null, true);
     }
 }

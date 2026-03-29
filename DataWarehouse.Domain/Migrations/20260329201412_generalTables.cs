@@ -1028,7 +1028,7 @@ namespace DataWarehouse.Domain.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PostingDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AdjustmentType = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DocEntry = table.Column<int>(type: "int", nullable: true),
@@ -2838,9 +2838,7 @@ namespace DataWarehouse.Domain.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ReceiptPurchaseOrderItems_PurchaseOrderItemId",
                 table: "ReceiptPurchaseOrderItems",
-                column: "PurchaseOrderItemId",
-                unique: true,
-                filter: "[PurchaseOrderItemId] IS NOT NULL");
+                column: "PurchaseOrderItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReceiptPurchaseOrderItems_ReceiptPurchaseOrderId",
@@ -2850,9 +2848,7 @@ namespace DataWarehouse.Domain.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ReceiptPurchaseOrders_PurchaseOrderId",
                 table: "ReceiptPurchaseOrders",
-                column: "PurchaseOrderId",
-                unique: true,
-                filter: "[PurchaseOrderId] IS NOT NULL");
+                column: "PurchaseOrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReceiptPurchaseOrders_ReasonId",

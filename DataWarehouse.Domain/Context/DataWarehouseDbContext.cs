@@ -142,9 +142,9 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
       builder.Entity<ReceiptPurchaseOrderItem>()
       .HasOne(ps => ps.PurchaseOrderItem)
-      .WithOne(rpo => rpo.ReceiptPurchaseOrderItem)
-      .HasForeignKey<ReceiptPurchaseOrderItem>(rpo => rpo.PurchaseOrderItemId)
-      .HasPrincipalKey<PurchaseOrderItem>(ps => ps.PurchaseOrderItemId)
+      .WithMany(rpo => rpo.ReceiptPurchaseOrderItems)
+      .HasForeignKey(rpo => rpo.PurchaseOrderItemId)
+      .HasPrincipalKey(ps => ps.PurchaseOrderItemId)
       .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
 
 
@@ -157,10 +157,10 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
            .OnDelete(DeleteBehavior.NoAction);
 
         builder.Entity<PurchaseOrder>()
-    .HasOne(ps => ps.ReceiptPurchaseOrder)
+    .HasMany(ps => ps.ReceiptPurchaseOrders)
     .WithOne(rpo => rpo.PurchaseOrder)
-    .HasForeignKey<ReceiptPurchaseOrder>(rpo => rpo.PurchaseOrderId)
-    .HasPrincipalKey<PurchaseOrder>(ps => ps.PurchaseOrderId)
+    .HasForeignKey(rpo => rpo.PurchaseOrderId)
+    .HasPrincipalKey(ps => ps.PurchaseOrderId)
     .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
 
 

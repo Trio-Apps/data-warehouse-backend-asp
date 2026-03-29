@@ -15,6 +15,8 @@ public interface IReceiptPurchaseOrderRepository : IBaseRepository<ReceiptPurcha
     Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize);
     Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
          (int warehouseId, string userId, int? supplierId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderDTO>>> GetByPurchaseOrderIdAndStatusAndDateWithPaginationForDashboardAsync
+         (int purchaseOrderId, string userId, int? supplierId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetReceiptOrderByIdAsync(string userId, int receiptOrderId);
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> AddReceiptPurchaseOrderAsync(string userId, AddReceiptPurchaseOrderWithoutRefDTO dto);
@@ -23,6 +25,7 @@ public interface IReceiptPurchaseOrderRepository : IBaseRepository<ReceiptPurcha
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> UpdateReceiptPurchaseOrderAsync(string userId, int receiptPurchaseOrderId, UpdateReceiptPurchaseOrderDTO dto);
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> DuplicateReceiptPurchaseOrderAsync(string userId, int receiptPurchaseOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<ProcessItemIsProgressDto>> RevertPartiallyFailedStatusToProcessingAsync(int receiptPurchaseOrderId);
+    Task<GeneralResponse<IEnumerable<ReceiptPurchaseOrderDTO>>> GetReceiptPurchaseOrdersByPurchaseIdAsync(string userId, int purchaseId);
     Task<GeneralResponse<ReceiptPurchaseOrderDTO>> DeleteReceiptOrderAsync(
     int receiptOrderId,
     CancellationToken cancellationToken = default);

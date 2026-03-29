@@ -71,7 +71,11 @@ public class PurchaseOrderItemRepository : BaseRepository<PurchaseOrderItem>, IP
                     .FirstOrDefault(),
                 IsBatches= e.Item.BatchNumbers,
                 ItemCode = e.Item.ItemCode,
-                ItemName = e.Item.ItemName
+                ItemName = e.Item.ItemName,
+                ExecuteQuantity = _context.ReceiptPurchaseOrderItems
+                    .Where(r => r.PurchaseOrderItemId == e.PurchaseOrderItemId)
+                    .Select(r => (decimal?)r.Quantity)
+                    .Sum() ?? 0
             }
         );
 
@@ -121,7 +125,11 @@ public async Task<GeneralWithTwoGenericResponse<PagedResult<PurchaseOrderItemDTO
                 .FirstOrDefault(),
             IsBatches = e.Item.BatchNumbers,
             ItemCode = e.Item.ItemCode,
-            ItemName = e.Item.ItemName
+            ItemName = e.Item.ItemName,
+            ExecuteQuantity = _context.ReceiptPurchaseOrderItems
+                .Where(r => r.PurchaseOrderItemId == e.PurchaseOrderItemId)
+                .Select(r => (decimal?)r.Quantity)
+                .Sum() ?? 0
         },
         orderByDescSelector: x => x.PurchaseOrderItemId,
         itemStatusSelector: x => x.Status

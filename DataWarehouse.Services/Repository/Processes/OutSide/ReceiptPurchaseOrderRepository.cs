@@ -133,14 +133,13 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         if (!string.IsNullOrEmpty(liveStatus))
         {
-            // true = receipt 
-            // false = return
-            
-           query = query.Where(e => e.GoodsReturnOrder != null);
-
+            if (liveStatus == "return")
+                query = query.Where(e => e.GoodsReturnOrder != null);
+            else if (liveStatus == "receipt")
+                query = query.Where(e => e.GoodsReturnOrder == null);
         }
 
-        query = query.OrderByDescending(e => e.CreatedAt); // ÊÃßÏ åäÇ
+        query = query.OrderByDescending(e => e.CreatedAt); // ØªØ£ÙƒØ¯ Ù‡Ù†Ø§
 
         // Approved references subquery (for Sales process only)
         var processQuery = _context.ProcessItemIsProgresses
@@ -156,13 +155,13 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
          {
              Order = iw,
 
-             // åá Ýíå progress ÃÕáÇð¿
-             HasProgress = processQuery.Any(p => p.ReferenceId == iw.PurchaseOrderId),
+             // Ù‡Ù„ ÙÙŠÙ‡ progress Ø£ØµÙ„Ø§Ù‹ØŸ
+             HasProgress = processQuery.Any(p => p.ReferenceId == iw.ReceiptPurchaseOrderId),
 
-             // ÂÎÑ Status (áæ ãæÌæÏ)
+             // Ø¢Ø®Ø± Status (Ù„Ùˆ Ù…ÙˆØ¬ÙˆØ¯)
              LatestStatus = processQuery
                  .Where(p => p.ReferenceId == iw.ReceiptPurchaseOrderId)
-                 .OrderByDescending(p => p.ProcessItemIsProgressId) // Ãæ CreatedAt áæ ÚäÏß
+                 .OrderByDescending(p => p.ProcessItemIsProgressId) // Ø£Ùˆ CreatedAt Ù„Ùˆ Ø¹Ù†Ø¯Ùƒ
                  .Select(p => (ProcessStatus?)p.Status)
                  .FirstOrDefault()
          })
@@ -179,10 +178,130 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
              SupplierName = x.Order.Supplier.SupplierName,
              ItemCount = x.Order.ReceiptPurchaseOrderItems.Count(),
 
-             // ? æÌæÏ progx.Orders
+             // ? ÙˆØ¬ÙˆØ¯ progx.Orders
              Approval = x.HasProgress,
 
-             // ? ÇÓã ÇáÍÇáÉ ÇáÍÇáíÉ (ÂÎÑ Status)
+             // ? Ø§Ø³Ù… Ø§Ù„Ø­Ø§Ù„Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ© (Ø¢Ø®Ø± Status)
+             ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
+
+
+             ReceiptPurchaseOrderId = x.Order.ReceiptPurchaseOrderId,
+           
+             CreatedAt = x.Order.CreatedAt,
+             SupplierId = x.Order.SupplierId,
+             ErrorMessage = x.Order.ErrorMessage,
+             ReasonId = x.Order.ReasonId,
+             ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
+           
+             IsReturn = x.Order.GoodsReturnOrder != null,
+             ReturnOrderId = x.Order.GoodsReturnOrder != null ? x.Order.GoodsReturnOrder.GoodsReturnOrderId : null,
+         })
+         .ToListAsync(cancellationToken);
+
+
+        return GeneralResponse<PagedResult<ReceiptPurchaseOrderDTO>>.SuccessResponse(
+            new PagedResult<ReceiptPurchaseOrderDTO>
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords,
+                Data = data
+            });
+    }
+
+
+    public async Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderDTO>>> GetByPurchaseOrderIdAndStatusAndDateWithPaginationForDashboardAsync
+       (int purchaseOrderId, string userId, int? supplierId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+
+    {
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        pageSize = pageSize <= 0 ? 10 : pageSize;
+
+        var query = _context.ReceiptPurchaseOrders
+            .AsNoTracking().Include(e => e.ReceiptPurchaseOrderItems)
+            .Include(e => e.Reason)
+            .Where(po => po.PurchaseOrderId == purchaseOrderId);
+
+        // ?? Filtering
+
+
+        if (supplierId.HasValue)
+        {
+            query = query.Where(e => e.SupplierId == supplierId);
+        }
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
+            {
+                query = query.Where(e => e.Status == statusEnum);
+            }
+        }
+
+        // ?? Posting Date Filter
+        if (postingDate.HasValue)
+        {
+            var postDate = postingDate.Value.Date;
+            query = query.Where(e => e.PostingDate.Date == postDate);
+        }
+
+        // ?? Due Date Filter
+        if (DueDate.HasValue)
+        {
+            var dueDate = DueDate.Value.Date;
+            query = query.Where(e => e.DueDate.Date == dueDate);
+        }
+
+        if (!string.IsNullOrEmpty(liveStatus))
+        {
+            if (liveStatus == "return")
+                query = query.Where(e => e.GoodsReturnOrder != null);
+            else if (liveStatus == "receipt")
+                query = query.Where(e => e.GoodsReturnOrder == null);
+        }
+
+        query = query.OrderByDescending(e => e.CreatedAt); // Ø·Ú¾Ø·Â£Ø¸Æ’Ø·Â¯ Ø¸â€¡Ø¸â€ Ø·Â§
+
+        // Approved references subquery (for Sales process only)
+        var processQuery = _context.ProcessItemIsProgresses
+       .AsNoTracking()
+       .Where(p => p.ProcessType == ProcessType.Receipt);
+
+        var totalRecords = await query.CountAsync();
+
+        var data = await query
+         .Skip((pageNumber - 1) * pageSize)
+         .Take(pageSize)
+         .Select(iw => new
+         {
+             Order = iw,
+
+             // Ø¸â€¡Ø¸â€ž Ø¸Ù¾Ø¸Ù¹Ø¸â€¡ progress Ø·Â£Ø·ÂµØ¸â€žØ·Â§Ø¸â€¹Ø·Úº
+             HasProgress = processQuery.Any(p => p.ReferenceId == iw.ReceiptPurchaseOrderId),
+
+             // Ø·Â¢Ø·Â®Ø·Â± Status (Ø¸â€žØ¸Ë† Ø¸â€¦Ø¸Ë†Ø·Â¬Ø¸Ë†Ø·Â¯)
+             LatestStatus = processQuery
+                 .Where(p => p.ReferenceId == iw.ReceiptPurchaseOrderId)
+                 .OrderByDescending(p => p.ProcessItemIsProgressId) // Ø·Â£Ø¸Ë† CreatedAt Ø¸â€žØ¸Ë† Ø·Â¹Ø¸â€ Ø·Â¯Ø¸Æ’
+                 .Select(p => (ProcessStatus?)p.Status)
+                 .FirstOrDefault()
+         })
+         .Select(x => new ReceiptPurchaseOrderDTO
+         {
+             DueDate = x.Order.DueDate,
+             PostingDate = x.Order.PostingDate,
+             PurchaseOrderId = x.Order.PurchaseOrderId,
+             Status = x.Order.Status.ToString(),
+             Comment = x.Order.Comment,
+             UserId = x.Order.UserId,
+             WarehouseId = x.Order.WarehouseId,
+
+             SupplierName = x.Order.Supplier.SupplierName,
+             ItemCount = x.Order.ReceiptPurchaseOrderItems.Count(),
+
+             // ? Ø¸Ë†Ø·Â¬Ø¸Ë†Ø·Â¯ progx.Orders
+             Approval = x.HasProgress,
+
+             // ? Ø·Â§Ø·Â³Ø¸â€¦ Ø·Â§Ø¸â€žØ·Â­Ø·Â§Ø¸â€žØ·Â© Ø·Â§Ø¸â€žØ·Â­Ø·Â§Ø¸â€žØ¸Ù¹Ø·Â© (Ø·Â¢Ø·Â®Ø·Â± Status)
              ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
 
 
@@ -289,7 +408,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? Ø´ØºÙ„ Ø§Ù„Ù€ Approval Workflow Ù„Ùˆ Ù…Ø´ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -323,18 +442,13 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse(ex.Message);
         }
 
-        var purchaseOrder = await _context.PurchaseOrders.Include(p=>p.ReceiptPurchaseOrder).FirstOrDefaultAsync(p=>p.PurchaseOrderId == dto.PurchaseOrderId);
+        var purchaseOrder = await _context.PurchaseOrders.FirstOrDefaultAsync(p=>p.PurchaseOrderId == dto.PurchaseOrderId);
 
         if (purchaseOrder == null)
             return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("purchaseOrder is not found");
 
         if (purchaseOrder.Status != GeneralStatus.Completed)
             return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("You can add Receipt, if putchase order status is completed only");
-
-
-        if (purchaseOrder.ReceiptPurchaseOrder != null)
-            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("purchaseOrder has receipt purchaseOrder already!");
-
 
         var mapping = new ReceiptPurchaseOrder
         {
@@ -353,7 +467,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         var res = await AddAsync(mapping);
         await SaveChangesAsync();
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? Ø´ØºÙ„ Ø§Ù„Ù€ Approval Workflow Ù„Ùˆ Ù…Ø´ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -396,8 +510,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         }
 
         var purchaseOrder = await _context.PurchaseOrders
-            .Include(p => p.ReceiptPurchaseOrder)
-            .Include(p => p.PurchaseOrderItems) // ? åÇÊ items
+                        .Include(p => p.PurchaseOrderItems) // ? Ù‡Ø§Øª items
             .FirstOrDefaultAsync(p => p.PurchaseOrderId == dto.PurchaseOrderId);
 
         if (purchaseOrder == null)
@@ -405,12 +518,47 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         if (purchaseOrder.Status != GeneralStatus.Completed)
             return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("You can add Receipt, if purchase order status is completed only");
-
-        if (purchaseOrder.ReceiptPurchaseOrder != null)
-            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("purchaseOrder has receipt purchaseOrder already!");
-
         if (purchaseOrder.PurchaseOrderItems == null || !purchaseOrder.PurchaseOrderItems.Any())
             return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("purchaseOrder has no items to receipt");
+
+        var purchaseOrderItemIds = purchaseOrder.PurchaseOrderItems
+            .Select(x => x.PurchaseOrderItemId)
+            .ToList();
+
+        var executedByPurchaseOrderItem = await _context.ReceiptPurchaseOrderItems
+            .AsNoTracking()
+            .Where(x => x.PurchaseOrderItemId.HasValue && purchaseOrderItemIds.Contains(x.PurchaseOrderItemId.Value))
+            .GroupBy(x => x.PurchaseOrderItemId!.Value)
+            .Select(g => new
+            {
+                PurchaseOrderItemId = g.Key,
+                Quantity = g.Sum(i => i.Quantity)
+            })
+            .ToDictionaryAsync(x => x.PurchaseOrderItemId, x => x.Quantity);
+
+        var remainingItems = purchaseOrder.PurchaseOrderItems
+            .Select(poi =>
+            {
+                var executed = executedByPurchaseOrderItem.TryGetValue(poi.PurchaseOrderItemId, out var qty) ? qty : 0m;
+                var remaining = poi.Quantity - executed;
+
+                return new { PurchaseOrderItem = poi, Remaining = remaining };
+            })
+            .Where(x => x.Remaining > 0m)
+            .ToList();
+
+        var overReceivedItem = purchaseOrder.PurchaseOrderItems
+            .FirstOrDefault(poi =>
+            {
+                var executed = executedByPurchaseOrderItem.TryGetValue(poi.PurchaseOrderItemId, out var qty) ? qty : 0m;
+                return executed > poi.Quantity;
+            });
+
+        if (overReceivedItem != null)
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("One or more purchase order items already exceed the allowed received quantity.");
+
+        if (!remainingItems.Any())
+            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("All purchase order items are fully received.");
 
         var receipt = new ReceiptPurchaseOrder
         {
@@ -425,24 +573,25 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             PurchaseOrderId = dto.PurchaseOrderId,
             ReasonId = dto.ReasonId,
 
-            // ? Copy PO items -> Receipt PO items
-            ReceiptPurchaseOrderItems = purchaseOrder.PurchaseOrderItems.Select(poi => new ReceiptPurchaseOrderItem
+            // Copy PO items -> Receipt PO items using remaining quantity only
+            ReceiptPurchaseOrderItems = remainingItems.Select(x => new ReceiptPurchaseOrderItem
             {
-                ItemId = poi.ItemId,
-                Quantity = poi.Quantity,
-                UoMEntry = poi.UoMEntry,
-                BarCode = poi.BarCode,
-                UnitPrice = poi.UnitPrice,
+                ItemId = x.PurchaseOrderItem.ItemId,
+                Quantity = x.Remaining,
+                UoMEntry = x.PurchaseOrderItem.UoMEntry,
+                BarCode = x.PurchaseOrderItem.BarCode,
+                UnitPrice = x.PurchaseOrderItem.UnitPrice,
+                PurchaseOrderItemId = x.PurchaseOrderItem.PurchaseOrderItemId,
 
-                VatPercent = poi.VatPercent,
+                VatPercent = x.PurchaseOrderItem.VatPercent,
 
-                VatAmount = poi.VatAmount,
+                VatAmount = x.PurchaseOrderItem.VatAmount,
 
-                LineTotalBeforeVat = poi.LineTotalBeforeVat,
+                LineTotalBeforeVat = x.PurchaseOrderItem.LineTotalBeforeVat,
 
-                LineTotalAfterVat = poi.LineTotalAfterVat,
+                LineTotalAfterVat = x.PurchaseOrderItem.LineTotalAfterVat,
 
-                // ãäØÞ ÇáÓÊÇÊÓ: áÓå ÇáÇÓÊáÇã ãÇ ÊãÔ
+                // Ù…Ù†Ø·Ù‚ Ø§Ù„Ø³ØªØ§ØªØ³: Ù„Ø³Ù‡ Ø§Ù„Ø§Ø³ØªÙ„Ø§Ù… Ù…Ø§ ØªÙ…Ø´
                 Status = GeneralItemStatus.Planned,
 
                 // optional
@@ -454,7 +603,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         await _context.ReceiptPurchaseOrders.AddAsync(receipt);
         await SaveChangesAsync();
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? Ø´ØºÙ„ Ø§Ù„Ù€ Approval Workflow Ù„Ùˆ Ù…Ø´ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -594,7 +743,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
 
-        // Snapshot ÞÈá ÇáÍÐÝ ÚáÔÇä äÑÌÚå Ýí ÇáÜ response
+        // Snapshot Ù‚Ø¨Ù„ Ø§Ù„Ø­Ø°Ù Ø¹Ù„Ø´Ø§Ù† Ù†Ø±Ø¬Ø¹Ù‡ ÙÙŠ Ø§Ù„Ù€ response
         var result = new ReceiptPurchaseOrderDTO
         {
             ReceiptPurchaseOrderId = entity.ReceiptPurchaseOrderId,
@@ -609,7 +758,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
-        // áæ ÚäÏß ÊÝÇÕíá æãÝíÔ Cascade Delete åÊÍÊÇÌ ÊãÓÍåÇ ÇáÃæá åäÇ
+        // Ù„Ùˆ Ø¹Ù†Ø¯Ùƒ ØªÙØ§ØµÙŠÙ„ ÙˆÙ…ÙÙŠØ´ Cascade Delete Ù‡ØªØ­ØªØ§Ø¬ ØªÙ…Ø³Ø­Ù‡Ø§ Ø§Ù„Ø£ÙˆÙ„ Ù‡Ù†Ø§
         _context.ReceiptPurchaseOrders.Remove(entity);
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -626,11 +775,57 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         );
     }
 
+    public async Task<GeneralResponse<IEnumerable<ReceiptPurchaseOrderDTO>>> GetReceiptPurchaseOrdersByPurchaseIdAsync(string userId, int purchaseId)
+    {
+        var res = await _context.ReceiptPurchaseOrders
+            .AsNoTracking()
+            .Include(r => r.GoodsReturnOrder)
+            .Include(r => r.Reason)
+            .Where(rpo => rpo.PurchaseOrderId == purchaseId)
+            .OrderByDescending(rpo => rpo.ReceiptPurchaseOrderId)
+            .ToListAsync();
+
+        if (res == null || !res.Any())
+            return GeneralResponse<IEnumerable<ReceiptPurchaseOrderDTO>>.FailResponse("Not Found");
+
+        var result = new List<ReceiptPurchaseOrderDTO>();
+
+        foreach (var receipt in res)
+        {
+            var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.Receipt, receipt.ReceiptPurchaseOrderId);
+
+            result.Add(new ReceiptPurchaseOrderDTO
+            {
+                DueDate = receipt.DueDate,
+                PostingDate = receipt.PostingDate,
+                ReceiptPurchaseOrderId = receipt.ReceiptPurchaseOrderId,
+                Status = receipt.Status.ToString(),
+                UserId = receipt.UserId,
+                WarehouseId = receipt.WarehouseId,
+                PurchaseOrderId = receipt.PurchaseOrderId,
+                SupplierId = receipt.SupplierId,
+                Comment = receipt.Comment,
+                ReasonId = receipt.ReasonId,
+                ReasonName = receipt.Reason != null ? receipt.Reason.Name : null,
+                CanApprove = approvalModel.CanApprove,
+                ProcessApprovalId = approvalModel.ProcessApprovalId,
+                ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
+                Approval = approvalModel.hasProgress,
+                ApprovalStatus = approvalModel.ApprovalStatus,
+                IsReturn = receipt.GoodsReturnOrder != null,
+                ReturnOrderId = receipt.GoodsReturnOrder != null ? receipt.GoodsReturnOrder.GoodsReturnOrderId : null,
+            });
+        }
+
+        return GeneralResponse<IEnumerable<ReceiptPurchaseOrderDTO>>.SuccessResponse(result);
+    }
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetByPurchaseOrderIdAsync(string userId, int purchaseOrderId)
     {
         var res = await _context.ReceiptPurchaseOrders.Include(r=>r.GoodsReturnOrder)
             .Include(r => r.Reason)
-            .FirstOrDefaultAsync(rpo => rpo.PurchaseOrderId == purchaseOrderId);
+            .Where(rpo => rpo.PurchaseOrderId == purchaseOrderId)
+            .OrderByDescending(rpo => rpo.ReceiptPurchaseOrderId)
+            .FirstOrDefaultAsync();
 
         if (res == null)
            return GeneralResponse<ReceiptPurchaseOrderDTO>.FailResponse("Not Found");
@@ -873,4 +1068,3 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     //}
 
 }
-

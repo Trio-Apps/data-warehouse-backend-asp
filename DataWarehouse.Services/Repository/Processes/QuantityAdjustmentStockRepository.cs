@@ -79,7 +79,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
             .Select(x => new QuantityAdjustmentStockDTO
             {
                 QuantityAdjustmentStockId = x.Order.QuantityAdjustmentStockId,
-                DueDate = x.Order.DueDate,
+                DueDate = x.Order.PostingDate ?? x.Order.CreatedAt,
                 PostingDate = x.Order.PostingDate ?? default,
                 Status = x.Order.Status.ToString(),
                 Comment = x.Order.Comment,
@@ -133,8 +133,8 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
 
         if (dueDate.HasValue)
         {
-            var targetDueDate = dueDate.Value.Date;
-            query = query.Where(x => x.DueDate.Date == targetDueDate);
+            var targetDate = dueDate.Value.Date;
+            query = query.Where(x => x.PostingDate.HasValue && x.PostingDate.Value.Date == targetDate);
         }
 
         query = query.OrderByDescending(x => x.CreatedAt);
@@ -161,7 +161,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
             .Select(x => new QuantityAdjustmentStockDTO
             {
                 QuantityAdjustmentStockId = x.Order.QuantityAdjustmentStockId,
-                DueDate = x.Order.DueDate,
+                DueDate = x.Order.PostingDate ?? x.Order.CreatedAt,
                 PostingDate = x.Order.PostingDate ?? default,
                 Status = x.Order.Status.ToString(),
                 Comment = x.Order.Comment,
@@ -206,7 +206,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
         var result = new QuantityAdjustmentStockDTO
         {
             QuantityAdjustmentStockId = entity.QuantityAdjustmentStockId,
-            DueDate = entity.DueDate,
+            DueDate = entity.PostingDate ?? entity.CreatedAt,
             PostingDate = entity.PostingDate ?? default,
             Status = entity.Status.ToString(),
             Comment = entity.Comment,
@@ -252,7 +252,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
         {
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
             PostingDate = dto.PostingDate,
-            DueDate = dto.DueDate,
+            AdjustmentType = AdjustmentType.Increase,
             CreatedAt = DateTime.UtcNow,
             UserId = userId,
             WarehouseId = dto.WarehouseId,
@@ -275,7 +275,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
         return GeneralResponse<QuantityAdjustmentStockDTO>.SuccessResponse(new QuantityAdjustmentStockDTO
         {
             QuantityAdjustmentStockId = saved.QuantityAdjustmentStockId,
-            DueDate = saved.DueDate,
+            DueDate = saved.PostingDate ?? saved.CreatedAt,
             PostingDate = saved.PostingDate ?? default,
             Status = saved.Status.ToString(),
             UserId = saved.UserId,
@@ -318,9 +318,6 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
         if (dto.PostingDate.HasValue && entity.PostingDate != dto.PostingDate.Value)
             entity.PostingDate = dto.PostingDate.Value;
 
-        if (dto.DueDate.HasValue && entity.DueDate != dto.DueDate.Value)
-            entity.DueDate = dto.DueDate.Value;
-
         if (!string.IsNullOrWhiteSpace(dto.Comment) && entity.Comment != dto.Comment)
             entity.Comment = dto.Comment;
         entity.ReasonId = dto.ReasonId;
@@ -348,7 +345,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
         return GeneralResponse<QuantityAdjustmentStockDTO>.SuccessResponse(new QuantityAdjustmentStockDTO
         {
             QuantityAdjustmentStockId = entity.QuantityAdjustmentStockId,
-            DueDate = entity.DueDate,
+            DueDate = entity.PostingDate ?? entity.CreatedAt,
             PostingDate = entity.PostingDate ?? default,
             Status = entity.Status.ToString(),
             UserId = entity.UserId,
@@ -395,7 +392,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
         var result = new QuantityAdjustmentStockDTO
         {
             QuantityAdjustmentStockId = entity.QuantityAdjustmentStockId,
-            DueDate = entity.DueDate,
+            DueDate = entity.PostingDate ?? entity.CreatedAt,
             PostingDate = entity.PostingDate ?? default,
             Status = entity.Status.ToString(),
             UserId = entity.UserId,
@@ -451,7 +448,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
             .Select(x => new QuantityAdjustmentStockDTO
             {
                 QuantityAdjustmentStockId = x.QuantityAdjustmentStockId,
-                DueDate = x.DueDate,
+                DueDate = x.PostingDate ?? x.CreatedAt,
                 PostingDate = x.PostingDate ?? default,
                 Status = x.Status.ToString(),
                 UserId = x.UserId,

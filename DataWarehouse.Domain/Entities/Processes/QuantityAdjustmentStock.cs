@@ -16,7 +16,7 @@ namespace DataWarehouse.Domain.Entities.Processes
         public int QuantityAdjustmentStockId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? PostingDate { get; set; }
-        public DateTime DueDate { get; set; }
+        public AdjustmentType AdjustmentType { get; set; }
         public GeneralStatus Status { get; set; }
         public string? Comment { get; set; }
         public int? DocEntry { get; set; }

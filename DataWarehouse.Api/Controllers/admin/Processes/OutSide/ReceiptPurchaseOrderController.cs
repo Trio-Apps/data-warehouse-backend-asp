@@ -69,6 +69,22 @@ public class ReceiptPurchaseOrderController : ControllerBase
         return Ok(res);
     }
 
+    [HttpGet("dashboard/purchase-order/status/posting-date/due-date/{purchaseOrderId}/{skip}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
+    public async Task<IActionResult> GetByPurchaseOrderIdWithPaginationForDashboard
+        (int purchaseOrderId, int? supplierId, string? status, string? liveStatus, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var res = await _repository.GetByPurchaseOrderIdAndStatusAndDateWithPaginationForDashboardAsync(
+            purchaseOrderId, userId, supplierId, postingDate, dueDate, liveStatus, status, skip, pageSize);
+
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
     //[HttpGet("{id}")]
     //[Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
 
@@ -107,6 +123,19 @@ public class ReceiptPurchaseOrderController : ControllerBase
             return NotFound($"ReceiptPurchaseOrder for PurchaseOrder ID {purchaseOrderId} not found.");
 
         return Ok(receiptPurchaseOrder);
+    }
+
+    [HttpGet("purchase-order/{purchaseOrderId}/all")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Receipt_Get}")]
+    public async Task<ActionResult<IEnumerable<ReceiptPurchaseOrder>>> GetAllByPurchaseOrderId(int purchaseOrderId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var receiptPurchaseOrders = await _repository.GetReceiptPurchaseOrdersByPurchaseIdAsync(userId, purchaseOrderId);
+        if (!receiptPurchaseOrders.Success)
+            return NotFound($"ReceiptPurchaseOrder for PurchaseOrder ID {purchaseOrderId} not found.");
+
+        return Ok(receiptPurchaseOrders);
     }
 
     [HttpGet("status/{status}")]

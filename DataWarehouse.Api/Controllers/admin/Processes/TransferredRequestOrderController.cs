@@ -18,6 +18,7 @@ public class TransferredRequestOrderController : ControllerBase
     private readonly ITransferredRequestOrderRepository _repository;
     private readonly ILogger<TransferredRequestOrderController> _logger;
 
+
     public TransferredRequestOrderController(
         ISapJobQueuer jobQueuer,
         ITransferredRequestOrderRepository repository,
@@ -32,10 +33,10 @@ public class TransferredRequestOrderController : ControllerBase
     [HttpGet("search-pagination/warehouse/{warehouseId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Items_Get}")]
     public async Task<IActionResult> GetByWarehouseId(
- int warehouseId,
- [FromQuery] string? itemCodeOrItemName,
- [FromQuery] int pageNumber = 1,
- [FromQuery] int pageSize = 20)
+    int warehouseId,
+    [FromQuery] string? itemCodeOrItemName,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 20)
     {
         var result = await _repository.GetByWarehouseIdAsync(
             warehouseId,
@@ -45,6 +46,7 @@ public class TransferredRequestOrderController : ControllerBase
 
         return Ok(result);
     }
+
 
     [HttpGet]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.TransferredRequest_Get}")]
@@ -62,6 +64,7 @@ public class TransferredRequestOrderController : ControllerBase
         var orders = await _repository.GetByWarehouseIdAsync(warehouseId);
         return Ok(orders);
     }
+
 
     [HttpGet("warehouse/{warehouseId}/{skip}/{pageSize}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.TransferredRequest_Get}")]
