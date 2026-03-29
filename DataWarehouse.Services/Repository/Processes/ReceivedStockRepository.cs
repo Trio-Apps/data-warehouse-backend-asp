@@ -4,6 +4,7 @@ using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
@@ -19,16 +20,19 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
 {
     private readonly IBaseProcessesRepository<ReceivedStock> baseProcesses;
     private readonly IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly ReasonValidationService reasonValidationService;
 
     public ReceivedStockRepository(
         IBaseProcessesRepository<ReceivedStock> baseProcesses,
         IApprovalRepository approval,
+        IAppNotificationTrigger notificationTrigger,
         ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.reasonValidationService = reasonValidationService;
     }
 
@@ -241,6 +245,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
 
         await _context.ReceivedStocks.AddAsync(entity);
         await _context.SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Received, entity.ReceivedStockId, userId, dto.IsDraft);
 
         if (!dto.IsDraft)
         {
@@ -273,6 +278,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
 
         await _context.ReceivedStocks.AddAsync(entity);
         await _context.SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Received, entity.ReceivedStockId, userId, dto.IsDraft);
 
         if (!dto.IsDraft)
         {
@@ -327,6 +333,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
 
         await _context.ReceivedStocks.AddAsync(entity);
         await _context.SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Received, entity.ReceivedStockId, userId, dto.IsDraft);
 
         if (!dto.IsDraft)
         {
@@ -408,6 +415,7 @@ public class ReceivedStockRepository : BaseRepository<ReceivedStock>, IReceivedS
         var clone = OrderDuplicationHelper.Clone(source, userId);
         await _context.ReceivedStocks.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Received, clone.ReceivedStockId, userId, true);
         return await GetReceivedStockByIdAsync(userId, clone.ReceivedStockId, cancellationToken);
     }    public async Task<GeneralResponse<ReceivedStockDTO>> DeleteReceivedStockAsync(
         int receivedStockId,

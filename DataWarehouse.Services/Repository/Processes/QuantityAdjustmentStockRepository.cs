@@ -4,6 +4,7 @@ using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
@@ -24,16 +25,19 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
 {
     private readonly IBaseProcessesRepository<QuantityAdjustmentStock> baseProcesses;
     private readonly IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly ReasonValidationService reasonValidationService;
 
     public QuantityAdjustmentStockRepository(
         IBaseProcessesRepository<QuantityAdjustmentStock> baseProcesses,
         IApprovalRepository approval,
+        IAppNotificationTrigger notificationTrigger,
         ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.reasonValidationService = reasonValidationService;
     }
 
@@ -262,6 +266,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
 
         var saved = await AddAsync(entity);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.QuantityAdjustment, saved.QuantityAdjustmentStockId, userId, dto.IsDraft);
 
         if (!dto.IsDraft)
         {
@@ -375,6 +380,7 @@ public class QuantityAdjustmentStockRepository : BaseRepository<QuantityAdjustme
         var clone = OrderDuplicationHelper.Clone(source, userId);
         await _context.QuantityAdjustmentStocks.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.QuantityAdjustment, clone.QuantityAdjustmentStockId, userId, true);
         return await GetWithWarehouseAsync(clone.QuantityAdjustmentStockId, userId, cancellationToken);
     }    public async Task<GeneralResponse<QuantityAdjustmentStockDTO>> DeleteQuantityAdjustmentStockAsync(
         int quantityAdjustmentStockId, CancellationToken cancellationToken = default)

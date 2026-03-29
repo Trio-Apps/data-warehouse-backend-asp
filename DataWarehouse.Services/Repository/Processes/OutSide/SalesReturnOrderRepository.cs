@@ -4,6 +4,7 @@ using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -29,18 +30,21 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
     private readonly IBaseProcessesRepository<SalesReturnOrder> baseProcesses;
     private readonly IProcessItemIsProgressRepository progress;
     private readonly IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly ReasonValidationService reasonValidationService;
 
     public SalesReturnOrderRepository(
         IBaseProcessesRepository<SalesReturnOrder> baseProcesses,
         IProcessItemIsProgressRepository progress,
         IApprovalRepository approval,
+        IAppNotificationTrigger notificationTrigger,
         ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.progress = progress;
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.reasonValidationService = reasonValidationService;
     }
 
@@ -103,7 +107,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             .Include(e => e.SalesReturnOrderItems)
             .Include(e => e.Customer)
             .Include(e => e.Reason)
-            // .Include(e => e.DeliveryNoteOrder) // ÇÎÊíÇÑí: ÓíÈå áæ ãÍÊÇÌå Ýí DTO Ãæ ÝáÊÑÉ¡ áßä ãÔ åäÓÊÎÏãå ááÊæÇÑíÎ ÈÚÏ ÇáÊÚÏíá
+            // .Include(e => e.DeliveryNoteOrder) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ DTO ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½É¡ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             .Where(sro => sro.WarehouseId == warehouseId);
 
         // ?? Customer Filter
@@ -121,14 +125,14 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             }
         }
 
-        // ?? Posting Date Filter (ãËá GoodsReturnOrder)
+        // ?? Posting Date Filter (ï¿½ï¿½ï¿½ GoodsReturnOrder)
         if (postingDate.HasValue)
         {
             var postDate = postingDate.Value.Date;
             query = query.Where(e => e.PostingDate.Date == postDate);
         }
 
-        // ?? Due Date Filter (ãËá GoodsReturnOrder)
+        // ?? Due Date Filter (ï¿½ï¿½ï¿½ GoodsReturnOrder)
         if (DueDate.HasValue)
         {
             var dueDate = DueDate.Value.Date;
@@ -163,7 +167,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             {
                 SalesReturnOrderId = x.Order.SalesReturnOrderId,
 
-                // ? Òí GoodsReturn: ãä äÝÓ ÇáÜ Return Order
+                // ? ï¿½ï¿½ GoodsReturn: ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Return Order
                 DueDate = x.Order.DueDate,
                 PostingDate = x.Order.PostingDate,
 
@@ -247,7 +251,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse(ex.Message);
         }
 
-        // ? äÝÓ ÝßÑÉ GoodsReturn: Validate Customer
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ GoodsReturn: Validate Customer
         var customer = await _context.Customers
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.CustomerId == dto.CustomerId);
@@ -270,8 +274,9 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
         var res = await AddAsync(salesReturnOrder);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.SalesReturn, res.SalesReturnOrderId, userId, dto.IsDraft);
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -289,7 +294,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             WarehouseId = res.WarehouseId,
             CustomerId = res.CustomerId,
 
-            // áæ DTO ÚäÏß Ýíå ÇáÍÞæá Ïí æÍÇÈÈ ÊÑÌÚåã:
+            // ï¿½ï¿½ DTO ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:
             PostingDate = res.PostingDate,
             DueDate = res.DueDate,
 
@@ -319,6 +324,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         var clone = OrderDuplicationHelper.Clone(source, userId);
         await _context.SalesReturnOrders.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.SalesReturn, clone.SalesReturnOrderId, userId, true);
 
         return await GetSalesReturnOrderByIdAsync(userId, clone.SalesReturnOrderId, cancellationToken);
     }
@@ -337,13 +343,13 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         }
 
         var DeliveryNoteOrder = await _context.DeliveryNoteOrders
-            .Include(so => so.SalesReturnOrder) // ÚÔÇä äÊÍÞÞ åá Ýíå Return ÞÈá ßÏå
+            .Include(so => so.SalesReturnOrder) // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ Return ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             .FirstOrDefaultAsync(so => so.DeliveryNoteOrderId == dto.DeliveryNoteOrderId);
 
         if (DeliveryNoteOrder == null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order is not found");
 
-        // äÝÓ ÝßÑÉ GoodsReturn: áÇÒã íßæä Processing
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ GoodsReturn: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Processing
         if (DeliveryNoteOrder.Status != GeneralStatus.Processing)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("You can add Sales Return, if sales order status is completed only");
 
@@ -366,8 +372,9 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
         var res = await AddAsync(salesReturnOrder);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.SalesReturn, res.SalesReturnOrderId, userId, dto.IsDraft);
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -407,7 +414,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
         var DeliveryNoteOrder = await _context.DeliveryNoteOrders
             .Include(so => so.SalesReturnOrder)
-            .Include(so => so.DeliveryNoteItems) // ? åÇÊ items
+            .Include(so => so.DeliveryNoteItems) // ? ï¿½ï¿½ï¿½ items
             .FirstOrDefaultAsync(so => so.DeliveryNoteOrderId == dto.DeliveryNoteOrderId);
 
         if (DeliveryNoteOrder == null)
@@ -455,7 +462,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
                 LineTotalAfterVat = soi.LineTotalAfterVat,
 
-                // ãäØÞ ÇáÓÊÇÊÓ: áÓå ÇáÇÑÌÇÚ ãÇ ÊãÔ
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
                 Status = GeneralItemStatus.Planned,
 
                 // optional
@@ -465,8 +472,9 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
 
         await _context.SalesReturnOrders.AddAsync(returnOrder);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.SalesReturn, returnOrder.SalesReturnOrderId, userId, dto.IsDraft);
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -518,7 +526,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         if (entity.SalesReturnOrderId != salesReturnOrderId)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("ID mismatch");
 
-        // ? ãäÚ ÊÚÏíá Customer áæ ÇáÜ SalesReturn ãÈäí Úáì DeliveryNoteOrder (Òí ReceiptPurchaseOrderId Ýí GoodsReturn)
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Customer ï¿½ï¿½ ï¿½ï¿½ï¿½ SalesReturn ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ DeliveryNoteOrder (ï¿½ï¿½ ReceiptPurchaseOrderId ï¿½ï¿½ GoodsReturn)
         if (entity.DeliveryNoteOrderId != null)
         {
             if (dto.CustomerId.HasValue && dto.CustomerId.Value != entity.CustomerId)
@@ -604,7 +612,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse(
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
-        // Snapshot ÞÈá ÇáÍÐÝ ÚáÔÇä äÑÌÚå Ýí ÇáÜ response
+        // Snapshot ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ response
         var result = new SalesReturnOrderDTO
         {
             SalesReturnOrderId = entity.SalesReturnOrderId,

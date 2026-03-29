@@ -7,6 +7,7 @@ using DataWarehouse.Core.DTOs.Processes.BulkProductions;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Actors;
 using DataWarehouse.Domain.Entities.AllinAll;
@@ -31,6 +32,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
     private readonly ISapCache sapCache;
     private readonly IProcessesTypesDateRepository processes;
     private readonly IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly ReasonValidationService reasonValidationService;
 
     public ProductionOrderRepository(
@@ -38,6 +40,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         ISapCache sapCache,
         IProcessesTypesDateRepository processes,
         IApprovalRepository approval,
+        IAppNotificationTrigger notificationTrigger,
         ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
@@ -45,6 +48,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         this.sapCache = sapCache;
         this.processes = processes;
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.reasonValidationService = reasonValidationService;
     }
 
@@ -166,13 +170,14 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
 
         var res = await AddAsync(mapping);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Production, res.ProductionOrderId, userId, true);
 
         var model = new ProductionOrderDTO
         {
              ProductionOrderId = res.ProductionOrderId,
             DueDate = res.DueDate,
              PostingDate = res.PostingDate, 
-            Status = res.Status.ToString(), // <-- Â‰« »‰ÕÊ· «·‹ enum · string
+            Status = res.Status.ToString(), // <-- √•√§√á √à√§√ç√¶√° √á√°√ú enum √° string
             ReasonId = res.ReasonId,
             ReasonName = res.Reason != null ? res.Reason.Name : null
              
@@ -195,6 +200,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         }
 
         var createdOrders = new List<ProductionOrderDTO>();
+        var createdEntities = new List<ProductionOrder>();
 
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
@@ -215,6 +221,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
                 };
 
                 var res = await AddAsync(mapping);
+                createdEntities.Add(res);
 
                 createdOrders.Add(new ProductionOrderDTO
                 {
@@ -231,6 +238,10 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             }
 
             await SaveChangesAsync();
+            foreach (var createdEntity in createdEntities)
+            {
+                await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Production, createdEntity.ProductionOrderId, userId, true);
+            }
             await transaction.CommitAsync();
 
             return GeneralResponse<IEnumerable<ProductionOrderDTO>>.SuccessResponse(createdOrders);
@@ -245,7 +256,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
       DateTime postingDate,
       DateTime dueDate)
     {
-        // 1?? ÃÌ» «·‹ valid business dates
+        // 1?? √å√≠√à √á√°√ú valid business dates
         var validBusinessDates = await processes.GetByProcessesTypeForProductionAsync();
 
         // If business dates are not configured yet, do not block editing/saving.
@@ -255,17 +266,17 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             return (true, "No business dates configured. Validation skipped.");
         }
 
-        // 2?? ÕÊ· ·‹ DateOnly
+        // 2?? √ç√¶√° √°√ú DateOnly
         var postingDateOnly = DateOnly.FromDateTime(postingDate);
         var dueDateOnly = DateOnly.FromDateTime(dueDate);
 
-        // 3??  ‘Ìﬂ PostingDate
+        // 3?? √ä√î√≠√ü PostingDate
         var isPostingDateValid = validBusinessDates.Any(d => d.PostingDate == postingDateOnly);
 
-        // 4??  ‘Ìﬂ DueDate
+        // 4?? √ä√î√≠√ü DueDate
         var isDueDateValid = validBusinessDates.Any(d => d.DueDate == dueDateOnly);
 
-        // 5?? —Ã⁄ «·‰ ÌÃ… „⁄ —”«·… Ê«÷Õ…
+        // 5?? √ë√å√ö √á√°√§√ä√≠√å√â √£√ö √ë√ì√á√°√â √¶√á√ñ√ç√â
         if (!isPostingDateValid && !isDueDateValid)
         {
             return (false, "Both PostingDate and DueDate are not valid business dates");
@@ -287,7 +298,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
     public async Task<GeneralResponse<ProductionOrderDTO>> UpdateProductionOrderAsync(string userId,int productionId, UpdateProductionOrderDTO dto)
     {
         // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Production);
-        // 1?? Get existing Company auth (record «·ÊÕÌœ)
+        // 1?? Get existing Company auth (record √á√°√¶√ç√≠√è)
         var entity = await _context.ProductionOrders.FirstOrDefaultAsync(e => e.ProductionOrderId == productionId);
 
         if (entity == null)
@@ -328,7 +339,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
             ProductionOrderId = entity.ProductionOrderId,
             DueDate = entity.DueDate,
             PostingDate = entity.PostingDate,
-            Status = entity.Status.ToString(), // <-- Â‰« »‰ÕÊ· «·‹ enum · string
+            Status = entity.Status.ToString(), // <-- √•√§√á √à√§√ç√¶√° √á√°√ú enum √° string
             ReasonId = entity.ReasonId,
             ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
@@ -441,6 +452,7 @@ public class ProductionOrderRepository : BaseRepository<ProductionOrder>, IProdu
         var clone = OrderDuplicationHelper.Clone(source, userId);
         await _context.ProductionOrders.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Production, clone.ProductionOrderId, userId, true);
         return GeneralResponse<ProductionOrderDTO>.SuccessResponse(new ProductionOrderDTO
         {
             ProductionOrderId = clone.ProductionOrderId,

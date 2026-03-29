@@ -5,6 +5,7 @@ using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
@@ -20,13 +21,15 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
 {
     private readonly IBaseProcessesRepository<TransferredStock> baseProcesses;
     private readonly IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly DataWarehouseDbContext _context;
     private readonly ReasonValidationService reasonValidationService;
 
-    public TransferredStockRepository(IBaseProcessesRepository<TransferredStock> baseProcesses, IApprovalRepository approval, ReasonValidationService reasonValidationService, DataWarehouseDbContext context) : base(context)
+    public TransferredStockRepository(IBaseProcessesRepository<TransferredStock> baseProcesses, IApprovalRepository approval, IAppNotificationTrigger notificationTrigger, ReasonValidationService reasonValidationService, DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.reasonValidationService = reasonValidationService;
         _context = context;
     }
@@ -309,6 +312,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
 
         await _context.TransferredStocks.AddAsync(entity);
         await _context.SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Transferred, entity.TransferredStockId, userId, dto.IsDraft);
 
         if (!dto.IsDraft)
         {
@@ -372,6 +376,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
 
         var res = await AddAsync(entity);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Transferred, res.TransferredStockId, userId, dto.IsDraft);
 
         if (!dto.IsDraft)
         {
@@ -432,6 +437,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
 
         var res = await AddAsync(entity);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Transferred, res.TransferredStockId, userId, dto.IsDraft);
 
         if (!dto.IsDraft)
         {
@@ -766,6 +772,7 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
         var clone = OrderDuplicationHelper.Clone(source, userId);
         await _context.TransferredStocks.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Transferred, clone.TransferredStockId, userId, true);
         return await GetTransferredStockByIdAsync(userId, clone.TransferredStockId, cancellationToken);
     }
     public async Task<GeneralResponse<List<NameStatus>>> GetTransferredStockStatus()

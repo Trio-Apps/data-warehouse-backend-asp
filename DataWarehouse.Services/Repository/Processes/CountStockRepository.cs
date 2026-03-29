@@ -4,6 +4,7 @@ using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
@@ -18,16 +19,19 @@ namespace DataWarehouse.Services.Repository.Processes;
 public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepository
 {
     private readonly DataWarehouse.Core.Interfaces.IsProgress.IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly IBaseProcessesRepository<CountStock> baseProcesses;
     private readonly ReasonValidationService reasonValidationService;
 
     public CountStockRepository(
         DataWarehouse.Core.Interfaces.IsProgress.IApprovalRepository approval,
+        IAppNotificationTrigger notificationTrigger,
         IBaseProcessesRepository<CountStock> baseProcesses,
         ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.baseProcesses = baseProcesses;
         this.reasonValidationService = reasonValidationService;
     }
@@ -109,6 +113,12 @@ public class CountStockRepository : BaseRepository<CountStock>, ICountStockRepos
 
         await _context.CountStocks.AddAsync(entity);
         await _context.SaveChangesAsync();
+
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(
+            ProcessType.Counting,
+            entity.CountStockId,
+            userId,
+            dto.IsDraft);
 
         if (!dto.IsDraft)
         {

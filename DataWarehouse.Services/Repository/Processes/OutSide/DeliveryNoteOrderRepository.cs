@@ -9,6 +9,7 @@ using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -30,6 +31,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
         private readonly IBaseProcessesRepository<DeliveryNoteOrder> baseProcesses;
         private readonly IProcessItemIsProgressRepository progress;
         private readonly IApprovalRepository approval;
+        private readonly IAppNotificationTrigger notificationTrigger;
         private readonly DataWarehouseDbContext _context;
         private readonly ReasonValidationService reasonValidationService;
 
@@ -37,12 +39,14 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             IBaseProcessesRepository<DeliveryNoteOrder> baseProcesses,
             IProcessItemIsProgressRepository progress,
             IApprovalRepository approval,
+            IAppNotificationTrigger notificationTrigger,
             ReasonValidationService reasonValidationService,
             DataWarehouseDbContext context) : base(context)
         {
             this.baseProcesses = baseProcesses;
             this.progress = progress;
             this.approval = approval;
+            this.notificationTrigger = notificationTrigger;
             this.reasonValidationService = reasonValidationService;
             _context = context;
         }
@@ -198,7 +202,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
         }
 
         /// <summary>
-        /// not used (ÈäÝÓ ÝßÑÉ Çááí ÚäÏß)
+        /// not used (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         /// </summary>
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> GetWithCustomerAsync(
             int deliveryNoteOrderId, string userId, CancellationToken cancellationToken = default)
@@ -287,15 +291,15 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
         }
 
         /// <summary>
-        /// ÅäÔÇÁ Delivery Note ÈäÇÁð Úáì Sales Order (Parent) + äÓÎ items
+        /// ï¿½ï¿½ï¿½ï¿½ï¿½ Delivery Note ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Sales Order (Parent) + ï¿½ï¿½ï¿½ items
         /// </summary>
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> AddDeliveryNoteOrderAndItemsBySalesOrderIdAsync(
             string userId, AddDeliveryNoteOrderDTO dto)
         {
             // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.DeliveryNote);
             var salesOrder = await _context.SalesOrders
-//                .Include(so => so.DeliveryNoteOrder)  // ááÊÍÞÞ åá ÇÊÚãá DN ÞÈá ßÏå
-                .Include(so => so.SalesOrderItems)    // áäÓÎ items
+//                .Include(so => so.DeliveryNoteOrder)  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ DN ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+                .Include(so => so.SalesOrderItems)    // ï¿½ï¿½ï¿½ï¿½ items
                 .FirstOrDefaultAsync(so => so.SalesOrderId == dto.SalesOrderId);
 
             if (salesOrder == null)
@@ -348,6 +352,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
 
             await _context.DeliveryNoteOrders.AddAsync(deliveryNote);
             await _context.SaveChangesAsync();
+            await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.DeliveryNote, deliveryNote.DeliveryNoteOrderId, userId, dto.IsDraft);
 
             if (!dto.IsDraft)
             {
@@ -378,7 +383,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
         }
 
         /// <summary>
-        /// ÅäÔÇÁ Delivery Note ÈÏæä SalesOrder reference
+        /// ï¿½ï¿½ï¿½ï¿½ï¿½ Delivery Note ï¿½ï¿½ï¿½ï¿½ SalesOrder reference
         /// </summary>
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> AddDeliveryNoteOrderWithoutRefAsync(
             string userId, AddDeliveryNoteOrderWithoutRefDTO dto)
@@ -403,12 +408,13 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 CustomerId = dto.CustomerId,
                 ReasonId = dto.ReasonId,
 
-                // ÈÏæä ãÑÌÚ
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 SalesOrderId = null
             };
 
             var res = await AddAsync(deliveryNote);
             await SaveChangesAsync();
+            await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.DeliveryNote, res.DeliveryNoteOrderId, userId, dto.IsDraft);
 
             if (!dto.IsDraft)
             {
@@ -452,12 +458,13 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             var clone = OrderDuplicationHelper.Clone(source, userId);
             await _context.DeliveryNoteOrders.AddAsync(clone, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+            await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.DeliveryNote, clone.DeliveryNoteOrderId, userId, true);
 
             return await GetDeliveryNoteOrderByIdAsync(userId, clone.DeliveryNoteOrderId, cancellationToken);
         }
 
         /// <summary>
-        /// ÅäÔÇÁ Delivery Note ÈäÇÁð Úáì SalesOrderId (Reference ÝÞØ) ÈÏæä äÓÎ items
+        /// ï¿½ï¿½ï¿½ï¿½ï¿½ Delivery Note ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ SalesOrderId (Reference ï¿½ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ items
         /// </summary>
         public async Task<GeneralResponse<DeliveryNoteOrderDTO>> AddDeliveryNoteOrderAsync(
             string userId, AddDeliveryNoteOrderDTO dto)
@@ -491,6 +498,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
 
             var res = await AddAsync(deliveryNote);
             await SaveChangesAsync();
+            await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.DeliveryNote, res.DeliveryNoteOrderId, userId, dto.IsDraft);
 
             if (!dto.IsDraft)
             {
@@ -533,7 +541,7 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             if (entity.DeliveryNoteOrderId != deliveryNoteOrderId)
                 return GeneralResponse<DeliveryNoteOrderDTO>.FailResponse("ID mismatch");
 
-            // ? ãäÚ ÊÚÏíá Customer áæ ÇáÜ DeliveryNote ãÈäí Úáì SalesOrder
+            // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Customer ï¿½ï¿½ ï¿½ï¿½ï¿½ DeliveryNote ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ SalesOrder
             if (entity.SalesOrderId != null)
             {
                 if (dto.CustomerId.HasValue && dto.CustomerId.Value != entity.CustomerId)

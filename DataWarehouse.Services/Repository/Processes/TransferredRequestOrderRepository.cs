@@ -6,6 +6,7 @@ using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
@@ -21,18 +22,21 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
 {
     private readonly IBaseProcessesRepository<TransferredRequest> baseProcesses;
     private readonly IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly ISapCache sapCache;
     private readonly ReasonValidationService reasonValidationService;
 
     public TransferredRequestOrderRepository(
         IBaseProcessesRepository<TransferredRequest> baseProcesses,
         IApprovalRepository approval,
+        IAppNotificationTrigger notificationTrigger,
         ISapCache sapCache,
         ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.sapCache = sapCache;
         this.reasonValidationService = reasonValidationService;
     }
@@ -351,6 +355,7 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
 
         var result = await AddAsync(entity);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.TransferredRequest, result.TransferredRequestId, userId, dto.IsDraft);
 
         if (!dto.IsDraft)
         {
@@ -467,6 +472,7 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
         var clone = OrderDuplicationHelper.Clone(source, userId);
         await _context.TransferredRequests.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.TransferredRequest, clone.TransferredRequestId, userId, true);
         return await GetWithWarehousesAndApprovalAsync(clone.TransferredRequestId, userId, cancellationToken);
     }    public async Task<GeneralResponse<TransferredRequestDTO>> DeleteTransferredRequestAsync(
         int transferredRequestId,

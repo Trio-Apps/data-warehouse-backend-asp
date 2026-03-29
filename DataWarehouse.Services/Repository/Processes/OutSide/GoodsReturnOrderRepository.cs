@@ -4,6 +4,7 @@ using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -21,17 +22,20 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
     private readonly IBaseProcessesRepository<GoodsReturnOrder> baseProcesses;
     private readonly IProcessItemIsProgressRepository progress;
     private readonly IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly ReasonValidationService reasonValidationService;
     public GoodsReturnOrderRepository(
         IBaseProcessesRepository<GoodsReturnOrder> baseProcesses,
         IProcessItemIsProgressRepository progress,
         IApprovalRepository approval,
+        IAppNotificationTrigger notificationTrigger,
         ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.progress = progress;
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.reasonValidationService = reasonValidationService;
     }
 
@@ -79,7 +83,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
 
 
-        query = query.OrderByDescending(e => e.CreatedAt); // ÊÃßÏ åäÇ
+        query = query.OrderByDescending(e => e.CreatedAt); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
         var totalRecords = await query.CountAsync();
 
@@ -93,12 +97,12 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
          .Select(iw => new
          {
              Order = iw,
-             // åá Ýíå progress ÃÕáÇð¿
+             // ï¿½ï¿½ ï¿½ï¿½ï¿½ progress ï¿½ï¿½ï¿½ï¿½ï¿½
              HasProgress = processQuery.Any(p => p.ReferenceId == iw.GoodsReturnOrderId),
-             // ÂÎÑ Status (áæ ãæÌæÏ)
+             // ï¿½ï¿½ï¿½ Status (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½)
              LatestStatus = processQuery
                  .Where(p => p.ReferenceId == iw.GoodsReturnOrderId)
-                 .OrderByDescending(p => p.ProcessItemIsProgressId) // Ãæ CreatedAt áæ ÚäÏß
+                 .OrderByDescending(p => p.ProcessItemIsProgressId) // ï¿½ï¿½ CreatedAt ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                  .Select(p => (ProcessStatus?)p.Status)
                  .FirstOrDefault()
          })
@@ -119,10 +123,10 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 ReasonId = x.Order.ReasonId,
                 ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
 
-                // ? æÌæÏ progress
+                // ? ï¿½ï¿½ï¿½ï¿½ progress
                 Approval = x.HasProgress,
 
-                // ? ÇÓã ÇáÍÇáÉ ÇáÍÇáíÉ (ÂÎÑ Status)
+                // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ Status)
                 ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
 
             })
@@ -215,8 +219,9 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.GoodsReturn, res.GoodsReturnOrderId, userId, dto.IsDraft);
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -280,8 +285,9 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.GoodsReturn, res.GoodsReturnOrderId, userId, dto.IsDraft);
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -319,7 +325,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         var receiptOrder = await _context.ReceiptPurchaseOrders
             .Include(p => p.GoodsReturnOrder)
-            .Include(p => p.ReceiptPurchaseOrderItems) // ? åÇÊ items
+            .Include(p => p.ReceiptPurchaseOrderItems) // ? ï¿½ï¿½ï¿½ items
             .FirstOrDefaultAsync(p => p.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
 
         if (receiptOrder == null)
@@ -369,7 +375,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
                 LineTotalAfterVat = poi.LineTotalAfterVat,
 
-                // ãäØÞ ÇáÓÊÇÊÓ: áÓå ÇáÇÓÊáÇã ãÇ ÊãÔ
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
                 Status = GeneralItemStatus.Planned,
 
                 // optional
@@ -380,8 +386,9 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         await _context.GoodsReturnOrders.AddAsync(returnOrder);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.GoodsReturn, returnOrder.GoodsReturnOrderId, userId, dto.IsDraft);
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -513,7 +520,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse(
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
-        // Snapshot ÞÈá ÇáÍÐÝ ÚáÔÇä äÑÌÚå Ýí ÇáÜ response
+        // Snapshot ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ response
         var result = new GoodsReturnOrderDTO
         {
             GoodsReturnOrderId = entity.GoodsReturnOrderId,
@@ -624,6 +631,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         var clone = OrderDuplicationHelper.Clone(source, userId);
         await _context.GoodsReturnOrders.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.GoodsReturn, clone.GoodsReturnOrderId, userId, true);
 
         return await GetGoodsReturnOrderByIdAsync(userId, clone.GoodsReturnOrderId);
     }
@@ -745,6 +753,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.GoodsReturn, res.GoodsReturnOrderId, userId, true);
 
       
 

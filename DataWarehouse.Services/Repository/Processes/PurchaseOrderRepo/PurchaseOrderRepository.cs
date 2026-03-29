@@ -1,4 +1,4 @@
-﻿using DataWarehouse.Core.DTOs;
+using DataWarehouse.Core.DTOs;
 using DataWarehouse.Core.DTOs.Approval;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes.BulkProductions;
@@ -7,6 +7,7 @@ using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
@@ -34,18 +35,20 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
     private readonly IBaseProcessesRepository<PurchaseOrder> baseProcesses;
     private readonly IProcessItemIsProgressRepository progressRepository;
     private readonly IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly ISapCache sapCache;
     private readonly ISapSettingsRepository sap;
     private readonly IProcessesTypesDateRepository processes;
     private readonly ReasonValidationService reasonValidationService;
 
-    public PurchaseOrderRepository(IDocumentAttachmentRepository document, ILogger<PurchaseOrderRepository> logger, IBaseProcessesRepository<PurchaseOrder> baseProcesses, IProcessItemIsProgressRepository progressRepository, IApprovalRepository approval, ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, ReasonValidationService reasonValidationService, DataWarehouseDbContext context) : base(context)
+    public PurchaseOrderRepository(IDocumentAttachmentRepository document, ILogger<PurchaseOrderRepository> logger, IBaseProcessesRepository<PurchaseOrder> baseProcesses, IProcessItemIsProgressRepository progressRepository, IApprovalRepository approval, IAppNotificationTrigger notificationTrigger, ISapCache sapCache,ISapSettingsRepository sap, IProcessesTypesDateRepository processes, ReasonValidationService reasonValidationService, DataWarehouseDbContext context) : base(context)
     {
         this.document = document;
         this.logger = logger;
         this.baseProcesses = baseProcesses;
         this.progressRepository = progressRepository;
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.sapCache = sapCache;
         this.sap = sap;
         this.processes = processes;
@@ -346,6 +349,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
             var res = await AddAsync(mapping);
             await SaveChangesAsync();
+            await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Purchase, res.PurchaseOrderId, userId, dto.IsDraft);
 
 
             // upload attachments after order created
@@ -413,6 +417,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
         var clone = OrderDuplicationHelper.Clone(source, userId);
         await _context.PurchaseOrders.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Purchase, clone.PurchaseOrderId, userId, true);
 
         return await GetWithSupplierAsync(userId, clone.PurchaseOrderId, cancellationToken);
     }

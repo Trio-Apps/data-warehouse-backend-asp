@@ -7,6 +7,7 @@ using DataWarehouse.Core.Interfaces.Company;
 using DataWarehouse.Core.Interfaces.Dashboard;
 using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Permissions;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
@@ -14,6 +15,7 @@ using DataWarehouse.Core.Interfaces.Sync;
 using DataWarehouse.Core.IServices.Actors;
 using DataWarehouse.Core.IServices.Processes;
 using DataWarehouse.Core.IServices.Auth;
+using DataWarehouse.Core.IServices.Notifications;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Services.Repository.Actors;
 using DataWarehouse.Services.Repository.BarCode;
@@ -21,6 +23,7 @@ using DataWarehouse.Services.Repository.Based;
 using DataWarehouse.Services.Repository.CompanyRepo;
 using DataWarehouse.Services.Repository.Dashboard;
 using DataWarehouse.Services.Repository.IsProgress;
+using DataWarehouse.Services.Repository.Notifications;
 using DataWarehouse.Services.Repository.Permissions;
 using DataWarehouse.Services.Repository.Processes;
 using DataWarehouse.Services.Repository.Processes.BulkProductions;
@@ -30,6 +33,7 @@ using DataWarehouse.Services.Repository.SapRepo;
 using DataWarehouse.Services.Repository.Sync;
 using DataWarehouse.Services.Services.Actors;
 using DataWarehouse.Services.Services.Auth;
+using DataWarehouse.Services.Services.Notifications;
 using DataWarehouse.Services.Services.Processes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -155,6 +159,12 @@ namespace DataWarehouse.Services
 
             services.AddScoped<IApprovalRepository, ApprovalRepository>();
 
+            #endregion
+
+            #region Notifications
+            services.AddScoped<IAppNotificationRepository, AppNotificationRepository>();
+            services.AddScoped<IAppNotificationService, AppNotificationService>();
+            services.AddScoped<IAppNotificationTrigger, AppNotificationTrigger>();
             #endregion
 
             #region Permissions

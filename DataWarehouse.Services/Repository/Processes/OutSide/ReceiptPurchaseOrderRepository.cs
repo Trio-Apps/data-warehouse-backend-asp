@@ -5,6 +5,7 @@ using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.DTOs.Processes.PurchaseOrders;
 using DataWarehouse.Core.Interfaces.Based;
 using DataWarehouse.Core.Interfaces.IsProgress;
+using DataWarehouse.Core.Interfaces.Notifications;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Actors;
@@ -29,16 +30,19 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 {
     private readonly IBaseProcessesRepository<ReceiptPurchaseOrder> baseProcesses;
     private readonly IApprovalRepository approval;
+    private readonly IAppNotificationTrigger notificationTrigger;
     private readonly ReasonValidationService reasonValidationService;
 
     public ReceiptPurchaseOrderRepository(
         IBaseProcessesRepository<ReceiptPurchaseOrder> baseProcesses,
         IApprovalRepository approval,
+        IAppNotificationTrigger notificationTrigger,
         ReasonValidationService reasonValidationService,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
         this.approval = approval;
+        this.notificationTrigger = notificationTrigger;
         this.reasonValidationService = reasonValidationService;
     }
 
@@ -140,7 +144,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         }
 
-        query = query.OrderByDescending(e => e.CreatedAt); // ÊÃßÏ åäÇ
+        query = query.OrderByDescending(e => e.CreatedAt); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
         // Approved references subquery (for Sales process only)
         var processQuery = _context.ProcessItemIsProgresses
@@ -156,13 +160,13 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
          {
              Order = iw,
 
-             // åá Ýíå progress ÃÕáÇð¿
+             // ï¿½ï¿½ ï¿½ï¿½ï¿½ progress ï¿½ï¿½ï¿½ï¿½ï¿½
              HasProgress = processQuery.Any(p => p.ReferenceId == iw.PurchaseOrderId),
 
-             // ÂÎÑ Status (áæ ãæÌæÏ)
+             // ï¿½ï¿½ï¿½ Status (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½)
              LatestStatus = processQuery
                  .Where(p => p.ReferenceId == iw.ReceiptPurchaseOrderId)
-                 .OrderByDescending(p => p.ProcessItemIsProgressId) // Ãæ CreatedAt áæ ÚäÏß
+                 .OrderByDescending(p => p.ProcessItemIsProgressId) // ï¿½ï¿½ CreatedAt ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                  .Select(p => (ProcessStatus?)p.Status)
                  .FirstOrDefault()
          })
@@ -179,10 +183,10 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
              SupplierName = x.Order.Supplier.SupplierName,
              ItemCount = x.Order.ReceiptPurchaseOrderItems.Count(),
 
-             // ? æÌæÏ progx.Orders
+             // ? ï¿½ï¿½ï¿½ï¿½ progx.Orders
              Approval = x.HasProgress,
 
-             // ? ÇÓã ÇáÍÇáÉ ÇáÍÇáíÉ (ÂÎÑ Status)
+             // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ Status)
              ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
 
 
@@ -288,8 +292,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Receipt, res.ReceiptPurchaseOrderId, userId, dto.IsDraft);
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -352,8 +357,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         var res = await AddAsync(mapping);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Receipt, res.ReceiptPurchaseOrderId, userId, dto.IsDraft);
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -397,7 +403,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         var purchaseOrder = await _context.PurchaseOrders
             .Include(p => p.ReceiptPurchaseOrder)
-            .Include(p => p.PurchaseOrderItems) // ? åÇÊ items
+            .Include(p => p.PurchaseOrderItems) // ? ï¿½ï¿½ï¿½ items
             .FirstOrDefaultAsync(p => p.PurchaseOrderId == dto.PurchaseOrderId);
 
         if (purchaseOrder == null)
@@ -442,7 +448,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
                 LineTotalAfterVat = poi.LineTotalAfterVat,
 
-                // ãäØÞ ÇáÓÊÇÊÓ: áÓå ÇáÇÓÊáÇã ãÇ ÊãÔ
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
                 Status = GeneralItemStatus.Planned,
 
                 // optional
@@ -453,8 +459,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
 
         await _context.ReceiptPurchaseOrders.AddAsync(receipt);
         await SaveChangesAsync();
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Receipt, receipt.ReceiptPurchaseOrderId, userId, dto.IsDraft);
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -594,7 +601,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
 
-        // Snapshot ÞÈá ÇáÍÐÝ ÚáÔÇä äÑÌÚå Ýí ÇáÜ response
+        // Snapshot ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ response
         var result = new ReceiptPurchaseOrderDTO
         {
             ReceiptPurchaseOrderId = entity.ReceiptPurchaseOrderId,
@@ -609,7 +616,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             ReasonName = entity.Reason != null ? entity.Reason.Name : null
         };
 
-        // áæ ÚäÏß ÊÝÇÕíá æãÝíÔ Cascade Delete åÊÍÊÇÌ ÊãÓÍåÇ ÇáÃæá åäÇ
+        // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Cascade Delete ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         _context.ReceiptPurchaseOrders.Remove(entity);
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -676,6 +683,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         var clone = OrderDuplicationHelper.Clone(source, userId);
         await _context.ReceiptPurchaseOrders.AddAsync(clone, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
+        await notificationTrigger.TriggerOrderCreatedNotificationAsync(ProcessType.Receipt, clone.ReceiptPurchaseOrderId, userId, true);
 
         return await GetReceiptOrderByIdAsync(userId, clone.ReceiptPurchaseOrderId);
     }

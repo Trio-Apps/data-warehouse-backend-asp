@@ -31,6 +31,8 @@ public sealed class GlobalExceptionHandler(
         {
             problemDetails.Extensions["InnerExceptionType"]
                 = exception.InnerException.GetType().Name;
+            problemDetails.Extensions["InnerExceptionMessage"]
+                = exception.InnerException.Message;
         }
 
         httpContext.Response.StatusCode = statusCode;
