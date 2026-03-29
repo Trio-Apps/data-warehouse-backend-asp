@@ -71,5 +71,6 @@ public class ApplicationUser : IdentityUser
     public ICollection<GoodsReturnOrder> GoodsReturnOrders { get; set; } = new List<GoodsReturnOrder>();
 
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    public ICollection<DeviceToken> DeviceTokens { get; set; } = new List<DeviceToken>();
 
 }

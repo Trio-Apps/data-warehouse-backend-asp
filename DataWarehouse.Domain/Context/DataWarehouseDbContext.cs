@@ -1133,6 +1133,32 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
       .HasPrincipalKey(e => e.Id)
       .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<ApplicationUser>()
+      .HasMany(o => o.DeviceTokens).WithOne(a => a.User)
+      .HasForeignKey(o => o.UserId)
+      .HasPrincipalKey(e => e.Id)
+      .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<DeviceToken>()
+            .Property(x => x.DeviceId)
+            .HasMaxLength(256);
+
+        builder.Entity<DeviceToken>()
+            .Property(x => x.Token)
+            .HasMaxLength(1024);
+
+        builder.Entity<DeviceToken>()
+            .Property(x => x.Platform)
+            .HasMaxLength(50);
+
+        builder.Entity<DeviceToken>()
+            .HasIndex(x => new { x.UserId, x.DeviceId })
+            .IsUnique();
+
+        builder.Entity<DeviceToken>()
+            .HasIndex(x => x.Token)
+            .IsUnique();
+
         #endregion
 
          #region Item with Warehouse
@@ -1503,6 +1529,7 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
     #region Notifications
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<DeviceToken> DeviceTokens { get; set; }
     #endregion
 
 

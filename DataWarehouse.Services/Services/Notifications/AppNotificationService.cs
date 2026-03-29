@@ -10,10 +10,14 @@ namespace DataWarehouse.Services.Services.Notifications;
 public class AppNotificationService : BaseService<Notification>, IAppNotificationService
 {
     private readonly IAppNotificationRepository _notificationRepository;
+    private readonly IPushNotificationService _pushNotificationService;
 
-    public AppNotificationService(IAppNotificationRepository notificationRepository) : base(notificationRepository)
+    public AppNotificationService(
+        IAppNotificationRepository notificationRepository,
+        IPushNotificationService pushNotificationService) : base(notificationRepository)
     {
         _notificationRepository = notificationRepository;
+        _pushNotificationService = pushNotificationService;
     }
 
     public async Task<GeneralResponse<AppNotificationDto>> AddNotificationAsync(CreateAppNotificationDto dto)
@@ -33,6 +37,23 @@ public class AppNotificationService : BaseService<Notification>, IAppNotificatio
 
         await _notificationRepository.AddAsync(notification);
         await _notificationRepository.SaveChangesAsync();
+
+        var pushData = new Dictionary<string, string>
+        {
+            ["notificationId"] = notification.NotificationId.ToString(),
+            ["actionType"] = notification.ActionType,
+            ["documentType"] = notification.DocumentType,
+            ["referenceId"] = notification.ReferenceId.ToString()
+        };
+
+        if (!string.IsNullOrWhiteSpace(notification.ProcessType))
+            pushData["processType"] = notification.ProcessType;
+
+        await _pushNotificationService.SendToUserAsync(
+            notification.UserId,
+            notification.Title,
+            notification.Message,
+            pushData);
 
         return GeneralResponse<AppNotificationDto>.SuccessResponse(new AppNotificationDto
         {

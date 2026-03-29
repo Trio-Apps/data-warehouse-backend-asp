@@ -22,6 +22,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using System.Globalization;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +77,23 @@ builder.Services.AddPersistenceService(builder.Configuration);
 
 builder.Services.AddSapService(builder.Configuration);
 
+var firebaseCredentialsPath = builder.Configuration["Firebase:CredentialsPath"];
+
+if (!string.IsNullOrWhiteSpace(firebaseCredentialsPath))
+{
+    if (!File.Exists(firebaseCredentialsPath))
+    {
+        throw new FileNotFoundException(
+            $"Firebase credentials file was not found at '{firebaseCredentialsPath}'.",
+            firebaseCredentialsPath);
+    }
+
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile(firebaseCredentialsPath)
+    });
+}
+
 // HangFire
 builder.Services.AddHangfire(config =>
 {
@@ -104,15 +122,6 @@ builder.Services.AddHangfireServer(options =>
     options.Queues = new[] { "sap", "default" }; // sap للـ SAP jobs
     options.WorkerCount = Math.Max(2, Environment.ProcessorCount); // عدّل حسب احتياجك
 });
-
-
-//if (FirebaseApp.DefaultInstance is null)
-//{
-//    FirebaseApp.Create(new AppOptions
-//    {
-//        Credential = GoogleCredential.GetApplicationDefault()
-//    });
-//}
 
 builder.Services.AddScoped<ISapJobQueuer, SapJobQueuer>();
 builder.Services.AddProblemDetails();

@@ -165,6 +165,9 @@ namespace DataWarehouse.Services
             services.AddScoped<IAppNotificationRepository, AppNotificationRepository>();
             services.AddScoped<IAppNotificationService, AppNotificationService>();
             services.AddScoped<IAppNotificationTrigger, AppNotificationTrigger>();
+            services.AddScoped<IDeviceTokenRepository, DeviceTokenRepository>();
+            services.AddScoped<IDeviceTokenService, DeviceTokenService>();
+            services.AddScoped<IPushNotificationService, PushNotificationService>();
             #endregion
 
             #region Permissions

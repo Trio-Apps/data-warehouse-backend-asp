@@ -1207,6 +1207,53 @@ namespace DataWarehouse.Domain.Migrations
                     b.ToTable("Notifications");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Notifications.DeviceToken", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "DeviceId")
+                        .IsUnique();
+
+                    b.ToTable("DeviceTokens");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
                 {
                     b.Property<int>("ProductionHeaderBatchId")
@@ -3784,6 +3831,17 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DataWarehouse.Domain.Entities.Notifications.DeviceToken", b =>
+                {
+                    b.HasOne("DataWarehouse.Domain.Entities.Auth.ApplicationUser", "User")
+                        .WithMany("DeviceTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionHeaderBatch", b =>
                 {
                     b.HasOne("DataWarehouse.Domain.Entities.Processes.BulkProductions.ProductionOrder", "ProductionOrder")
@@ -4913,6 +4971,8 @@ namespace DataWarehouse.Domain.Migrations
                     b.Navigation("CompanyUser");
 
                     b.Navigation("CountStocks");
+
+                    b.Navigation("DeviceTokens");
 
                     b.Navigation("DeliveryNoteOrders");
 

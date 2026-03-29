@@ -33,7 +33,10 @@ _ReSharper*/
 Thumbs.db
 
 # Publish
-publish/DataWarehouse.Api/firebase.json 
+publish/DataWarehouse.Api/firebase.json
 firebase.json
 *.json
 DataWarehouse.Api/firebase.json
+DataWarehouse.Api/bin/**/firebase.json
+secrets/
+/secrets/
