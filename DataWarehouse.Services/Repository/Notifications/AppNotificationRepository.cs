@@ -15,6 +15,19 @@ public class AppNotificationRepository : BaseRepository<Notification>, IAppNotif
     {
     }
 
+    private static IQueryable<Notification> ApplyApprovalOnlyFilter(IQueryable<Notification> query)
+    {
+        return query.Where(x =>
+            x.ActionType == "Approved" ||
+            x.ActionType == "Rejected" ||
+            x.ActionType == "تمت الموافقة" ||
+            x.ActionType == "تم الرفض" ||
+            EF.Functions.Like(x.Title, "%approved%") ||
+            EF.Functions.Like(x.Title, "%rejected%") ||
+            EF.Functions.Like(x.Title, "%الموافقة%") ||
+            EF.Functions.Like(x.Title, "%الرفض%"));
+    }
+
     public async Task<GeneralResponse<PagedResult<AppNotificationDto>>> GetMyNotificationsAsync(
         string userId,
         int pageNumber,
@@ -27,6 +40,8 @@ public class AppNotificationRepository : BaseRepository<Notification>, IAppNotif
         var query = _context.Notifications
             .AsNoTracking()
             .Where(x => x.UserId == userId);
+
+        query = ApplyApprovalOnlyFilter(query);
 
         if (unreadOnly)
             query = query.Where(x => !x.IsRead);
@@ -63,9 +78,11 @@ public class AppNotificationRepository : BaseRepository<Notification>, IAppNotif
 
     public Task<int> GetUnreadCountAsync(string userId)
     {
-        return _context.Notifications
+        return ApplyApprovalOnlyFilter(
+            _context.Notifications
             .AsNoTracking()
-            .CountAsync(x => x.UserId == userId && !x.IsRead);
+            .Where(x => x.UserId == userId))
+            .CountAsync(x => !x.IsRead);
     }
 
     public Task<Notification?> GetByIdForUserAsync(int notificationId, string userId)
@@ -76,8 +93,9 @@ public class AppNotificationRepository : BaseRepository<Notification>, IAppNotif
 
     public Task<List<Notification>> GetUnreadForUserAsync(string userId)
     {
-        return _context.Notifications
-            .Where(x => x.UserId == userId && !x.IsRead)
+        return ApplyApprovalOnlyFilter(_context.Notifications
+            .Where(x => x.UserId == userId))
+            .Where(x => !x.IsRead)
             .ToListAsync();
     }
 }

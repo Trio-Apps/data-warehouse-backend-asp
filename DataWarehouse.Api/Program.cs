@@ -81,17 +81,22 @@ var firebaseCredentialsPath = builder.Configuration["Firebase:CredentialsPath"];
 
 if (!string.IsNullOrWhiteSpace(firebaseCredentialsPath))
 {
-    if (!File.Exists(firebaseCredentialsPath))
-    {
-        throw new FileNotFoundException(
-            $"Firebase credentials file was not found at '{firebaseCredentialsPath}'.",
-            firebaseCredentialsPath);
-    }
+    var resolvedFirebaseCredentialsPath = Path.IsPathRooted(firebaseCredentialsPath)
+        ? firebaseCredentialsPath
+        : Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, firebaseCredentialsPath));
 
-    FirebaseApp.Create(new AppOptions
+    if (File.Exists(resolvedFirebaseCredentialsPath))
     {
-        Credential = GoogleCredential.FromFile(firebaseCredentialsPath)
-    });
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromFile(resolvedFirebaseCredentialsPath)
+        });
+    }
+    else
+    {
+        Console.WriteLine(
+            $"Firebase credentials file was not found at '{resolvedFirebaseCredentialsPath}'. Firebase initialization was skipped.");
+    }
 }
 
 // HangFire

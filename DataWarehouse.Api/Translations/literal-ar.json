@@ -600,5 +600,9 @@
   "__verb.get": "عرض",
   "__verb.change": "تغيير",
   "__verb.validate": "التحقق من",
-  "__verb.has": "يملك"
+  "__verb.has": "يملك",
+  "reasons management": "إدارة الأسباب",
+  "reasons process types": "أنواع عمليات الأسباب",
+  "reasons": "الأسباب",
+  "received": "استلام"
 }

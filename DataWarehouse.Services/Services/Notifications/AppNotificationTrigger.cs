@@ -11,15 +11,23 @@ public class AppNotificationTrigger : IAppNotificationTrigger
 {
     private readonly DataWarehouseDbContext _context;
     private readonly IAppNotificationService _notificationService;
+    private readonly IPushNotificationService _pushNotificationService;
 
-    public AppNotificationTrigger(DataWarehouseDbContext context, IAppNotificationService notificationService)
+    public AppNotificationTrigger(
+        DataWarehouseDbContext context,
+        IAppNotificationService notificationService,
+        IPushNotificationService pushNotificationService)
     {
         _context = context;
         _notificationService = notificationService;
+        _pushNotificationService = pushNotificationService;
     }
 
     public async Task TriggerProcessStatusNotificationAsync(ProcessType processType, int referenceId, string actionType)
     {
+        if (actionType is not ("Approved" or "Rejected"))
+            return;
+
         var userId = await GetOrderOwnerUserIdAsync(processType, referenceId);
         if (string.IsNullOrWhiteSpace(userId))
             return;
@@ -56,33 +64,24 @@ public class AppNotificationTrigger : IAppNotificationTrigger
             ProcessType = processType.ToString(),
             ReferenceId = referenceId
         });
+
+        await _pushNotificationService.SendToUserAsync(
+            userId,
+            title,
+            message,
+            new Dictionary<string, string>
+            {
+                ["type"] = "approval-status",
+                ["actionType"] = actionType,
+                ["processType"] = processType.ToString(),
+                ["referenceId"] = referenceId.ToString()
+            });
     }
 
     public async Task TriggerOrderCreatedNotificationAsync(ProcessType processType, int referenceId, string userId, bool isDraft)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-            return;
-
-        var processName = FormatProcessType(processType);
-        var title = isDraft
-            ? $"{processName} تم إنشاؤه كمسودة"
-            : $"{processName} تم إنشاؤه";
-        var message = isDraft
-            ? $"{processName} رقم {referenceId} تم حفظه كمسودة."
-            : $"{processName} رقم {referenceId} تم إنشاؤه بنجاح.";
-
-        await _notificationService.AddNotificationAsync(new CreateAppNotificationDto
-        {
-            UserId = userId,
-            Title = title,
-            Message = message,
-            ActionType = "إنشاء",
-            DocumentType = processName,
-            ProcessType = processType.ToString(),
-            ReferenceId = referenceId
-        });
+        await Task.CompletedTask;
     }
-
     private async Task<string?> GetOrderOwnerUserIdAsync(ProcessType processType, int referenceId)
     {
         return processType switch
@@ -123,3 +122,5 @@ public class AppNotificationTrigger : IAppNotificationTrigger
         };
     }
 }
+
+
