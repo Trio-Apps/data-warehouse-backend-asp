@@ -71,6 +71,34 @@ public class SalesReturnOrderController : ControllerBase
         return Ok(res);
     }
 
+    [HttpGet("dashboard/delivery-note-order/status/posting-date/due-date/{deliveryNoteOrderId}/{pageNumber}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.SalesReturn_Get}")]
+    public async Task<IActionResult> GetByDeliveryNoteOrderIdWithPagination(
+        int deliveryNoteOrderId,
+        int? customerId,
+        string? status,
+        DateTime? postingDate,
+        DateTime? dueDate,
+        int pageNumber,
+        int pageSize)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var res = await _repository.GetByDeliveryNoteOrderIdAndStatusAndDateWithPaginationForDashboardAsync(
+            deliveryNoteOrderId,
+            userId,
+            customerId,
+            postingDate,
+            dueDate,
+            status,
+            pageNumber,
+            pageSize);
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
 
 
     [HttpGet("{id}")]

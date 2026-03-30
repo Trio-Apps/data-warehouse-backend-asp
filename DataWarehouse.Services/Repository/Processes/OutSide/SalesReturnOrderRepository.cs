@@ -103,7 +103,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             .Include(e => e.SalesReturnOrderItems)
             .Include(e => e.Customer)
             .Include(e => e.Reason)
-            // .Include(e => e.DeliveryNoteOrder) // ÇÎÊíÇÑí: ÓíÈå áæ ãÍÊÇÌå Ýí DTO Ãæ ÝáÊÑÉ¡ áßä ãÔ åäÓÊÎÏãå ááÊæÇÑíÎ ÈÚÏ ÇáÊÚÏíá
+            // .Include(e => e.DeliveryNoteOrder) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ DTO ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½É¡ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             .Where(sro => sro.WarehouseId == warehouseId);
 
         // ?? Customer Filter
@@ -121,14 +121,14 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             }
         }
 
-        // ?? Posting Date Filter (ãËá GoodsReturnOrder)
+        // ?? Posting Date Filter (ï¿½ï¿½ï¿½ GoodsReturnOrder)
         if (postingDate.HasValue)
         {
             var postDate = postingDate.Value.Date;
             query = query.Where(e => e.PostingDate.Date == postDate);
         }
 
-        // ?? Due Date Filter (ãËá GoodsReturnOrder)
+        // ?? Due Date Filter (ï¿½ï¿½ï¿½ GoodsReturnOrder)
         if (DueDate.HasValue)
         {
             var dueDate = DueDate.Value.Date;
@@ -163,7 +163,110 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             {
                 SalesReturnOrderId = x.Order.SalesReturnOrderId,
 
-                // ? Òí GoodsReturn: ãä äÝÓ ÇáÜ Return Order
+                // ? ï¿½ï¿½ GoodsReturn: ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Return Order
+                DueDate = x.Order.DueDate,
+                PostingDate = x.Order.PostingDate,
+
+                Status = x.Order.Status.ToString(),
+                Comment = x.Order.Comment,
+                UserId = x.Order.UserId,
+                WarehouseId = x.Order.WarehouseId,
+
+                CustomerId = x.Order.CustomerId,
+                CustomerName = x.Order.Customer.CustomerName,
+                ErrorMessage = x.Order.ErrorMessage,
+
+                ItemCount = x.Order.SalesReturnOrderItems.Count(),
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
+
+                Approval = x.HasProgress,
+                ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
+            })
+            .ToListAsync(cancellationToken);
+
+        return GeneralResponse<PagedResult<SalesReturnOrderDTO>>.SuccessResponse(
+            new PagedResult<SalesReturnOrderDTO>
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords,
+                Data = data
+            });
+    }
+    public async Task<GeneralResponse<PagedResult<SalesReturnOrderDTO>>> GetByDeliveryNoteOrderIdAndStatusAndDateWithPaginationForDashboardAsync
+      (int deliveryNoteOrderId, string userId, int? customerId, DateTime? postingDate, DateTime? DueDate, string? status,
+       int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        pageSize = pageSize <= 0 ? 10 : pageSize;
+
+        var query = _context.SalesReturnOrders
+            .AsNoTracking()
+            .Include(e => e.SalesReturnOrderItems)
+            .Include(e => e.Customer)
+            .Include(e => e.Reason)
+            // .Include(e => e.DeliveryNoteOrder) // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ DTO ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½É¡ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            .Where(sro => sro.DeliveryNoteOrderId == deliveryNoteOrderId);
+
+        // ?? Customer Filter
+        if (customerId.HasValue)
+        {
+            query = query.Where(e => e.CustomerId == customerId);
+        }
+
+        // ?? Status Filter
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
+            {
+                query = query.Where(e => e.Status == statusEnum);
+            }
+        }
+
+        // ?? Posting Date Filter (ï¿½ï¿½ï¿½ GoodsReturnOrder)
+        if (postingDate.HasValue)
+        {
+            var postDate = postingDate.Value.Date;
+            query = query.Where(e => e.PostingDate.Date == postDate);
+        }
+
+        // ?? Due Date Filter (ï¿½ï¿½ï¿½ GoodsReturnOrder)
+        if (DueDate.HasValue)
+        {
+            var dueDate = DueDate.Value.Date;
+            query = query.Where(e => e.DueDate.Date == dueDate);
+        }
+
+
+        query = query.OrderByDescending(e => e.CreatedAt);
+
+        var totalRecords = await query.CountAsync(cancellationToken);
+
+        var processQuery = _context.ProcessItemIsProgresses
+            .AsNoTracking()
+            .Where(p => p.ProcessType == ProcessType.SalesReturn);
+
+        var data = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(iw => new
+            {
+                Order = iw,
+
+                HasProgress = processQuery.Any(p => p.ReferenceId == iw.SalesReturnOrderId),
+
+                LatestStatus = processQuery
+                    .Where(p => p.ReferenceId == iw.SalesReturnOrderId)
+                    .OrderByDescending(p => p.ProcessItemIsProgressId)
+                    .Select(p => (ProcessStatus?)p.Status)
+                    .FirstOrDefault()
+            })
+            .Select(x => new SalesReturnOrderDTO
+            {
+                SalesReturnOrderId = x.Order.SalesReturnOrderId,
+
+                // ? ï¿½ï¿½ GoodsReturn: ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Return Order
                 DueDate = x.Order.DueDate,
                 PostingDate = x.Order.PostingDate,
 
@@ -247,7 +350,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse(ex.Message);
         }
 
-        // ? äÝÓ ÝßÑÉ GoodsReturn: Validate Customer
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ GoodsReturn: Validate Customer
         var customer = await _context.Customers
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.CustomerId == dto.CustomerId);
@@ -271,7 +374,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         var res = await AddAsync(salesReturnOrder);
         await SaveChangesAsync();
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -289,7 +392,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             WarehouseId = res.WarehouseId,
             CustomerId = res.CustomerId,
 
-            // áæ DTO ÚäÏß Ýíå ÇáÍÞæá Ïí æÍÇÈÈ ÊÑÌÚåã:
+            // ï¿½ï¿½ DTO ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:
             PostingDate = res.PostingDate,
             DueDate = res.DueDate,
 
@@ -337,18 +440,14 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         }
 
         var DeliveryNoteOrder = await _context.DeliveryNoteOrders
-            .Include(so => so.SalesReturnOrder) // ÚÔÇä äÊÍÞÞ åá Ýíå Return ÞÈá ßÏå
-            .FirstOrDefaultAsync(so => so.DeliveryNoteOrderId == dto.DeliveryNoteOrderId);
+                        .FirstOrDefaultAsync(so => so.DeliveryNoteOrderId == dto.DeliveryNoteOrderId);
 
         if (DeliveryNoteOrder == null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order is not found");
 
-        // äÝÓ ÝßÑÉ GoodsReturn: áÇÒã íßæä Processing
-        if (DeliveryNoteOrder.Status != GeneralStatus.Processing)
-            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("You can add Sales Return, if sales order status is completed only");
-
-        if (DeliveryNoteOrder.SalesReturnOrder != null)
-            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order has sales return order already!");
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ GoodsReturn: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Processing
+        if (DeliveryNoteOrder.Status != GeneralStatus.Completed)
+            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("You can add Sales Return, if DeliveryNoteOrder status is completed only");
 
         var salesReturnOrder = new SalesReturnOrder
         {
@@ -367,7 +466,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         var res = await AddAsync(salesReturnOrder);
         await SaveChangesAsync();
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -406,29 +505,62 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         }
 
         var DeliveryNoteOrder = await _context.DeliveryNoteOrders
-            .Include(so => so.SalesReturnOrder)
-            .Include(so => so.DeliveryNoteItems) // ? åÇÊ items
+            .Include(so => so.DeliveryNoteItems) // ? ï¿½ï¿½ï¿½ items
             .FirstOrDefaultAsync(so => so.DeliveryNoteOrderId == dto.DeliveryNoteOrderId);
 
         if (DeliveryNoteOrder == null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order is not found");
 
-        if (DeliveryNoteOrder.Status != GeneralStatus.Processing)
-            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("You can add Sales Return, if sales order status is completed only");
-
-        if (DeliveryNoteOrder.SalesReturnOrder != null)
-            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order already has a Sales Return Order!");
+        if (DeliveryNoteOrder.Status != GeneralStatus.Completed)
+            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("You can add Sales Return, if DeliveryNoteOrder status is completed only");
 
         if (DeliveryNoteOrder.DeliveryNoteItems == null || !DeliveryNoteOrder.DeliveryNoteItems.Any())
-            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Sales Order has no items to return");
+            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("DeliveryNoteOrder has no items to return");
+
+                var deliveryNoteItemIds = DeliveryNoteOrder.DeliveryNoteItems
+            .Select(x => x.DeliveryNoteItemId)
+            .ToList();
+
+        var executedByDeliveryNoteItem = await _context.SalesReturnOrderItems
+            .AsNoTracking()
+            .Where(x => x.DeliveryNoteItemId.HasValue && deliveryNoteItemIds.Contains(x.DeliveryNoteItemId.Value))
+            .GroupBy(x => x.DeliveryNoteItemId!.Value)
+            .Select(g => new
+            {
+                DeliveryNoteItemId = g.Key,
+                Quantity = g.Sum(i => i.Quantity)
+            })
+            .ToDictionaryAsync(x => x.DeliveryNoteItemId, x => x.Quantity);
+
+        var remainingItems = DeliveryNoteOrder.DeliveryNoteItems
+            .Select(dni =>
+            {
+                var executed = executedByDeliveryNoteItem.TryGetValue(dni.DeliveryNoteItemId, out var qty) ? qty : 0m;
+                var remaining = dni.Quantity - executed;
+
+                return new { DeliveryNoteItem = dni, Remaining = remaining };
+            })
+            .Where(x => x.Remaining > 0m)
+            .ToList();
+
+        var overReturnedItem = DeliveryNoteOrder.DeliveryNoteItems
+            .FirstOrDefault(dni =>
+            {
+                var executed = executedByDeliveryNoteItem.TryGetValue(dni.DeliveryNoteItemId, out var qty) ? qty : 0m;
+                return executed > dni.Quantity;
+            });
+
+        if (overReturnedItem != null)
+            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("One or more delivery note items already exceed the allowed returned quantity.");
+
+        if (!remainingItems.Any())
+            return GeneralResponse<SalesReturnOrderDTO>.FailResponse("All delivery note items are fully returned.");
 
         var returnOrder = new SalesReturnOrder
         {
             Status = dto.IsDraft ? GeneralStatus.Draft : GeneralStatus.Processing,
-
             PostingDate = dto.PostingDate,
             DueDate = dto.DueDate,
-
             CreatedAt = DateTime.UtcNow,
             UserId = userId,
             WarehouseId = DeliveryNoteOrder.WarehouseId,
@@ -437,36 +569,30 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             DeliveryNoteOrderId = dto.DeliveryNoteOrderId,
             ReasonId = dto.ReasonId,
 
-            // ? Copy DeliveryNoteItems -> SalesReturnOrderItems
-            SalesReturnOrderItems = DeliveryNoteOrder.DeliveryNoteItems.Select(soi => new SalesReturnOrderItem
+            // Copy DeliveryNoteItems -> SalesReturnOrderItems using remaining quantity only
+            SalesReturnOrderItems = remainingItems.Select(x => new SalesReturnOrderItem
             {
-                DeliveryNoteItemId = soi.DeliveryNoteItemId,
-                ItemId = soi.ItemId,
-                Quantity = soi.Quantity,
-                UoMEntry = soi.UoMEntry,
-                BarCode = soi.BarCode,
-                UnitPrice = soi.UnitPrice,
+                DeliveryNoteItemId = x.DeliveryNoteItem.DeliveryNoteItemId,
+                ItemId = x.DeliveryNoteItem.ItemId,
+                Quantity = x.Remaining,
+                UoMEntry = x.DeliveryNoteItem.UoMEntry,
+                BarCode = x.DeliveryNoteItem.BarCode,
+                UnitPrice = x.DeliveryNoteItem.UnitPrice,
 
-                VatPercent = soi.VatPercent,
+                VatPercent = x.DeliveryNoteItem.VatPercent,
+                VatAmount = x.DeliveryNoteItem.VatAmount,
+                LineTotalBeforeVat = x.DeliveryNoteItem.LineTotalBeforeVat,
+                LineTotalAfterVat = x.DeliveryNoteItem.LineTotalAfterVat,
 
-                VatAmount = soi.VatAmount,
-
-                LineTotalBeforeVat = soi.LineTotalBeforeVat,
-
-                LineTotalAfterVat = soi.LineTotalAfterVat,
-
-                // ãäØÞ ÇáÓÊÇÊÓ: áÓå ÇáÇÑÌÇÚ ãÇ ÊãÔ
                 Status = GeneralItemStatus.Planned,
-
-                // optional
-                ErrorMessage = null,
+                ErrorMessage = null
             }).ToList()
         };
 
         await _context.SalesReturnOrders.AddAsync(returnOrder);
         await SaveChangesAsync();
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -518,7 +644,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         if (entity.SalesReturnOrderId != salesReturnOrderId)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("ID mismatch");
 
-        // ? ãäÚ ÊÚÏíá Customer áæ ÇáÜ SalesReturn ãÈäí Úáì DeliveryNoteOrder (Òí ReceiptPurchaseOrderId Ýí GoodsReturn)
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Customer ï¿½ï¿½ ï¿½ï¿½ï¿½ SalesReturn ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ DeliveryNoteOrder (ï¿½ï¿½ ReceiptPurchaseOrderId ï¿½ï¿½ GoodsReturn)
         if (entity.DeliveryNoteOrderId != null)
         {
             if (dto.CustomerId.HasValue && dto.CustomerId.Value != entity.CustomerId)
@@ -604,7 +730,7 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse(
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
-        // Snapshot ÞÈá ÇáÍÐÝ ÚáÔÇä äÑÌÚå Ýí ÇáÜ response
+        // Snapshot ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ response
         var result = new SalesReturnOrderDTO
         {
             SalesReturnOrderId = entity.SalesReturnOrderId,
@@ -647,7 +773,9 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
         var res = await _context.SalesReturnOrders.Include(so => so.Customer)
             .Include(s => s.DeliveryNoteOrder)
             .Include(s => s.Reason)
-            .FirstOrDefaultAsync(so => so.DeliveryNoteOrderId == deliveryNoteOrderId);
+            .Where(so => so.DeliveryNoteOrderId == deliveryNoteOrderId)
+            .OrderByDescending(so => so.SalesReturnOrderId)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (res == null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("this DeliveryNoteOrderId is not found");
@@ -702,7 +830,9 @@ public class SalesReturnOrderRepository : BaseRepository<SalesReturnOrder>, ISal
                 .ThenInclude(i => i.ItemUomGroups)
             .Include(e => e.SalesReturnOrderItems)
                 .ThenInclude(i => i.SalesReturnOrderBatches)
-            .FirstOrDefaultAsync(gro => gro.DeliveryNoteOrderId == deliveryNoteOrderId);
+            .Where(gro => gro.DeliveryNoteOrderId == deliveryNoteOrderId)
+            .OrderByDescending(gro => gro.SalesReturnOrderId)
+            .FirstOrDefaultAsync();
 
         if (res == null)
             return GeneralResponse<SalesReturnOrderDTO>.FailResponse("Not Found");

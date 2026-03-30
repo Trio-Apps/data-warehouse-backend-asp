@@ -94,6 +94,37 @@ public class TransferredStockController : ControllerBase
         return Ok(res);
     }
 
+    [HttpGet("dashboard/transferred-request/status/posting-date/due-date/{transferredRequestId}/{pageNumber}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.TransferredRequest_Get}")]
+    public async Task<IActionResult> GetByTransferredRequestIdForDashboard(
+        int transferredRequestId,
+        int? destinationWarehouseId,
+        string? status,
+        DateTime? postingDate,
+        DateTime? dueDate,
+        int pageNumber,
+        int pageSize)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized("User ID not found in token.");
+
+        var res = await _repository.GetByTransferredRequestIdAndStatusAndDateWithPaginationForDashboardAsync(
+            transferredRequestId,
+            userId,
+            destinationWarehouseId,
+            postingDate,
+            dueDate,
+            status,
+            pageNumber,
+            pageSize);
+
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
 
     [HttpGet("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.Transferred_Get}")]

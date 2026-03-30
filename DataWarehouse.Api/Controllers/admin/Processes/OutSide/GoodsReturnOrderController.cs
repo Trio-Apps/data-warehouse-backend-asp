@@ -19,9 +19,7 @@ public class GoodsReturnOrderController : ControllerBase
     private readonly ILogger<GoodsReturnOrderController> _logger;
 
     public GoodsReturnOrderController(
-        ISapJobQueuer jobQueuer,
-        IGoodsReturnOrderRepository repository,
-        ILogger<GoodsReturnOrderController> logger)
+        ISapJobQueuer jobQueuer, IGoodsReturnOrderRepository repository, ILogger<GoodsReturnOrderController> logger)
     {
         this.jobQueuer = jobQueuer;
         _repository = repository;
@@ -57,6 +55,21 @@ public class GoodsReturnOrderController : ControllerBase
         return Ok(res);
     }
 
+    [HttpGet("dashboard/warehouse/status/posting-date/due-date/{receiptPurchaseOrder}/{skip}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]
+    public async Task<IActionResult> GetByReceiptPurchaseOrderIdWithPagination(int ReceiptPurchaseOrder, int? supplierId, string? status, DateTime? postingDate, DateTime? dueDate, int skip, int pageSize)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var res = await _repository.GetByReceiptPurchaseOrderIdAndStatusAndDateWithPaginationForDashboardAsync(ReceiptPurchaseOrder, userId, supplierId, postingDate, dueDate, status, skip, pageSize);
+
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+
     //[HttpGet("{id}")]
     //[Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]
     //public async Task<ActionResult<GoodsReturnOrder>> GetById(int id)
@@ -67,6 +80,7 @@ public class GoodsReturnOrderController : ControllerBase
 
     //    return Ok(goodsReturnOrder);
     //}
+
 
     [HttpGet("receipt-purchase-order/{receiptPurchaseOrderId}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]

@@ -195,6 +195,108 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
             });
     }
 
+    public async Task<GeneralResponse<PagedResult<TransferredStockDTO>>> GetByTransferredRequestIdAndStatusAndDateWithPaginationForDashboardAsync(
+        int transferredRequestId,
+        string userId,
+        int? destinationWarehouseId,
+        DateTime? postingDate,
+        DateTime? dueDate,
+        string? status,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        pageSize = pageSize <= 0 ? 10 : pageSize;
+
+        var query = _context.TransferredStocks
+            .AsNoTracking()
+            .Include(ts => ts.TransferredItems)
+            .Include(ts => ts.Warehouse)
+            .Include(ts => ts.DistinationWarehouse)
+            .Where(ts => ts.TransferredRequestId == transferredRequestId);
+
+        if (destinationWarehouseId.HasValue)
+            query = query.Where(ts => ts.DistinationWarehouseId == destinationWarehouseId.Value);
+
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<GeneralStatus>(status, out var statusEnum))
+            query = query.Where(ts => ts.Status == statusEnum);
+
+        if (postingDate.HasValue)
+        {
+            var createdDate = postingDate.Value.Date;
+            query = query.Where(ts => ts.CreatedAt.Date == createdDate);
+        }
+
+        if (dueDate.HasValue)
+        {
+            var due = dueDate.Value.Date;
+            query = query.Where(ts => ts.DueDate.Date == due);
+        }
+
+        query = query.OrderByDescending(ts => ts.CreatedAt);
+
+
+        var processQuery = _context.ProcessItemIsProgresses
+            .AsNoTracking()
+            .Where(p => p.ProcessType == ProcessType.Transferred);
+
+        var totalRecords = await query.CountAsync(cancellationToken);
+
+        var data = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(ts => new
+            {
+                Order = ts,
+                HasProgress = processQuery.Any(p => p.ReferenceId == ts.TransferredStockId),
+                LatestStatus = processQuery
+                    .Where(p => p.ReferenceId == ts.TransferredStockId)
+                    .OrderByDescending(p => p.ProcessItemIsProgressId)
+                    .Select(p => (ProcessStatus?)p.Status)
+                    .FirstOrDefault()
+            })
+            .Select(x => new TransferredStockDTO
+            {
+                TransferredStockId = x.Order.TransferredStockId,
+                DueDate = x.Order.DueDate,
+                Status = x.Order.Status.ToString(),
+                ReceivingStatus = x.Order.ReceivingStatus.ToString(),
+                Comment = x.Order.Comment,
+                UserId = x.Order.UserId,
+                WarehouseId = x.Order.WarehouseId,
+
+                DistinationWarehouseId = x.Order.DistinationWarehouseId,
+                WarehouseCode = x.Order.Warehouse.WarehouseCode,
+                WarehouseName = x.Order.Warehouse.WarehouseName,
+
+                DistinationWarehouseName = x.Order.DistinationWarehouse.WarehouseName,
+                CreatedAt = x.Order.CreatedAt,
+                PostingDate = x.Order.PostingDate,
+                ErrorMessage = x.Order.ErrorMessage,
+                Reference = x.Order.Reference,
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
+
+                ItemCount = x.Order.TransferredItems.Count(),
+                TransferredRequestId = x.Order.TransferredRequestId,
+                IsReceived = x.Order.ReceivedStock != null,
+                ReceivedStockId = x.Order.ReceivedStock != null ? x.Order.ReceivedStock.ReceivedStockId : null,
+                Approval = x.HasProgress,
+                ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null
+            })
+            .ToListAsync(cancellationToken);
+
+        return GeneralResponse<PagedResult<TransferredStockDTO>>.SuccessResponse(
+            new PagedResult<TransferredStockDTO>
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords,
+                Data = data
+            });
+    }
+
 
 
     public async Task<GeneralResponse<TransferredStockDTO>> GetTransferredStockByIdAsync(
@@ -251,16 +353,12 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
     {
         // await reasonValidationService.ValidateAsync(dto.ReasonId, ProcessType.Transferred);
         var request = await _context.TransferredRequests
-            .Include(tr => tr.TransferredStock)
             .Include(tr => tr.TransferredRequestItems)
                 .ThenInclude(i => i.TransferredRequestBatches)
             .FirstOrDefaultAsync(tr => tr.TransferredRequestId == dto.TransferredRequestId);
 
         if (request == null)
             return GeneralResponse<TransferredStockDTO>.FailResponse("Transferred request is not found");
-
-        if (request.TransferredStock != null)
-            return GeneralResponse<TransferredStockDTO>.FailResponse("Transferred request already has a transferred stock");
 
         if (request.TransferredRequestItems == null || !request.TransferredRequestItems.Any())
             return GeneralResponse<TransferredStockDTO>.FailResponse("Transferred request has no items");
@@ -622,7 +720,9 @@ public class TransferredStockRepository : BaseRepository<TransferredStock>, ITra
                 .ThenInclude(i => i.ItemUomGroups)
             .Include(ts => ts.TransferredItems)
                 .ThenInclude(i => i.TransferredStockBatches)
-            .FirstOrDefaultAsync(ts => ts.TransferredRequestId == transferredRequestId);
+            .Where(ts => ts.TransferredRequestId == transferredRequestId)
+            .OrderByDescending(ts => ts.TransferredStockId)
+            .FirstOrDefaultAsync();
 
         if (entity == null)
             return GeneralResponse<TransferredStockDTO>.FailResponse("Not Found");

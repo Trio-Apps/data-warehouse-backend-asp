@@ -21,6 +21,7 @@ public class TransferredRequestDTO : GeneralOrderDto
     public string? DistinationWarehouseName { get; set; }
 
     public int? TransferredStockId { get; set; }
+    public List<int>? TransferredStockIds { get; set; }
     public List<TransferredRequestItemDTO>? Items { get; set; }
 }
 
@@ -62,6 +63,8 @@ public class TransferredRequestItemDTO  : GeneralItemDto
     [Required(ErrorMessage = "Transferred Request ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Transferred Request ID must be greater than 0")]
     public int TransferredRequestId { get; set; }
+
+    public decimal ExecuteQuantity { get; set; }
 
    
 }

@@ -51,7 +51,11 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
             Comment = e.Comment, 
             ItemCode = e.Item.ItemCode,
            ItemName = e.Item.ItemName,
-           IsBatches = e.Item.BatchNumbers
+           IsBatches = e.Item.BatchNumbers,
+           ExecuteQuantity = _context.GoodsReturnOrderItems
+                .Where(r => r.ReceiptPurchaseOrderItemId == e.ReceiptPurchaseOrderItemId)
+                .Select(r => (decimal?)r.Quantity)
+                .Sum() ?? 0
         }).ToListAsync();
 
         return GeneralResponse<IEnumerable<ReceiptPurchaseOrderItemDTO>>.SuccessResponse(res);    
@@ -82,7 +86,11 @@ public class ReceiptPurchaseOrderItemRepository : BaseRepository<ReceiptPurchase
             UnitName = e.Item.ItemUomGroups.FirstOrDefault(i => i.UomEntry == e.UoMEntry).UomCode,
             Comment = e.Comment,
             Item = e.Item,
-            UnitPrice = e.UnitPrice
+            UnitPrice = e.UnitPrice,
+            ExecuteQuantity = _context.GoodsReturnOrderItems
+                .Where(r => r.ReceiptPurchaseOrderItemId == e.ReceiptPurchaseOrderItemId)
+                .Select(r => (decimal?)r.Quantity)
+                .Sum() ?? 0
         }).ToList();
 
 

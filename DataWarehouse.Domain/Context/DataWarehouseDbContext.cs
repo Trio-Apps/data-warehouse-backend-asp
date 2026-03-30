@@ -181,17 +181,17 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         // Good return 
         #region Good Return 
         builder.Entity<ReceiptPurchaseOrder>()
-        .HasOne(ps => ps.GoodsReturnOrder)
+        .HasMany(ps => ps.GoodsReturnOrders)
         .WithOne(rpo => rpo.ReceiptPurchaseOrder)
-        .HasForeignKey<GoodsReturnOrder>(rpo => rpo.ReceiptPurchaseOrderId)
-        .HasPrincipalKey<ReceiptPurchaseOrder>(ps => ps.ReceiptPurchaseOrderId)
+        .HasForeignKey(rpo => rpo.ReceiptPurchaseOrderId)
+        .HasPrincipalKey(ps => ps.ReceiptPurchaseOrderId)
         .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
 
         builder.Entity<ReceiptPurchaseOrderItem>()
-       .HasOne(ps => ps.GoodsReturnOrderItem)
+       .HasMany(ps => ps.GoodsReturnOrderItems)
        .WithOne(rpo => rpo.ReceiptPurchaseOrderItem)
-       .HasForeignKey<GoodsReturnOrderItem>(rpo => rpo.ReceiptPurchaseOrderItemId)
-       .HasPrincipalKey<ReceiptPurchaseOrderItem>(ps => ps.ReceiptPurchaseOrderItemId)
+       .HasForeignKey(rpo => rpo.ReceiptPurchaseOrderItemId)
+       .HasPrincipalKey(ps => ps.ReceiptPurchaseOrderItemId)
        .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
 
         builder.Entity<ReceiptPurchaseOrderBatch>()
@@ -394,10 +394,10 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
         #region Sales Return 
 
         builder.Entity<DeliveryNoteOrder>()
-        .HasOne(ps => ps.SalesReturnOrder)
+        .HasMany(ps => ps.SalesReturnOrders)
         .WithOne(rpo => rpo.DeliveryNoteOrder)
-        .HasForeignKey<SalesReturnOrder>(rpo => rpo.DeliveryNoteOrderId)
-        .HasPrincipalKey<DeliveryNoteOrder>(ps => ps.DeliveryNoteOrderId)
+        .HasForeignKey(rpo => rpo.DeliveryNoteOrderId)
+        .HasPrincipalKey(ps => ps.DeliveryNoteOrderId)
         .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
 
         builder.Entity<SalesReturnOrder>()
@@ -409,10 +409,10 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
 
         builder.Entity<DeliveryNoteItem>()
-       .HasOne(ps => ps.SalesReturnOrderItem)
+       .HasMany(ps => ps.SalesReturnOrderItems)
        .WithOne(rpo => rpo.DeliveryNoteItem)
-       .HasForeignKey<SalesReturnOrderItem>(rpo => rpo.DeliveryNoteItemId)
-       .HasPrincipalKey<DeliveryNoteItem>(ps => ps.DeliveryNoteItemId)
+       .HasForeignKey(rpo => rpo.DeliveryNoteItemId)
+       .HasPrincipalKey(ps => ps.DeliveryNoteItemId)
        .OnDelete(DeleteBehavior.NoAction); // أو Cascade حسب اللوجيك
 
 
@@ -685,9 +685,9 @@ public class DataWarehouseDbContext : IdentityDbContext<ApplicationUser,Applicat
 
         // request with transferred
         builder.Entity<TransferredRequest>()
-   .HasOne(o => o.TransferredStock).WithOne(a => a.TransferredRequest)
-   .HasForeignKey<TransferredStock>(o => o.TransferredRequestId)
-   .HasPrincipalKey<TransferredRequest>(e => e.TransferredRequestId)
+   .HasMany(o => o.TransferredStocks).WithOne(a => a.TransferredRequest)
+   .HasForeignKey(o => o.TransferredRequestId)
+   .HasPrincipalKey(e => e.TransferredRequestId)
    .OnDelete(DeleteBehavior.NoAction);
 
         builder.Entity<TransferredRequestItem>()

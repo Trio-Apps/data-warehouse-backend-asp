@@ -3,14 +3,15 @@ using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Core.Interfaces.Based;
+using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Domain.Enums.Approval;
 using DataWarehouse.Services.Repository.Based;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,12 +21,18 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide;
 public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderItem>, IGoodsReturnOrderItemRepository
 {
     private readonly IBaseProcessesRepository<GoodsReturnOrderItem> baseProcesses;
-    private readonly IGoodsReturnOrderRepository goodsReturn;
+    private readonly ISapCache sapCache;
+    private readonly IBarCodeOrdersRepository barcodeOrder;
 
-    public GoodsReturnOrderItemRepository(IBaseProcessesRepository<GoodsReturnOrderItem> baseProcesses, IGoodsReturnOrderRepository goodsReturn, DataWarehouseDbContext context) : base(context)
+    public GoodsReturnOrderItemRepository(
+        IBaseProcessesRepository<GoodsReturnOrderItem> baseProcesses,
+        ISapCache sapCache,
+        DataWarehouseDbContext context,
+        IBarCodeOrdersRepository barcodeOrder) : base(context)
     {
         this.baseProcesses = baseProcesses;
-        this.goodsReturn = goodsReturn;
+        this.sapCache = sapCache;
+        this.barcodeOrder = barcodeOrder;
     }
 
     public async Task<GeneralResponse<IEnumerable<GoodsReturnOrderItemDTO>>> GetByGoodsReturnOrderIdAsync(int goodsReturnOrderId)
@@ -54,7 +61,7 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
             })
             .ToListAsync();
 
-        return GeneralResponse < IEnumerable < GoodsReturnOrderItemDTO >>.SuccessResponse(res);
+        return GeneralResponse<IEnumerable<GoodsReturnOrderItemDTO>>.SuccessResponse(res);
     }
 
     public async Task<GeneralResponse<PagedResult<GoodsReturnOrderItemDTO>>> GetByGoodsReturnOrderIdWithPaginationAsync(int goodsReturnOrderId, int pageNumber, int pageSize)
@@ -101,6 +108,34 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
        , DynamicBarcodesDto? barcodeDto,
         AddGeneralItemDto? dto)
     {
+        int? receiptPurchaseOrderItemId = null;
+
+        var goodsReturnOrder = await _context.GoodsReturnOrders
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.GoodsReturnOrderId == goodsReturnOrderId);
+
+        if (goodsReturnOrder != null && goodsReturnOrder.ReceiptPurchaseOrderId.HasValue)
+        {
+            var itemDataRes = await ResolveAddItemDataAsync(goodsReturnOrder.WarehouseId, isBarcode, barcodeDto, dto);
+            if (!itemDataRes.Success)
+                return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse(itemDataRes.Message);
+
+            var linkedReceiptPurchaseOrderItemResult = await GetAvailableReceiptPurchaseOrderItemAsync(
+                goodsReturnOrder.ReceiptPurchaseOrderId.Value,
+                itemDataRes.Data.ItemId,
+                itemDataRes.Data.UoMEntry,
+                itemDataRes.Data.Quantity);
+
+            if (linkedReceiptPurchaseOrderItemResult.IsMatchingReceiptPurchaseOrderItemFound
+                && linkedReceiptPurchaseOrderItemResult.ReceiptPurchaseOrderItem == null)
+                return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this receipt purchase order item.");
+
+            if (linkedReceiptPurchaseOrderItemResult.ReceiptPurchaseOrderItem != null)
+            {
+                receiptPurchaseOrderItemId = linkedReceiptPurchaseOrderItemResult.ReceiptPurchaseOrderItem.ReceiptPurchaseOrderItemId;
+            }
+        }
+
         var res = await baseProcesses.AddOrderItemAsync<GoodsReturnOrder, GoodsReturnOrderItem>(
     goodsReturnOrderId,
     ProcessType.GoodsReturn,
@@ -115,6 +150,11 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
         if (!res.Success)
             return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse(res.Message);
 
+        if (receiptPurchaseOrderItemId.HasValue)
+        {
+            res.Data.ReceiptPurchaseOrderItemId = receiptPurchaseOrderItemId.Value;
+            await _context.SaveChangesAsync();
+        }
 
         var modelfin = new GoodsReturnOrderItemDTO
         {
@@ -129,7 +169,8 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
             VatAmount = res.Data.VatAmount,
             LineTotalBeforeVat = res.Data.LineTotalBeforeVat,
             LineTotalAfterVat = res.Data.LineTotalAfterVat,
-            ErrorMessage = res.Data.ErrorMessage
+            ErrorMessage = res.Data.ErrorMessage,
+            ReceiptPurchaseOrderItemId = res.Data.ReceiptPurchaseOrderItemId
         };
 
         return GeneralResponse<GoodsReturnOrderItemDTO>.SuccessResponse(modelfin);
@@ -138,6 +179,67 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
     public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> UpdateGoodsReturnItemWithoutRefAsync(int goodsReturnOrderItemId,
         UpdateGeneralItemDto dto)
     {
+        var entityBeforeUpdate = await _context.GoodsReturnOrderItems
+            .Include(x => x.GoodsReturnOrder)
+            .FirstOrDefaultAsync(x => x.GoodsReturnOrderItemId == goodsReturnOrderItemId);
+
+        if (entityBeforeUpdate == null)
+            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("id is not found");
+
+        if (dto.Quantity.HasValue
+            && entityBeforeUpdate.GoodsReturnOrder != null
+            && entityBeforeUpdate.GoodsReturnOrder.ReceiptPurchaseOrderId.HasValue)
+        {
+            var receiptPurchaseOrderId = entityBeforeUpdate.GoodsReturnOrder.ReceiptPurchaseOrderId.Value;
+            ReceiptPurchaseOrderItem? linkedReceiptPurchaseOrderItem = null;
+
+            if (entityBeforeUpdate.ReceiptPurchaseOrderItemId.HasValue)
+            {
+                linkedReceiptPurchaseOrderItem = await _context.ReceiptPurchaseOrderItems
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.ReceiptPurchaseOrderItemId == entityBeforeUpdate.ReceiptPurchaseOrderItemId.Value);
+
+                if (linkedReceiptPurchaseOrderItem == null)
+                    return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("receipt purchase order item is not found");
+
+                var executedQuantity = await _context.GoodsReturnOrderItems
+                    .AsNoTracking()
+                    .Where(x => x.ReceiptPurchaseOrderItemId == linkedReceiptPurchaseOrderItem.ReceiptPurchaseOrderItemId
+                                && x.GoodsReturnOrderItemId != goodsReturnOrderItemId)
+                    .Select(x => (decimal?)x.Quantity)
+                    .SumAsync() ?? 0m;
+
+                if (executedQuantity + dto.Quantity.Value > linkedReceiptPurchaseOrderItem.Quantity)
+                    return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this receipt purchase order item.");
+            }
+            else
+            {
+                var linkedReceiptPurchaseOrderItemResult = await GetAvailableReceiptPurchaseOrderItemAsync(
+                    receiptPurchaseOrderId,
+                    entityBeforeUpdate.ItemId,
+                    entityBeforeUpdate.UoMEntry,
+                    dto.Quantity.Value,
+                    goodsReturnOrderItemId);
+
+                if (!linkedReceiptPurchaseOrderItemResult.IsMatchingReceiptPurchaseOrderItemFound)
+                {
+                    linkedReceiptPurchaseOrderItem = null;
+                }
+                else if (linkedReceiptPurchaseOrderItemResult.ReceiptPurchaseOrderItem == null)
+                {
+                    return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this receipt purchase order item.");
+                }
+                else
+                {
+                    linkedReceiptPurchaseOrderItem = linkedReceiptPurchaseOrderItemResult.ReceiptPurchaseOrderItem;
+                }
+            }
+
+            if (linkedReceiptPurchaseOrderItem != null)
+            {
+                entityBeforeUpdate.ReceiptPurchaseOrderItemId = linkedReceiptPurchaseOrderItem.ReceiptPurchaseOrderItemId;
+            }
+        }
 
         var res = await baseProcesses.UpdateOrderItemAsync<GoodsReturnOrder, GoodsReturnOrderItem>(
        itemIdFromRoute: goodsReturnOrderItemId,
@@ -150,6 +252,13 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
 
         if (!res.Success)
             return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse(res.Message);
+
+        if (entityBeforeUpdate.ReceiptPurchaseOrderItemId.HasValue
+            && res.Data.ReceiptPurchaseOrderItemId != entityBeforeUpdate.ReceiptPurchaseOrderItemId)
+        {
+            res.Data.ReceiptPurchaseOrderItemId = entityBeforeUpdate.ReceiptPurchaseOrderItemId;
+            await _context.SaveChangesAsync();
+        }
 
         var entity = res.Data;
 
@@ -169,252 +278,87 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
         return GeneralResponse<GoodsReturnOrderItemDTO>.SuccessResponse(result);
     }
 
-    // reference
-    public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> AddGoodsReturnOrderItemByReceiptPurchaseOrderItemIdAsync(string userId,
-        int receiptOrderId,
-        AddGoodsReturnOrderItemDTO dto)
+
+    private async Task<bool> CheckDynamicCodeValidationLocal(string barCode)
     {
-        // Validate GoodsReturnOrder exists
-        var goodsReturnOrder = await _context.ReceiptPurchaseOrders
-            .FirstOrDefaultAsync(gro => gro.ReceiptPurchaseOrderId == receiptOrderId);
+        var sapId = await sapCache.Get();
 
-        if (goodsReturnOrder == null)
+        var settings = await _context.BarCodeSettings
+            .Where(bs => bs.Company.Saps.Any(s => s.SapId == sapId))
+            .ToListAsync();
+
+        foreach (var setting in settings)
         {
-            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("Receipt Purchase Order not found");
+            if (barCode.Length != setting.TotalLength)
+                continue;
+
+            return true;
         }
 
-        if (goodsReturnOrder.GoodsReturnOrder == null)
-        {
-            var modelGood = new AddGoodsReturnOrderModel
-            {
-                ReceiptPurchaseOrderId = receiptOrderId,
-                Comment = dto.Comment,
-                
-            };
-            var addGoodOrder = await goodsReturn.AddGoodsReturnOrderByReceiptPurchaseOrderIdAsync(userId, modelGood);
-        }
-
-
-
-         goodsReturnOrder = await _context.ReceiptPurchaseOrders
-            .FirstOrDefaultAsync(gro => gro.ReceiptPurchaseOrderId == receiptOrderId);
-
-
-        // Get ReceiptPurchaseOrderItem with its batches
-        var receiptPurchaseOrderItem = await _context.ReceiptPurchaseOrderItems
-            .Include(rpoi => rpoi.ReceiptPurchaseOrderBatches)
-            .Include(rpoi => rpoi.Item)
-            .FirstOrDefaultAsync(rpoi => rpoi.ReceiptPurchaseOrderItemId == dto.ReceiptPurchaseOrderItemId);
-
-        if (receiptPurchaseOrderItem == null)
-            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("Receipt Purchase Order Item not found");
-
-        // Check if this receipt item already has a return item
-        var existingReturnItem = await _context.GoodsReturnOrderItems
-            .FirstOrDefaultAsync(groi => groi.ReceiptPurchaseOrderItemId == dto.ReceiptPurchaseOrderItemId);
-
-        if (existingReturnItem != null)
-            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("This Receipt Purchase Order Item already has a return item");
-
-        // Validate quantity doesn't exceed receipt item quantity
-        if (dto.Quantity > receiptPurchaseOrderItem.Quantity)
-            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("Return quantity cannot exceed receipt quantity");
-
-        // Create GoodsReturnOrderItem
-        var goodsReturnOrderItem = new GoodsReturnOrderItem
-        {
-            GoodsReturnOrderId = goodsReturnOrder.GoodsReturnOrder.GoodsReturnOrderId,
-            ReceiptPurchaseOrderItemId = dto.ReceiptPurchaseOrderItemId,
-            ItemId = receiptPurchaseOrderItem.ItemId,
-            Quantity = dto.Quantity,
-            UoMEntry = receiptPurchaseOrderItem.UoMEntry,
-            BarCode = receiptPurchaseOrderItem.BarCode,
-            UnitPrice = receiptPurchaseOrderItem.UnitPrice,
-            VatPercent = receiptPurchaseOrderItem.VatPercent,
-            VatAmount = receiptPurchaseOrderItem.VatAmount,
-            LineTotalBeforeVat = receiptPurchaseOrderItem.LineTotalBeforeVat,
-            LineTotalAfterVat = receiptPurchaseOrderItem.LineTotalAfterVat,
-            Comment = dto.Comment
-        };
-
-        var res = await AddAsync(goodsReturnOrderItem);
-        await SaveChangesAsync();
-
-        // Automatically add batches from ReceiptPurchaseOrderBatch
-        if (receiptPurchaseOrderItem.ReceiptPurchaseOrderBatches != null && receiptPurchaseOrderItem.ReceiptPurchaseOrderBatches.Any())
-        {
-            var batchesToAdd = new List<GoodsReturnOrderBatch>();
-            decimal remainingQuantity = dto.Quantity;
-
-            foreach (var receiptBatch in receiptPurchaseOrderItem.ReceiptPurchaseOrderBatches.OrderBy(b => b.CreatedAt))
-            {
-                //if (remainingQuantity <= 0)
-                //    break;
-
-                decimal batchQuantity = remainingQuantity > receiptBatch.Quantity ? receiptBatch.Quantity : remainingQuantity;
-
-                if (remainingQuantity <= 0)
-                    batchQuantity = 0;
-
-                 var returnBatch = new GoodsReturnOrderBatch
-                {
-                    GoodsReturnOrderItemId = res.GoodsReturnOrderItemId,
-                    ReceiptPurchaseOrderBatchId = receiptBatch.ReceiptPurchaseOrderBatchId,
-                    Quantity = batchQuantity,
-                    BatchNumber = receiptBatch.BatchNumber,
-                    ExpiryDate = receiptBatch.ExpiryDate,
-                    Comment = dto.Comment,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                batchesToAdd.Add(returnBatch);
-                remainingQuantity -= batchQuantity;
-            }
-
-            if (batchesToAdd.Any())
-            {
-                await _context.GoodsReturnOrderBatches.AddRangeAsync(batchesToAdd);
-                await SaveChangesAsync();
-            }
-        
-        }
-
-        // Reload with batches
-        var finalItem = await _context.GoodsReturnOrderItems
-            .Include(groi => groi.GoodsReturnOrderBatches)
-            .FirstOrDefaultAsync(groi => groi.GoodsReturnOrderItemId == res.GoodsReturnOrderItemId);
-
-        var model = new GoodsReturnOrderItemDTO
-        {
-            GoodsReturnOrderItemId = finalItem.GoodsReturnOrderItemId,
-            Quantity = finalItem.Quantity,
-            UoMEntry = finalItem.UoMEntry,
-            BarCode = finalItem.BarCode,
-            UnitPrice = finalItem.UnitPrice,
-            VatPercent = finalItem.VatPercent,
-            VatAmount = finalItem.VatAmount,
-            LineTotalBeforeVat = finalItem.LineTotalBeforeVat,
-            LineTotalAfterVat = finalItem.LineTotalAfterVat,
-            ErrorMessage = finalItem.ErrorMessage,
-            Comment = finalItem.Comment,
-            GoodsReturnOrderId = finalItem.GoodsReturnOrderId,
-            ReceiptPurchaseOrderItemId = finalItem.ReceiptPurchaseOrderItemId,
-            ItemId = finalItem.ItemId,
-            Batches = finalItem.GoodsReturnOrderBatches?.Select(b => new GoodsReturnOrderBatchDTO
-            {
-                GoodsReturnOrderBatchId = b.GoodsReturnOrderBatchId,
-                GoodsReturnOrderItemId = b.GoodsReturnOrderItemId,
-                ReceiptPurchaseOrderBatchId = b.ReceiptPurchaseOrderBatchId,
-                Quantity = b.Quantity,
-                Comment = b.Comment,
-                BatchNumber = b.BatchNumber,
-                ExpiryDate = b.ExpiryDate
-            }).ToList()
-        };
-
-
-        return GeneralResponse<GoodsReturnOrderItemDTO>.SuccessResponse(model);
+        return false;
     }
 
-    public async Task<GeneralResponse<GoodsReturnOrderItemDTO>> UpdateGoodsReturnOrderItemAsync(
-        int goodsReturnOrderItemId,
-        UpdateGoodsReturnOrderItemDTO dto)
+    private async Task<(bool Success, string Message, (int ItemId, int UoMEntry, decimal Quantity) Data)> ResolveAddItemDataAsync(
+        int warehouseId,
+        bool isBarcode,
+        DynamicBarcodesDto? barcodeDto,
+        AddGeneralItemDto? dto)
     {
-        var entity = await _context.GoodsReturnOrderItems
-            .Include(groi => groi.ReceiptPurchaseOrderItem)
-            .FirstOrDefaultAsync(e => e.GoodsReturnOrderItemId == goodsReturnOrderItemId);
-
-        if (entity == null)
-            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("Goods Return Order Item not found");
-
-        if (entity.GoodsReturnOrderItemId != goodsReturnOrderItemId)
-            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("ID mismatch");
-
-        // Validate quantity doesn't exceed receipt item quantity
-        if (dto.Quantity.HasValue && dto.Quantity.Value > entity.ReceiptPurchaseOrderItem.Quantity)
-            return GeneralResponse<GoodsReturnOrderItemDTO>.FailResponse("Return quantity cannot exceed receipt quantity");
-
-        // بعد تحديث الكمية:
-        if (dto.Quantity.HasValue && dto.Quantity.Value > 0)
+        if (isBarcode)
         {
-            entity.Quantity = dto.Quantity.Value;
+            if (barcodeDto == null)
+                return (false, "Barcode required", default);
 
-            // 🧹 احذف الباتشات القديمة
-            var existingBatches = await _context.GoodsReturnOrderBatches
-                .Where(b => b.GoodsReturnOrderItemId == entity.GoodsReturnOrderItemId)
-                .ToListAsync();
+            var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
 
-            if (existingBatches.Any())
-            {
-                _context.GoodsReturnOrderBatches.RemoveRange(existingBatches);
-                await _context.SaveChangesAsync();
-            }
+            var res = isDynamic
+                ? await barcodeOrder.GetItemByDynamicBarCodeAsync(warehouseId, barcodeDto)
+                : await barcodeOrder.GetItemByStaticBarCodeAsync(warehouseId, barcodeDto);
 
-            // 🔄 رجّع ReceiptPurchaseOrderItem وباتشاته
-            var receiptPurchaseOrderItem = await _context.ReceiptPurchaseOrderItems
-                .Include(rpoi => rpoi.ReceiptPurchaseOrderBatches)
-                .FirstOrDefaultAsync(r => r.ReceiptPurchaseOrderItemId == entity.ReceiptPurchaseOrderItemId);
+            if (!res.Success || res.Data == null)
+                return (false, res.Message, default);
 
-            // ✅ إعادة بناء الباتشات
-            var newBatches = new List<GoodsReturnOrderBatch>();
-            decimal remainingQty = dto.Quantity.Value;
-
-            foreach (var receiptBatch in receiptPurchaseOrderItem.ReceiptPurchaseOrderBatches.OrderBy(b => b.CreatedAt))
-            {
-                //if (remainingQty <= 0)
-                //    break;
-
-                decimal batchQty = Math.Min(receiptBatch.Quantity, remainingQty);
-
-                if (batchQty <= 0)
-                    batchQty = 0;
-
-                newBatches.Add(new GoodsReturnOrderBatch
-                {
-                    GoodsReturnOrderItemId = entity.GoodsReturnOrderItemId,
-                    ReceiptPurchaseOrderBatchId = receiptBatch.ReceiptPurchaseOrderBatchId,
-                    Quantity = batchQty,
-                    BatchNumber = receiptBatch.BatchNumber,
-                    ExpiryDate = receiptBatch.ExpiryDate,
-                    CreatedAt = DateTime.UtcNow,
-                    Comment = dto.Comment
-                });
-
-                remainingQty -= batchQty;
-            }
-
-            if (newBatches.Any())
-            {
-                await _context.GoodsReturnOrderBatches.AddRangeAsync(newBatches);
-                await _context.SaveChangesAsync();
-            }
+            return (true, "", (res.Data.Id, res.Data.UoMEntry, res.Data.Quantity));
         }
 
+        if (dto == null)
+            return (false, "DTO required", default);
 
-        if (!string.IsNullOrEmpty(dto.Comment))
-            entity.Comment = dto.Comment;
+        return (true, "", (dto.ItemId, dto.UoMEntry, dto.Quantity));
+    }
 
-        await _context.SaveChangesAsync();
+    private async Task<(ReceiptPurchaseOrderItem? ReceiptPurchaseOrderItem, bool IsMatchingReceiptPurchaseOrderItemFound)> GetAvailableReceiptPurchaseOrderItemAsync(
+        int receiptPurchaseOrderId,
+        int itemId,
+        int uoMEntry,
+        decimal requestedQuantity,
+        int? excludeGoodsReturnOrderItemId = null)
+    {
+        var receiptPurchaseOrderItems = await _context.ReceiptPurchaseOrderItems
+            .AsNoTracking()
+            .Where(x => x.ReceiptPurchaseOrderId == receiptPurchaseOrderId
+                        && x.ItemId == itemId
+                        && x.UoMEntry == uoMEntry)
+            .OrderBy(x => x.ReceiptPurchaseOrderItemId)
+            .ToListAsync();
 
-        var result = new GoodsReturnOrderItemDTO
+        if (!receiptPurchaseOrderItems.Any())
+            return (null, false);
+
+        foreach (var receiptPurchaseOrderItem in receiptPurchaseOrderItems)
         {
-            GoodsReturnOrderItemId = entity.GoodsReturnOrderItemId,
-            Quantity = entity.Quantity,
-            UoMEntry = entity.UoMEntry,
-            BarCode = entity.BarCode,
-            UnitPrice = entity.UnitPrice,
-            VatPercent = entity.VatPercent,
-            VatAmount = entity.VatAmount,
-            LineTotalBeforeVat = entity.LineTotalBeforeVat,
-            LineTotalAfterVat = entity.LineTotalAfterVat,
-            ErrorMessage = entity.ErrorMessage,
-            Comment = entity.Comment,
-            GoodsReturnOrderId = entity.GoodsReturnOrderId,
-            ReceiptPurchaseOrderItemId = entity.ReceiptPurchaseOrderItemId,
-            ItemId = entity.ItemId
-        };
+            var executedQuantity = await _context.GoodsReturnOrderItems
+                .AsNoTracking()
+                .Where(x => x.ReceiptPurchaseOrderItemId == receiptPurchaseOrderItem.ReceiptPurchaseOrderItemId
+                            && (!excludeGoodsReturnOrderItemId.HasValue || x.GoodsReturnOrderItemId != excludeGoodsReturnOrderItemId.Value))
+                .Select(x => (decimal?)x.Quantity)
+                .SumAsync() ?? 0m;
 
-        return GeneralResponse<GoodsReturnOrderItemDTO>.SuccessResponse(result);
+            if (executedQuantity + requestedQuantity <= receiptPurchaseOrderItem.Quantity)
+                return (receiptPurchaseOrderItem, true);
+        }
+
+        return (null, true);
     }
 
 
@@ -435,21 +379,9 @@ public class GoodsReturnOrderItemRepository : BaseRepository<GoodsReturnOrderIte
             .FirstOrDefaultAsync(groi => groi.GoodsReturnOrderItemId == goodsReturnOrderItemId);
     }
 
-    public async Task<GoodsReturnOrderItem?> GetWithReceiptPurchaseOrderItemAsync(int goodsReturnOrderItemId)
-    {
-        return await QueryIncluding(false, groi => groi.ReceiptPurchaseOrderItem)
-            .FirstOrDefaultAsync(groi => groi.GoodsReturnOrderItemId == goodsReturnOrderItemId);
-    }
-
     public async Task<GoodsReturnOrderItem?> GetWithItemAsync(int goodsReturnOrderItemId)
     {
         return await QueryIncluding(false, groi => groi.Item)
-            .FirstOrDefaultAsync(groi => groi.GoodsReturnOrderItemId == goodsReturnOrderItemId);
-    }
-
-    public async Task<GoodsReturnOrderItem?> GetWithBatchesAsync(int goodsReturnOrderItemId)
-    {
-        return await QueryIncluding(false, groi => groi.GoodsReturnOrderBatches)
             .FirstOrDefaultAsync(groi => groi.GoodsReturnOrderItemId == goodsReturnOrderItemId);
     }
 }

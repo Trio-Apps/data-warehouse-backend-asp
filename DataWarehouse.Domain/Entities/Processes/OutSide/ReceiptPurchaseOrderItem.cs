@@ -27,6 +27,8 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public string? Comment { get; set; }
         public int? LineNum { get; set; }
 
+        [NotMapped]
+        public decimal ExecuteQuantity { get; set; }
 
         [NotMapped]
         public int OrderId
@@ -36,7 +38,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         }
         // Navigation
 
-        public GoodsReturnOrderItem? GoodsReturnOrderItem { get; set; }
+        public ICollection<GoodsReturnOrderItem> GoodsReturnOrderItems { get; set; } = new List<GoodsReturnOrderItem>();
 
         public int ReceiptPurchaseOrderId { get; set; }
         public ReceiptPurchaseOrder ReceiptPurchaseOrder { get; set; }

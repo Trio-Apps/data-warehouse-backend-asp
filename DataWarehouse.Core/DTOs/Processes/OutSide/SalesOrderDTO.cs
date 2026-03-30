@@ -47,14 +47,11 @@ public class SalesOrderItemDTO : GeneralItemDto
 { 
     public int SalesOrderItemId { get; set; }
 
- 
-
-    
- 
-
     [Required(ErrorMessage = "Sales Order ID is required")]
     [Range(1, int.MaxValue, ErrorMessage = "Sales Order ID must be greater than 0")]
     public int SalesOrderId { get; set; }
+
+    public decimal ExecuteQuantity { get; set; }
 
 
 }
@@ -150,6 +147,7 @@ public class AddSalesOrderBatchDTO
     [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
     public decimal Quantity { get; set; }
 
+
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
 
@@ -164,9 +162,9 @@ public class UpdateSalesOrderBatchDTO
     [Required(ErrorMessage = "Quantity is required")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Quantity must be greater than 0")]
     public decimal Quantity { get; set; }
-
+    
     [StringLength(500, ErrorMessage = "Comment cannot exceed 500 characters")]
     public string? Comment { get; set; }
-
+    
     public DateTime? ExpiryDate { get; set; }
 }

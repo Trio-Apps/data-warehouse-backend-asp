@@ -3,7 +3,9 @@ using DataWarehouse.Core.DTOs.BarCode;
 using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
+using DataWarehouse.Core.Interfaces.BarCode;
 using DataWarehouse.Core.Interfaces.Based;
+using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes;
@@ -18,12 +20,18 @@ namespace DataWarehouse.Services.Repository.Processes;
 public class TransferredItemRepository : BaseRepository<TransferredItem>, ITransferredItemRepository
 {
     private readonly IBaseProcessesRepository<TransferredItem> baseProcesses;
+    private readonly ISapCache sapCache;
+    private readonly IBarCodeOrdersRepository barcodeOrder;
 
     public TransferredItemRepository(
         IBaseProcessesRepository<TransferredItem> baseProcesses,
+        ISapCache sapCache,
+        IBarCodeOrdersRepository barcodeOrder,
         DataWarehouseDbContext context) : base(context)
     {
         this.baseProcesses = baseProcesses;
+        this.sapCache = sapCache;
+        this.barcodeOrder = barcodeOrder;
     }
 
     public async Task<GeneralResponse<IEnumerable<TransferredItemDTO>>> GetByTransferredItemByTransferredStockIdAsync(int transferredStockId)
@@ -135,7 +143,33 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
         DynamicBarcodesDto? barcodeDto,
         AddGeneralItemDto? dto)
     {
-      
+        int? transferredRequestItemId = null;
+
+        var transferredStock = await _context.TransferredStocks
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.TransferredStockId == transferredStockId);
+
+        if (transferredStock != null && transferredStock.TransferredRequestId.HasValue)
+        {
+            var itemDataRes = await ResolveAddItemDataAsync(transferredStock.WarehouseId, isBarcode, barcodeDto, dto);
+            if (!itemDataRes.Success)
+                return GeneralResponse<TransferredItemDTO>.FailResponse(itemDataRes.Message);
+
+            var linkedRequestItemResult = await GetAvailableTransferredRequestItemAsync(
+                transferredStock.TransferredRequestId.Value,
+                itemDataRes.Data.ItemId,
+                itemDataRes.Data.UoMEntry,
+                itemDataRes.Data.Quantity);
+
+            if (linkedRequestItemResult.IsMatchingTransferredRequestItemFound
+                && linkedRequestItemResult.TransferredRequestItem == null)
+                return GeneralResponse<TransferredItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this transferred request item.");
+
+            if (linkedRequestItemResult.TransferredRequestItem != null)
+            {
+                transferredRequestItemId = linkedRequestItemResult.TransferredRequestItem.TransferredRequestItemId;
+            }
+        }
 
         var res = await baseProcesses.AddOrderItemAsync<TransferredStock, TransferredItem>(
             orderId: transferredStockId,
@@ -150,6 +184,12 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
 
         if (!res.Success)
             return GeneralResponse<TransferredItemDTO>.FailResponse(res.Message);
+
+        if (transferredRequestItemId.HasValue)
+        {
+            res.Data.TransferredRequestItemId = transferredRequestItemId.Value;
+            await _context.SaveChangesAsync();
+        }
 
         var model = new TransferredItemDTO
         {
@@ -177,6 +217,68 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
           int transferredItemId,
           UpdateGeneralItemDto dto)
     {
+        var entityBeforeUpdate = await _context.TransferredItems
+            .Include(x => x.TransferredStock)
+            .FirstOrDefaultAsync(x => x.TransferredItemId == transferredItemId);
+
+        if (entityBeforeUpdate == null)
+            return GeneralResponse<TransferredItemDTO>.FailResponse("id is not found");
+
+        if (dto.Quantity.HasValue
+            && entityBeforeUpdate.TransferredStock != null
+            && entityBeforeUpdate.TransferredStock.TransferredRequestId.HasValue)
+        {
+            var requestId = entityBeforeUpdate.TransferredStock.TransferredRequestId.Value;
+            TransferredRequestItem? linkedRequestItem = null;
+
+            if (entityBeforeUpdate.TransferredRequestItemId.HasValue)
+            {
+                linkedRequestItem = await _context.TransferredRequestItems
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.TransferredRequestItemId == entityBeforeUpdate.TransferredRequestItemId.Value);
+
+                if (linkedRequestItem == null)
+                    return GeneralResponse<TransferredItemDTO>.FailResponse("transferred request item is not found");
+
+                var executedQuantity = await _context.TransferredItems
+                    .AsNoTracking()
+                    .Where(x => x.TransferredRequestItemId == linkedRequestItem.TransferredRequestItemId
+                                && x.TransferredItemId != transferredItemId)
+                    .Select(x => (decimal?)x.Quantity)
+                    .SumAsync() ?? 0m;
+
+                if (executedQuantity + dto.Quantity.Value > linkedRequestItem.Quantity)
+                    return GeneralResponse<TransferredItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this transferred request item.");
+            }
+            else
+            {
+                var linkedRequestItemResult = await GetAvailableTransferredRequestItemAsync(
+                    requestId,
+                    entityBeforeUpdate.ItemId,
+                    entityBeforeUpdate.UoMEntry,
+                    dto.Quantity.Value,
+                    transferredItemId);
+
+                if (!linkedRequestItemResult.IsMatchingTransferredRequestItemFound)
+                {
+                    linkedRequestItem = null;
+                }
+                else if (linkedRequestItemResult.TransferredRequestItem == null)
+                {
+                    return GeneralResponse<TransferredItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this transferred request item.");
+                }
+                else
+                {
+                    linkedRequestItem = linkedRequestItemResult.TransferredRequestItem;
+                }
+            }
+
+            if (linkedRequestItem != null)
+            {
+                entityBeforeUpdate.TransferredRequestItemId = linkedRequestItem.TransferredRequestItemId;
+            }
+        }
+
         var res = await baseProcesses.UpdateOrderItemAsync<TransferredStock, TransferredItem>(
             itemIdFromRoute: transferredItemId,
             processType: ProcessType.Transferred,
@@ -188,6 +290,13 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
 
         if (!res.Success)
             return GeneralResponse<TransferredItemDTO>.FailResponse(res.Message);
+
+        if (entityBeforeUpdate.TransferredRequestItemId.HasValue
+            && res.Data.TransferredRequestItemId != entityBeforeUpdate.TransferredRequestItemId)
+        {
+            res.Data.TransferredRequestItemId = entityBeforeUpdate.TransferredRequestItemId;
+            await _context.SaveChangesAsync();
+        }
 
         var entity = res.Data;
 
@@ -229,17 +338,15 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
             return GeneralResponse<TransferredItemDTO>.FailResponse("Transferred request item not found");
 
 
-        var exists = await _context.TransferredItems
-          .AnyAsync(x => x.TransferredStockId == transferredStockId && x.TransferredRequestItemId == dto.TransferredRequestItemId);
-
-        if (exists)
-            return GeneralResponse<TransferredItemDTO>.FailResponse("This transferred request item already exists in this transferred stock");
-
         var qty = dto.Quantity ?? requestItem.Quantity;
         if (qty <= 0)
             return GeneralResponse<TransferredItemDTO>.FailResponse("Quantity must be greater than zero");
 
-        if (qty > requestItem.Quantity)
+        var executedQuantity = await _context.TransferredItems
+            .Where(ti => ti.TransferredRequestItemId == dto.TransferredRequestItemId)
+            .SumAsync(ti => (decimal?)ti.Quantity) ?? 0m;
+
+        if (executedQuantity + qty > requestItem.Quantity)
             return GeneralResponse<TransferredItemDTO>.FailResponse("Transfer quantity cannot exceed request quantity");
 
         var item = new TransferredItem
@@ -339,6 +446,7 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
         var entity = await _context.TransferredItems
             .Include(i => i.TransferredRequestItem)
                 .ThenInclude(ri => ri.TransferredRequestBatches)
+            .Include(i => i.TransferredStock)
             .FirstOrDefaultAsync(e => e.TransferredItemId == transferredItemId);
 
         if (entity == null)
@@ -346,6 +454,60 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
 
         if (entity.TransferredItemId != transferredItemId)
             return GeneralResponse<TransferredItemDTO>.FailResponse("ID mismatch");
+
+        if (dto.Quantity.HasValue
+            && entity.TransferredStock != null
+            && entity.TransferredStock.TransferredRequestId.HasValue)
+        {
+            var requestId = entity.TransferredStock.TransferredRequestId.Value;
+            TransferredRequestItem? linkedRequestItem = entity.TransferredRequestItem;
+
+            if (entity.TransferredRequestItemId.HasValue)
+            {
+                if (linkedRequestItem == null)
+                {
+                    linkedRequestItem = await _context.TransferredRequestItems
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.TransferredRequestItemId == entity.TransferredRequestItemId.Value);
+                }
+
+                if (linkedRequestItem == null)
+                    return GeneralResponse<TransferredItemDTO>.FailResponse("transferred request item is not found");
+
+                var executedQuantity = await _context.TransferredItems
+                    .AsNoTracking()
+                    .Where(x => x.TransferredRequestItemId == linkedRequestItem.TransferredRequestItemId
+                                && x.TransferredItemId != transferredItemId)
+                    .Select(x => (decimal?)x.Quantity)
+                    .SumAsync() ?? 0m;
+
+                if (executedQuantity + dto.Quantity.Value > linkedRequestItem.Quantity)
+                    return GeneralResponse<TransferredItemDTO>.FailResponse("Transfer quantity cannot exceed request quantity");
+            }
+            else
+            {
+                var linkedRequestItemResult = await GetAvailableTransferredRequestItemAsync(
+                    requestId,
+                    entity.ItemId,
+                    entity.UoMEntry,
+                    dto.Quantity.Value,
+                    transferredItemId);
+
+                if (!linkedRequestItemResult.IsMatchingTransferredRequestItemFound)
+                {
+                    linkedRequestItem = null;
+                }
+                else if (linkedRequestItemResult.TransferredRequestItem == null)
+                {
+                    return GeneralResponse<TransferredItemDTO>.FailResponse("Transfer quantity cannot exceed request quantity");
+                }
+                else
+                {
+                    linkedRequestItem = linkedRequestItemResult.TransferredRequestItem;
+                    entity.TransferredRequestItemId = linkedRequestItem.TransferredRequestItemId;
+                }
+            }
+        }
 
         var mappedDto = new UpdateGeneralItemDto
         {
@@ -376,13 +538,21 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
                 await _context.SaveChangesAsync();
             }
 
-            if (entity.TransferredRequestItem?.TransferredRequestBatches != null &&
-                entity.TransferredRequestItem.TransferredRequestBatches.Any())
+            var requestItemForBatches = entity.TransferredRequestItem;
+            if (requestItemForBatches == null)
+            {
+                requestItemForBatches = await _context.TransferredRequestItems
+                    .Include(ri => ri.TransferredRequestBatches)
+                    .FirstOrDefaultAsync(ri => ri.TransferredRequestItemId == entity.TransferredRequestItemId);
+            }
+
+            if (requestItemForBatches?.TransferredRequestBatches != null &&
+                requestItemForBatches.TransferredRequestBatches.Any())
             {
                 var newBatches = new List<TransferredStockBatch>();
                 decimal remainingQty = entity.Quantity;
 
-                foreach (var requestBatch in entity.TransferredRequestItem.TransferredRequestBatches.OrderBy(b => b.CreatedAt))
+                foreach (var requestBatch in requestItemForBatches.TransferredRequestBatches.OrderBy(b => b.CreatedAt))
                 {
                     if (remainingQty <= 0)
                         break;
@@ -431,6 +601,88 @@ public class TransferredItemRepository : BaseRepository<TransferredItem>, ITrans
         };
 
         return GeneralResponse<TransferredItemDTO>.SuccessResponse(result);
+    }
+
+    private async Task<bool> CheckDynamicCodeValidationLocal(string barCode)
+    {
+        var sapId = await sapCache.Get();
+
+        var settings = await _context.BarCodeSettings
+            .Where(bs => bs.Company.Saps.Any(s => s.SapId == sapId))
+            .ToListAsync();
+
+        foreach (var setting in settings)
+        {
+            if (barCode.Length != setting.TotalLength)
+                continue;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private async Task<(bool Success, string Message, (int ItemId, int UoMEntry, decimal Quantity) Data)> ResolveAddItemDataAsync(
+        int warehouseId,
+        bool isBarcode,
+        DynamicBarcodesDto? barcodeDto,
+        AddGeneralItemDto? dto)
+    {
+        if (isBarcode)
+        {
+            if (barcodeDto == null)
+                return (false, "Barcode required", default);
+
+            var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
+
+            var res = isDynamic
+                ? await barcodeOrder.GetItemByDynamicBarCodeAsync(warehouseId, barcodeDto)
+                : await barcodeOrder.GetItemByStaticBarCodeAsync(warehouseId, barcodeDto);
+
+            if (!res.Success || res.Data == null)
+                return (false, res.Message, default);
+
+            return (true, "", (res.Data.Id, res.Data.UoMEntry, res.Data.Quantity));
+        }
+
+        if (dto == null)
+            return (false, "DTO required", default);
+
+        return (true, "", (dto.ItemId, dto.UoMEntry, dto.Quantity));
+    }
+
+    private async Task<(TransferredRequestItem? TransferredRequestItem, bool IsMatchingTransferredRequestItemFound)> GetAvailableTransferredRequestItemAsync(
+        int transferredRequestId,
+        int itemId,
+        int uoMEntry,
+        decimal requestedQuantity,
+        int? excludeTransferredItemId = null)
+    {
+        var requestItems = await _context.TransferredRequestItems
+            .AsNoTracking()
+            .Where(x => x.TransferredRequestId == transferredRequestId
+                        && x.ItemId == itemId
+                        && x.UoMEntry == uoMEntry)
+            .OrderBy(x => x.TransferredRequestItemId)
+            .ToListAsync();
+
+        if (!requestItems.Any())
+            return (null, false);
+
+        foreach (var requestItem in requestItems)
+        {
+            var executedQuantity = await _context.TransferredItems
+                .AsNoTracking()
+                .Where(x => x.TransferredRequestItemId == requestItem.TransferredRequestItemId
+                            && (!excludeTransferredItemId.HasValue || x.TransferredItemId != excludeTransferredItemId.Value))
+                .Select(x => (decimal?)x.Quantity)
+                .SumAsync() ?? 0m;
+
+            if (executedQuantity + requestedQuantity <= requestItem.Quantity)
+                return (requestItem, true);
+        }
+
+        return (null, true);
     }
 
     public async Task<GeneralResponse<TransferredItemDTO>> DeleteTransferredItemAsync(int transferredItemId)

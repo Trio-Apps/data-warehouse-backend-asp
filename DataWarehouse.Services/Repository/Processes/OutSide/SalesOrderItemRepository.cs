@@ -66,7 +66,11 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
                     .Select(i => i.UomCode)
                     .FirstOrDefault(),
                 ItemCode = e.Item.ItemCode,
-                ItemName = e.Item.ItemName
+                ItemName = e.Item.ItemName,
+                ExecuteQuantity = _context.DeliveryNoteItems
+                    .Where(d => d.SalesOrderItemId == e.SalesOrderItemId)
+                    .Select(d => (decimal?)d.Quantity)
+                    .Sum() ?? 0
             }
         );
 
@@ -115,7 +119,11 @@ public class SalesOrderItemRepository : BaseRepository<SalesOrderItem>, ISalesOr
                     .Select(i => i.UomCode)
                     .FirstOrDefault(),
                 ItemCode = e.Item.ItemCode,
-                ItemName = e.Item.ItemName
+                ItemName = e.Item.ItemName,
+                ExecuteQuantity = _context.DeliveryNoteItems
+                    .Where(d => d.SalesOrderItemId == e.SalesOrderItemId)
+                    .Select(d => (decimal?)d.Quantity)
+                    .Sum() ?? 0
             },
             orderByDescSelector: x => x.SalesOrderItemId,
             itemStatusSelector: x => x.Status

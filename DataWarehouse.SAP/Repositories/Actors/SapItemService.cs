@@ -249,7 +249,7 @@ namespace Dataitem.SAP.Repositories.Actors
             if (relevant.Count == 0)
                 return;
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+           // await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
@@ -342,7 +342,7 @@ namespace Dataitem.SAP.Repositories.Actors
                         await _context.WarehouseItems.AddRangeAsync(newWarehouseItems);
 
                     await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                  //  await transaction.CommitAsync();
                 }
                 finally
                 {
@@ -351,7 +351,7 @@ namespace Dataitem.SAP.Repositories.Actors
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+               // await transaction.RollbackAsync();
                 logger.LogError(ex, "Error upserting item warehouses for SapId: {SapId}", sapId);
                 throw;
             }
@@ -371,7 +371,7 @@ namespace Dataitem.SAP.Repositories.Actors
             if (relevant.Count == 0)
                 return;
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+           // await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
@@ -458,7 +458,7 @@ namespace Dataitem.SAP.Repositories.Actors
                         await _context.ItemPrices.AddRangeAsync(newItemPrices);
 
                     await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                  //  await transaction.CommitAsync();
                 }
                 finally
                 {
@@ -467,7 +467,7 @@ namespace Dataitem.SAP.Repositories.Actors
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+              //  await transaction.RollbackAsync();
                 logger.LogError(ex, "Error upserting item prices for SapId: {SapId}", sapId);
                 throw;
             }

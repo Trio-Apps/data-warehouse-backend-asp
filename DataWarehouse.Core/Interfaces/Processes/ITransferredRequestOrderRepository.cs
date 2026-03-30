@@ -29,6 +29,7 @@ public interface ITransferredRequestOrderRepository : IBaseRepository<Transferre
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default);
+    
     Task<GeneralResponse<TransferredRequestDTO>> AddTransferredRequestByWarehouseIdAsync(
         string userId, AddTransferredRequestDTO dto, CancellationToken cancellationToken = default);
     Task<GeneralResponse<TransferredRequestDTO>> UpdateTransferredRequestAsync(

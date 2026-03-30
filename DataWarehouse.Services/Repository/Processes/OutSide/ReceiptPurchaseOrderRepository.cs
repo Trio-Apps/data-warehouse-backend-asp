@@ -134,9 +134,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         if (!string.IsNullOrEmpty(liveStatus))
         {
             if (liveStatus == "return")
-                query = query.Where(e => e.GoodsReturnOrder != null);
+                query = query.Where(e => e.GoodsReturnOrders.Any());
             else if (liveStatus == "receipt")
-                query = query.Where(e => e.GoodsReturnOrder == null);
+                query = query.Where(e => !e.GoodsReturnOrders.Any());
         }
 
         query = query.OrderByDescending(e => e.CreatedAt); // تأكد هنا
@@ -193,8 +193,11 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
              ReasonId = x.Order.ReasonId,
              ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
            
-             IsReturn = x.Order.GoodsReturnOrder != null,
-             ReturnOrderId = x.Order.GoodsReturnOrder != null ? x.Order.GoodsReturnOrder.GoodsReturnOrderId : null,
+             IsReturn = x.Order.GoodsReturnOrders.Any(),
+             ReturnOrderId = x.Order.GoodsReturnOrders
+                 .OrderByDescending(g => g.GoodsReturnOrderId)
+                 .Select(g => (int?)g.GoodsReturnOrderId)
+                 .FirstOrDefault(),
          })
          .ToListAsync(cancellationToken);
 
@@ -254,9 +257,9 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
         if (!string.IsNullOrEmpty(liveStatus))
         {
             if (liveStatus == "return")
-                query = query.Where(e => e.GoodsReturnOrder != null);
+                query = query.Where(e => e.GoodsReturnOrders.Any());
             else if (liveStatus == "receipt")
-                query = query.Where(e => e.GoodsReturnOrder == null);
+                query = query.Where(e => !e.GoodsReturnOrders.Any());
         }
 
         query = query.OrderByDescending(e => e.CreatedAt); // طھط£ظƒط¯ ظ‡ظ†ط§
@@ -313,8 +316,11 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
              ReasonId = x.Order.ReasonId,
              ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
            
-             IsReturn = x.Order.GoodsReturnOrder != null,
-             ReturnOrderId = x.Order.GoodsReturnOrder != null ? x.Order.GoodsReturnOrder.GoodsReturnOrderId : null,
+             IsReturn = x.Order.GoodsReturnOrders.Any(),
+             ReturnOrderId = x.Order.GoodsReturnOrders
+                 .OrderByDescending(g => g.GoodsReturnOrderId)
+                 .Select(g => (int?)g.GoodsReturnOrderId)
+                 .FirstOrDefault(),
          })
          .ToListAsync(cancellationToken);
 
@@ -329,9 +335,10 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             });
     }
 
+
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetReceiptOrderByIdAsync(string userId, int receiptOrderId)
     {
-        var res = await _context.ReceiptPurchaseOrders.Include(r => r.GoodsReturnOrder)
+        var res = await _context.ReceiptPurchaseOrders.Include(r => r.GoodsReturnOrders)
             .Include(r=>r.Supplier)
             .Include(r => r.Reason)
             .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == receiptOrderId);
@@ -365,8 +372,11 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
             Approval = approvalModel.hasProgress,
             ApprovalStatus = approvalModel.ApprovalStatus,
-            IsReturn = res.GoodsReturnOrder != null,
-            ReturnOrderId = res.GoodsReturnOrder != null ? res.GoodsReturnOrder.GoodsReturnOrderId : null,
+            IsReturn = res.GoodsReturnOrders.Any(),
+            ReturnOrderId = res.GoodsReturnOrders
+                .OrderByDescending(g => g.GoodsReturnOrderId)
+                .Select(g => (int?)g.GoodsReturnOrderId)
+                .FirstOrDefault(),
         };
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(mapping);
     }
@@ -779,7 +789,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     {
         var res = await _context.ReceiptPurchaseOrders
             .AsNoTracking()
-            .Include(r => r.GoodsReturnOrder)
+            .Include(r => r.GoodsReturnOrders)
             .Include(r => r.Reason)
             .Where(rpo => rpo.PurchaseOrderId == purchaseId)
             .OrderByDescending(rpo => rpo.ReceiptPurchaseOrderId)
@@ -812,8 +822,11 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
                 ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
                 Approval = approvalModel.hasProgress,
                 ApprovalStatus = approvalModel.ApprovalStatus,
-                IsReturn = receipt.GoodsReturnOrder != null,
-                ReturnOrderId = receipt.GoodsReturnOrder != null ? receipt.GoodsReturnOrder.GoodsReturnOrderId : null,
+                IsReturn = receipt.GoodsReturnOrders.Any(),
+                ReturnOrderId = receipt.GoodsReturnOrders
+                    .OrderByDescending(g => g.GoodsReturnOrderId)
+                    .Select(g => (int?)g.GoodsReturnOrderId)
+                    .FirstOrDefault(),
             });
         }
 
@@ -821,7 +834,7 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
     }
     public async Task<GeneralResponse<ReceiptPurchaseOrderDTO>> GetByPurchaseOrderIdAsync(string userId, int purchaseOrderId)
     {
-        var res = await _context.ReceiptPurchaseOrders.Include(r=>r.GoodsReturnOrder)
+        var res = await _context.ReceiptPurchaseOrders.Include(r=>r.GoodsReturnOrders)
             .Include(r => r.Reason)
             .Where(rpo => rpo.PurchaseOrderId == purchaseOrderId)
             .OrderByDescending(rpo => rpo.ReceiptPurchaseOrderId)
@@ -851,8 +864,11 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             ProcessItemIsProgressId = approvalModel.ProcessItemIsProgressId,
             Approval = approvalModel.hasProgress,
             ApprovalStatus = approvalModel.ApprovalStatus,
-            IsReturn = res.GoodsReturnOrder != null,
-            ReturnOrderId = res.GoodsReturnOrder != null ? res.GoodsReturnOrder.GoodsReturnOrderId : null,
+            IsReturn = res.GoodsReturnOrders.Any(),
+            ReturnOrderId = res.GoodsReturnOrders
+                .OrderByDescending(g => g.GoodsReturnOrderId)
+                .Select(g => (int?)g.GoodsReturnOrderId)
+                .FirstOrDefault(),
         };
         return GeneralResponse<ReceiptPurchaseOrderDTO>.SuccessResponse(mapping);
     }

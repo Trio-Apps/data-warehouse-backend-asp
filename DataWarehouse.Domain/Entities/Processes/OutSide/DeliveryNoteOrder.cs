@@ -50,7 +50,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public int CustomerId { get; set; }
         public Customer Customer { get; set; } // or User
 
-        public SalesReturnOrder SalesReturnOrder { get; set; }
+        public ICollection<SalesReturnOrder> SalesReturnOrders { get; set; } = new List<SalesReturnOrder>();
 
         public ICollection<DeliveryNoteItem> DeliveryNoteItems { get; set; } = new List<DeliveryNoteItem>();
 

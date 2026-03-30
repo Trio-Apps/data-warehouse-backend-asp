@@ -79,7 +79,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
 
 
-        query = query.OrderByDescending(e => e.CreatedAt); // ÊÃßÏ åäÇ
+        query = query.OrderByDescending(e => e.CreatedAt); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
         var totalRecords = await query.CountAsync();
 
@@ -93,12 +93,12 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
          .Select(iw => new
          {
              Order = iw,
-             // åá Ýíå progress ÃÕáÇð¿
+             // ï¿½ï¿½ ï¿½ï¿½ï¿½ progress ï¿½ï¿½ï¿½ï¿½ï¿½
              HasProgress = processQuery.Any(p => p.ReferenceId == iw.GoodsReturnOrderId),
-             // ÂÎÑ Status (áæ ãæÌæÏ)
+             // ï¿½ï¿½ï¿½ Status (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½)
              LatestStatus = processQuery
                  .Where(p => p.ReferenceId == iw.GoodsReturnOrderId)
-                 .OrderByDescending(p => p.ProcessItemIsProgressId) // Ãæ CreatedAt áæ ÚäÏß
+                 .OrderByDescending(p => p.ProcessItemIsProgressId) // ï¿½ï¿½ CreatedAt ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                  .Select(p => (ProcessStatus?)p.Status)
                  .FirstOrDefault()
          })
@@ -119,10 +119,108 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 ReasonId = x.Order.ReasonId,
                 ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
 
-                // ? æÌæÏ progress
+                // ? ï¿½ï¿½ï¿½ï¿½ progress
                 Approval = x.HasProgress,
 
-                // ? ÇÓã ÇáÍÇáÉ ÇáÍÇáíÉ (ÂÎÑ Status)
+                // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ Status)
+                ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
+
+            })
+            .ToListAsync();
+
+        return GeneralResponse<PagedResult<GoodsReturnOrderDTO>>.SuccessResponse(
+            new PagedResult<GoodsReturnOrderDTO>
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords,
+                Data = data
+            });
+    }
+
+    public async Task<GeneralResponse<PagedResult<GoodsReturnOrderDTO>>> GetByReceiptPurchaseOrderIdAndStatusAndDateWithPaginationForDashboardAsync
+    (int receiptPurchaseOrderId, string userId, int? supplierId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        pageSize = pageSize <= 0 ? 10 : pageSize;
+
+        var query = _context.GoodsReturnOrders
+            .AsNoTracking()
+            .Include(gro => gro.Reason)
+            .Where(gro => gro.ReceiptPurchaseOrderId == receiptPurchaseOrderId);
+
+
+        if (supplierId.HasValue)
+        {
+            query = query.Where(e => e.SupplierId == supplierId);
+        }
+        // ?? Filtering
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (Enum.TryParse<GeneralStatus>(status, out var statusEnum))
+            {
+                query = query.Where(e => e.Status == statusEnum);
+            }
+        }
+        // ?? Posting Date Filter
+        if (postingDate.HasValue)
+        {
+            var postDate = postingDate.Value.Date;
+            query = query.Where(e => e.PostingDate.Date == postDate);
+        }
+        // ?? Due Date Filter
+        if (DueDate.HasValue)
+        {
+            var dueDate = DueDate.Value.Date;
+            query = query.Where(e => e.DueDate.Date == dueDate);
+        }
+
+
+
+        query = query.OrderByDescending(e => e.CreatedAt); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+
+        var totalRecords = await query.CountAsync();
+
+        var processQuery = _context.ProcessItemIsProgresses
+        .AsNoTracking()
+        .Where(p => p.ProcessType == ProcessType.GoodsReturn);
+
+        var data = await query
+         .Skip((pageNumber - 1) * pageSize)
+         .Take(pageSize)
+         .Select(iw => new
+         {
+             Order = iw,
+             // ï¿½ï¿½ ï¿½ï¿½ï¿½ progress ï¿½ï¿½ï¿½ï¿½ï¿½
+             HasProgress = processQuery.Any(p => p.ReferenceId == iw.GoodsReturnOrderId),
+             // ï¿½ï¿½ï¿½ Status (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½)
+             LatestStatus = processQuery
+                 .Where(p => p.ReferenceId == iw.GoodsReturnOrderId)
+                 .OrderByDescending(p => p.ProcessItemIsProgressId) // ï¿½ï¿½ CreatedAt ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+                 .Select(p => (ProcessStatus?)p.Status)
+                 .FirstOrDefault()
+         })
+            .Select(x => new GoodsReturnOrderDTO
+            {
+                GoodsReturnOrderId = x.Order.GoodsReturnOrderId,
+                DueDate = x.Order.DueDate,
+                PostingDate = x.Order.PostingDate,
+                Status = x.Order.Status.ToString(),
+                Comment = x.Order.Comment,
+                UserId = x.Order.UserId,
+                WarehouseId = x.Order.WarehouseId,
+                ErrorMessage = x.Order.ErrorMessage,
+
+                SupplierName = x.Order.Supplier.SupplierName,
+                SupplierCode = x.Order.Supplier.SupplierCode,
+                ItemCount = x.Order.GoodsReturnOrderItems.Count(),
+                ReasonId = x.Order.ReasonId,
+                ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
+
+                // ? ï¿½ï¿½ï¿½ï¿½ progress
+                Approval = x.HasProgress,
+
+                // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ Status)
                 ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
 
             })
@@ -216,7 +314,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -259,9 +357,6 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         if (receiptOrder.Status != GeneralStatus.Processing)
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("You can add Receipt, if purchase order status is completed only");
 
-        if (receiptOrder.GoodsReturnOrder != null)
-            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("purchaseOrder has receipt purchaseOrder already!");
-
 
         var goodsReturnOrder = new GoodsReturnOrder
         {
@@ -281,7 +376,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         var res = await AddAsync(goodsReturnOrder);
         await SaveChangesAsync();
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -318,8 +413,8 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         }
 
         var receiptOrder = await _context.ReceiptPurchaseOrders
-            .Include(p => p.GoodsReturnOrder)
-            .Include(p => p.ReceiptPurchaseOrderItems) // ? åÇÊ items
+            .Include(p => p.GoodsReturnOrders)
+            .Include(p => p.ReceiptPurchaseOrderItems) // ? ï¿½ï¿½ï¿½ items
             .FirstOrDefaultAsync(p => p.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
 
         if (receiptOrder == null)
@@ -327,9 +422,6 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         if (receiptOrder.Status != GeneralStatus.Processing)
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("You can add Goods Return, if receipt order status is completed only");
-
-        if (receiptOrder.GoodsReturnOrder != null)
-            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("purchaseOrder has receipt purchaseOrder already!");
 
         if (receiptOrder.ReceiptPurchaseOrderItems == null || !receiptOrder.ReceiptPurchaseOrderItems.Any())
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("purchaseOrder has no items to receipt");
@@ -369,7 +461,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
                 LineTotalAfterVat = poi.LineTotalAfterVat,
 
-                // ãäØÞ ÇáÓÊÇÊÓ: áÓå ÇáÇÓÊáÇã ãÇ ÊãÔ
+                // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
                 Status = GeneralItemStatus.Planned,
 
                 // optional
@@ -381,7 +473,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         await _context.GoodsReturnOrders.AddAsync(returnOrder);
         await SaveChangesAsync();
 
-        // ? ÔÛá ÇáÜ Approval Workflow áæ ãÔ Draft
+        // ? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Approval Workflow ï¿½ï¿½ ï¿½ï¿½ Draft
         if (!dto.IsDraft)
         {
             await approval.StartProcessAsync(
@@ -513,7 +605,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse(
                 "You cannot delete this order because its approval status is 'Approved' and all approval steps have been completed.");
 
-        // Snapshot ÞÈá ÇáÍÐÝ ÚáÔÇä äÑÌÚå Ýí ÇáÜ response
+        // Snapshot ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ response
         var result = new GoodsReturnOrderDTO
         {
             GoodsReturnOrderId = entity.GoodsReturnOrderId,
@@ -555,7 +647,9 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
                 .ThenInclude(i => i.ItemUomGroups)
             .Include(e => e.GoodsReturnOrderItems)
                 .ThenInclude(i => i.GoodsReturnOrderBatches)
-            .FirstOrDefaultAsync(gro => gro.ReceiptPurchaseOrderId == receiptPurchaseOrderId);
+            .Where(gro => gro.ReceiptPurchaseOrderId == receiptPurchaseOrderId)
+            .OrderByDescending(gro => gro.GoodsReturnOrderId)
+            .FirstOrDefaultAsync();
 
         if (res == null)
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("Not Found");
@@ -717,7 +811,7 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         }
 
         var receiptPurchaseOrder = await _context.ReceiptPurchaseOrders
-            .Include(rpo => rpo.GoodsReturnOrder)
+            .Include(rpo => rpo.GoodsReturnOrders)
             .FirstOrDefaultAsync(rpo => rpo.ReceiptPurchaseOrderId == dto.ReceiptPurchaseOrderId);
 
         if (receiptPurchaseOrder == null)
@@ -725,9 +819,6 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
         if (receiptPurchaseOrder.Status != GeneralStatus.Completed)
             return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("You can add Receipt, if purchase order status is completed only");
-
-        if (receiptPurchaseOrder.GoodsReturnOrder != null)
-            return GeneralResponse<GoodsReturnOrderDTO>.FailResponse("Receipt Purchase Order already has a Goods Return Order!");
 
         var goodsReturnOrder = new GoodsReturnOrder
         {
@@ -747,7 +838,6 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
         await SaveChangesAsync();
 
       
-
         var model = new GoodsReturnOrderDTO
         {
             GoodsReturnOrderId = res.GoodsReturnOrderId,
@@ -764,4 +854,5 @@ public class GoodsReturnOrderRepository : BaseRepository<GoodsReturnOrder>, IGoo
 
 
 }
+
 
