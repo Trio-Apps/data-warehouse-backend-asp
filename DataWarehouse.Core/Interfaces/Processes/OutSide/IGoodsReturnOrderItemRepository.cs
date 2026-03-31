@@ -20,14 +20,9 @@ public interface IGoodsReturnOrderItemRepository : IBaseRepository<GoodsReturnOr
          AddGeneralItemDto? dto);
     Task<GeneralResponse<GoodsReturnOrderItemDTO>> UpdateGoodsReturnItemWithoutRefAsync(int goodsReturnOrderItemId,
         UpdateGeneralItemDto dto);
-
-    Task<GeneralResponse<GoodsReturnOrderItemDTO>> AddGoodsReturnOrderItemByReceiptPurchaseOrderItemIdAsync(string userId,int goodsReturnOrderId, AddGoodsReturnOrderItemDTO dto);
-    Task<GeneralResponse<GoodsReturnOrderItemDTO>> UpdateGoodsReturnOrderItemAsync(int goodsReturnOrderItemId, UpdateGoodsReturnOrderItemDTO dto);
     Task<IEnumerable<GoodsReturnOrderItem>> GetByGoodsReturnOrderIdEntitiesAsync(int goodsReturnOrderId);
     Task<IEnumerable<GoodsReturnOrderItem>> GetByItemIdAsync(int itemId);
     Task<GoodsReturnOrderItem?> GetWithGoodsReturnOrderAsync(int goodsReturnOrderItemId);
-    Task<GoodsReturnOrderItem?> GetWithReceiptPurchaseOrderItemAsync(int goodsReturnOrderItemId);
     Task<GoodsReturnOrderItem?> GetWithItemAsync(int goodsReturnOrderItemId);
-    Task<GoodsReturnOrderItem?> GetWithBatchesAsync(int goodsReturnOrderItemId);
 }
 

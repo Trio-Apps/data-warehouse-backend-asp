@@ -105,7 +105,6 @@ namespace DataWarehouse.Services.Repository.IsProgress
 
                 // call job
 
-
                 return approvedProcess.ProcessItemIsProgressId;
             }
 

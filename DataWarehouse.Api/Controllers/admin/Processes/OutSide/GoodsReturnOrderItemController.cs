@@ -1,11 +1,9 @@
 using DataWarehouse.Core.DTOs.Processes;
-using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
 using DataWarehouse.Services.Repository.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace DataWarehouse.Api.Controllers.admin.Processes.OutSide;
 
@@ -60,36 +58,6 @@ public class GoodsReturnOrderItemController : ControllerBase
         return Ok(res);
     }
 
-    [HttpPost("receipt-purchase-order/{receiptOrderId}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Create}")]
-    public async Task<ActionResult<GoodsReturnOrderItem>> Create(int receiptOrderId, AddGoodsReturnOrderItemDTO dto)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        var created = await _repository.AddGoodsReturnOrderItemByReceiptPurchaseOrderItemIdAsync(userId, receiptOrderId, dto);
-        if (!created.Success)
-            return BadRequest(created);
-
-        return Ok(created);
-    }
-
-    [HttpPut("{id}")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Edit}")]
-    public async Task<IActionResult> Update(int id, UpdateGoodsReturnOrderItemDTO dto)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var res = await _repository.UpdateGoodsReturnOrderItemAsync(id, dto);
-        if (!res.Success)
-            return BadRequest(res);
-
-        return Ok(res);
-    }
-
     [HttpPost("witout-reference/goods-return-order/{goodsReturnOrderId}/add-barcode-or-no/{isBarcode:bool}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Create}")]
     public async Task<ActionResult<GoodsReturnOrderItem>> CreateWithoutReference
@@ -97,8 +65,6 @@ public class GoodsReturnOrderItemController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var created = await _repository.AddGoodsReturnItemByGoodsReturnOrderIdWithoutRefAsync(goodsReturnOrderId,isBarcode,
             dto.Barcode,dto.Item);
@@ -134,27 +100,5 @@ public class GoodsReturnOrderItemController : ControllerBase
         await _repository.SaveChangesAsync();
 
         return Ok("deleted");
-    }
-
-    [HttpGet("{id}/with-batches")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]
-    public async Task<ActionResult<GoodsReturnOrderItem>> GetWithBatches(int id)
-    {
-        var goodsReturnOrderItem = await _repository.GetWithBatchesAsync(id);
-        if (goodsReturnOrderItem == null)
-            return NotFound($"GoodsReturnOrderItem with ID {id} not found.");
-
-        return Ok(goodsReturnOrderItem);
-    }
-
-    [HttpGet("{id}/with-receipt-purchase-order-item")]
-    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.GoodsReturn_Get}")]
-    public async Task<ActionResult<GoodsReturnOrderItem>> GetWithReceiptPurchaseOrderItem(int id)
-    {
-        var goodsReturnOrderItem = await _repository.GetWithReceiptPurchaseOrderItemAsync(id);
-        if (goodsReturnOrderItem == null)
-            return NotFound($"GoodsReturnOrderItem with ID {id} not found.");
-
-        return Ok(goodsReturnOrderItem);
     }
 }

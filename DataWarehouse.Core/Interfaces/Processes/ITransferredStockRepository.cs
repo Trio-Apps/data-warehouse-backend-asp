@@ -25,6 +25,16 @@ public interface ITransferredStockRepository : IBaseRepository<TransferredStock>
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default);
+    Task<GeneralResponse<PagedResult<TransferredStockDTO>>> GetByTransferredRequestIdAndStatusAndDateWithPaginationForDashboardAsync(
+        int transferredRequestId,
+        string userId,
+        int? destinationWarehouseId,
+        DateTime? postingDate,
+        DateTime? dueDate,
+        string? status,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default);
     
     Task<GeneralResponse<TransferredStockDTO>> GetTransferredStockByIdAsync(
         string userId, int transferredStockId, CancellationToken cancellationToken = default);

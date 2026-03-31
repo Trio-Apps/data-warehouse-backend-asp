@@ -31,6 +31,17 @@ namespace DataWarehouse.Core.Interfaces.Processes.OutSide
             int pageSize,
             CancellationToken cancellationToken = default);
 
+        Task<GeneralResponse<PagedResult<DeliveryNoteOrderDTO>>> GetBySalesOrderIdAndStatusAndDateWithPaginationForDashboardAsync(
+            int salesOrderId,
+            string userId,
+            int? customerId,
+            DateTime? postingDate,
+            DateTime? DueDate,
+            string? status,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default);
+
         Task<GeneralResponse<DeliveryNoteOrderDTO>> GetWithCustomerAsync(int deliveryNoteOrderId, string userId, CancellationToken cancellationToken = default);
 
         Task<GeneralResponse<DeliveryNoteOrderDTO>> GetDeliveryNoteOrderByIdAsync(string userId, int deliveryNoteOrderId, CancellationToken cancellationToken = default);

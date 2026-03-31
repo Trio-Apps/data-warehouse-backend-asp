@@ -139,6 +139,8 @@ public class ReceiptPurchaseOrderItemDTO : GeneralItemDto
     [Required(ErrorMessage = "ReceiptPurchaseOrderId is required")]
     public int ReceiptPurchaseOrderId { get; set; }
 
+    public decimal ExecuteQuantity { get; set; }
+
     [Required(ErrorMessage = "ItemId is required")]
     public int ItemId { get; set; }
 

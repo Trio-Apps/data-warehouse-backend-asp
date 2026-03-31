@@ -14,6 +14,7 @@ public interface ISalesReturnOrderRepository : IBaseRepository<SalesReturnOrder>
     Task<IEnumerable<SalesReturnOrder>> GetByWarehouseIdAsync(int warehouseId);
     Task<GeneralResponse<PagedResult<SalesReturnOrderDTO>>> GetByWarehouseIdWithPaginationAsync(int warehouseId, int pageNumber, int pageSize);
     Task<GeneralResponse<PagedResult<SalesReturnOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync(int warehouseId, string userId, int? customerId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    Task<GeneralResponse<PagedResult<SalesReturnOrderDTO>>> GetByDeliveryNoteOrderIdAndStatusAndDateWithPaginationForDashboardAsync(int deliveryNoteOrderId, string userId, int? customerId, DateTime? postingDate, DateTime? DueDate, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<GeneralResponse<SalesReturnOrderDTO>> GetWithCustomerAsync(int salesOrderId, string userId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<SalesReturnOrderDTO>> GetSalesReturnOrderByIdAsync(string userId, int salesReturnOrderId, CancellationToken cancellationToken = default);
     Task<GeneralResponse<SalesReturnOrderDTO>> AddSalesReturnOrderAndItemsByDeliveryNoteOrderIdAsync(

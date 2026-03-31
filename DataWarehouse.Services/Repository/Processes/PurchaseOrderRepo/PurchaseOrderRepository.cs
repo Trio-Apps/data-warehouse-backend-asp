@@ -143,12 +143,12 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
         if (!string.IsNullOrEmpty(liveStatus))
         {
-            // true = receipt 
-            // false = return
-            query = query.Where(e => e.ReceiptPurchaseOrders.Any());
+           // true = receipt 
+           // false = return
+           query = query.Where(e => e.ReceiptPurchaseOrders.Any());
 
            if (liveStatus == "return")
-              query = query.Where(e => e.ReceiptPurchaseOrders.Any(r => r.GoodsReturnOrder != null));
+              query = query.Where(e => e.ReceiptPurchaseOrders.Any(r => r.GoodsReturnOrders.Any()));
            
         }
 
@@ -207,12 +207,12 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                  .Select(r => (int?)r.ReceiptPurchaseOrderId)
                  .FirstOrDefault(),
 
-             IsReturn = x.Order.ReceiptPurchaseOrders.Any(r => r.GoodsReturnOrder != null),
+             IsReturn = x.Order.ReceiptPurchaseOrders.Any(r => r.GoodsReturnOrders.Any()),
 
              ReturnOrderId = x.Order.ReceiptPurchaseOrders
-                 .Where(r => r.GoodsReturnOrder != null)
-                 .OrderByDescending(r => r.ReceiptPurchaseOrderId)
-                 .Select(r => (int?)r.GoodsReturnOrder.GoodsReturnOrderId)
+                 .SelectMany(r => r.GoodsReturnOrders)
+                 .OrderByDescending(r => r.GoodsReturnOrderId)
+                 .Select(r => (int?)r.GoodsReturnOrderId)
                  .FirstOrDefault()
          })
          .ToListAsync(cancellationToken);
@@ -233,7 +233,7 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
 
         var res = await _context.PurchaseOrders
             .Include(po => po.ReceiptPurchaseOrders)
-            .ThenInclude(r => r.GoodsReturnOrder)
+            .ThenInclude(r => r.GoodsReturnOrders)
             .Include( po => po.Supplier)
             .FirstOrDefaultAsync(po => po.PurchaseOrderId == PurchaseOrderId);
 
@@ -280,12 +280,12 @@ public class PurchaseOrderRepository : BaseRepository<PurchaseOrder>, IPurchaseO
                 .Select(r => (int?)r.ReceiptPurchaseOrderId)
                 .FirstOrDefault(),
 
-            IsReturn = res.ReceiptPurchaseOrders.Any(r => r.GoodsReturnOrder != null),
+            IsReturn = res.ReceiptPurchaseOrders.Any(r => r.GoodsReturnOrders.Any()),
 
             ReturnOrderId = res.ReceiptPurchaseOrders
-                .Where(r => r.GoodsReturnOrder != null)
-                .OrderByDescending(r => r.ReceiptPurchaseOrderId)
-                .Select(r => (int?)r.GoodsReturnOrder.GoodsReturnOrderId)
+                .SelectMany(r => r.GoodsReturnOrders)
+                .OrderByDescending(r => r.GoodsReturnOrderId)
+                .Select(r => (int?)r.GoodsReturnOrderId)
                 .FirstOrDefault()
         };
 

@@ -35,6 +35,9 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public string? ErrorMessage { get; set; }
         public int? LineNum { get; set; }
 
+        [NotMapped]
+        public decimal ExecuteQuantity { get; set; }
+
 
         // Navigation
         public int DeliveryNoteOrderId { get; set; } // FK to DeliveryNoteOrder
@@ -45,7 +48,7 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
 
         public int? SalesOrderItemId { get; set; }
         public SalesOrderItem? SalesOrderItem { get; set; }
-        public SalesReturnOrderItem? SalesReturnOrderItem { get; set; }
+        public ICollection<SalesReturnOrderItem> SalesReturnOrderItems { get; set; } = new List<SalesReturnOrderItem>();
 
 
         public ICollection<DeliveryNoteBatch> DeliveryNoteBatches { get; set; } = new List<DeliveryNoteBatch>();

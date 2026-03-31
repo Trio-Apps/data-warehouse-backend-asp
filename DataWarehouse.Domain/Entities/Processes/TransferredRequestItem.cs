@@ -28,6 +28,9 @@ public class TransferredRequestItem : IOrderItem
         public int? LineNum { get; set; }
 
         [NotMapped]
+        public decimal ExecuteQuantity { get; set; }
+
+        [NotMapped]
         public int OrderId
         {
             get => TransferredRequestId;

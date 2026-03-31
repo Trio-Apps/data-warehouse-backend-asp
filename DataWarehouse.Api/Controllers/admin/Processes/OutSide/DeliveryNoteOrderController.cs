@@ -83,6 +83,64 @@ public class DeliveryNoteOrderController : ControllerBase
         return Ok(res);
     }
 
+    [HttpGet("dashboard/sales-order/status/posting-date/due-date/{salesOrderId}/{skip}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.DeliveryNote_Get}")]
+    public async Task<IActionResult> GetBySalesOrderIdForDashboard(
+        int salesOrderId,
+        int? customerId,
+        string? status,
+        DateTime? postingDate,
+        DateTime? dueDate,
+        int skip,
+        int pageSize)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var res = await _repository.GetBySalesOrderIdAndStatusAndDateWithPaginationForDashboardAsync(
+            salesOrderId,
+            userId!,
+            customerId,
+            postingDate,
+            dueDate,
+            status,
+            skip,
+            pageSize);
+
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
+    [HttpGet("dashboard/sales-order/status/posting-date/due-date/v2/{salesOrderId}/{pageNumber}/{pageSize}")]
+    [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.DeliveryNote_Get}")]
+    public async Task<IActionResult> GetBySalesOrderIdForDashboardV2(
+        int salesOrderId,
+        int? customerId,
+        string? status,
+        DateTime? postingDate,
+        DateTime? dueDate,
+        int pageNumber,
+        int pageSize)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var res = await _repository.GetBySalesOrderIdAndStatusAndDateWithPaginationForDashboardAsync(
+            salesOrderId,
+            userId!,
+            customerId,
+            postingDate,
+            dueDate,
+            status,
+            pageNumber,
+            pageSize);
+
+        if (!res.Success)
+            return BadRequest(res);
+
+        return Ok(res);
+    }
+
     [HttpGet("{id}")]
     [Authorize(Policy = $"{PermissionPolicyProvider.Prefix}{AppPermissions.DeliveryNote_Get}")]
     public async Task<IActionResult> GetDeliveryNoteById(int id)

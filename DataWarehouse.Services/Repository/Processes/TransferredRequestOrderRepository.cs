@@ -167,7 +167,11 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
                 ApprovalStatus = x.LatestStatus.HasValue ? x.LatestStatus.Value.ToString() : null,
                 ReasonId = x.Order.ReasonId,
                 ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
-                TransferredStockId = x.Order.TransferredStock != null ? x.Order.TransferredStock.TransferredStockId : null
+                TransferredStockId = _context.TransferredStocks
+                    .Where(ts => ts.TransferredRequestId == x.Order.TransferredRequestId)
+                    .OrderByDescending(ts => ts.TransferredStockId)
+                    .Select(ts => (int?)ts.TransferredStockId)
+                    .FirstOrDefault()
             })
             .ToListAsync(cancellationToken);
 
@@ -201,7 +205,6 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
             .Include(x => x.TransferredRequestItems)
             .Include(x => x.Warehouse)
             .Include(x => x.DistinationWarehouse)
-            .Include(x => x.TransferredStock)
             .Where(x => x.WarehouseId == warehouseId);
 
         if (destinationWarehouseId.HasValue)
@@ -225,9 +228,9 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
         if (!string.IsNullOrWhiteSpace(liveStatus))
         {
             if (liveStatus.Equals("not-transferred", StringComparison.OrdinalIgnoreCase))
-                query = query.Where(x => x.TransferredStock == null);
+                query = query.Where(x => !_context.TransferredStocks.Any(ts => ts.TransferredRequestId == x.TransferredRequestId));
             else
-                query = query.Where(x => x.TransferredStock != null);
+                query = query.Where(x => _context.TransferredStocks.Any(ts => ts.TransferredRequestId == x.TransferredRequestId));
         }
 
         query = query.OrderByDescending(x => x.CreatedAt);
@@ -265,7 +268,11 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
                 ItemCount = x.Order.TransferredRequestItems.Count(),
                 WarehouseName = x.Order.Warehouse.WarehouseName,
                 DistinationWarehouseName = x.Order.DistinationWarehouse.WarehouseName,
-                TransferredStockId = x.Order.TransferredStock != null ? x.Order.TransferredStock.TransferredStockId : null,
+                TransferredStockId = _context.TransferredStocks
+                    .Where(ts => ts.TransferredRequestId == x.Order.TransferredRequestId)
+                    .OrderByDescending(ts => ts.TransferredStockId)
+                    .Select(ts => (int?)ts.TransferredStockId)
+                    .FirstOrDefault(),
                 ReasonId = x.Order.ReasonId,
                 ReasonName = x.Order.Reason != null ? x.Order.Reason.Name : null,
                 Approval = x.HasProgress,
@@ -289,7 +296,6 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
         var entity = await _context.TransferredRequests
             .Include(x => x.Warehouse)
             .Include(x => x.DistinationWarehouse)
-            .Include(x => x.TransferredStock)
             .Include(x => x.TransferredRequestItems)
             .FirstOrDefaultAsync(x => x.TransferredRequestId == transferredRequestId, cancellationToken);
 
@@ -297,6 +303,15 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
             return GeneralResponse<TransferredRequestDTO>.FailResponse("this TransferredRequestId is not found");
 
         var approvalModel = await approval.CheckUserCanApproveAsync(userId, ProcessType.TransferredRequest, entity.TransferredRequestId);
+
+        var transferredStockIds = await _context.TransferredStocks
+            .AsNoTracking()
+            .Where(ts => ts.TransferredRequestId == entity.TransferredRequestId)
+            .OrderByDescending(ts => ts.TransferredStockId)
+            .Select(ts => ts.TransferredStockId)
+            .ToListAsync(cancellationToken);
+
+        int? latestTransferredStockId = transferredStockIds.Count > 0 ? transferredStockIds[0] : null;
 
         return GeneralResponse<TransferredRequestDTO>.SuccessResponse(new TransferredRequestDTO
         {
@@ -311,7 +326,8 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
             ItemCount = entity.TransferredRequestItems.Count,
             WarehouseName = entity.Warehouse.WarehouseName,
             DistinationWarehouseName = entity.DistinationWarehouse.WarehouseName,
-            TransferredStockId = entity.TransferredStock?.TransferredStockId,
+            TransferredStockId = latestTransferredStockId,
+            TransferredStockIds = transferredStockIds,
             ReasonId = entity.ReasonId,
             ReasonName = entity.Reason != null ? entity.Reason.Name : null,
             CanApprove = approvalModel.CanApprove,
@@ -595,7 +611,11 @@ public class TransferredRequestOrderRepository : BaseRepository<TransferredReque
                 CreatedAt = x.CreatedAt,
                 ReasonId = x.ReasonId,
                 ReasonName = x.Reason != null ? x.Reason.Name : null,
-                TransferredStockId = x.TransferredStock != null ? x.TransferredStock.TransferredStockId : null
+                TransferredStockId = _context.TransferredStocks
+                    .Where(ts => ts.TransferredRequestId == x.TransferredRequestId)
+                    .OrderByDescending(ts => ts.TransferredStockId)
+                    .Select(ts => (int?)ts.TransferredStockId)
+                    .FirstOrDefault()
             })
             .ToListAsync();
 

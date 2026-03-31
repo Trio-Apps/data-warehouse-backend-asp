@@ -35,6 +35,9 @@ namespace DataWarehouse.Domain.Entities.Processes.OutSide
         public string? ErrorMessage { get; set; }
         public int? LineNum { get; set; }
 
+        [NotMapped]
+        public decimal ExecuteQuantity { get; set; }
+
         // Navigation
         public int SalesOrderId { get; set; } // FK to SalesOrder
         public SalesOrder SalesOrder { get; set; }

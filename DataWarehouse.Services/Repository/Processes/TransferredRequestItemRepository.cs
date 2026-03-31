@@ -56,7 +56,11 @@ public class TransferredRequestItemRepository : BaseRepository<TransferredReques
                 UnitName = e.Item.ItemUomGroups
                     .Where(i => i.UomEntry == e.UoMEntry)
                     .Select(i => i.UomCode)
-                    .FirstOrDefault()
+                    .FirstOrDefault(),
+                ExecuteQuantity = _context.TransferredItems
+                    .Where(t => t.TransferredRequestItemId == e.TransferredRequestItemId)
+                    .Select(t => (decimal?)t.Quantity)
+                    .Sum() ?? 0
             });
 
         return res;
@@ -104,7 +108,11 @@ public class TransferredRequestItemRepository : BaseRepository<TransferredReques
                 UnitName = e.Item.ItemUomGroups
                     .Where(i => i.UomEntry == e.UoMEntry)
                     .Select(i => i.UomCode)
-                    .FirstOrDefault()
+                    .FirstOrDefault(),
+                ExecuteQuantity = _context.TransferredItems
+                    .Where(t => t.TransferredRequestItemId == e.TransferredRequestItemId)
+                    .Select(t => (decimal?)t.Quantity)
+                    .Sum() ?? 0
             },
             orderByDescSelector: x => x.TransferredRequestItemId,
             itemStatusSelector: x => x.Status);

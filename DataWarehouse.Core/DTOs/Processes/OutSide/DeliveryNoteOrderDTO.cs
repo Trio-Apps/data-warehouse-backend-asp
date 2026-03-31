@@ -20,6 +20,7 @@ public class DeliveryNoteOrderDTO : GeneralOrderDto
     public int? SalesOrderId { get; set; } // Reference to Parent (Sales Order)
 
     public List<DeliveryNoteItemDTO>? Items { get; set; }
+    public List<SalesReturnOrderDTO>? SalesReturnOrders { get; set; }
 }
 
 // 2. Add DTO (With Reference to Sales Order)
@@ -79,8 +80,10 @@ public class DeliveryNoteItemDTO : GeneralItemDto
     public int DeliveryNoteOrderId { get; set; }
 
     public int? SalesOrderItemId { get; set; } // Link to Parent Item
+    public decimal ExecuteQuantity { get; set; }
 
     public List<DeliveryNoteBatchDTO>? Batches { get; set; }
+    public List<SalesReturnOrderItemDTO>? SalesReturnOrderItems { get; set; }
 }
 
 // 6. Add Item DTO

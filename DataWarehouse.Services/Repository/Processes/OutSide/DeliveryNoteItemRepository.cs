@@ -9,6 +9,8 @@ using DataWarehouse.Core.DTOs.Based;
 using DataWarehouse.Core.DTOs.Processes;
 using DataWarehouse.Core.DTOs.Processes.OutSide;
 using DataWarehouse.Core.Interfaces.Based;
+using DataWarehouse.Core.Interfaces.BarCode;
+using DataWarehouse.Core.Interfaces.ISap;
 using DataWarehouse.Core.Interfaces.Processes.OutSide;
 using DataWarehouse.Domain.Context;
 using DataWarehouse.Domain.Entities.Processes.OutSide;
@@ -27,14 +29,20 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
     {
         private readonly IBaseProcessesRepository<DeliveryNoteItem> baseProcesses;
         private readonly IDeliveryNoteOrderRepository deliveryNote;
+        private readonly ISapCache sapCache;
+        private readonly IBarCodeOrdersRepository barcodeOrder;
 
         public DeliveryNoteItemRepository(
             IBaseProcessesRepository<DeliveryNoteItem> baseProcesses,
             IDeliveryNoteOrderRepository deliveryNote,
+            ISapCache sapCache,
+            IBarCodeOrdersRepository barcodeOrder,
             DataWarehouseDbContext context) : base(context)
         {
             this.baseProcesses = baseProcesses;
             this.deliveryNote = deliveryNote;
+            this.sapCache = sapCache;
+            this.barcodeOrder = barcodeOrder;
         }
 
         public async Task<GeneralResponse<IEnumerable<DeliveryNoteItemDTO>>> GetByDeliveryNoteOrderIdAsync(int deliveryNoteOrderId)
@@ -60,6 +68,10 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                     ItemCode = e.Item.ItemCode,
                     ItemName = e.Item.ItemName,
                     UnitName = e.Item.ItemUomGroups.FirstOrDefault(i => i.UomEntry == e.UoMEntry)!.UomCode,
+                    ExecuteQuantity = _context.SalesReturnOrderItems
+                        .Where(r => r.DeliveryNoteItemId == e.DeliveryNoteItemId)
+                        .Select(r => (decimal?)r.Quantity)
+                        .Sum() ?? 0
                 })
                 .ToListAsync();
 
@@ -97,7 +109,11 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                     Status = e.Status.ToString(),
                     DeliveryNoteOrderId = e.DeliveryNoteOrderId,
                     SalesOrderItemId = e.SalesOrderItemId,
-                    ItemId = e.ItemId
+                    ItemId = e.ItemId,
+                    ExecuteQuantity = _context.SalesReturnOrderItems
+                        .Where(r => r.DeliveryNoteItemId == e.DeliveryNoteItemId)
+                        .Select(r => (decimal?)r.Quantity)
+                        .Sum() ?? 0
                 })
                 .ToListAsync();
 
@@ -117,6 +133,33 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             DynamicBarcodesDto? barcodeDto,
             AddGeneralItemDto? dto)
         {
+            int? salesOrderItemId = null;
+
+            var deliveryNoteOrder = await _context.DeliveryNoteOrders
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.DeliveryNoteOrderId == deliveryNoteOrderId);
+
+            if (deliveryNoteOrder != null && deliveryNoteOrder.SalesOrderId.HasValue)
+            {
+                var itemDataRes = await ResolveAddItemDataAsync(deliveryNoteOrder.WarehouseId, isBarcode, barcodeDto, dto);
+                if (!itemDataRes.Success)
+                    return GeneralResponse<DeliveryNoteItemDTO>.FailResponse(itemDataRes.Message);
+
+                var linkedSalesOrderItemResult = await GetAvailableSalesOrderItemAsync(
+                    deliveryNoteOrder.SalesOrderId.Value,
+                    itemDataRes.Data.ItemId,
+                    itemDataRes.Data.UoMEntry,
+                    itemDataRes.Data.Quantity);
+
+                if (linkedSalesOrderItemResult.IsMatchingSalesOrderItemFound && linkedSalesOrderItemResult.SalesOrderItem == null)
+                    return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this sales order item.");
+
+                if (linkedSalesOrderItemResult.SalesOrderItem != null)
+                {
+                    salesOrderItemId = linkedSalesOrderItemResult.SalesOrderItem.SalesOrderItemId;
+                }
+            }
+
             var res = await baseProcesses.AddOrderItemAsync<DeliveryNoteOrder, DeliveryNoteItem>(
                 orderId: deliveryNoteOrderId,
                 processType: ProcessType.DeliveryNote,
@@ -131,6 +174,12 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
 
             if (!res.Success)
                 return GeneralResponse<DeliveryNoteItemDTO>.FailResponse(res.Message);
+
+            if (salesOrderItemId.HasValue)
+            {
+                res.Data.SalesOrderItemId = salesOrderItemId.Value;
+                await _context.SaveChangesAsync();
+            }
 
             var model = new DeliveryNoteItemDTO
             {
@@ -156,6 +205,68 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             int deliveryNoteItemId,
             UpdateGeneralItemDto dto)
         {
+            var entityBeforeUpdate = await _context.DeliveryNoteItems
+                .Include(x => x.DeliveryNoteOrder)
+                .FirstOrDefaultAsync(x => x.DeliveryNoteItemId == deliveryNoteItemId);
+
+            if (entityBeforeUpdate == null)
+                return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("id is not found");
+
+            if (dto.Quantity.HasValue
+                && entityBeforeUpdate.DeliveryNoteOrder != null
+                && entityBeforeUpdate.DeliveryNoteOrder.SalesOrderId.HasValue)
+            {
+                var salesOrderId = entityBeforeUpdate.DeliveryNoteOrder.SalesOrderId.Value;
+                SalesOrderItem? linkedSalesOrderItem = null;
+
+                if (entityBeforeUpdate.SalesOrderItemId.HasValue)
+                {
+                    linkedSalesOrderItem = await _context.SalesOrderItems
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.SalesOrderItemId == entityBeforeUpdate.SalesOrderItemId.Value);
+
+                    if (linkedSalesOrderItem == null)
+                        return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("sales order item is not found");
+
+                    var executedQuantity = await _context.DeliveryNoteItems
+                        .AsNoTracking()
+                        .Where(x => x.SalesOrderItemId == linkedSalesOrderItem.SalesOrderItemId
+                                    && x.DeliveryNoteItemId != deliveryNoteItemId)
+                        .Select(x => (decimal?)x.Quantity)
+                        .SumAsync() ?? 0m;
+
+                    if (executedQuantity + dto.Quantity.Value > linkedSalesOrderItem.Quantity)
+                        return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this sales order item.");
+                }
+                else
+                {
+                    var linkedSalesOrderItemResult = await GetAvailableSalesOrderItemAsync(
+                        salesOrderId,
+                        entityBeforeUpdate.ItemId,
+                        entityBeforeUpdate.UoMEntry,
+                        dto.Quantity.Value,
+                        deliveryNoteItemId);
+
+                    if (!linkedSalesOrderItemResult.IsMatchingSalesOrderItemFound)
+                    {
+                        linkedSalesOrderItem = null;
+                    }
+                    else if (linkedSalesOrderItemResult.SalesOrderItem == null)
+                    {
+                        return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("Quantity exceeds the remaining allowed quantity for this sales order item.");
+                    }
+                    else
+                    {
+                        linkedSalesOrderItem = linkedSalesOrderItemResult.SalesOrderItem;
+                    }
+                }
+
+                if (linkedSalesOrderItem != null)
+                {
+                    entityBeforeUpdate.SalesOrderItemId = linkedSalesOrderItem.SalesOrderItemId;
+                }
+            }
+
             var res = await baseProcesses.UpdateOrderItemAsync<DeliveryNoteOrder, DeliveryNoteItem>(
                 itemIdFromRoute: deliveryNoteItemId,
                 processType: ProcessType.DeliveryNote,
@@ -167,6 +278,13 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
 
             if (!res.Success)
                 return GeneralResponse<DeliveryNoteItemDTO>.FailResponse(res.Message);
+
+            if (entityBeforeUpdate.SalesOrderItemId.HasValue
+                && res.Data.SalesOrderItemId != entityBeforeUpdate.SalesOrderItemId)
+            {
+                res.Data.SalesOrderItemId = entityBeforeUpdate.SalesOrderItemId;
+                await _context.SaveChangesAsync();
+            }
 
             var entity = res.Data;
 
@@ -222,7 +340,11 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             if (dto.Quantity <= 0)
                 return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("Quantity must be greater than zero");
 
-            if (dto.Quantity > salesOrderItem.Quantity)
+            var deliveredQuantity = await _context.DeliveryNoteItems
+                .Where(dni => dni.SalesOrderItemId == dto.SalesOrderItemId)
+                .SumAsync(dni => (decimal?)dni.Quantity) ?? 0m;
+
+            if (deliveredQuantity + dto.Quantity > salesOrderItem.Quantity)
                 return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("Delivery quantity cannot exceed sales quantity");
 
             var dnItem = new DeliveryNoteItem
@@ -337,13 +459,31 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
                 return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("ID mismatch");
 
             // Validate quantity with reference (SalesOrderItem)
-            if (entity.SalesOrderItem != null && dto.Quantity.HasValue)
+            if (dto.Quantity.HasValue && entity.SalesOrderItemId.HasValue)
             {
                 if (dto.Quantity.Value <= 0)
                     return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("Quantity must be greater than zero");
 
-                //if (dto.Quantity.Value > entity.SalesOrderItem.Quantity)
-                //    return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("Delivery quantity cannot exceed sales quantity");
+                var linkedSalesOrderItem = entity.SalesOrderItem;
+                if (linkedSalesOrderItem == null)
+                {
+                    linkedSalesOrderItem = await _context.SalesOrderItems
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.SalesOrderItemId == entity.SalesOrderItemId.Value);
+                }
+
+                if (linkedSalesOrderItem == null)
+                    return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("sales order item is not found");
+
+                var executedQuantity = await _context.DeliveryNoteItems
+                    .AsNoTracking()
+                    .Where(x => x.SalesOrderItemId == linkedSalesOrderItem.SalesOrderItemId
+                                && x.DeliveryNoteItemId != deliveryNoteItemId)
+                    .Select(x => (decimal?)x.Quantity)
+                    .SumAsync() ?? 0m;
+
+                if (executedQuantity + dto.Quantity.Value > linkedSalesOrderItem.Quantity)
+                    return GeneralResponse<DeliveryNoteItemDTO>.FailResponse("Delivery quantity cannot exceed sales quantity");
             }
 
             if (dto.Quantity.HasValue && dto.Quantity.Value > 0)
@@ -417,6 +557,88 @@ namespace DataWarehouse.Services.Repository.Processes.OutSide
             };
 
             return GeneralResponse<DeliveryNoteItemDTO>.SuccessResponse(result);
+        }
+
+        private async Task<bool> CheckDynamicCodeValidationLocal(string barCode)
+        {
+            var sapId = await sapCache.Get();
+
+            var settings = await _context.BarCodeSettings
+                .Where(bs => bs.Company.Saps.Any(s => s.SapId == sapId))
+                .ToListAsync();
+
+            foreach (var setting in settings)
+            {
+                if (barCode.Length != setting.TotalLength)
+                    continue;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task<(bool Success, string Message, (int ItemId, int UoMEntry, decimal Quantity) Data)> ResolveAddItemDataAsync(
+            int warehouseId,
+            bool isBarcode,
+            DynamicBarcodesDto? barcodeDto,
+            AddGeneralItemDto? dto)
+        {
+            if (isBarcode)
+            {
+                if (barcodeDto == null)
+                    return (false, "Barcode required", default);
+
+                var isDynamic = await CheckDynamicCodeValidationLocal(barcodeDto.BarCode);
+
+                var res = isDynamic
+                    ? await barcodeOrder.GetItemByDynamicBarCodeAsync(warehouseId, barcodeDto)
+                    : await barcodeOrder.GetItemByStaticBarCodeAsync(warehouseId, barcodeDto);
+
+                if (!res.Success || res.Data == null)
+                    return (false, res.Message, default);
+
+                return (true, "", (res.Data.Id, res.Data.UoMEntry, res.Data.Quantity));
+            }
+
+            if (dto == null)
+                return (false, "DTO required", default);
+
+            return (true, "", (dto.ItemId, dto.UoMEntry, dto.Quantity));
+        }
+
+        private async Task<(SalesOrderItem? SalesOrderItem, bool IsMatchingSalesOrderItemFound)> GetAvailableSalesOrderItemAsync(
+            int salesOrderId,
+            int itemId,
+            int uoMEntry,
+            decimal requestedQuantity,
+            int? excludeDeliveryNoteItemId = null)
+        {
+            var salesOrderItems = await _context.SalesOrderItems
+                .AsNoTracking()
+                .Where(x => x.SalesOrderId == salesOrderId
+                            && x.ItemId == itemId
+                            && x.UoMEntry == uoMEntry)
+                .OrderBy(x => x.SalesOrderItemId)
+                .ToListAsync();
+
+            if (!salesOrderItems.Any())
+                return (null, false);
+
+            foreach (var salesOrderItem in salesOrderItems)
+            {
+                var executedQuantity = await _context.DeliveryNoteItems
+                    .AsNoTracking()
+                    .Where(x => x.SalesOrderItemId == salesOrderItem.SalesOrderItemId
+                                && (!excludeDeliveryNoteItemId.HasValue || x.DeliveryNoteItemId != excludeDeliveryNoteItemId.Value))
+                    .Select(x => (decimal?)x.Quantity)
+                    .SumAsync() ?? 0m;
+
+                if (executedQuantity + requestedQuantity <= salesOrderItem.Quantity)
+                    return (salesOrderItem, true);
+            }
+
+            return (null, true);
         }
 
 

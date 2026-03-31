@@ -2582,9 +2582,7 @@ namespace DataWarehouse.Domain.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_GoodsReturnOrderItems_ReceiptPurchaseOrderItemId",
                 table: "GoodsReturnOrderItems",
-                column: "ReceiptPurchaseOrderItemId",
-                unique: true,
-                filter: "[ReceiptPurchaseOrderItemId] IS NOT NULL");
+                column: "ReceiptPurchaseOrderItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GoodsReturnOrders_ReasonId",
@@ -2594,9 +2592,7 @@ namespace DataWarehouse.Domain.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_GoodsReturnOrders_ReceiptPurchaseOrderId",
                 table: "GoodsReturnOrders",
-                column: "ReceiptPurchaseOrderId",
-                unique: true,
-                filter: "[ReceiptPurchaseOrderId] IS NOT NULL");
+                column: "ReceiptPurchaseOrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GoodsReturnOrders_SupplierId",
@@ -2986,9 +2982,7 @@ namespace DataWarehouse.Domain.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_SalesReturnOrderItems_DeliveryNoteItemId",
                 table: "SalesReturnOrderItems",
-                column: "DeliveryNoteItemId",
-                unique: true,
-                filter: "[DeliveryNoteItemId] IS NOT NULL");
+                column: "DeliveryNoteItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SalesReturnOrderItems_ItemId",
@@ -3008,9 +3002,7 @@ namespace DataWarehouse.Domain.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_SalesReturnOrders_DeliveryNoteOrderId",
                 table: "SalesReturnOrders",
-                column: "DeliveryNoteOrderId",
-                unique: true,
-                filter: "[DeliveryNoteOrderId] IS NOT NULL");
+                column: "DeliveryNoteOrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SalesReturnOrders_ReasonId",
@@ -3166,9 +3158,7 @@ namespace DataWarehouse.Domain.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_TransferredStocks_TransferredRequestId",
                 table: "TransferredStocks",
-                column: "TransferredRequestId",
-                unique: true,
-                filter: "[TransferredRequestId] IS NOT NULL");
+                column: "TransferredRequestId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransferredStocks_UserId",

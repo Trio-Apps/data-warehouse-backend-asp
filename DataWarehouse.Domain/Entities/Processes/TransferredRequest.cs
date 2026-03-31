@@ -49,6 +49,6 @@ public class TransferredRequest : IOrder
         public Warehouse DistinationWarehouse { get; set; }
 
         public ICollection<TransferredRequestItem> TransferredRequestItems { get; set; } = new List<TransferredRequestItem>();
-        public TransferredStock? TransferredStock { get; set; }
+        public ICollection<TransferredStock> TransferredStocks { get; set; } = new List<TransferredStock>();
     }
 }
