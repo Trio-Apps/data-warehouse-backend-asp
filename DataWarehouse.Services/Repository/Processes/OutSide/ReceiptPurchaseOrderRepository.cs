@@ -85,14 +85,13 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             {
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                TotalRecords = totalRecords,
+                TotalRecords = totalRecords,                                                
                 Data = data
             });
     }
 
     public async Task<GeneralResponse<PagedResult<ReceiptPurchaseOrderDTO>>> GetByWarehouseIdAndStatusAndDateWithPaginationForDashboardAsync
        (int warehouseId, string userId, int? supplierId, DateTime? postingDate, DateTime? DueDate, string? liveStatus, string? status, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
-
     {
         pageNumber = pageNumber <= 0 ? 1 : pageNumber;
         pageSize = pageSize <= 0 ? 10 : pageSize;
@@ -103,8 +102,6 @@ public class ReceiptPurchaseOrderRepository : BaseRepository<ReceiptPurchaseOrde
             .Where(po => po.WarehouseId == warehouseId);
 
         // ?? Filtering
-
-
         if (supplierId.HasValue)
         {
             query = query.Where(e => e.SupplierId == supplierId);
